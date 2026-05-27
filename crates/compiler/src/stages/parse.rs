@@ -151,7 +151,10 @@ fn validate_stmt(
             Ok(())
         }
         Stmt::Using {
-            name, span, is_async: _, ..
+            name,
+            span,
+            is_async: _,
+            ..
         } => {
             let is_empty_pattern = name == "{}" || name == "[]";
             if !is_empty_pattern {

@@ -356,16 +356,11 @@ pub(super) fn first_outer_local_reference_in_stmt(
                     )
                 })
         }
-        Stmt::Using { name, expr, span, .. } => {
-            reference_if_outer(name, *span, outer_bindings, method_locals).or_else(|| {
-                first_outer_local_reference_in_expr(
-                    expr,
-                    outer_bindings,
-                    method_locals,
-                    class_names,
-                )
-            })
-        }
+        Stmt::Using {
+            name, expr, span, ..
+        } => reference_if_outer(name, *span, outer_bindings, method_locals).or_else(|| {
+            first_outer_local_reference_in_expr(expr, outer_bindings, method_locals, class_names)
+        }),
         Stmt::TryCatch {
             try_block,
             catch_block,

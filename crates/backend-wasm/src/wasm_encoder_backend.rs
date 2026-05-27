@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use wasm_encoder::*;
 
+use crate::Diagnostic;
 use crate::wasm_ir::*;
 
 type WasmFuncType = (Vec<WasmValType>, Vec<WasmValType>);
@@ -9,16 +10,16 @@ type TypeIndexMap = HashMap<WasmFuncType, u32>;
 type SymbolIndexMap = HashMap<String, u32>;
 
 pub trait WasmEncoderBackendExt {
-    fn to_wasm_encoder(&self) -> Vec<u8>;
+    fn to_wasm_encoder(&self) -> Result<Vec<u8>, Diagnostic>;
 }
 
 impl WasmEncoderBackendExt for WasmModule {
-    fn to_wasm_encoder(&self) -> Vec<u8> {
+    fn to_wasm_encoder(&self) -> Result<Vec<u8>, Diagnostic> {
         emit_wasm_module_binary(self)
     }
 }
 
-pub fn emit_wasm_module_binary(module: &WasmModule) -> Vec<u8> {
+pub fn emit_wasm_module_binary(module: &WasmModule) -> Result<Vec<u8>, Diagnostic> {
     let mut wasm = wasm_encoder::Module::new();
 
     let (types, func_types, import_func_indices, global_indices, func_name_indices) =
@@ -84,7 +85,7 @@ pub fn emit_wasm_module_binary(module: &WasmModule) -> Vec<u8> {
     if !module.globals.is_empty() {
         let mut global_section = GlobalSection::new();
         for g in &module.globals {
-            let init_expr = global_init_expr(&g.init, &global_indices);
+            let init_expr = global_init_expr(&g.init, &global_indices)?;
             global_section.global(
                 GlobalType {
                     val_type: val_type(g.val_type),
@@ -103,7 +104,11 @@ pub fn emit_wasm_module_binary(module: &WasmModule) -> Vec<u8> {
         for e in &module.exports {
             match &e.kind {
                 WasmExportKind::Func(name) => {
-                    let idx = *func_name_indices.get(name.as_str()).unwrap_or(&0);
+                    let idx = *func_name_indices.get(name.as_str()).ok_or_else(|| {
+                        encoder_diagnostic(format!(
+                            "unresolved wasm export function symbol: {name}"
+                        ))
+                    })?;
                     export_section.export(&e.name, ExportKind::Func, idx);
                 }
                 WasmExportKind::Memory => {
@@ -121,7 +126,7 @@ pub fn emit_wasm_module_binary(module: &WasmModule) -> Vec<u8> {
             if import_func_indices.contains_key(f.symbol.as_str()) {
                 continue;
             }
-            let func = build_single_function(f, &global_indices, &func_name_indices);
+            let func = build_single_function(f, &global_indices, &func_name_indices)?;
             code_section.function(&func);
         }
         wasm.section(&code_section);
@@ -146,7 +151,7 @@ pub fn emit_wasm_module_binary(module: &WasmModule) -> Vec<u8> {
         wasm.section(&custom);
     }
 
-    wasm.finish()
+    Ok(wasm.finish())
 }
 
 fn build_type_and_mappings(
@@ -217,10 +222,11 @@ fn build_single_function(
     f: &WasmFunction,
     global_indices: &HashMap<String, u32>,
     func_name_indices: &HashMap<String, u32>,
-) -> wasm_encoder::Function {
+) -> Result<wasm_encoder::Function, Diagnostic> {
     use wasm_encoder::Instruction as I;
 
     let mut func = wasm_encoder::Function::new(local_groups_for_function(f));
+    let mut control_labels: Vec<Option<String>> = Vec::new();
     for instr in &f.body {
         match instr {
             WasmInstr::LocalGet(i) => {
@@ -239,7 +245,9 @@ fn build_single_function(
                 func.instruction(&I::I64Const(*v));
             }
             WasmInstr::Call(name) => {
-                let idx = func_name_indices.get(name).copied().unwrap_or(0);
+                let idx = func_name_indices.get(name).copied().ok_or_else(|| {
+                    encoder_diagnostic(format!("unresolved wasm call symbol: {name}"))
+                })?;
                 func.instruction(&I::Call(idx));
             }
             WasmInstr::CallDirect(idx) => {
@@ -258,11 +266,15 @@ fn build_single_function(
                 func.instruction(&I::Return);
             }
             WasmInstr::Br(name) => {
-                let depth = func_name_indices.get(name).copied().unwrap_or(0);
+                let depth = branch_label_depth(&control_labels, name).ok_or_else(|| {
+                    encoder_diagnostic(format!("unresolved wasm branch label: {name}"))
+                })?;
                 func.instruction(&I::Br(depth));
             }
             WasmInstr::BrIf(name) => {
-                let depth = func_name_indices.get(name).copied().unwrap_or(0);
+                let depth = branch_label_depth(&control_labels, name).ok_or_else(|| {
+                    encoder_diagnostic(format!("unresolved wasm branch-if label: {name}"))
+                })?;
                 func.instruction(&I::BrIf(depth));
             }
             WasmInstr::BrDepth(depth) => {
@@ -275,11 +287,8 @@ fn build_single_function(
                 func.instruction(&I::Select);
             }
             WasmInstr::If { result_ty } => {
-                let bt = result_ty
-                    .as_deref()
-                    .filter(|s| !s.is_empty())
-                    .map(parse_block_type)
-                    .unwrap_or(BlockType::Empty);
+                let bt = block_type(*result_ty);
+                control_labels.push(None);
                 func.instruction(&I::If(bt));
             }
             WasmInstr::Then => {}
@@ -287,14 +296,15 @@ fn build_single_function(
                 func.instruction(&I::Else);
             }
             WasmInstr::End => {
+                control_labels.pop();
                 func.instruction(&I::End);
             }
             WasmInstr::Block(name) => {
-                let _ = name;
+                control_labels.push(Some(name.clone()));
                 func.instruction(&I::Block(BlockType::Empty));
             }
             WasmInstr::Loop(name) => {
-                let _ = name;
+                control_labels.push(Some(name.clone()));
                 func.instruction(&I::Loop(BlockType::Empty));
             }
             WasmInstr::I32Eqz => {
@@ -381,14 +391,112 @@ fn build_single_function(
             WasmInstr::I32WrapI64 => {
                 func.instruction(&I::I32WrapI64);
             }
+            WasmInstr::I64ExtendI32S => {
+                func.instruction(&I::I64ExtendI32S);
+            }
+            WasmInstr::I64ExtendI32U => {
+                func.instruction(&I::I64ExtendI32U);
+            }
+            WasmInstr::I64Eqz => {
+                func.instruction(&I::I64Eqz);
+            }
+            WasmInstr::I64Eq => {
+                func.instruction(&I::I64Eq);
+            }
+            WasmInstr::I64LtS => {
+                func.instruction(&I::I64LtS);
+            }
+            WasmInstr::I64GeU => {
+                func.instruction(&I::I64GeU);
+            }
+            WasmInstr::I64Add => {
+                func.instruction(&I::I64Add);
+            }
+            WasmInstr::I64Sub => {
+                func.instruction(&I::I64Sub);
+            }
+            WasmInstr::I64Mul => {
+                func.instruction(&I::I64Mul);
+            }
+            WasmInstr::I64DivU => {
+                func.instruction(&I::I64DivU);
+            }
+            WasmInstr::I64RemU => {
+                func.instruction(&I::I64RemU);
+            }
+            WasmInstr::I64GtU => {
+                func.instruction(&I::I64GtU);
+            }
+            WasmInstr::I64And => {
+                func.instruction(&I::I64And);
+            }
+            WasmInstr::I64Or => {
+                func.instruction(&I::I64Or);
+            }
+            WasmInstr::I64Xor => {
+                func.instruction(&I::I64Xor);
+            }
+            WasmInstr::I64Shl => {
+                func.instruction(&I::I64Shl);
+            }
+            WasmInstr::I64ShrS => {
+                func.instruction(&I::I64ShrS);
+            }
+            WasmInstr::I64ShrU => {
+                func.instruction(&I::I64ShrU);
+            }
             WasmInstr::MemorySize => {
                 func.instruction(&I::MemorySize(0));
             }
             WasmInstr::MemoryGrow => {
                 func.instruction(&I::MemoryGrow(0));
             }
+            WasmInstr::MemoryCopy => {
+                func.instruction(&I::MemoryCopy {
+                    dst_mem: 0,
+                    src_mem: 0,
+                });
+            }
+            WasmInstr::MemoryFill => {
+                func.instruction(&I::MemoryFill(0));
+            }
             WasmInstr::I32Load { align, offset } => {
                 func.instruction(&I::I32Load(MemArg {
+                    offset: *offset as u64,
+                    align: *align,
+                    memory_index: 0,
+                }));
+            }
+            WasmInstr::I32Load8S { align, offset } => {
+                func.instruction(&I::I32Load8S(MemArg {
+                    offset: *offset as u64,
+                    align: *align,
+                    memory_index: 0,
+                }));
+            }
+            WasmInstr::I32Load8U { align, offset } => {
+                func.instruction(&I::I32Load8U(MemArg {
+                    offset: *offset as u64,
+                    align: *align,
+                    memory_index: 0,
+                }));
+            }
+            WasmInstr::I32Load16S { align, offset } => {
+                func.instruction(&I::I32Load16S(MemArg {
+                    offset: *offset as u64,
+                    align: *align,
+                    memory_index: 0,
+                }));
+            }
+            WasmInstr::I32Load16U { align, offset } => {
+                func.instruction(&I::I32Load16U(MemArg {
+                    offset: *offset as u64,
+                    align: *align,
+                    memory_index: 0,
+                }));
+            }
+            WasmInstr::I64Load { align, offset } => {
+                func.instruction(&I::I64Load(MemArg {
                     offset: *offset as u64,
                     align: *align,
                     memory_index: 0,
@@ -408,20 +516,50 @@ fn build_single_function(
                     memory_index: 0,
                 }));
             }
+            WasmInstr::I32Store16 { align, offset } => {
+                func.instruction(&I::I32Store16(MemArg {
+                    offset: *offset as u64,
+                    align: *align,
+                    memory_index: 0,
+                }));
+            }
+            WasmInstr::I64Store { align, offset } => {
+                func.instruction(&I::I64Store(MemArg {
+                    offset: *offset as u64,
+                    align: *align,
+                    memory_index: 0,
+                }));
+            }
             WasmInstr::GlobalGet(name) => {
-                let idx = global_indices.get(name).copied().unwrap_or(0);
+                let idx = global_indices.get(name).copied().ok_or_else(|| {
+                    encoder_diagnostic(format!("unresolved wasm global get symbol: {name}"))
+                })?;
                 func.instruction(&I::GlobalGet(idx));
             }
             WasmInstr::GlobalSet(name) => {
-                let idx = global_indices.get(name).copied().unwrap_or(0);
+                let idx = global_indices.get(name).copied().ok_or_else(|| {
+                    encoder_diagnostic(format!("unresolved wasm global set symbol: {name}"))
+                })?;
                 func.instruction(&I::GlobalSet(idx));
             }
-            WasmInstr::Raw(_raw) => {}
+            WasmInstr::Raw(raw) => {
+                return Err(encoder_diagnostic(format!(
+                    "raw wasm instruction is not supported by wasm-encoder backend: {raw}"
+                )));
+            }
         }
     }
 
     func.instruction(&I::End);
-    func
+    Ok(func)
+}
+
+fn branch_label_depth(control_labels: &[Option<String>], name: &str) -> Option<u32> {
+    control_labels
+        .iter()
+        .rev()
+        .position(|label| label.as_deref() == Some(name))
+        .map(|depth| depth as u32)
 }
 
 fn local_groups_for_function(f: &WasmFunction) -> Vec<(u32, ValType)> {
@@ -436,15 +574,26 @@ fn local_groups_for_function(f: &WasmFunction) -> Vec<(u32, ValType)> {
     local_groups
 }
 
-fn global_init_expr(instr: &WasmInstr, global_indices: &HashMap<String, u32>) -> ConstExpr {
+fn global_init_expr(
+    instr: &WasmInstr,
+    global_indices: &HashMap<String, u32>,
+) -> Result<ConstExpr, Diagnostic> {
     match instr {
-        WasmInstr::I32Const(v) => ConstExpr::i32_const(*v),
+        WasmInstr::I32Const(v) => Ok(ConstExpr::i32_const(*v)),
         WasmInstr::GlobalGet(name) => {
-            let idx = global_indices.get(name).copied().unwrap_or(0);
-            ConstExpr::global_get(idx)
+            let idx = global_indices.get(name).copied().ok_or_else(|| {
+                encoder_diagnostic(format!("unresolved wasm global init symbol: {name}"))
+            })?;
+            Ok(ConstExpr::global_get(idx))
         }
-        _ => ConstExpr::i32_const(0),
+        _ => Err(encoder_diagnostic(format!(
+            "unsupported wasm global initializer instruction: {instr:?}"
+        ))),
     }
+}
+
+fn encoder_diagnostic(message: impl Into<String>) -> Diagnostic {
+    Diagnostic::invariant(message).with_phase("wasm-encoder")
 }
 
 fn val_type(t: WasmValType) -> ValType {
@@ -454,11 +603,10 @@ fn val_type(t: WasmValType) -> ValType {
     }
 }
 
-fn parse_block_type(s: &str) -> BlockType {
-    match s.trim() {
-        "i32" => BlockType::Result(ValType::I32),
-        "i64" => BlockType::Result(ValType::I64),
-        _ => BlockType::Empty,
+fn block_type(block_type: WasmBlockType) -> BlockType {
+    match block_type {
+        WasmBlockType::Empty => BlockType::Empty,
+        WasmBlockType::Result(ty) => BlockType::Result(val_type(ty)),
     }
 }
 
@@ -496,7 +644,9 @@ mod tests {
             .export(WasmExport::func("main", "$main"))
             .export(WasmExport::memory("memory"));
 
-        let bytes = module.to_wasm_encoder();
+        let bytes = module
+            .to_wasm_encoder()
+            .expect("wasm-encoder backend should emit");
 
         wasmparser::Validator::new()
             .validate_all(&bytes)
@@ -518,7 +668,184 @@ mod tests {
             )
             .export(WasmExport::func("main", "$main"));
 
-        assert_eq!(module.to_wasm_encoder(), emit_wasm_module_binary(&module));
+        assert_eq!(
+            module
+                .to_wasm_encoder()
+                .expect("extension method should emit"),
+            emit_wasm_module_binary(&module).expect("module binary should emit")
+        );
+    }
+
+    #[test]
+    fn unresolved_call_symbol_errors_instead_of_calling_function_zero() {
+        let module = WasmModule::new().function(
+            WasmFunction::new("$main").body(vec![WasmInstr::Call("$missing".to_owned())]),
+        );
+
+        let err = module
+            .to_wasm_encoder()
+            .expect_err("unresolved call should be a diagnostic");
+        assert!(
+            err.message
+                .contains("unresolved wasm call symbol: $missing")
+        );
+    }
+
+    #[test]
+    fn unresolved_export_symbol_errors_instead_of_exporting_function_zero() {
+        let module = WasmModule::new()
+            .function(WasmFunction::new("$main").body(vec![]))
+            .export(WasmExport::func("missing", "$missing"));
+
+        let err = module
+            .to_wasm_encoder()
+            .expect_err("unresolved export should be a diagnostic");
+        assert!(
+            err.message
+                .contains("unresolved wasm export function symbol: $missing")
+        );
+    }
+
+    #[test]
+    fn unresolved_global_get_errors_instead_of_reading_global_zero() {
+        let module = WasmModule::new().function(
+            WasmFunction::new("$main")
+                .body(vec![WasmInstr::GlobalGet("$missing_global".to_owned())]),
+        );
+
+        let err = module
+            .to_wasm_encoder()
+            .expect_err("unresolved global get should be a diagnostic");
+        assert!(
+            err.message
+                .contains("unresolved wasm global get symbol: $missing_global")
+        );
+    }
+
+    #[test]
+    fn unresolved_global_set_errors_instead_of_writing_global_zero() {
+        let module = WasmModule::new().function(WasmFunction::new("$main").body(vec![
+            WasmInstr::I32Const(0),
+            WasmInstr::GlobalSet("$missing_global".to_owned()),
+        ]));
+
+        let err = module
+            .to_wasm_encoder()
+            .expect_err("unresolved global set should be a diagnostic");
+        assert!(
+            err.message
+                .contains("unresolved wasm global set symbol: $missing_global")
+        );
+    }
+
+    #[test]
+    fn labeled_branch_targets_nested_loop_depth() {
+        let module = WasmModule::new()
+            .function(
+                WasmFunction::new("$main")
+                    .result(WasmValType::I32)
+                    .body(vec![
+                        WasmInstr::Block("$done".to_owned()),
+                        WasmInstr::Loop("$again".to_owned()),
+                        WasmInstr::I32Const(1),
+                        WasmInstr::If {
+                            result_ty: WasmBlockType::Empty,
+                        },
+                        WasmInstr::Then,
+                        WasmInstr::Br("$done".to_owned()),
+                        WasmInstr::End,
+                        WasmInstr::Br("$again".to_owned()),
+                        WasmInstr::End,
+                        WasmInstr::End,
+                        WasmInstr::I32Const(7),
+                    ]),
+            )
+            .export(WasmExport::func("main", "$main"));
+
+        let bytes = module
+            .to_wasm_encoder()
+            .expect("labeled branch module should emit");
+
+        wasmparser::Validator::new()
+            .validate_all(&bytes)
+            .expect("labeled branch depth should validate");
+    }
+
+    #[test]
+    fn wasmparser_validation_covers_encoder_memory_and_control_flow() {
+        let module = WasmModule::new()
+            .memory(WasmMemory::new(1, 1))
+            .function(
+                WasmFunction::new("$main")
+                    .result(WasmValType::I64)
+                    .body(vec![
+                        WasmInstr::I32Const(0),
+                        WasmInstr::I32Const(0),
+                        WasmInstr::I32Const(8),
+                        WasmInstr::MemoryFill,
+                        WasmInstr::I32Const(16),
+                        WasmInstr::I64Const(0x0102_0304_0506_0708),
+                        WasmInstr::I64Store {
+                            align: 3,
+                            offset: 0,
+                        },
+                        WasmInstr::Block("$done".to_owned()),
+                        WasmInstr::Loop("$again".to_owned()),
+                        WasmInstr::I32Const(1),
+                        WasmInstr::If {
+                            result_ty: WasmBlockType::Empty,
+                        },
+                        WasmInstr::Then,
+                        WasmInstr::Br("$done".to_owned()),
+                        WasmInstr::End,
+                        WasmInstr::Br("$again".to_owned()),
+                        WasmInstr::End,
+                        WasmInstr::End,
+                        WasmInstr::I32Const(16),
+                        WasmInstr::I64Load {
+                            align: 3,
+                            offset: 0,
+                        },
+                    ]),
+            )
+            .export(WasmExport::func("main", "$main"));
+
+        let bytes = module
+            .to_wasm_encoder()
+            .expect("typed memory and branch module should emit");
+
+        wasmparser::Validator::new()
+            .validate_all(&bytes)
+            .expect("typed memory and branch encoding should validate");
+    }
+
+    #[test]
+    fn unresolved_branch_label_returns_diagnostic() {
+        let module = WasmModule::new().function(
+            WasmFunction::new("$main").body(vec![WasmInstr::Br("$missing_label".to_owned())]),
+        );
+
+        let err = module
+            .to_wasm_encoder()
+            .expect_err("unresolved branch should be a diagnostic");
+        assert!(
+            err.message
+                .contains("unresolved wasm branch label: $missing_label")
+        );
+    }
+
+    #[test]
+    fn raw_instruction_errors_instead_of_being_ignored() {
+        let module = WasmModule::new()
+            .function(WasmFunction::new("$main").body(vec![WasmInstr::Raw("nop".to_owned())]));
+
+        let err = module
+            .to_wasm_encoder()
+            .expect_err("raw instruction should be a diagnostic");
+        assert!(
+            err.message
+                .contains("raw wasm instruction is not supported by wasm-encoder backend")
+        );
     }
 
     fn section_ids(bytes: &[u8]) -> Vec<u8> {

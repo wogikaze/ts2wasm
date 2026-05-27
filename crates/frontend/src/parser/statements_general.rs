@@ -1326,6 +1326,36 @@ impl Parser {
                 },
             }
         };
+        if self.consume(TokenKind::Comma) {
+            let mut exprs = vec![Expr::Assign {
+                name: name.clone(),
+                span: Span {
+                    start: start.start,
+                    end: expr.span().end,
+                },
+                expr: Box::new(expr),
+            }];
+            while {
+                exprs.push(self.assignment()?);
+                self.consume(TokenKind::Comma)
+            } {}
+            let sequence_end = exprs.last().map(|expr| expr.span().end).unwrap_or(start.end);
+            let end = self.statement_terminator_end(sequence_end)?;
+            return Ok(Stmt::Expr {
+                expr: Expr::Sequence {
+                    exprs,
+                    span: Span {
+                        start: start.start,
+                        end: sequence_end,
+                    },
+                },
+                span: Span {
+                    start: start.start,
+                    end,
+                },
+            });
+        }
+
         let end = self.statement_terminator_end(expr.span().end)?;
         Ok(Stmt::Assign {
             name,

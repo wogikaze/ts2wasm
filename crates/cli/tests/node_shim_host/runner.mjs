@@ -115,6 +115,12 @@ function decodeObject(raw) {
 function decodeValue(raw) {
   switch (rawTag(raw)) {
     case TAG_UNDEFINED:
+      if (raw !== TAG_UNDEFINED && raw >= 0 && raw + 4 <= bytes().byteLength) {
+        const len = view().getInt32(raw, true);
+        if (len >= 0 && raw + 4 + len <= bytes().byteLength) {
+          return decoder.decode(bytes().subarray(raw + 4, raw + 4 + len));
+        }
+      }
       return undefined;
     case TAG_NULL:
       return null;
@@ -1178,6 +1184,170 @@ function decodeArgs(raw) {
   return decodeArray(raw).map(decodeValue);
 }
 
+function getIterator(value) {
+  if (value === null || value === undefined) {
+    throw new TypeError('value is not iterable');
+  }
+  const method = value[Symbol.iterator];
+  if (typeof method !== 'function') {
+    throw new TypeError('value is not iterable');
+  }
+  const iterator = method.call(value);
+  if (iterator === null || iterator === undefined || typeof iterator.next !== 'function') {
+    throw new TypeError('iterator method did not return an iterator');
+  }
+  return iterator;
+}
+
+function getIteratorFromRaw(raw) {
+  return getIterator(decodeValue(raw));
+}
+
+function requireCallable(raw) {
+  const fn = decodeValue(raw);
+  if (typeof fn !== 'function') {
+    throw new TypeError('iterator helper callback must be callable');
+  }
+  return fn;
+}
+
+function decodeHostNumber(raw) {
+  if (rawTag(raw) === TAG_NUMBER) return raw >> 3;
+  const value = decodeValue(raw);
+  return typeof value === 'number' ? value : raw;
+}
+
+function makeIteratorHelper(next) {
+  return {
+    [Symbol.iterator]() {
+      return this;
+    },
+    next,
+  };
+}
+
+function iteratorMap(iteratorRaw, callbackRaw) {
+  const iterator = getIteratorFromRaw(iteratorRaw);
+  const callback = requireCallable(callbackRaw);
+  let index = 0;
+  return makeIteratorHelper(() => {
+    const result = iterator.next();
+    if (result.done) return { value: undefined, done: true };
+    return { value: callback(result.value, index++), done: false };
+  });
+}
+
+function iteratorFilter(iteratorRaw, callbackRaw) {
+  const iterator = getIteratorFromRaw(iteratorRaw);
+  const callback = requireCallable(callbackRaw);
+  let index = 0;
+  return makeIteratorHelper(() => {
+    while (true) {
+      const result = iterator.next();
+      if (result.done) return { value: undefined, done: true };
+      const value = result.value;
+      if (callback(value, index++)) return { value, done: false };
+    }
+  });
+}
+
+function iteratorTake(iteratorRaw, limitRaw) {
+  const iterator = getIteratorFromRaw(iteratorRaw);
+  const limit = Math.max(0, Math.trunc(Number(decodeHostNumber(limitRaw))));
+  let remaining = limit;
+  return makeIteratorHelper(() => {
+    if (remaining <= 0) return { value: undefined, done: true };
+    remaining -= 1;
+    const result = iterator.next();
+    return result.done ? { value: undefined, done: true } : result;
+  });
+}
+
+function iteratorDrop(iteratorRaw, limitRaw) {
+  const iterator = getIteratorFromRaw(iteratorRaw);
+  let remaining = Math.max(0, Math.trunc(Number(decodeHostNumber(limitRaw))));
+  let dropped = false;
+  return makeIteratorHelper(() => {
+    if (!dropped) {
+      while (remaining > 0) {
+        const result = iterator.next();
+        if (result.done) return { value: undefined, done: true };
+        remaining -= 1;
+      }
+      dropped = true;
+    }
+    const result = iterator.next();
+    return result.done ? { value: undefined, done: true } : result;
+  });
+}
+
+function iteratorToArray(iteratorRaw) {
+  return Array.from(getIteratorFromRaw(iteratorRaw));
+}
+
+function iteratorReduce(iteratorRaw, callbackRaw, initialRaw, hasInitialRaw) {
+  const iterator = getIteratorFromRaw(iteratorRaw);
+  const callback = requireCallable(callbackRaw);
+  let accumulator = decodeValue(initialRaw);
+  let initialized = Boolean(decodeValue(hasInitialRaw));
+  let index = 0;
+  while (true) {
+    const result = iterator.next();
+    if (result.done) break;
+    if (!initialized) {
+      accumulator = result.value;
+      initialized = true;
+    } else {
+      accumulator = callback(accumulator, result.value, index);
+    }
+    index += 1;
+  }
+  if (!initialized) {
+    throw new TypeError('Reduce of empty iterator with no initial value');
+  }
+  return accumulator;
+}
+
+function iteratorForEach(iteratorRaw, callbackRaw) {
+  const iterator = getIteratorFromRaw(iteratorRaw);
+  const callback = requireCallable(callbackRaw);
+  let index = 0;
+  for (const value of iterator) {
+    callback(value, index++);
+  }
+  return undefined;
+}
+
+function iteratorSome(iteratorRaw, callbackRaw) {
+  const iterator = getIteratorFromRaw(iteratorRaw);
+  const callback = requireCallable(callbackRaw);
+  let index = 0;
+  for (const value of iterator) {
+    if (callback(value, index++)) return true;
+  }
+  return false;
+}
+
+function iteratorEvery(iteratorRaw, callbackRaw) {
+  const iterator = getIteratorFromRaw(iteratorRaw);
+  const callback = requireCallable(callbackRaw);
+  let index = 0;
+  for (const value of iterator) {
+    if (!callback(value, index++)) return false;
+  }
+  return true;
+}
+
+function iteratorFind(iteratorRaw, callbackRaw) {
+  const iterator = getIteratorFromRaw(iteratorRaw);
+  const callback = requireCallable(callbackRaw);
+  let index = 0;
+  for (const value of iterator) {
+    if (callback(value, index++)) return value;
+  }
+  return undefined;
+}
+
 const imports = {
   wasi_snapshot_preview1: {
     fd_write(fd, iovs, iovsLen, nwritten) {
@@ -1252,6 +1422,106 @@ const imports = {
           throw new TypeError(`unknown host function handle: ${handleRaw}`);
         }
         return encodeHostValue(Reflect.construct(fn, decodeArgs(argsRaw)));
+      } catch (error) {
+        return encodeHostException(error);
+      }
+    },
+    getIterator(valueRaw) {
+      try {
+        return encodeHostValue(getIteratorFromRaw(valueRaw));
+      } catch (error) {
+        return encodeHostException(error);
+      }
+    },
+    iteratorNext(iteratorRaw) {
+      try {
+        return encodeHostValue(getIteratorFromRaw(iteratorRaw).next());
+      } catch (error) {
+        return encodeHostException(error);
+      }
+    },
+    'iterator.map'(iteratorRaw, callbackRaw) {
+      try {
+        return encodeHostValue(iteratorMap(iteratorRaw, callbackRaw));
+      } catch (error) {
+        return encodeHostException(error);
+      }
+    },
+    'iterator.filter'(iteratorRaw, callbackRaw) {
+      try {
+        return encodeHostValue(iteratorFilter(iteratorRaw, callbackRaw));
+      } catch (error) {
+        return encodeHostException(error);
+      }
+    },
+    'iterator.take'(iteratorRaw, limitRaw) {
+      try {
+        return encodeHostValue(iteratorTake(iteratorRaw, limitRaw));
+      } catch (error) {
+        return encodeHostException(error);
+      }
+    },
+    'iterator.drop'(iteratorRaw, limitRaw) {
+      try {
+        return encodeHostValue(iteratorDrop(iteratorRaw, limitRaw));
+      } catch (error) {
+        return encodeHostException(error);
+      }
+    },
+    'iterator.toArray'(iteratorRaw) {
+      try {
+        return encodeHostValue(iteratorToArray(iteratorRaw));
+      } catch (error) {
+        return encodeHostException(error);
+      }
+    },
+    'iterator.reduce'(iteratorRaw, callbackRaw, initialRaw, hasInitialRaw) {
+      try {
+        return encodeHostValue(iteratorReduce(iteratorRaw, callbackRaw, initialRaw, hasInitialRaw));
+      } catch (error) {
+        return encodeHostException(error);
+      }
+    },
+    'iterator.forEach'(iteratorRaw, callbackRaw) {
+      try {
+        return encodeHostValue(iteratorForEach(iteratorRaw, callbackRaw));
+      } catch (error) {
+        return encodeHostException(error);
+      }
+    },
+    'iterator.some'(iteratorRaw, callbackRaw) {
+      try {
+        return encodeHostValue(iteratorSome(iteratorRaw, callbackRaw));
+      } catch (error) {
+        return encodeHostException(error);
+      }
+    },
+    'iterator.every'(iteratorRaw, callbackRaw) {
+      try {
+        return encodeHostValue(iteratorEvery(iteratorRaw, callbackRaw));
+      } catch (error) {
+        return encodeHostException(error);
+      }
+    },
+    'iterator.find'(iteratorRaw, callbackRaw) {
+      try {
+        return encodeHostValue(iteratorFind(iteratorRaw, callbackRaw));
+      } catch (error) {
+        return encodeHostException(error);
+      }
+    },
+    'json.stringify'(valueRaw, replacerRaw, spaceRaw) {
+      try {
+        return encodeHostValue(
+          JSON.stringify(decodeValue(valueRaw), decodeValue(replacerRaw), decodeValue(spaceRaw)),
+        );
+      } catch (error) {
+        return encodeHostException(error);
+      }
+    },
+    'json.parse'(sourceRaw, reviverRaw) {
+      try {
+        return encodeHostValue(JSON.parse(String(decodeValue(sourceRaw)), decodeValue(reviverRaw)));
       } catch (error) {
         return encodeHostException(error);
       }

@@ -484,6 +484,11 @@ fn json_stringify_replacer_unsupported_forms_report_issue_052() {
 }
 
 #[test]
+fn array_sort_function_comparator_fixture_matches_node_output() {
+    assert_fixture_matches_node("fixtures/negative/unsupported-builtin.ts");
+}
+
+#[test]
 fn error_message_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/error-message.ts");
 }
@@ -506,6 +511,11 @@ fn error_name_fixture_matches_node_output_under_iwasm() {
 #[test]
 fn error_subclasses_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/error-subclasses.ts");
+}
+
+#[test]
+fn native_error_types_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/native-error-types.ts");
 }
 
 #[test]
@@ -569,14 +579,23 @@ fn typedarray_index_of_matches_node_output() {
 }
 
 #[test]
+fn atomics_basic_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/atomics-basic.ts");
+}
+
+#[test]
+fn atomics_unsupported_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/atomics-unsupported.ts");
+}
+
+#[test]
 fn typedarray_mutating_methods_matches_node_output() {
     assert_fixture_matches_node("fixtures/builtins-and-io/typedarray-mutating-methods.ts");
 }
 
 #[test]
-fn typedarray_unsupported_methods_report_unsupported_syntax() {
-    // All previously unsupported methods are now routed. The fixture is kept
-    // as a build-smoke test; the unsupported-syntax assertion is removed.
+fn typedarray_unsupported_methods_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/typedarray-unsupported-methods.ts");
 }
 
 #[test]
@@ -680,6 +699,11 @@ fn symbol_registry_matches_node_output() {
 #[test]
 fn symbol_registry_identity_matches_node_output() {
     assert_fixture_matches_node("fixtures/builtins-and-io/symbol-registry-identity.ts");
+}
+
+#[test]
+fn symbol_to_string_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/symbol-to-string.ts");
 }
 
 #[test]
@@ -798,6 +822,16 @@ fn date_set_local_components_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn date_set_local_methods_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/date-set-local-methods.ts");
+}
+
+#[test]
+fn date_static_parse_utc_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/date-static-parse-utc.ts");
+}
+
+#[test]
 fn date_get_timezone_offset_fixture_builds() {
     // getTimezoneOffset uses a host shim that may not be linked in iwasm;
     // only verify compilation.
@@ -816,36 +850,19 @@ fn date_get_timezone_offset_fixture_builds() {
 }
 
 #[test]
-fn date_to_iso_string_fixture_builds() {
-    // toISOString uses a host shim that may not be linked in iwasm;
-    // only verify compilation.
-    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../..")
-        .join("fixtures/builtins-and-io/date-to-iso-string.ts");
-    let output_wasm =
-        std::env::temp_dir().join(format!("ts2wasm-to-iso-{}.wasm", std::process::id()));
-    match ts2wasm_cli::build_file(&fixture, &output_wasm) {
-        Ok(_) => {}
-        Err(e) => panic!(
-            "date-to-iso-string fixture should build but got error: {}",
-            e
-        ),
-    }
+fn date_to_iso_string_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/date-to-iso-string.ts");
 }
 
 #[test]
-fn date_to_string_no_timezone_fixture_builds_successfully() {
-    // toString uses host shim with timezone; only verify compilation
-    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../..")
-        .join("fixtures/builtins-and-io/date-to-string-timezone-unsupported.ts");
-    let output_wasm = std::env::temp_dir().join(format!(
-        "ts2wasm-date-to-string-{}.wasm",
-        std::process::id()
-    ));
-    match ts2wasm_cli::build_file(&fixture, &output_wasm) {
-        Ok(_) => {}
-        Err(e) => panic!("date-to-string fixture should build but got error: {}", e),
+fn date_string_fixtures_match_node_output_under_iwasm() {
+    for fixture in [
+        "fixtures/builtins-and-io/date-to-date-string.ts",
+        "fixtures/builtins-and-io/date-to-time-string.ts",
+        "fixtures/builtins-and-io/date-to-string-timezone-unsupported.ts",
+        "fixtures/builtins-and-io/date-to-string-methods.ts",
+    ] {
+        assert_fixture_matches_node(fixture);
     }
 }
 
@@ -858,26 +875,8 @@ fn date_methods_matches_node_output() {
 }
 
 #[test]
-fn date_local_getters_fixture_builds() {
-    // Local-tz getters use a host shim, so we can only verify compilation, not output
-    use std::path::Path;
-    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../..")
-        .join("fixtures/builtins-and-io/date-local-getters.ts");
-    let output_wasm =
-        std::env::temp_dir().join(format!("ts2wasm-local-getters-{}.wasm", std::process::id()));
-    let output = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
-        .arg("build")
-        .arg(&fixture)
-        .arg("-o")
-        .arg(&output_wasm)
-        .output()
-        .expect("Failed to execute ts2wasm");
-    assert!(
-        output.status.success(),
-        "date-local-getters should build successfully:\n{}",
-        String::from_utf8_lossy(&output.stderr)
-    );
+fn date_local_getters_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/date-local-getters.ts");
 }
 
 #[test]

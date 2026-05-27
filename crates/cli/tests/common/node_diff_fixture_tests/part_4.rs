@@ -62,21 +62,8 @@ fn labeled_control_invalid_fixtures_report_source_diagnostics() {
 }
 
 #[test]
-fn instanceof_fixture_builds_successfully() {
-    // issue-5011 (class value support) was implemented — build now succeeds
-    let fixture = "fixtures/core-semantics/instanceof.ts";
-    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../")
-        .join(fixture);
-    let output = temp_wasm_path(fixture);
-    let build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
-        .arg("build")
-        .arg(&fixture_path)
-        .arg("-o")
-        .arg(&output)
-        .output()
-        .unwrap();
-    assert!(build.status.success(), "build failed for {fixture}");
+fn instanceof_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/instanceof.ts");
 }
 
 #[test]
@@ -247,6 +234,11 @@ fn this_receiver_method_fixtures_match_node_output_under_iwasm() {
 }
 
 #[test]
+fn top_level_this_matches_node_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/this-top-level-unsupported.ts");
+}
+
+#[test]
 fn class_destructuring_initcount_default_now_blocked_by_destructuring_issue_251() {
     assert_build_fails_with_diagnostic(
         "fixtures/core-semantics/class-dstr-initcount-unsupported.ts",
@@ -275,6 +267,11 @@ fn function_this_receiver_fixture_matches_node_output_under_iwasm() {
 #[test]
 fn function_bind_call_apply_matches_node_output() {
     assert_fixture_matches_node("fixtures/core-semantics/function-bind-call-apply.ts");
+}
+
+#[test]
+fn function_call_on_local_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/function-call-on-local.ts");
 }
 
 #[test]
@@ -321,21 +318,8 @@ fn arrow_function_fixtures_match_node_output_under_iwasm() {
 }
 
 #[test]
-fn arrow_assigned_recursive_unsupported_builds_but_produces_wrong_output() {
-    // Recursive arrow assigned to const: builds but returns 'true' instead of 24
-    let fixture = "fixtures/core-semantics/arrow-assigned-recursive-unsupported.ts";
-    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../")
-        .join(fixture);
-    let output = temp_wasm_path(fixture);
-    let build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
-        .arg("build")
-        .arg(&fixture_path)
-        .arg("-o")
-        .arg(&output)
-        .output()
-        .unwrap();
-    assert!(build.status.success(), "build failed for {fixture}");
+fn arrow_assigned_recursive_fixture_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/arrow-assigned-recursive-unsupported.ts");
 }
 
 #[test]
@@ -381,13 +365,8 @@ fn fncsem_call_extra_args_matches_node_output() {
 }
 
 #[test]
-fn fncsem_call_fewer_args_reports_arity_mismatch() {
-    assert_build_fails_with_diagnostic(
-        "fixtures/core-semantics/fncsem-call-fewer-args.ts",
-        "[ArityMismatch/",
-        "Expected at least 2 arguments, but got 1",
-        true,
-    );
+fn fncsem_implicit_arguments_fewer_args_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/fncsem-call-fewer-args.ts");
 }
 
 #[test]
@@ -406,23 +385,20 @@ fn fncsem_class_method_call_matches_node_output() {
 }
 
 #[test]
-fn fncsem_dynamic_call_assign_reports_unsupported_syntax() {
-    assert_build_fails_with_diagnostic(
+fn fncsem_dynamic_call_assign_matches_node_output() {
+    assert_fixture_matches_node(
         "fixtures/core-semantics/fncsem-dynamic-call-reassigned-unsupported.ts",
-        "[UnsupportedSyntax/",
-        "issue-211:",
-        true,
     );
 }
 
 #[test]
-fn fncsem_spread_dynamic_call_reports_unsupported_syntax() {
-    assert_build_fails_with_diagnostic(
-        "fixtures/core-semantics/fncsem-spread-dynamic-unsupported.ts",
-        "[UnsupportedSyntax/",
-        "issue-274:",
-        false,
-    );
+fn fncsem_spread_dynamic_call_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/fncsem-spread-dynamic-unsupported.ts");
+}
+
+#[test]
+fn direct_eval_expression_side_effect_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/direct-eval-expression-side-effect.ts");
 }
 
 #[test]
@@ -473,6 +449,20 @@ fn direct_eval_block_function_fixture_matches_node_output_under_iwasm() {
     ] {
         assert_fixture_matches_node(fixture);
     }
+}
+
+#[test]
+fn direct_eval_while_var_hoisted_undefined_matches_node_output() {
+    assert_fixture_matches_node(
+        "fixtures/core-semantics/direct-eval-while-var-hoisted-undefined.ts",
+    );
+}
+
+#[test]
+fn direct_eval_block_function_mutable_env_matches_node_output() {
+    assert_fixture_matches_node(
+        "fixtures/core-semantics/direct-eval-block-function-mutable-env.ts",
+    );
 }
 
 #[test]
@@ -632,51 +622,18 @@ fn spread_operator_static_concat_string_fixture_matches_node_output_under_iwasm(
 }
 
 #[test]
-fn spread_operator_set_array_fixture_builds_successfully() {
-    let fixture = "fixtures/core-semantics/spread-array-set.ts";
-    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../")
-        .join(fixture);
-    let output = temp_wasm_path(fixture);
-    let _build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
-        .arg("build")
-        .arg(&fixture_path)
-        .arg("-o")
-        .arg(&output)
-        .output()
-        .unwrap();
+fn spread_operator_set_array_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/spread-array-set.ts");
 }
 
 #[test]
-fn spread_operator_mixed_set_array_fixture_builds_successfully() {
-    let fixture = "fixtures/core-semantics/spread-array-set-mixed.ts";
-    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../")
-        .join(fixture);
-    let output = temp_wasm_path(fixture);
-    let _build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
-        .arg("build")
-        .arg(&fixture_path)
-        .arg("-o")
-        .arg(&output)
-        .output()
-        .unwrap();
+fn spread_operator_mixed_set_array_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/spread-array-set-mixed.ts");
 }
 
 #[test]
-fn spread_operator_set_call_fixture_builds_successfully() {
-    let fixture = "fixtures/core-semantics/spread-call-set-local.ts";
-    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../")
-        .join(fixture);
-    let output = temp_wasm_path(fixture);
-    let _build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
-        .arg("build")
-        .arg(&fixture_path)
-        .arg("-o")
-        .arg(&output)
-        .output()
-        .unwrap();
+fn spread_operator_set_call_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/spread-call-set-local.ts");
 }
 
 #[test]
@@ -710,12 +667,24 @@ fn spread_operator_object_mutated_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
-fn spread_operator_unsupported_forms_report_issue_274() {
+fn spread_operator_object_mutated_source_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/spread-object-unsupported.ts");
+}
+
+#[test]
+fn spread_operator_object_alias_mutated_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node(
+        "fixtures/core-semantics/spread-object-alias-mutated-unsupported.ts",
+    );
+}
+
+#[test]
+fn spread_operator_static_string_return_forms_match_node_output() {
     for fixture in [
         "fixtures/core-semantics/spread-call-dynamic-unsupported.ts",
         "fixtures/core-semantics/spread-array-unsupported.ts",
     ] {
-        assert_build_fails_with_unsupported_syntax_without_span(fixture, "issue-274:");
+        assert_fixture_matches_node(fixture);
     }
 }
 
@@ -729,51 +698,22 @@ fn spread_operator_generator_fixture_reports_issue_353() {
 }
 
 #[test]
-fn spread_operator_custom_iterable_fixture_builds_successfully() {
-    let fixture = "fixtures/core-semantics/spread-array-custom-iterable-unsupported.ts";
-    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../")
-        .join(fixture);
-    let output = temp_wasm_path(fixture);
-    let _build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
-        .arg("build")
-        .arg(&fixture_path)
-        .arg("-o")
-        .arg(&output)
-        .output()
-        .unwrap();
+fn spread_operator_custom_iterable_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node(
+        "fixtures/core-semantics/spread-array-custom-iterable-unsupported.ts",
+    );
 }
 
 #[test]
-fn spread_operator_custom_iterable_multi_value_fixture_builds_successfully() {
-    let fixture = "fixtures/core-semantics/spread-array-custom-iterable-multi-value.ts";
-    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../")
-        .join(fixture);
-    let output = temp_wasm_path(fixture);
-    let _build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
-        .arg("build")
-        .arg(&fixture_path)
-        .arg("-o")
-        .arg(&output)
-        .output()
-        .unwrap();
+fn spread_operator_custom_iterable_multi_value_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node(
+        "fixtures/core-semantics/spread-array-custom-iterable-multi-value.ts",
+    );
 }
 
 #[test]
-fn spread_operator_custom_iterable_mixed_fixture_builds_successfully() {
-    let fixture = "fixtures/core-semantics/spread-array-custom-iterable-mixed.ts";
-    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../")
-        .join(fixture);
-    let output = temp_wasm_path(fixture);
-    let _build = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
-        .arg("build")
-        .arg(&fixture_path)
-        .arg("-o")
-        .arg(&output)
-        .output()
-        .unwrap();
+fn spread_operator_custom_iterable_mixed_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/spread-array-custom-iterable-mixed.ts");
 }
 
 #[test]
@@ -838,28 +778,8 @@ fn empty_export_module_marker_matches_node_baseline_under_iwasm() {
 }
 
 #[test]
-fn instanceof_unsupported_rhs_fixture_reports_issue_207() {
-    // Dynamic instanceof with non-class-callable RHS: now builds successfully
-    // via SymbolHasInstance runtime fallback (issue I-20260515-GAX7YV).
-    let fixture = "fixtures/core-semantics/instanceof-unsupported-rhs.ts";
-    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../..")
-        .join(fixture);
-    let output = temp_wasm_path(fixture);
-
-    let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
-        .arg("build")
-        .arg(&fixture_path)
-        .arg("-o")
-        .arg(&output)
-        .output()
-        .unwrap();
-
-    assert!(
-        build.status.success(),
-        "dynamic instanceof RHS fixture should build successfully, got:\n{}",
-        String::from_utf8_lossy(&build.stderr)
-    );
+fn instanceof_unsupported_rhs_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/instanceof-unsupported-rhs.ts");
 }
 
 #[test]

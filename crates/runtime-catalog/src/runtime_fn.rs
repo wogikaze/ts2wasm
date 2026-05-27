@@ -126,6 +126,8 @@ pub enum RuntimeFn {
     MapDelete,
     MapValuesArray,
     MapKeysArray,
+    MapValuesIterator,
+    MapKeysIterator,
     SetNew,
     SetAdd,
     SetHas,
@@ -168,6 +170,7 @@ pub enum RuntimeFn {
     AtomicsNotify,
     SetFromArray,
     SetValuesArray,
+    SetValuesIterator,
     SetEntriesArray,
     SetPrototypeAddGet,
     SetPrototypeAddSet,
@@ -482,7 +485,7 @@ pub enum RuntimeFn {
     ObjectGetOwnPropertyNames,
     ObjectGetOwnPropertySymbols,
     ObjectSpread,
-    /// RestObject(source, ...excluded_keys) — creates a new object with own properties
+    /// RestObject(source, excluded_keys_array) — creates a new object with own properties
     /// from source, excluding properties whose keys are in the excluded list.
     RestObject,
     SpreadViaIterator,
@@ -771,7 +774,7 @@ pub enum RuntimeFn {
     SymbolToString,
     /// Symbol.prototype.description getter — extracts description from "Symbol(desc)" format
     SymbolDescription,
-    /// SymbolWellKnown(index) — returns a cached well-known symbol by index.
+    /// SymbolWellKnown(index, desc) — returns a cached well-known symbol by index.
     /// Indices: 0=iterator, 1=species, 2=toPrimitive, 3=toStringTag, 4=hasInstance,
     /// 5=isConcatSpreadable, 6=match, 7=replace, 8=search, 9=split, 10=unscopables.
     SymbolWellKnown,
@@ -1045,9 +1048,9 @@ const AND_DEPS: &[RuntimeFn] = &[RuntimeFn::TruthyBool];
 const OR_DEPS: &[RuntimeFn] = &[RuntimeFn::TruthyBool];
 const MAKE_BIGINT_LITERAL_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const BIGINT_TO_STRING_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
-const BIGINT_FROM_VALUE_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd, RuntimeFn::IsString];
-const BIGINT_AS_INT_N_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd, RuntimeFn::IsString];
-const BIGINT_AS_UINT_N_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd, RuntimeFn::BigIntAsIntN];
+const BIGINT_FROM_VALUE_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::MakeBigIntLiteral];
+const BIGINT_AS_INT_N_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::MakeBigIntLiteral];
+const BIGINT_AS_UINT_N_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::MakeBigIntLiteral];
 const DATE_SET_UTC_FULL_YEAR_DEPS: &[RuntimeFn] = &[
     RuntimeFn::DateUTC,
     RuntimeFn::DateGetUtcMonth,
@@ -1111,13 +1114,29 @@ const IMPORT_MATH_TAN: &[HostImport] = &[HostImport::MathTan];
 const IMPORT_MATH_TANH: &[HostImport] = &[HostImport::MathTanh];
 const IMPORT_MATH_ATAN2: &[HostImport] = &[HostImport::MathAtan2];
 const IMPORT_MATH_HYPOT: &[HostImport] = &[HostImport::MathHypot];
+const IMPORT_JSON_STRINGIFY: &[HostImport] = &[HostImport::JsonStringify];
+const IMPORT_JSON_PARSE: &[HostImport] = &[HostImport::JsonParse];
 const IMPORT_STRING_NORMALIZE: &[HostImport] = &[HostImport::StringNormalize];
 const IMPORT_INTL_NUMBER_FORMAT_FORMAT: &[HostImport] = &[HostImport::IntlNumberFormatFormat];
 const IMPORT_INTL_DATE_TIME_FORMAT_FORMAT: &[HostImport] = &[HostImport::IntlDateTimeFormatFormat];
 const IMPORT_REFLECT_APPLY: &[HostImport] = &[HostImport::ReflectApply];
 const IMPORT_REFLECT_CONSTRUCT: &[HostImport] = &[HostImport::ReflectConstruct];
+const IMPORT_GET_ITERATOR: &[HostImport] = &[HostImport::GetIterator];
+const IMPORT_ITERATOR_NEXT: &[HostImport] = &[HostImport::IteratorNext];
+const IMPORT_ITERATOR_MAP: &[HostImport] = &[HostImport::IteratorMap];
+const IMPORT_ITERATOR_FILTER: &[HostImport] = &[HostImport::IteratorFilter];
+const IMPORT_ITERATOR_TAKE: &[HostImport] = &[HostImport::IteratorTake];
+const IMPORT_ITERATOR_DROP: &[HostImport] = &[HostImport::IteratorDrop];
+const IMPORT_ITERATOR_TO_ARRAY: &[HostImport] = &[HostImport::IteratorToArray];
+const IMPORT_ITERATOR_REDUCE: &[HostImport] = &[HostImport::IteratorReduce];
+const IMPORT_ITERATOR_FOR_EACH: &[HostImport] = &[HostImport::IteratorForEach];
+const IMPORT_ITERATOR_SOME: &[HostImport] = &[HostImport::IteratorSome];
+const IMPORT_ITERATOR_EVERY: &[HostImport] = &[HostImport::IteratorEvery];
+const IMPORT_ITERATOR_FIND: &[HostImport] = &[HostImport::IteratorFind];
 const CAP_INTL_NUMBER_FORMAT_FORMAT: &[Capability] = &[Capability::HostIntlNumberFormatFormat];
 const CAP_INTL_DATE_TIME_FORMAT_FORMAT: &[Capability] = &[Capability::HostIntlDateTimeFormatFormat];
+const CAP_HOST_JSON_STRINGIFY: &[Capability] = &[Capability::HostJsonStringify];
+const CAP_HOST_JSON_PARSE: &[Capability] = &[Capability::HostJsonParse];
 const CAP_STDIN_READ: &[Capability] = &[Capability::StdinRead];
 const CAP_STDOUT_WRITE: &[Capability] = &[Capability::StdoutWrite];
 const CAP_WASI_CLOCK_REALTIME: &[Capability] = &[Capability::WasiClockRealtime];
@@ -1170,6 +1189,18 @@ const CAP_HOST_MATH_ATAN2: &[Capability] = &[Capability::HostMathAtan2];
 const CAP_HOST_MATH_HYPOT: &[Capability] = &[Capability::HostMathHypot];
 const CAP_HOST_REFLECT_APPLY: &[Capability] = &[Capability::HostReflectApply];
 const CAP_HOST_REFLECT_CONSTRUCT: &[Capability] = &[Capability::HostReflectConstruct];
+const CAP_HOST_GET_ITERATOR: &[Capability] = &[Capability::HostGetIterator];
+const CAP_HOST_ITERATOR_NEXT: &[Capability] = &[Capability::HostIteratorNext];
+const CAP_HOST_ITERATOR_MAP: &[Capability] = &[Capability::HostIteratorMap];
+const CAP_HOST_ITERATOR_FILTER: &[Capability] = &[Capability::HostIteratorFilter];
+const CAP_HOST_ITERATOR_TAKE: &[Capability] = &[Capability::HostIteratorTake];
+const CAP_HOST_ITERATOR_DROP: &[Capability] = &[Capability::HostIteratorDrop];
+const CAP_HOST_ITERATOR_TO_ARRAY: &[Capability] = &[Capability::HostIteratorToArray];
+const CAP_HOST_ITERATOR_REDUCE: &[Capability] = &[Capability::HostIteratorReduce];
+const CAP_HOST_ITERATOR_FOR_EACH: &[Capability] = &[Capability::HostIteratorForEach];
+const CAP_HOST_ITERATOR_SOME: &[Capability] = &[Capability::HostIteratorSome];
+const CAP_HOST_ITERATOR_EVERY: &[Capability] = &[Capability::HostIteratorEvery];
+const CAP_HOST_ITERATOR_FIND: &[Capability] = &[Capability::HostIteratorFind];
 const CAP_HOST_EVAL_DIRECT: &[Capability] = &[Capability::HostEvalDirect];
 const CAP_HOST_EVAL_INDIRECT: &[Capability] = &[Capability::HostEvalIndirect];
 const CAP_HOST_FUNCTION_COMPILE: &[Capability] = &[Capability::HostFunctionCompile];
@@ -1193,18 +1224,29 @@ const TYPEOF_RUNTIME_STRINGS: &[&str] = &[
     "string",
     "bigint",
     "function",
+    "symbol",
 ];
 const BOOLEAN_TO_STRING_RUNTIME_STRINGS: &[&str] = &[RuntimeString::FALSE, RuntimeString::TRUE];
-const BIGINT_UNARY_MINUS_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
+const BIGINT_UNARY_MINUS_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd, RuntimeFn::MakeBigIntLiteral];
 const BIGINT_ADD_DEPS: &[RuntimeFn] = &[RuntimeFn::MakeBigIntLiteral];
-const BIGINT_SUB_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
-const BIGINT_MUL_DEPS: &[RuntimeFn] = &[RuntimeFn::MakeBigIntLiteral];
-const BIGINT_POW_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd, RuntimeFn::BigIntMul];
+const BIGINT_SUB_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd, RuntimeFn::MakeBigIntLiteral];
+const BIGINT_MUL_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::MakeBigIntLiteral];
+const BIGINT_POW_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::AllocHeap,
+    RuntimeFn::MakeBigIntLiteral,
+    RuntimeFn::BigIntMul,
+];
 const BIGINT_DIV_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::AllocHeap,
     RuntimeFn::MakeBigIntLiteral,
     RuntimeFn::BigIntDivisionByZeroRangeError,
 ];
-const BIGINT_REM_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntDiv];
+const BIGINT_REM_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::AllocHeap,
+    RuntimeFn::BigIntDiv,
+    RuntimeFn::MakeBigIntLiteral,
+    RuntimeFn::BigIntDivisionByZeroRangeError,
+];
 const BIGINT_DIVISION_BY_ZERO_RANGE_ERROR_DEPS: &[RuntimeFn] =
     &[RuntimeFn::AllocHeap, RuntimeFn::Write];
 const BIGINT_MIXED_ARITHMETIC_TYPE_ERROR_DEPS: &[RuntimeFn] =
@@ -1230,19 +1272,23 @@ const PRIVATE_BRAND_TYPE_ERROR_RUNTIME_STRINGS: &[&str] = &[
     "message",
 ];
 const HEAP_CLOSURE_CALL_RUNTIME_STRINGS: &[&str] = &[RuntimeString::NOT_CALLABLE_TYPE_ERROR];
-const BIGINT_BITWISE_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
-const BIGINT_LEFT_SHIFT_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
-const BIGINT_RIGHT_SHIFT_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
+const BIGINT_BITWISE_DEPS: &[RuntimeFn] = &[RuntimeFn::MakeBigIntLiteral];
+const BIGINT_LEFT_SHIFT_DEPS: &[RuntimeFn] = &[RuntimeFn::MakeBigIntLiteral];
+const BIGINT_RIGHT_SHIFT_DEPS: &[RuntimeFn] = &[RuntimeFn::MakeBigIntLiteral];
 
 // String method dependencies
 const STRING_CHAR_AT_DEPS: &[RuntimeFn] =
     &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString];
 const STRING_SUBSTRING_DEPS: &[RuntimeFn] =
     &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString];
-const STRING_SUBSTR_DEPS: &[RuntimeFn] = &[RuntimeFn::StringSubstring];
+const STRING_SUBSTR_DEPS: &[RuntimeFn] = &[RuntimeFn::StringSubstring, RuntimeFn::IsString];
 const STRING_SLICE_DEPS: &[RuntimeFn] =
     &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString];
-const STRING_INDEX_OF_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::MemEqual];
+const STRING_INDEX_OF_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::IsString,
+    RuntimeFn::MemEqual,
+    RuntimeFn::ValueToStringInto,
+];
 const STRING_LAST_INDEX_OF_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::MemEqual];
 const STRING_LOCALE_COMPARE_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::MemEqual];
 const STRING_INCLUDES_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::MemEqual];
@@ -1269,8 +1315,8 @@ const STRING_TO_UPPER_CASE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeF
 const STRING_TO_LOWER_CASE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::IsString];
 const STRING_CHAR_CODE_AT_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString];
 const STRING_CODE_POINT_AT_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString];
-const STRING_FROM_CHAR_CODE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
-const STRING_FROM_CODE_POINT_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
+const STRING_FROM_CHAR_CODE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Concat];
+const STRING_FROM_CODE_POINT_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Concat];
 const STRING_RAW_DEPS: &[RuntimeFn] = &[
     RuntimeFn::PropertyGet,
     RuntimeFn::ArrayGet,
@@ -1306,11 +1352,13 @@ const STRING_AT_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy, Ru
 
 const REGEXP_TEST_DEPS: &[RuntimeFn] = &[
     RuntimeFn::IsString,
+    RuntimeFn::MemEqual,
     RuntimeFn::RegexpMatchInner,
     RuntimeFn::RegexpParseFlags,
 ];
 const REGEXP_MATCH_DEPS: &[RuntimeFn] = &[
     RuntimeFn::IsString,
+    RuntimeFn::MemEqual,
     RuntimeFn::StringSubstring,
     RuntimeFn::RegexpMatchInner,
     RuntimeFn::RegexpParseFlags,
@@ -1318,11 +1366,20 @@ const REGEXP_MATCH_DEPS: &[RuntimeFn] = &[
 
 const REGEXP_SEARCH_DEPS: &[RuntimeFn] = &[
     RuntimeFn::IsString,
+    RuntimeFn::MemEqual,
     RuntimeFn::RegexpMatchInner,
     RuntimeFn::RegexpParseFlags,
 ];
 const STRING_MATCH_DEPS: &[RuntimeFn] = &[RuntimeFn::RegExpMatch];
-const STRING_MATCH_ALL_DEPS: &[RuntimeFn] = &[RuntimeFn::RegExpMatch];
+const STRING_MATCH_ALL_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::AllocHeap,
+    RuntimeFn::IsString,
+    RuntimeFn::MemEqual,
+    RuntimeFn::ObjectCreate,
+    RuntimeFn::PropertySet,
+    RuntimeFn::StringSubstring,
+];
+const STRING_MATCH_ALL_RUNTIME_STRINGS: &[&str] = &["0", "index", "input"];
 const STRING_SEARCH_DEPS: &[RuntimeFn] = &[RuntimeFn::RegExpSearch];
 
 // Array method dependencies
@@ -1433,9 +1490,13 @@ const OBJECT_SPREAD_DEPS: &[RuntimeFn] = &[
 const REST_OBJECT_DEPS: &[RuntimeFn] = &[
     RuntimeFn::AllocHeap,
     RuntimeFn::Copy,
+    RuntimeFn::MemEqual,
+    RuntimeFn::ObjectCreate,
     RuntimeFn::ObjectKeys,
     RuntimeFn::PropertyGet,
     RuntimeFn::PropertySet,
+    RuntimeFn::StringEqual,
+    RuntimeFn::ValueToStringInto,
 ];
 const OBJECT_VALUES_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const OBJECT_ENTRIES_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
@@ -1449,10 +1510,11 @@ const OBJECT_FROM_ENTRIES_DEPS: &[RuntimeFn] = &[
 ];
 const OBJECT_HAS_OWN_DEPS: &[RuntimeFn] = &[RuntimeFn::ObjectHasOwnProperty];
 const OBJECT_HAS_OWN_PROPERTY_DEPS: &[RuntimeFn] =
-    &[RuntimeFn::ValueToStringInto, RuntimeFn::PropertyHas];
+    &[RuntimeFn::ValueToStringInto, RuntimeFn::MemEqual];
 const OBJECT_GET_OWN_PROPERTY_DESCRIPTOR_DEPS: &[RuntimeFn] = &[
     RuntimeFn::AllocHeap,
     RuntimeFn::ValueToStringInto,
+    RuntimeFn::MemEqual,
     RuntimeFn::PropertyGet,
     RuntimeFn::PropertySet,
 ];
@@ -1462,6 +1524,7 @@ const OBJECT_SEAL_DEPS: &[RuntimeFn] = &[];
 const OBJECT_DEFINE_PROPERTY_DEPS: &[RuntimeFn] = &[
     RuntimeFn::AllocHeap,
     RuntimeFn::ValueToStringInto,
+    RuntimeFn::MemEqual,
     RuntimeFn::PropertyGet,
     RuntimeFn::PropertySet,
 ];
@@ -1473,6 +1536,8 @@ const OBJECT_DEFINE_PROPERTIES_DEPS: &[RuntimeFn] = &[
 const OBJECT_GET_OWN_PROPERTY_DESCRIPTORS_DEPS: &[RuntimeFn] = &[
     RuntimeFn::ReflectOwnKeys,
     RuntimeFn::ObjectGetOwnPropertyDescriptor,
+    RuntimeFn::ObjectCreate,
+    RuntimeFn::ObjectPrototype,
     RuntimeFn::AllocHeap,
     RuntimeFn::ValueToStringInto,
     RuntimeFn::PropertySet,
@@ -1487,7 +1552,8 @@ const OBJECT_PROTOTYPE_OBJECT_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const PROPERTY_IS_ENUMERABLE_DEPS: &[RuntimeFn] =
     &[RuntimeFn::ValueToStringInto, RuntimeFn::MemEqual];
 const IS_PROTOTYPE_OF_DEPS: &[RuntimeFn] = &[];
-const OBJECT_TO_STRING_DEPS: &[RuntimeFn] = &[];
+const OBJECT_TO_STRING_DEPS: &[RuntimeFn] =
+    &[RuntimeFn::NumberToI32, RuntimeFn::NumberToStringRadix];
 const OBJECT_TO_STRING_RUNTIME_STRINGS: &[&str] = &[
     "[object Undefined]",
     "[object Null]",
@@ -1542,7 +1608,7 @@ const SET_HAS_DEPS: &[RuntimeFn] = &[RuntimeFn::SameValueZero];
 const SET_DELETE_DEPS: &[RuntimeFn] = &[RuntimeFn::SameValueZero];
 const SET_SIZE_DEPS: &[RuntimeFn] = &[];
 const SET_CLEAR_DEPS: &[RuntimeFn] = &[];
-const SET_FOR_EACH_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
+const SET_FOR_EACH_DEPS: &[RuntimeFn] = &[];
 const SET_FROM_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::SetNew, RuntimeFn::SetAdd];
 const SET_VALUES_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const SET_IS_DISJOINT_FROM_DEPS: &[RuntimeFn] = &[RuntimeFn::SetHas];
@@ -1557,7 +1623,7 @@ const SET_SYMMETRIC_DIFFERENCE_DEPS: &[RuntimeFn] =
     &[RuntimeFn::SetNew, RuntimeFn::SetAdd, RuntimeFn::SetHas];
 const MAP_VALUES_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const MAP_CLEAR_DEPS: &[RuntimeFn] = &[];
-const MAP_FOR_EACH_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
+const MAP_FOR_EACH_DEPS: &[RuntimeFn] = &[];
 const MAP_SIZE_DEPS: &[RuntimeFn] = &[];
 const MAP_ENTRIES_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const MAP_ENTRY_PAIRS_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
@@ -1573,8 +1639,8 @@ const ARRAYBUFFER_TRANSFER_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const ARRAYBUFFER_SLICE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const SHARED_ARRAY_BUFFER_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const DATAVIEW_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
-const DATAVIEW_GET_BIGINT64_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
-const DATAVIEW_GET_BIGUINT64_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
+const DATAVIEW_GET_BIGINT64_DEPS: &[RuntimeFn] = &[RuntimeFn::MakeBigIntLiteral];
+const DATAVIEW_GET_BIGUINT64_DEPS: &[RuntimeFn] = &[RuntimeFn::MakeBigIntLiteral];
 const DATAVIEW_SET_BIGINT64_DEPS: &[RuntimeFn] =
     &[RuntimeFn::BigIntFromValue, RuntimeFn::BigIntAdd];
 const DATAVIEW_SET_BIGUINT64_DEPS: &[RuntimeFn] =
@@ -1590,28 +1656,27 @@ const NUMBER_TO_FIXED_DEPS: &[RuntimeFn] = &[
     RuntimeFn::ValueToStringInto,
     RuntimeFn::AllocHeap,
     RuntimeFn::Copy,
+    RuntimeFn::NumberFromI32,
 ];
 const NUMBER_TO_EXPONENTIAL_DEPS: &[RuntimeFn] = &[
     RuntimeFn::ValueToStringInto,
     RuntimeFn::AllocHeap,
     RuntimeFn::Copy,
+    RuntimeFn::NumberFromI32,
 ];
 const NUMBER_TO_STRING_DEPS: &[RuntimeFn] = &[
     RuntimeFn::ValueToStringInto,
     RuntimeFn::AllocHeap,
     RuntimeFn::Copy,
 ];
-const NUMBER_TO_STRING_RADIX_DEPS: &[RuntimeFn] = &[
-    RuntimeFn::NumberToI32,
-    RuntimeFn::AllocHeap,
-    RuntimeFn::Copy,
-];
+const NUMBER_TO_STRING_RADIX_DEPS: &[RuntimeFn] = &[RuntimeFn::NumberToString];
 const NUMBER_TO_PRECISION_DEPS: &[RuntimeFn] = &[
     RuntimeFn::ValueToStringInto,
     RuntimeFn::AllocHeap,
     RuntimeFn::Copy,
+    RuntimeFn::NumberFromI32,
 ];
-const MATH_RANDOM_DEPS: &[RuntimeFn] = &[];
+const MATH_RANDOM_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 
 // JSON function dependencies
 const JSON_STRINGIFY_DEPS: &[RuntimeFn] = &[
@@ -1642,6 +1707,11 @@ const JSON_PARSE_RUNTIME_STRINGS: &[&str] = &[RuntimeString::JSON_PARSE_SYNTAX_E
 const SYMBOL_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const SYMBOL_FOR_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::StringEqual];
 const SYMBOL_KEY_FOR_DEPS: &[RuntimeFn] = &[];
+const SYMBOL_TO_STRING_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::AllocHeap,
+    RuntimeFn::Copy,
+    RuntimeFn::ValueToStringInto,
+];
 const SYMBOL_NEW_RUNTIME_STRINGS: &[&str] = &[];
 const SYMBOL_FOR_RUNTIME_STRINGS: &[&str] = &[];
 
@@ -1857,6 +1927,8 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "MapDelete" => Some(RuntimeFn::MapDelete),
         "MapValuesArray" => Some(RuntimeFn::MapValuesArray),
         "MapKeysArray" => Some(RuntimeFn::MapKeysArray),
+        "MapValuesIterator" => Some(RuntimeFn::MapValuesIterator),
+        "MapKeysIterator" => Some(RuntimeFn::MapKeysIterator),
         "SetNew" => Some(RuntimeFn::SetNew),
         "SetAdd" => Some(RuntimeFn::SetAdd),
         "SetHas" => Some(RuntimeFn::SetHas),
@@ -1921,6 +1993,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "DataViewGetByteOffset" => Some(RuntimeFn::DataViewGetByteOffset),
         "SetFromArray" => Some(RuntimeFn::SetFromArray),
         "SetValuesArray" => Some(RuntimeFn::SetValuesArray),
+        "SetValuesIterator" => Some(RuntimeFn::SetValuesIterator),
         "SetEntriesArray" => Some(RuntimeFn::SetEntriesArray),
         "SetPrototypeAddGet" => Some(RuntimeFn::SetPrototypeAddGet),
         "SetPrototypeAddSet" => Some(RuntimeFn::SetPrototypeAddSet),
@@ -2343,6 +2416,8 @@ impl RuntimeFn {
             | Self::MapDelete
             | Self::MapValuesArray
             | Self::MapKeysArray
+            | Self::MapValuesIterator
+            | Self::MapKeysIterator
             | Self::SetNew
             | Self::SetAdd
             | Self::SetHas
@@ -2357,6 +2432,7 @@ impl RuntimeFn {
             | Self::MapEntryPairsArray
             | Self::SetFromArray
             | Self::SetValuesArray
+            | Self::SetValuesIterator
             | Self::SetEntriesArray
             | Self::SetPrototypeAddGet
             | Self::SetPrototypeAddSet
@@ -2710,20 +2786,61 @@ impl RuntimeFn {
     /// heap pointer.  Functions that differ are listed explicitly.
     pub const fn stack_effect(self) -> RuntimeSignature {
         match self {
+            // 0 params, 0 results
+            Self::BigIntStringComparisonBoundaryError => RuntimeSignature {
+                params: 0,
+                results: 0,
+            },
+
             // 0 params, 1 result
-            Self::PrivateBrandTypeError
+            Self::ReadStdinBytes
+            | Self::PrivateBrandTypeError
             | Self::Dollar262Global
+            | Self::ProcessArgv
+            | Self::ProcessEnv
             | Self::ObjectPrototype
             | Self::GlobalThis
+            | Self::SetPrototypeAddGet
+            | Self::SetPrototypeHasGet
+            | Self::SetPrototypeDeleteGet
+            | Self::SetPrototypeForEachGet
+            | Self::MapPrototypeGetGet
+            | Self::MapPrototypeSetGet
+            | Self::MapPrototypeHasGet
+            | Self::MapPrototypeDeleteGet
+            | Self::MapPrototypeForEachGet
             | Self::PromiseWithResolvers => RuntimeSignature {
                 params: 0,
                 results: 1,
             },
 
             // 1 param, 0 results (side-effect only)
-            Self::ModuleExportsAssign => RuntimeSignature {
+            Self::ModuleExportsAssign | Self::ProcessExit | Self::TaskDrop => RuntimeSignature {
                 params: 1,
                 results: 0,
+            },
+
+            // 2 params, 0 results
+            Self::Write => RuntimeSignature {
+                params: 2,
+                results: 0,
+            },
+
+            // 3 params, 0 results
+            Self::Copy => RuntimeSignature {
+                params: 3,
+                results: 0,
+            },
+
+            // Promise method helpers consume the receiver promise plus callback
+            // arguments inserted by lowering.
+            Self::PromiseCatch | Self::PromiseFinally => RuntimeSignature {
+                params: 2,
+                results: 1,
+            },
+            Self::PromiseThen => RuntimeSignature {
+                params: 3,
+                results: 1,
             },
 
             // 1 param, 1 result
@@ -2738,6 +2855,9 @@ impl RuntimeFn {
             | Self::ObjectKeys
             | Self::ObjectGetOwnPropertyNames
             | Self::ObjectGetOwnPropertySymbols
+            | Self::ObjectValues
+            | Self::ObjectEntries
+            | Self::ReflectOwnKeys
             | Self::BooleanToString
             | Self::SymbolToString
             | Self::SymbolDescription => RuntimeSignature {
@@ -2747,15 +2867,60 @@ impl RuntimeFn {
 
             // 2 params, 1 result
             Self::ArrayGet
+            | Self::ArrayIndexPresent
             | Self::TypedArrayLoad
             | Self::Index
+            | Self::ReflectDeleteProperty
+            | Self::ReflectHas
+            | Self::ReflectConstruct
+            | Self::ReflectSetPrototypeOf
+            | Self::IteratorMap
+            | Self::IteratorFilter
+            | Self::IteratorTake
+            | Self::IteratorDrop
+            | Self::IteratorForEach
+            | Self::IteratorSome
+            | Self::IteratorEvery
+            | Self::IteratorFind
+            | Self::And
+            | Self::Or
             | Self::AddFast
             | Self::Add
+            | Self::Sub
             | Self::SubFast
+            | Self::Mul
             | Self::MulFast
+            | Self::Div
             | Self::DivFast
+            | Self::Mod
             | Self::ModFast
+            | Self::BitwiseAnd
+            | Self::BitwiseXor
+            | Self::BitwiseOr
+            | Self::BigIntAdd
+            | Self::BigIntAsIntN
+            | Self::BigIntAsUintN
+            | Self::BigIntBitwiseAnd
+            | Self::BigIntBitwiseOr
+            | Self::BigIntBitwiseXor
+            | Self::BigIntDiv
+            | Self::BigIntLeftShift
+            | Self::BigIntMul
+            | Self::BigIntPow
+            | Self::BigIntRem
+            | Self::BigIntRightShift
+            | Self::BigIntSub
+            | Self::BigIntCompare
+            | Self::BigIntMixedArithmeticTypeError
             | Self::Concat
+            | Self::StringAt
+            | Self::StringCharAt
+            | Self::StringCharCodeAt
+            | Self::StringCodePointAt
+            | Self::StringEqual
+            | Self::StringLocaleCompare
+            | Self::StringRepeat
+            | Self::StringSplit
             | Self::Less
             | Self::LessFast
             | Self::LessEqual
@@ -2764,38 +2929,123 @@ impl RuntimeFn {
             | Self::GreaterFast
             | Self::GreaterEqual
             | Self::GreaterEqualFast
+            | Self::MathMax
+            | Self::MathMin
             | Self::MathPow
             | Self::MathImul
             | Self::MathAtan2
             | Self::MathHypot
             | Self::GlobalParseInt
+            | Self::InstanceOf
             | Self::JsonParse
             | Self::AggregateError
             | Self::SameValueZero
             | Self::StrictEqual
+            | Self::EqualEqual
+            | Self::BangEqual
+            | Self::StrictNotEqual
             | Self::ValueToStringInto
             | Self::NumberToExponential
             | Self::NumberToFixed
             | Self::NumberToPrecision
+            | Self::NumberToString
+            | Self::ArrayAt
+            | Self::ArrayConcat
+            | Self::ArrayForEach
+            | Self::ArrayFlat
+            | Self::ArrayJoin
+            | Self::ArrayLastIndexOf
+            | Self::ArrayMap
+            | Self::ArrayMapStringSplit
             | Self::ArrayPush
             | Self::ArrayPushGrow
+            | Self::ArrayPushOrSpread
+            | Self::ArrayUnshift
+            | Self::DateSetTime
+            | Self::DateSetUTCDate
+            | Self::DateSetUTCMilliseconds
+            | Self::DateSetDate
+            | Self::DateSetMilliseconds
+            | Self::DateSetYear
+            | Self::DateGetLocalTimeField
+            | Self::IntlDateTimeFormatFormat
+            | Self::IntlNumberFormatFormat
+            | Self::StringNormalize
+            | Self::StringMatch
+            | Self::StringSearch
+            | Self::StringMatchAll
+            | Self::RegExpTest
+            | Self::RegExpMatch
+            | Self::RegExpSearch
+            | Self::MapGet
+            | Self::MapHas
+            | Self::MapDelete
+            | Self::MapForEach
+            | Self::SetAdd
+            | Self::SetHas
+            | Self::SetDelete
+            | Self::SetForEach
+            | Self::SetIsDisjointFrom
+            | Self::SetIsSubsetOf
+            | Self::SetIsSupersetOf
+            | Self::SetUnion
+            | Self::SetIntersection
+            | Self::SetDifference
+            | Self::SetSymmetricDifference
+            | Self::WeakMapGet
+            | Self::WeakMapHas
+            | Self::WeakMapDelete
+            | Self::WeakSetAdd
+            | Self::WeakSetHas
+            | Self::WeakSetDelete
             | Self::ArrayBufferTransfer
             | Self::DataViewNew
             | Self::DataViewGetInt8
             | Self::DataViewGetUint8
+            | Self::ObjectSpread
+            | Self::RestObject
+            | Self::ObjectHasOwnProperty
+            | Self::ObjectHasOwn
+            | Self::ObjectGetOwnPropertyDescriptor
+            | Self::ObjectSetPrototypeOf
+            | Self::ObjectIs
+            | Self::IsPrototypeOf
+            | Self::PropertyIsEnumerable
+            | Self::ObjectAssign
+            | Self::ObjectDefineProperties
+            | Self::PathJoin
             | Self::SymbolToPrimitive
             | Self::SymbolHasInstance
+            | Self::SymbolWellKnown
+            | Self::EvalDirectHost
+            | Self::FunctionCallHost
+            | Self::FunctionConstructHost
+            | Self::FsReadFileSync
+            | Self::FsWriteFileSync
+            | Self::FsAppendFileSync
+            | Self::AtomicsElementPtr
             | Self::AtomicsLoad
+            | Self::FinalizationRegistryUnregister
             | Self::NumberToStringRadix => RuntimeSignature {
                 params: 2,
                 results: 1,
             },
 
             // 3 params, 1 result
-            Self::PropertyGet
+            Self::MemEqual
+            | Self::PropertyGet
             | Self::PropertyDelete
             | Self::PropertyHas
-            | Self::AtomicsElementPtr
+            | Self::ObjectDefineProperty
+            | Self::ReflectApply
+            | Self::ReflectDefineProperty
+            | Self::ReflectGet
+            | Self::DateSetUTCMonth
+            | Self::DateSetUTCSeconds
+            | Self::DateSetMonth
+            | Self::DateSetSeconds
+            | Self::MapSet
+            | Self::WeakMapSet
             | Self::AtomicsStore
             | Self::AtomicsAdd
             | Self::AtomicsSub
@@ -2806,8 +3056,31 @@ impl RuntimeFn {
             | Self::AtomicsWaitAsync
             | Self::AtomicsNotify
             | Self::JsonStringify
+            | Self::TypedArrayCtorFromBuffer
             | Self::TypedArraySet
+            | Self::StringSubstring
+            | Self::StringSubstr
+            | Self::StringSlice
+            | Self::StringIndexOf
+            | Self::StringLastIndexOf
+            | Self::StringIncludes
+            | Self::StringStartsWith
+            | Self::StringEndsWith
+            | Self::StringReplace
+            | Self::StringReplaceAll
+            | Self::RegexpParseFlags
+            | Self::StringPadStart
+            | Self::StringPadEnd
             | Self::StringRaw
+            | Self::FunctionCallMethodHost
+            | Self::ArrayReduce
+            | Self::ArrayReduceRight
+            | Self::ArraySlice
+            | Self::ArraySplice
+            | Self::ArrayToSpliced
+            | Self::ArrayWith
+            | Self::ArrayIndexOf
+            | Self::ArrayIncludes
             | Self::DataViewGetInt16
             | Self::DataViewGetUint16
             | Self::DataViewGetInt32
@@ -2822,6 +3095,24 @@ impl RuntimeFn {
                 results: 1,
             },
 
+            // 4 params, 1 result
+            Self::IteratorReduce => RuntimeSignature {
+                params: 4,
+                results: 1,
+            },
+
+            // 5 params, 1 result
+            Self::RegexpMatchInner => RuntimeSignature {
+                params: 5,
+                results: 1,
+            },
+
+            // 7 params, 1 result
+            Self::DateUTC => RuntimeSignature {
+                params: 7,
+                results: 1,
+            },
+
             // 3 params, 0 results
             Self::ModuleExportsSet
             | Self::DataViewSetInt8
@@ -2832,12 +3123,26 @@ impl RuntimeFn {
             },
 
             // 4 params, 1 result
-            Self::PropertySet | Self::AtomicsCompareExchange | Self::AtomicsWait => {
-                RuntimeSignature {
-                    params: 4,
-                    results: 1,
-                }
-            }
+            Self::PropertySet
+            | Self::ReflectSet
+            | Self::ArrayCopyWithin
+            | Self::ArrayFill
+            | Self::DateSetUTCFullYear
+            | Self::DateSetUTCMinutes
+            | Self::DateSetFullYear
+            | Self::DateSetMinutes
+            | Self::AtomicsCompareExchange
+            | Self::AtomicsWait
+            | Self::FinalizationRegistryRegister => RuntimeSignature {
+                params: 4,
+                results: 1,
+            },
+
+            // 5 params, 1 result
+            Self::DateSetUTCHours | Self::DateSetHours => RuntimeSignature {
+                params: 5,
+                results: 1,
+            },
 
             // 4 params, 0 results
             Self::DataViewSetInt16
@@ -2974,6 +3279,8 @@ impl RuntimeFn {
             Self::MapDelete,
             Self::MapValuesArray,
             Self::MapKeysArray,
+            Self::MapValuesIterator,
+            Self::MapKeysIterator,
             Self::SetNew,
             Self::SetAdd,
             Self::SetHas,
@@ -3008,6 +3315,7 @@ impl RuntimeFn {
             Self::AtomicsNotify,
             Self::SetFromArray,
             Self::SetValuesArray,
+            Self::SetValuesIterator,
             Self::SetEntriesArray,
             Self::SetPrototypeAddGet,
             Self::SetPrototypeAddSet,
@@ -3488,6 +3796,8 @@ impl RuntimeFn {
             Self::MapDelete,
             Self::MapValuesArray,
             Self::MapKeysArray,
+            Self::MapValuesIterator,
+            Self::MapKeysIterator,
             Self::SetNew,
             Self::SetAdd,
             Self::SetHas,
@@ -3522,6 +3832,7 @@ impl RuntimeFn {
             Self::AtomicsNotify,
             Self::SetFromArray,
             Self::SetValuesArray,
+            Self::SetValuesIterator,
             Self::SetEntriesArray,
             Self::SetPrototypeAddGet,
             Self::SetPrototypeAddSet,

@@ -44,7 +44,11 @@ impl super::super::Resolver {
                     Span::generated("class_static_this"),
                 ))
             }
-            Err(_) => Ok(LoweredExpr::Undefined(Span::generated("undef"))),
+            Err(_) => Ok(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::GlobalThis,
+                args: Vec::new(),
+                span: Span::generated("globalThis"),
+            }),
         }
     }
 
@@ -105,6 +109,12 @@ impl super::super::Resolver {
             Span::generated("builtin_function"),
         ) {
             return Ok(token);
+        }
+        if let Some(value) = crate::lowered::program_builtins::known_global_value_expr(
+            name,
+            Span::generated("known_global_value"),
+        ) {
+            return Ok(value);
         }
         if name == "Number"
             || name == "Boolean"

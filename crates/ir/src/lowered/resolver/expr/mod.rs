@@ -178,8 +178,8 @@ impl super::Resolver {
                 params,
                 body,
                 body_stmts,
-                ..
-            } => self.lower_arrow_fn(params, body, body_stmts),
+                source_text,
+            } => self.lower_arrow_fn_with_source_text(params, body, body_stmts, source_text),
             ResolvedExpr::FunctionExpr {
                 name,
                 params,

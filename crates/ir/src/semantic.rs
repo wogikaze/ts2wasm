@@ -315,14 +315,17 @@ pub fn validate_hir(program: &HirProgram) -> Result<(), Vec<Diagnostic>> {
 struct TypeScriptFunctionArity {
     required: usize,
     max: Option<usize>,
+    enforce: bool,
+    allow_missing: bool,
 }
 
 /// Validate TypeScript-style direct calls to resolved user functions.
 ///
-/// Runtime lowering still preserves JavaScript call behavior by padding missing
-/// arguments and dropping extras where the current ABI requires it. This pass is
-/// for `.ts` semantic checking before that runtime adaptation loses the source
-/// call arity.
+/// Runtime lowering preserves JavaScript call behavior for bodyful functions by
+/// padding missing arguments with `undefined` and dropping extras where the
+/// current ABI requires it. This pass keeps TypeScript-style arity enforcement
+/// for ambient declarations before runtime adaptation loses the source call
+/// arity.
 pub fn validate_typescript_call_arity(program: &[ResolvedStmt]) -> Result<(), Diagnostic> {
     TypeScriptCallArityValidator::default().validate_lexical_block(program)
 }
@@ -594,7 +597,7 @@ impl TypeScriptCallArityValidator {
             } => {
                 let mut scope = HashMap::new();
                 if !name.is_empty() {
-                    scope.insert(name.clone(), function_arity(params, body));
+                    scope.insert(name.clone(), function_arity(params, body, false));
                 }
                 self.validate_with_scope(scope, |validator| {
                     validator.validate_lexical_block(body)
@@ -645,6 +648,9 @@ impl TypeScriptCallArityValidator {
             return Ok(());
         };
         let got = args.len();
+        if !signature.enforce {
+            return Ok(());
+        }
         if got < signature.required || signature.max.is_some_and(|max| got > max) {
             return Err(Diagnostic {
                 code: DiagCode::ArityMismatch,
@@ -672,14 +678,22 @@ fn collect_function_arities(
         .iter()
         .filter_map(|statement| match statement {
             ResolvedStmt::Function {
-                name, params, body, ..
-            } => Some((name.clone(), function_arity(params, body))),
+                name,
+                params,
+                body,
+                is_ambient,
+                ..
+            } => Some((name.clone(), function_arity(params, body, *is_ambient))),
             _ => None,
         })
         .collect()
 }
 
-fn function_arity(params: &[ResolvedParam], body: &[ResolvedStmt]) -> TypeScriptFunctionArity {
+fn function_arity(
+    params: &[ResolvedParam],
+    body: &[ResolvedStmt],
+    enforce: bool,
+) -> TypeScriptFunctionArity {
     let reads_implicit_arguments =
         block_contains_arguments(body) && !params.iter().any(|param| param.name == "arguments");
     TypeScriptFunctionArity {
@@ -692,6 +706,8 @@ fn function_arity(params: &[ResolvedParam], body: &[ResolvedStmt]) -> TypeScript
         } else {
             Some(params.len())
         },
+        enforce,
+        allow_missing: !enforce || reads_implicit_arguments,
     }
 }
 

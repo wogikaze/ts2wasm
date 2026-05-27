@@ -87,7 +87,11 @@ mod tests {
         .unwrap_err();
 
         assert_eq!(error.code, DiagCode::UnsupportedSyntax);
-        assert!(error.message.contains("Triple-slash reference types directive"));
+        assert!(
+            error
+                .message
+                .contains("Triple-slash reference types directive")
+        );
         assert!(error.message.contains("cookie-session"));
         assert_eq!(error.span, Some(Span { start: 22, end: 36 }));
     }

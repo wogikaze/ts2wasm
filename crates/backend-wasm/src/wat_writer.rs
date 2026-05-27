@@ -1,5 +1,5 @@
 use crate::runtime_fn::HostImportSpec;
-use crate::wasm_ir::{WasmExportKind, WasmFunction, WasmInstr, WasmModule};
+use crate::wasm_ir::{WasmBlockType, WasmExportKind, WasmFunction, WasmInstr, WasmModule};
 
 // ---------------------------------------------------------------------------
 // Existing types — preserved exactly.
@@ -436,6 +436,58 @@ impl WatWriter {
         self.line(indent, &format!("(i32.load{keyword})"));
     }
 
+    pub fn i32_load8_u(&mut self, indent: usize, align: u32, offset: u32) {
+        let keyword = if offset != 0 {
+            format!(" offset={offset}")
+        } else if align != 0 {
+            format!(" align={}", 1_u32 << align)
+        } else {
+            String::new()
+        };
+        self.line(indent, &format!("(i32.load8_u{keyword})"));
+    }
+
+    pub fn i32_load8_s(&mut self, indent: usize, align: u32, offset: u32) {
+        let keyword = memarg_keyword_log2(align, offset, 0);
+        self.line(indent, &format!("(i32.load8_s{keyword})"));
+    }
+
+    pub fn i32_load16_u(&mut self, indent: usize, align: u32, offset: u32) {
+        let keyword = memarg_keyword_log2(align, offset, 1);
+        self.line(indent, &format!("(i32.load16_u{keyword})"));
+    }
+
+    pub fn i32_load16_s(&mut self, indent: usize, align: u32, offset: u32) {
+        let keyword = memarg_keyword_log2(align, offset, 1);
+        self.line(indent, &format!("(i32.load16_s{keyword})"));
+    }
+
+    pub fn i64_load(&mut self, indent: usize, align: u32, offset: u32) {
+        let keyword = memarg_keyword_log2(align, offset, 3);
+        self.line(indent, &format!("(i64.load{keyword})"));
+    }
+
+    pub fn i32_store8(&mut self, indent: usize, align: u32, offset: u32) {
+        let keyword = if offset != 0 {
+            format!(" offset={offset}")
+        } else if align != 0 {
+            format!(" align={}", 1_u32 << align)
+        } else {
+            String::new()
+        };
+        self.line(indent, &format!("(i32.store8{keyword})"));
+    }
+
+    pub fn i32_store16(&mut self, indent: usize, align: u32, offset: u32) {
+        let keyword = memarg_keyword_log2(align, offset, 1);
+        self.line(indent, &format!("(i32.store16{keyword})"));
+    }
+
+    pub fn i64_store(&mut self, indent: usize, align: u32, offset: u32) {
+        let keyword = memarg_keyword_log2(align, offset, 3);
+        self.line(indent, &format!("(i64.store{keyword})"));
+    }
+
     // ---- module-level helpers ------------------------------------------------
 
     /// Emit `(module\n`.
@@ -534,8 +586,8 @@ impl WatWriter {
             WasmInstr::BrIfDepth(depth) => self.line(indent, &format!("(br_if {depth})")),
             WasmInstr::Select => self.select(indent),
             WasmInstr::If { result_ty } => match result_ty {
-                Some(ty) => self.if_result(indent, ty),
-                None => self.r#if(indent),
+                WasmBlockType::Result(ty) => self.if_result(indent, ty.as_str()),
+                WasmBlockType::Empty => self.r#if(indent),
             },
             WasmInstr::Then => self.then(indent),
             WasmInstr::Else => self.r#else(indent),
@@ -570,16 +622,38 @@ impl WatWriter {
             WasmInstr::I32Ctz => self.i32_ctz(indent),
             WasmInstr::I32Popcnt => self.i32_popcnt(indent),
             WasmInstr::I32WrapI64 => self.i32_wrap_i64(indent),
+            WasmInstr::I64ExtendI32S => self.line(indent, "(i64.extend_i32_s)"),
+            WasmInstr::I64ExtendI32U => self.line(indent, "(i64.extend_i32_u)"),
+            WasmInstr::I64Eqz => self.line(indent, "(i64.eqz)"),
+            WasmInstr::I64Eq => self.line(indent, "(i64.eq)"),
+            WasmInstr::I64LtS => self.line(indent, "(i64.lt_s)"),
+            WasmInstr::I64GeU => self.line(indent, "(i64.ge_u)"),
+            WasmInstr::I64Add => self.line(indent, "(i64.add)"),
+            WasmInstr::I64Sub => self.line(indent, "(i64.sub)"),
+            WasmInstr::I64Mul => self.line(indent, "(i64.mul)"),
+            WasmInstr::I64DivU => self.line(indent, "(i64.div_u)"),
+            WasmInstr::I64RemU => self.line(indent, "(i64.rem_u)"),
+            WasmInstr::I64GtU => self.line(indent, "(i64.gt_u)"),
+            WasmInstr::I64And => self.line(indent, "(i64.and)"),
+            WasmInstr::I64Or => self.line(indent, "(i64.or)"),
+            WasmInstr::I64Xor => self.line(indent, "(i64.xor)"),
+            WasmInstr::I64Shl => self.line(indent, "(i64.shl)"),
+            WasmInstr::I64ShrS => self.line(indent, "(i64.shr_s)"),
+            WasmInstr::I64ShrU => self.line(indent, "(i64.shr_u)"),
             WasmInstr::MemorySize => self.memory_size(indent),
             WasmInstr::MemoryGrow => self.memory_grow(indent),
+            WasmInstr::MemoryCopy => self.line(indent, "(memory.copy)"),
+            WasmInstr::MemoryFill => self.line(indent, "(memory.fill)"),
             WasmInstr::I32Load { align, offset } => self.i32_load(indent, *align, *offset),
+            WasmInstr::I32Load8S { align, offset } => self.i32_load8_s(indent, *align, *offset),
+            WasmInstr::I32Load8U { align, offset } => self.i32_load8_u(indent, *align, *offset),
+            WasmInstr::I32Load16S { align, offset } => self.i32_load16_s(indent, *align, *offset),
+            WasmInstr::I32Load16U { align, offset } => self.i32_load16_u(indent, *align, *offset),
+            WasmInstr::I64Load { align, offset } => self.i64_load(indent, *align, *offset),
             WasmInstr::I32Store { align, offset } => self.i32_store(indent, *align, *offset),
-            WasmInstr::I32Store8 { align, offset } => {
-                self.line(
-                    indent,
-                    &format!("(i32.store8 align={align} offset={offset})"),
-                );
-            }
+            WasmInstr::I32Store8 { align, offset } => self.i32_store8(indent, *align, *offset),
+            WasmInstr::I32Store16 { align, offset } => self.i32_store16(indent, *align, *offset),
+            WasmInstr::I64Store { align, offset } => self.i64_store(indent, *align, *offset),
             WasmInstr::Raw(content) => self.line(indent, content),
         }
     }
@@ -727,6 +801,16 @@ fn wat_type_group(kind: &str, types: &[crate::wasm_ir::WasmValType]) -> String {
         .collect::<Vec<_>>()
         .join(" ");
     format!(" ({kind} {values})")
+}
+
+fn memarg_keyword_log2(align: u32, offset: u32, default_align_log2: u32) -> String {
+    if offset != 0 {
+        format!(" offset={offset}")
+    } else if align != default_align_log2 {
+        format!(" align={}", 1_u32 << align)
+    } else {
+        String::new()
+    }
 }
 
 // ---------------------------------------------------------------------------

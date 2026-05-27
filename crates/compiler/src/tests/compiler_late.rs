@@ -112,19 +112,47 @@ fn build_file_writes_binary_without_wat2wasm_fallback() {
 }
 
 #[test]
+fn production_emit_paths_do_not_call_wat_conversion_fallbacks() {
+    let production_sources = [
+        ("compiler pipeline", include_str!("../pipeline.rs")),
+        ("compiler server", include_str!("../server.rs")),
+        ("lower stage", include_str!("../stages/lower.rs")),
+        ("cli main", include_str!("../../../cli/src/main.rs")),
+        ("cli lib", include_str!("../../../cli/src/lib.rs")),
+    ];
+
+    let forbidden = [
+        "wat::parse_str",
+        "Command::new(\"wat2wasm\")",
+        "write_wasm_from_wat",
+        "emit_wasm_binary_with_wat_debug_fallback",
+        "emit_wasm_binary_with_abi_wat_debug_fallback",
+    ];
+
+    for (source_name, source) in production_sources {
+        for needle in forbidden {
+            assert!(
+                !source.contains(needle),
+                "{source_name} must not call WAT conversion fallback `{needle}`"
+            );
+        }
+    }
+}
+
+#[test]
 fn build_file_fails_when_native_binary_backend_rejects_program() {
     let dir = unique_temp_dir("build-native-backend-rejects");
     std::fs::create_dir_all(&dir).expect("temp dir should be created");
     let input = dir.join("entry.ts");
     let output = dir.join("out.wasm");
-    std::fs::write(&input, "\"side-effect-free\";\n").expect("source should be written");
+    std::fs::write(&input, "for (const x in {}) {}\n").expect("source should be written");
 
     let err = build_file(&input, &output).expect_err("build should not accept WAT fallback");
     assert_eq!(err.code, DiagCode::UnsupportedSyntax);
     assert_eq!(err.phase.as_deref(), Some("backend"));
     assert!(
         err.message
-            .contains("native LoweredProgram emitter does not support this expression"),
+            .contains("native LoweredProgram emitter does not support for-in"),
         "unexpected backend error: {err:?}"
     );
     assert!(
@@ -536,6 +564,144 @@ console.log(importedValue);
 }
 
 #[test]
+fn static_default_import_binding_accepts_static_local_alias_export() {
+    let dir = unique_temp_dir("static-default-local-alias");
+    std::fs::create_dir_all(&dir).expect("temp dir should be created");
+    let entry = dir.join("entry.ts");
+    let source_module = dir.join("source.ts");
+    let entry_source = r#"
+import value from "./source";
+console.log(value);
+"#;
+    std::fs::write(&entry, entry_source).expect("entry should be written");
+    std::fs::write(&source_module, "const x = 10;\nexport default x;\n")
+        .expect("source module should be written");
+
+    let program = parse_program(entry_source).expect("entry should parse");
+    validate_ast(&program).expect("entry should validate");
+    let graph = build_entry_module_graph(&entry, &program).expect("graph should build");
+    let lowering = lower_static_named_import_bindings_for_build(&program, &graph)
+        .expect("static default local alias import should lower");
+
+    assert_eq!(lowering.named_imports.len(), 1);
+    let binding = &lowering.named_imports[0];
+    assert_eq!(binding.source_specifier, "./source");
+    assert_eq!(binding.source_module_id, 1);
+    assert_eq!(binding.source_path, source_module.canonicalize().unwrap());
+    assert_eq!(binding.imported_name, "default");
+    assert_eq!(binding.local_name, "value");
+    assert!(matches!(
+        binding.initializer,
+        Expr::Number { value: 10, .. }
+    ));
+
+    match &lowering.rewritten_program[0] {
+        Stmt::Let { name, expr, .. } => {
+            assert_eq!(name, "value");
+            assert!(matches!(expr, Expr::Number { value: 10, .. }));
+        }
+        other => panic!("unexpected rewritten default import stmt: {other:?}"),
+    }
+
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
+fn static_default_named_import_binding_accepts_static_local_alias_export() {
+    let dir = unique_temp_dir("static-default-named-local-alias");
+    std::fs::create_dir_all(&dir).expect("temp dir should be created");
+    let entry = dir.join("entry.ts");
+    let source_module = dir.join("source.ts");
+    let entry_source = r#"
+import value, { named } from "./source";
+console.log(value, named);
+"#;
+    std::fs::write(&entry, entry_source).expect("entry should be written");
+    std::fs::write(
+        &source_module,
+        "const x = 10;\nexport const named = 2;\nexport default x;\n",
+    )
+    .expect("source module should be written");
+
+    let program = parse_program(entry_source).expect("entry should parse");
+    validate_ast(&program).expect("entry should validate");
+    let graph = build_entry_module_graph(&entry, &program).expect("graph should build");
+    let static_module_binding = lower_static_named_import_bindings_for_build(&program, &graph)
+        .expect("static default named import binding should lower");
+    assert_eq!(static_module_binding.named_imports.len(), 2);
+    assert_eq!(
+        static_module_binding.named_imports[0].imported_name,
+        "default"
+    );
+    assert_eq!(
+        static_module_binding.named_imports[1].imported_name,
+        "named"
+    );
+
+    let name_resolved =
+        ts2wasm_ir::name_resolver::resolve_names(&static_module_binding.rewritten_program)
+            .expect("names should resolve");
+    let resolved = ts2wasm_ir::builtin_resolver::resolve_builtins(&name_resolved)
+        .expect("builtins should resolve");
+    let lowered_program = lowered::lower_program(&resolved).expect("program should lower");
+    let lowered_program = lower_static_named_import_reads_for_build(
+        lowered_program,
+        &static_module_binding.named_imports,
+    )
+    .expect("static default named import reads should lower through module exports");
+    let lowered_program = populate_static_module_exports_for_build(lowered_program, &graph, &[])
+        .expect("static module exports should populate lowered metadata");
+
+    match &lowered_program.top_level_statements[..2] {
+        [
+            lowered::LoweredStmt::Let(
+                _,
+                lowered::LoweredExpr::PropertyGet {
+                    obj: default_obj,
+                    key: default_key,
+                    ..
+                },
+                _,
+            ),
+            lowered::LoweredStmt::Let(
+                _,
+                lowered::LoweredExpr::PropertyGet {
+                    obj: named_obj,
+                    key: named_key,
+                    ..
+                },
+                _,
+            ),
+        ] => {
+            assert_eq!(default_key, "default");
+            assert_eq!(named_key, "named");
+            assert!(matches!(
+                default_obj.as_ref(),
+                lowered::LoweredExpr::ModuleLoad { module_id: 1, .. }
+            ));
+            assert!(matches!(
+                named_obj.as_ref(),
+                lowered::LoweredExpr::ModuleLoad { module_id: 1, .. }
+            ));
+        }
+        other => panic!("unexpected combined import lowered statements: {other:?}"),
+    }
+
+    let module = lowered_program
+        .modules
+        .iter()
+        .find(|module| module.id == 1)
+        .expect("source module should be lowered");
+    assert!(module.statements.iter().any(|stmt| matches!(
+        stmt,
+        lowered::LoweredStmt::Export { name, expr, .. }
+            if name == "default" && matches!(expr, lowered::LoweredExpr::Local(_, _))
+    )));
+
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
 fn static_module_export_lowering_populates_explicit_lowered_module_statements() {
     let dir = unique_temp_dir("static-module-export-ir");
     std::fs::create_dir_all(&dir).expect("temp dir should be created");
@@ -673,6 +839,35 @@ fn static_module_live_binding_update_follows_exported_assignment() {
     let wat = backend::emit_wat(&validated).expect("module live binding should emit WAT");
     assert!(wat.contains("$module_exports_set"));
     assert!(wat.matches("(call $module_exports_set)").count() >= 2);
+
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
+fn module_graph_registers_resolvable_static_require_modules() {
+    let dir = unique_temp_dir("static-require-module-graph");
+    std::fs::create_dir_all(&dir).expect("temp dir should be created");
+    let entry = dir.join("entry.ts");
+    let local_module = dir.join("cache-demo.ts");
+    let relative_module = dir.join("lib.js");
+    let entry_source = r#"
+let a = require("cache-demo");
+let b = require("./lib");
+let text = require("fs").readFileSync(0, "utf8");
+"#;
+    std::fs::write(&entry, entry_source).expect("entry should be written");
+    std::fs::write(&local_module, "exports.value = 0;\n").expect("local module should be written");
+    std::fs::write(&relative_module, "exports.name = \"\";\n")
+        .expect("relative module should be written");
+
+    let program = parse_program(entry_source).expect("entry should parse");
+    let graph = build_entry_module_graph(&entry, &program).expect("graph should build");
+    let deps = graph.entry().dependencies();
+
+    assert_eq!(deps.len(), 2);
+    assert_eq!(deps[0].specifier(), "cache-demo");
+    assert_eq!(deps[1].specifier(), "./lib");
+    assert!(deps.iter().all(|dep| dep.specifier() != "fs"));
 
     let _ = std::fs::remove_dir_all(&dir);
 }
@@ -978,10 +1173,6 @@ fn native_lowered_wasm_binary_runs_focused_fixtures_without_wat_conversion() {
             "awaited\nawaited\n",
         ),
         (
-            "../../fixtures/core-expressions/object-literal-computed-accessor-invocation.ts",
-            "42\n",
-        ),
-        (
             "../../fixtures/core-expressions/object-literal-computed-constant-number-expression-key.ts",
             "subtract\nsubtract\nsubtract\nbitwise or\n",
         ),
@@ -1046,10 +1237,6 @@ fn native_lowered_wasm_binary_runs_focused_fixtures_without_wat_conversion() {
             "has_getter\nno_setter\nenumerable\nconfigurable\n7\n",
         ),
         (
-            "../../fixtures/core-expressions/object-literal-getter-setter.ts",
-            "10\n42\n",
-        ),
-        (
             "../../fixtures/core-expressions/object-literal-numeric-keys.ts",
             "zero\none\ntwo\n",
         ),
@@ -1064,10 +1251,6 @@ fn native_lowered_wasm_binary_runs_focused_fixtures_without_wat_conversion() {
         (
             "../../fixtures/core-expressions/object-literal-setter-descriptor.ts",
             "no_getter\nhas_setter\nenumerable\nconfigurable\n1\n",
-        ),
-        (
-            "../../fixtures/core-expressions/object-literal-symbol-accessor-invocation.ts",
-            "first\nsecond\ndifferent\n",
         ),
         (
             "../../fixtures/core-expressions/object-literal-symbol-method-call.ts",

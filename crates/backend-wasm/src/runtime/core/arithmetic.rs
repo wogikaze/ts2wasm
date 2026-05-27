@@ -69,6 +69,11 @@ impl WatEmitter<'_> {
 
           (then (return (call $bigint_mixed_arithmetic_type_error (local.get $a) (local.get $b)))))))
 
+    (if (i32.or
+          (i32.eq (local.get $a) (i32.const {undefined}))
+          (i32.eq (local.get $b) (i32.const {undefined})))
+      (then (return (i32.const {nan_value}))))
+
     (call $number_from_i32
 
       (i32.add
@@ -92,6 +97,10 @@ impl WatEmitter<'_> {
             gc_kind_mask = Layout::GC_KIND_MASK,
 
             gc_kind_bigint = Layout::GC_KIND_BIGINT,
+
+            undefined = ValueTag::UNDEFINED,
+
+            nan_value = ValueTag::encode_nan(),
 
         ));
     }

@@ -36,8 +36,8 @@ fn bigint_unknown_dynamic_invalid_string_reports_runtime_trap() {
 }
 
 #[test]
-fn bigint_unknown_dynamic_out_of_range_string_reports_runtime_trap() {
-    assert_fixture_iwasm_trap(
+fn bigint_unknown_dynamic_out_of_range_string_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node(
         "fixtures/core-semantics/bigint-builtin-unknown-out-of-range-string-runtime-trap.ts",
     );
 }
@@ -106,15 +106,18 @@ fn bigint_runtime_mixed_stdin_string_in_range_matches_node_output_under_iwasm() 
 
 #[test]
 fn bigint_runtime_mixed_stdin_string_out_of_range_traps_instead_of_boolean() {
-    for fixture in [
+    super::super::part_1::assert_stdin_fixture_node_succeeds_and_iwasm_traps(
         "fixtures/core-semantics/bigint-runtime-mixed-stdin-string-equality-out-of-range-trap.ts",
+        b"2147483648\n",
+    );
+}
+
+#[test]
+fn bigint_runtime_mixed_stdin_string_relational_out_of_range_matches_node_output_under_iwasm() {
+    super::super::part_1::assert_stdin_fixture_matches_node(
         "fixtures/core-semantics/bigint-runtime-mixed-stdin-string-relational-out-of-range-trap.ts",
-    ] {
-        super::super::part_1::assert_stdin_fixture_node_succeeds_and_iwasm_traps(
-            fixture,
-            b"2147483648\n",
-        );
-    }
+        b"2147483648\n",
+    );
 }
 
 #[test]
@@ -194,6 +197,20 @@ fn bigint_runtime_mixed_object_toprimitive_primitive_builds_successfully() {
 }
 
 #[test]
+fn bigint_runtime_mixed_object_toprimitive_missing_this_member_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node(
+        "fixtures/core-semantics/bigint-runtime-mixed-object-toprimitive-method-unsupported.ts",
+    );
+}
+
+#[test]
+fn bigint_runtime_mixed_object_toprimitive_object_valueof_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node(
+        "fixtures/core-semantics/bigint-runtime-mixed-object-toprimitive-unsupported.ts",
+    );
+}
+
+#[test]
 fn bigint_runtime_mixed_object_toprimitive_string_boundary_reports_issue_373() {
     for fixture in [
         "fixtures/core-semantics/bigint-runtime-mixed-object-toprimitive-invalid-string-unsupported.ts",
@@ -201,7 +218,7 @@ fn bigint_runtime_mixed_object_toprimitive_string_boundary_reports_issue_373() {
     ] {
         assert_build_fails_with_diagnostic(
             fixture,
-            "[UnsupportedRuntimeSubset]",
+            "[UnsupportedRuntimeSubset",
             super::BIGINT_ISSUE_373_TOPRIMITIVE_STRING_BOUNDARY,
             true,
         );
@@ -209,14 +226,12 @@ fn bigint_runtime_mixed_object_toprimitive_string_boundary_reports_issue_373() {
 }
 
 #[test]
-fn bigint_runtime_mixed_object_toprimitive_reports_issue_374() {
-    for fixture in [
-        "fixtures/core-semantics/bigint-runtime-mixed-object-toprimitive-unsupported.ts",
+fn bigint_runtime_mixed_object_toprimitive_string_object_reports_typeerror_under_iwasm() {
+    super::assert_fixture_node_typeerror_and_iwasm_reports_typeerror_containing(
         "fixtures/core-semantics/bigint-runtime-mixed-object-toprimitive-string-unsupported.ts",
-        "fixtures/core-semantics/bigint-runtime-mixed-object-toprimitive-method-unsupported.ts",
-    ] {
-        assert_build_fails_with_unsupported_syntax(fixture, super::BIGINT_ISSUE_374);
-    }
+        "Cannot convert object to primitive value",
+        "Cannot convert object to primitive value",
+    );
 }
 
 #[test]
@@ -651,8 +666,28 @@ fn string_char_code_at_matches_node() {
 }
 
 #[test]
+fn string_char_code_at_dynamic_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-char-code-at-dynamic.ts");
+}
+
+#[test]
+fn string_char_code_at_dynamic_print_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-char-code-at-dynamic-print.ts");
+}
+
+#[test]
+fn string_charcode_tostring_radix_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-charcode-tostring-radix.ts");
+}
+
+#[test]
 fn string_code_point_at_matches_node() {
     assert_fixture_matches_node("fixtures/builtins-and-io/string-code-point-at.ts");
+}
+
+#[test]
+fn string_code_point_at_dynamic_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-code-point-at-dynamic.ts");
 }
 
 #[test]
@@ -663,6 +698,11 @@ fn string_from_char_code_matches_node() {
 #[test]
 fn string_from_code_point_matches_node() {
     assert_fixture_matches_node("fixtures/builtins-and-io/string-from-code-point.ts");
+}
+
+#[test]
+fn string_from_code_point_dynamic_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-from-code-point-dynamic.ts");
 }
 
 #[test]
@@ -721,8 +761,8 @@ fn string_split_matches_node() {
 }
 
 #[test]
-fn string_indexing_fixture_is_not_marked_as_semantic_pass() {
-    assert_fixture_not_semantically_pass("string", "fixtures/builtins-and-io/string-indexing.ts");
+fn string_indexing_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-indexing.ts");
 }
 
 #[test]
@@ -880,6 +920,11 @@ fn array_shift_unshift_splice_matches_node() {
 #[test]
 fn array_find_index_matches_node() {
     assert_fixture_matches_node("fixtures/builtins-and-io/array-find-index.ts");
+}
+
+#[test]
+fn array_find_findindex_complex_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-find-findindex-complex.ts");
 }
 
 #[test]

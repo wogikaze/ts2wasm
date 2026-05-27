@@ -1,4 +1,5 @@
 use super::*;
+use crate::builtin_resolved::ResolvedArrayElement;
 
 pub(super) fn resolve_test262_assert_stmt(expr: &Expr) -> Result<Option<ResolvedStmt>, Diagnostic> {
     let Expr::Call { callee, args, .. } = expr else {
@@ -278,6 +279,8 @@ fn is_supported_console_method(property: &str) -> bool {
             | "info"
             | "debug"
             | "table"
+            | "dir"
+            | "dirxml"
             | "group"
             | "groupEnd"
             | "groupCollapsed"
@@ -447,6 +450,27 @@ fn resolved_expr_to_string(expr: &ResolvedExpr) -> Option<String> {
         ResolvedExpr::Bool(b) => Some(if *b { "true" } else { "false" }.to_string()),
         ResolvedExpr::Undefined => Some("undefined".to_string()),
         ResolvedExpr::Null => Some("null".to_string()),
+        ResolvedExpr::Array(elements) => {
+            let mut parts = Vec::new();
+            for element in elements {
+                match element {
+                    ResolvedArrayElement::Present(value) => {
+                        parts.push(resolved_expr_to_string(value)?);
+                    }
+                    ResolvedArrayElement::Hole => parts.push("<empty>".to_owned()),
+                }
+            }
+            Some(format!("[ {} ]", parts.join(", ")))
+        }
+        ResolvedExpr::Object(props) => {
+            let mut parts = Vec::new();
+            for prop in props {
+                let key = prop.static_key()?;
+                let value = resolved_expr_to_string(prop.value())?;
+                parts.push(format!("{key}: {value}"));
+            }
+            Some(format!("{{ {} }}", parts.join(", ")))
+        }
         _ => None,
     }
 }
@@ -530,8 +554,8 @@ fn apply_format_substitution(fmt: &str, args: &[ResolvedExpr]) -> Option<(String
 }
 
 /// Format console arguments: apply format substitution if the first arg is a
-/// format string, otherwise join all static args with spaces.
-/// Returns a single string to pass to the log function.
+/// format string, otherwise join all static args with spaces. If any argument
+/// is dynamic, preserve the original list so lowering can emit runtime joins.
 fn format_console_args(args: &[ResolvedExpr]) -> Vec<ResolvedExpr> {
     if args.is_empty() {
         return vec![ResolvedExpr::String(String::new())];
@@ -554,8 +578,7 @@ fn format_console_args(args: &[ResolvedExpr]) -> Vec<ResolvedExpr> {
         match resolved_expr_to_string(arg) {
             Some(s) => parts.push(s),
             None => {
-                // Has dynamic arg: fall back to first arg only
-                return vec![args[0].clone()];
+                return args.to_vec();
             }
         }
     }
@@ -586,7 +609,7 @@ pub(super) fn resolve_console_call_expr(
     };
 
     match property.as_str() {
-        "log" | "info" | "debug" | "table" => Ok(Some(log_expr(
+        "log" | "info" | "debug" | "table" | "dir" | "dirxml" => Ok(Some(log_expr(
             format_console_args(resolved_args),
             BuiltinId::ConsoleLog,
         ))),
@@ -626,11 +649,11 @@ pub(super) fn resolve_console_call_expr(
         }
         "timeLog" => Ok(Some(log_expr(
             format_console_args(resolved_args),
-            BuiltinId::ConsoleLog,
+            BuiltinId::ConsoleTimeLog,
         ))),
         "timeEnd" => Ok(Some(log_expr(
             format_console_args(resolved_args),
-            BuiltinId::ConsoleLog,
+            BuiltinId::ConsoleTimeEnd,
         ))),
         "trace" => Ok(Some(log_expr(
             format_console_args(resolved_args),

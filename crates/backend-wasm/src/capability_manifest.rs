@@ -167,11 +167,25 @@ fn canonical_manifest_from_link_plan(plan: &RuntimeLinkPlan) -> CapabilityManife
             | Capability::HostMathTanh
             | Capability::HostMathAtan2
             | Capability::HostMathHypot
+            | Capability::HostJsonStringify
+            | Capability::HostJsonParse
             | Capability::HostStringNormalize
             | Capability::HostIntlNumberFormatFormat
             | Capability::HostIntlDateTimeFormatFormat
             | Capability::HostReflectApply
             | Capability::HostReflectConstruct
+            | Capability::HostGetIterator
+            | Capability::HostIteratorNext
+            | Capability::HostIteratorMap
+            | Capability::HostIteratorFilter
+            | Capability::HostIteratorTake
+            | Capability::HostIteratorDrop
+            | Capability::HostIteratorToArray
+            | Capability::HostIteratorReduce
+            | Capability::HostIteratorForEach
+            | Capability::HostIteratorSome
+            | Capability::HostIteratorEvery
+            | Capability::HostIteratorFind
             | Capability::HostEvalDirect
             | Capability::HostEvalIndirect
             | Capability::HostFunctionCompile

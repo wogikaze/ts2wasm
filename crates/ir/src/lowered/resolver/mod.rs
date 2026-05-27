@@ -17,7 +17,7 @@ use crate::builtin_resolved::{
 use crate::lowered::ctx::LoweringCtx;
 use crate::lowered::facts::{
     ArrowClosure, BoundConstructor, BoundFunction, FunctionMethodBinding, FunctionMethodKind,
-    GeneratorMethodIteratorBinding, HostExternalKind,
+    GeneratorMethodIteratorBinding, HostExternalKind, StaticFunctionArrayLike,
 };
 use crate::lowered::*;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
@@ -28,6 +28,7 @@ use ts2wasm_syntax::{BinaryOp, SYMBOL_ITERATOR_OBJECT_KEY, TypeRef, UnaryOp};
 /// All mutable state is owned by ctx. Borrowed function maps are cloned into ctx on construction.
 pub(super) struct Resolver {
     pub(crate) ctx: LoweringCtx,
+    pub(crate) current_func_id: Option<FuncId>,
 }
 
 pub(super) struct EvalClassDeclParts<'a> {
@@ -40,7 +41,278 @@ pub(super) struct EvalClassDeclParts<'a> {
     pub(super) static_blocks: &'a [(Span, Vec<ResolvedStmt>)],
 }
 
+fn resolved_stmts_contain_break_or_continue(stmts: &[ResolvedStmt]) -> bool {
+    stmts.iter().any(resolved_stmt_contains_break_or_continue)
+}
+
+fn resolved_stmts_end_with_unlabeled_break(stmts: &[ResolvedStmt]) -> bool {
+    matches!(stmts.last(), Some(ResolvedStmt::Break { label: None }))
+}
+
+fn resolved_stmt_contains_break_or_continue(stmt: &ResolvedStmt) -> bool {
+    match stmt {
+        ResolvedStmt::Break { .. } | ResolvedStmt::Continue { .. } => true,
+        ResolvedStmt::If {
+            then_body,
+            else_body,
+            ..
+        } => {
+            resolved_stmts_contain_break_or_continue(then_body)
+                || resolved_stmts_contain_break_or_continue(else_body)
+        }
+        ResolvedStmt::While { body, .. }
+        | ResolvedStmt::DoWhile { body, .. }
+        | ResolvedStmt::For { body, .. }
+        | ResolvedStmt::ForIn { body, .. }
+        | ResolvedStmt::ForOf { body, .. }
+        | ResolvedStmt::ForAwaitOf { body, .. } => resolved_stmts_contain_break_or_continue(body),
+        ResolvedStmt::TryCatch {
+            try_block,
+            catch_block,
+            finally_block,
+            ..
+        } => {
+            resolved_stmts_contain_break_or_continue(try_block)
+                || catch_block
+                    .as_ref()
+                    .is_some_and(|body| resolved_stmts_contain_break_or_continue(body))
+                || finally_block
+                    .as_ref()
+                    .is_some_and(|body| resolved_stmts_contain_break_or_continue(body))
+        }
+        ResolvedStmt::Switch { cases, .. } => cases
+            .iter()
+            .any(|(_, body)| resolved_stmts_contain_break_or_continue(body)),
+        ResolvedStmt::Labeled { body, .. } => resolved_stmt_contains_break_or_continue(body),
+        ResolvedStmt::Block { statements } => resolved_stmts_contain_break_or_continue(statements),
+        ResolvedStmt::AmbientValue(_)
+        | ResolvedStmt::Let(_, _)
+        | ResolvedStmt::DestructureLet { .. }
+        | ResolvedStmt::DestructureAssign { .. }
+        | ResolvedStmt::Assign(_, _)
+        | ResolvedStmt::Expr(_)
+        | ResolvedStmt::Return(_)
+        | ResolvedStmt::Function { .. }
+        | ResolvedStmt::Throw(_)
+        | ResolvedStmt::Export { .. }
+        | ResolvedStmt::ModuleExportsAssign { .. }
+        | ResolvedStmt::ClassDecl { .. } => false,
+    }
+}
+
+fn collect_assigned_names_from_stmts(stmts: &[ResolvedStmt], assigned: &mut HashSet<String>) {
+    for stmt in stmts {
+        collect_assigned_names_from_stmt(stmt, assigned);
+    }
+}
+
+fn collect_assigned_names_from_stmt(stmt: &ResolvedStmt, assigned: &mut HashSet<String>) {
+    match stmt {
+        ResolvedStmt::Assign(name, _) => {
+            assigned.insert(name.clone());
+        }
+        ResolvedStmt::If {
+            then_body,
+            else_body,
+            ..
+        } => {
+            collect_assigned_names_from_stmts(then_body, assigned);
+            collect_assigned_names_from_stmts(else_body, assigned);
+        }
+        ResolvedStmt::While { body, .. }
+        | ResolvedStmt::DoWhile { body, .. }
+        | ResolvedStmt::For { body, .. }
+        | ResolvedStmt::ForIn { body, .. }
+        | ResolvedStmt::ForOf { body, .. }
+        | ResolvedStmt::ForAwaitOf { body, .. } => {
+            collect_assigned_names_from_stmts(body, assigned);
+        }
+        ResolvedStmt::TryCatch {
+            try_block,
+            catch_block,
+            finally_block,
+            ..
+        } => {
+            collect_assigned_names_from_stmts(try_block, assigned);
+            if let Some(catch_block) = catch_block {
+                collect_assigned_names_from_stmts(catch_block, assigned);
+            }
+            if let Some(finally_block) = finally_block {
+                collect_assigned_names_from_stmts(finally_block, assigned);
+            }
+        }
+        ResolvedStmt::Switch { cases, .. } => {
+            for (_, body) in cases {
+                collect_assigned_names_from_stmts(body, assigned);
+            }
+        }
+        ResolvedStmt::Labeled { body, .. } => collect_assigned_names_from_stmt(body, assigned),
+        ResolvedStmt::Block { statements } => {
+            collect_assigned_names_from_stmts(statements, assigned)
+        }
+        ResolvedStmt::Function { .. } | ResolvedStmt::ClassDecl { .. } => {}
+        ResolvedStmt::AmbientValue(_)
+        | ResolvedStmt::Let(_, _)
+        | ResolvedStmt::DestructureLet { .. }
+        | ResolvedStmt::DestructureAssign { .. }
+        | ResolvedStmt::Expr(_)
+        | ResolvedStmt::Return(_)
+        | ResolvedStmt::Throw(_)
+        | ResolvedStmt::Export { .. }
+        | ResolvedStmt::ModuleExportsAssign { .. }
+        | ResolvedStmt::Break { .. }
+        | ResolvedStmt::Continue { .. } => {}
+    }
+}
+
+fn collect_assigned_names_from_expr(expr: &ResolvedExpr, assigned: &mut HashSet<String>) {
+    match expr {
+        ResolvedExpr::Assign { name, expr } | ResolvedExpr::LogicalAssign { name, expr, .. } => {
+            assigned.insert(name.clone());
+            collect_assigned_names_from_expr(expr, assigned);
+        }
+        ResolvedExpr::Unary { expr, .. }
+        | ResolvedExpr::Await { expr }
+        | ResolvedExpr::Spread(expr) => collect_assigned_names_from_expr(expr, assigned),
+        ResolvedExpr::Binary { left, right, .. } => {
+            collect_assigned_names_from_expr(left, assigned);
+            collect_assigned_names_from_expr(right, assigned);
+        }
+        ResolvedExpr::Ternary {
+            condition,
+            then_expr,
+            else_expr,
+            ..
+        } => {
+            collect_assigned_names_from_expr(condition, assigned);
+            collect_assigned_names_from_expr(then_expr, assigned);
+            collect_assigned_names_from_expr(else_expr, assigned);
+        }
+        ResolvedExpr::Call { callee, args, .. }
+        | ResolvedExpr::OptionalCall { callee, args, .. } => {
+            collect_assigned_names_from_expr(callee, assigned);
+            for arg in args {
+                collect_assigned_names_from_expr(arg, assigned);
+            }
+        }
+        ResolvedExpr::LogicalPropertyAssign { expr, .. } => {
+            collect_assigned_names_from_expr(expr, assigned);
+        }
+        ResolvedExpr::LogicalComputedPropertyAssign { key, expr, .. } => {
+            collect_assigned_names_from_expr(key, assigned);
+            collect_assigned_names_from_expr(expr, assigned);
+        }
+        ResolvedExpr::LogicalComputedMemberAssign {
+            object, key, expr, ..
+        } => {
+            collect_assigned_names_from_expr(object, assigned);
+            collect_assigned_names_from_expr(key, assigned);
+            collect_assigned_names_from_expr(expr, assigned);
+        }
+        ResolvedExpr::LogicalMemberAssign { object, expr, .. } => {
+            collect_assigned_names_from_expr(object, assigned);
+            collect_assigned_names_from_expr(expr, assigned);
+        }
+        ResolvedExpr::Array(elements) => {
+            for element in elements {
+                if let ResolvedArrayElement::Present(expr) = element {
+                    collect_assigned_names_from_expr(expr, assigned);
+                }
+            }
+        }
+        ResolvedExpr::Object(props) => {
+            for prop in props {
+                if let Some(key) = prop.computed_key() {
+                    collect_assigned_names_from_expr(key, assigned);
+                }
+                collect_assigned_names_from_expr(prop.value(), assigned);
+            }
+        }
+        ResolvedExpr::ComputedIndex { object, index }
+        | ResolvedExpr::OptionalComputedIndex { object, index, .. } => {
+            collect_assigned_names_from_expr(object, assigned);
+            collect_assigned_names_from_expr(index, assigned);
+        }
+        ResolvedExpr::BuiltinCall { args, .. } => {
+            for arg in args {
+                collect_assigned_names_from_expr(arg, assigned);
+            }
+        }
+        ResolvedExpr::BuiltinProperty { object, .. }
+        | ResolvedExpr::PropertyAccess { object, .. }
+        | ResolvedExpr::OptionalPropertyAccess { object, .. } => {
+            collect_assigned_names_from_expr(object, assigned);
+        }
+        ResolvedExpr::MethodCall { object, args, .. } => {
+            collect_assigned_names_from_expr(object, assigned);
+            for arg in args {
+                collect_assigned_names_from_expr(arg, assigned);
+            }
+        }
+        ResolvedExpr::PropertyAssign { object, value, .. } => {
+            collect_assigned_names_from_expr(object, assigned);
+            collect_assigned_names_from_expr(value, assigned);
+        }
+        ResolvedExpr::PropertyAssignDynamic { object, key, value } => {
+            collect_assigned_names_from_expr(object, assigned);
+            collect_assigned_names_from_expr(key, assigned);
+            collect_assigned_names_from_expr(value, assigned);
+        }
+        ResolvedExpr::New { args, .. } => {
+            for arg in args {
+                collect_assigned_names_from_expr(arg, assigned);
+            }
+        }
+        ResolvedExpr::Sequence(exprs) => {
+            for expr in exprs {
+                collect_assigned_names_from_expr(expr, assigned);
+            }
+        }
+        ResolvedExpr::Yield {
+            expr: Some(expr), ..
+        } => collect_assigned_names_from_expr(expr, assigned),
+        ResolvedExpr::Number(_)
+        | ResolvedExpr::DecimalNumber(_)
+        | ResolvedExpr::BigIntLiteral { .. }
+        | ResolvedExpr::String(_)
+        | ResolvedExpr::Bool(_)
+        | ResolvedExpr::Null
+        | ResolvedExpr::Undefined
+        | ResolvedExpr::This { .. }
+        | ResolvedExpr::NewTarget { .. }
+        | ResolvedExpr::ImportMeta { .. }
+        | ResolvedExpr::Yield { expr: None, .. }
+        | ResolvedExpr::Ident(_)
+        | ResolvedExpr::FunctionConstructor { .. }
+        | ResolvedExpr::ModuleLoad { .. }
+        | ResolvedExpr::ArrowFn { .. }
+        | ResolvedExpr::FunctionExpr { .. }
+        | ResolvedExpr::ClassExpr { .. }
+        | ResolvedExpr::EvalCompletion(_)
+        | ResolvedExpr::Eval { .. } => {}
+    }
+}
+
 impl Resolver {
+    fn invalidate_assigned_local_facts_by_name(&mut self, assigned: HashSet<String>) {
+        for name in assigned {
+            let Ok(local_id) = self.resolve_local(&name) else {
+                continue;
+            };
+            self.ctx.facts.string_literal_locals.remove(&local_id);
+            self.ctx.facts.number_literal_locals.remove(&local_id);
+            self.ctx.facts.symbol_value_locals.remove(&local_id);
+            self.ctx.facts.symbol_description_locals.remove(&local_id);
+            self.ctx.facts.regexp_literal_locals.remove(&local_id);
+        }
+    }
+
+    fn invalidate_loop_assigned_local_facts(&mut self, body: &[ResolvedStmt]) {
+        let mut assigned = HashSet::new();
+        collect_assigned_names_from_stmts(body, &mut assigned);
+        self.invalidate_assigned_local_facts_by_name(assigned);
+    }
+
     fn generator_method_iterator_binding_for_expr(
         &mut self,
         expr: &ResolvedExpr,
@@ -132,6 +404,7 @@ impl Resolver {
                 type_aliases,
                 interface_definitions,
             ),
+            current_func_id: None,
         }
     }
 
@@ -147,6 +420,7 @@ impl Resolver {
         env_cell_names: &HashSet<String>,
         heap_closure_names: &HashSet<String>,
         params: &[String],
+        current_func_id: FuncId,
         synthetic_arguments_param_index: Option<usize>,
         class_parents: HashMap<String, Option<String>>,
         class_private_fields: ClassPrivateFieldSlots,
@@ -186,6 +460,7 @@ impl Resolver {
                 type_aliases,
                 interface_definitions,
             ),
+            current_func_id: Some(current_func_id),
         };
         resolver
             .ctx
@@ -229,6 +504,20 @@ impl Resolver {
             }
             seen_params.insert(clean_name.to_owned(), ());
             let local_id = resolver.ctx.declare_parameter(clean_name);
+            if is_synthetic_arguments_param
+                && let Some(signature) = resolver
+                    .ctx
+                    .symbols
+                    .function_signatures
+                    .get(&current_func_id)
+            {
+                resolver.ctx.facts.static_function_array_like_locals.insert(
+                    local_id,
+                    StaticFunctionArrayLike {
+                        elements: vec![None; signature.explicit_params],
+                    },
+                );
+            }
             param_ids.push(local_id);
         }
 
@@ -681,10 +970,16 @@ impl Resolver {
                     params,
                     body,
                     body_stmts,
-                    ..
+                    source_text,
                 } = expr
                 {
-                    self.lower_arrow_fn_with_self(params, body, body_stmts, Some(name))?
+                    self.lower_arrow_fn_with_self_and_source_text(
+                        params,
+                        body,
+                        body_stmts,
+                        Some(name),
+                        source_text,
+                    )?
                 } else if generator_method_binding.is_some() {
                     LoweredExpr::RuntimeCall {
                         intrinsic: RuntimeFn::GeneratorYield,
@@ -849,6 +1144,11 @@ impl Resolver {
                     expr,
                 );
                 crate::lowered::resolver::expr::facts::update_static_object_literal_local_on_let(
+                    &mut self.ctx,
+                    local_id,
+                    expr,
+                );
+                crate::lowered::resolver::expr::facts::update_object_toprimitive_literal_local_on_let(
                     &mut self.ctx,
                     local_id,
                     expr,
@@ -1327,11 +1627,17 @@ impl Resolver {
                     span: Span::generated("if_stmt"),
                 })
             }
-            ResolvedStmt::While { condition, body } => Ok(LoweredStmt::While {
-                condition: self.lower_expr(condition)?,
-                body: self.lower_nested_block(body)?,
-                span: Span::generated("while"),
-            }),
+            ResolvedStmt::While { condition, body } => {
+                self.invalidate_loop_assigned_local_facts(body);
+                let condition = self.lower_expr(condition)?;
+                let lowered_body = self.lower_nested_block(body)?;
+                self.invalidate_loop_assigned_local_facts(body);
+                Ok(LoweredStmt::While {
+                    condition,
+                    body: lowered_body,
+                    span: Span::generated("while"),
+                })
+            }
             ResolvedStmt::Return(expr) => {
                 if let ResolvedExpr::Ident(name) = expr
                     && let Some(closure) = self
@@ -1348,10 +1654,15 @@ impl Resolver {
                     params,
                     body,
                     body_stmts,
-                    ..
+                    source_text,
                 } = expr
                 {
-                    let lowered = self.lower_arrow_fn(params, body, body_stmts)?;
+                    let lowered = self.lower_arrow_fn_with_source_text(
+                        params,
+                        body,
+                        body_stmts,
+                        source_text,
+                    )?;
                     if let LoweredExpr::ArrowFn {
                         func_id, captures, ..
                     } = &lowered
@@ -1397,6 +1708,7 @@ impl Resolver {
                 params,
                 body,
                 is_async,
+                is_generator,
                 ..
             } => {
                 let local_id = self.declare_local(name)?;
@@ -1424,6 +1736,18 @@ impl Resolver {
                             },
                         );
                     }
+                }
+                if !is_async && !is_generator && self.ctx.facts.arrow_locals.contains_key(&local_id)
+                {
+                    self.ctx
+                        .facts
+                        .constructable_function_locals
+                        .insert(local_id);
+                } else {
+                    self.ctx
+                        .facts
+                        .constructable_function_locals
+                        .remove(&local_id);
                 }
                 self.ctx.facts.nullish_locals.remove(&local_id);
                 if self.ctx.facts.env_cell_locals.contains(&local_id) {
@@ -1567,6 +1891,12 @@ impl Resolver {
                     .map(|s| self.lower_stmt(s))
                     .transpose()?
                     .map(Box::new);
+                let mut loop_assigned = HashSet::new();
+                if let Some(update) = update {
+                    collect_assigned_names_from_expr(update, &mut loop_assigned);
+                }
+                collect_assigned_names_from_stmts(body, &mut loop_assigned);
+                self.invalidate_assigned_local_facts_by_name(loop_assigned);
                 let resolved = LoweredStmt::For {
                     init: resolved_init,
                     condition: condition.as_ref().map(|c| self.lower_expr(c)).transpose()?,
@@ -1595,6 +1925,31 @@ impl Resolver {
                 if crate::lowered::resolver::expr::facts::resolved_expr_has_symbol_iterator_property(
                     &self.ctx, iter,
                 ) {
+                    let static_values = if resolved_stmts_contain_break_or_continue(body) {
+                        resolved_stmts_end_with_unlabeled_break(body)
+                            .then(|| self.static_custom_iterable_for_of_values(iter, Some(1)))
+                            .flatten()
+                    } else {
+                        self.static_custom_iterable_for_of_values(iter, None)
+                    };
+                    if let Some(values) = static_values {
+                        let mut elements = Vec::with_capacity(values.len());
+                        for value in values {
+                            elements.push(self.lower_expr(&value)?);
+                        }
+                        return Ok(LoweredStmt::ForOf {
+                            var: var_id,
+                            iter: LoweredExpr::ArrayNew {
+                                elements,
+                                span: Span::generated("array_new"),
+                            },
+                            iter_local: self.alloc_temp(),
+                            index_local: self.alloc_temp(),
+                            len_local: self.alloc_temp(),
+                            body: self.lower_nested_block(body)?,
+                            span: Span::generated("for_of_static_custom_iterable"),
+                        });
+                    }
                     return self.lower_for_of_via_iterator(var_id, iter, body);
                 }
                 let lowered_iter = if let ResolvedExpr::Ident(name) = iter
@@ -2382,18 +2737,50 @@ pub(crate) fn unary_plus_arrow_callback(args: &[ResolvedExpr]) -> bool {
     *op == UnaryOp::Plus && matches!(expr.as_ref(), ResolvedExpr::Ident(name) if name == param)
 }
 
-pub(crate) fn numeric_ascending_sort_arrow_callback(args: &[ResolvedExpr]) -> bool {
-    let [ResolvedExpr::ArrowFn { params, body, .. }] = args else {
+pub(crate) fn numeric_ascending_sort_callback(args: &[ResolvedExpr]) -> bool {
+    let [callback] = args else {
         return false;
     };
-    let [left_param, right_param] = params.as_slice() else {
-        return false;
+
+    let (left_param, right_param, body) = match callback {
+        ResolvedExpr::ArrowFn { params, body, .. } => {
+            let [left_param, right_param] = params.as_slice() else {
+                return false;
+            };
+            (left_param.as_str(), right_param.as_str(), body.as_ref())
+        }
+        ResolvedExpr::FunctionExpr {
+            params,
+            body,
+            is_generator,
+            ..
+        } => {
+            if *is_generator {
+                return false;
+            }
+            let [left_param, right_param] = params.as_slice() else {
+                return false;
+            };
+            if left_param.default.is_some()
+                || right_param.default.is_some()
+                || left_param.is_rest
+                || right_param.is_rest
+            {
+                return false;
+            }
+            let [ResolvedStmt::Return(body)] = body.as_slice() else {
+                return false;
+            };
+            (left_param.name.as_str(), right_param.name.as_str(), body)
+        }
+        _ => return false,
     };
+
     let ResolvedExpr::Binary {
         left,
         op: BinaryOp::Subtract,
         right,
-    } = body.as_ref()
+    } = body
     else {
         return false;
     };
@@ -2456,9 +2843,11 @@ pub(crate) fn static_function_constructable_for_expr(expr: &ResolvedExpr) -> boo
             constructor_metadata: Some(metadata),
             ..
         } => metadata.constructable,
-        ResolvedExpr::FunctionExpr { origin, .. } => {
-            *origin == ts2wasm_syntax::FunctionExprOrigin::FunctionConstructor
-        }
+        ResolvedExpr::FunctionExpr {
+            is_generator,
+            origin,
+            ..
+        } => *origin == ts2wasm_syntax::FunctionExprOrigin::FunctionConstructor || !is_generator,
         _ => false,
     }
 }

@@ -53,9 +53,9 @@ pub enum WasmInstr {
     BrIfDepth(u32),
     Select,
 
-    /// `(if` or `(if (result $ty))` — result_ty is Some when an if-result.
+    /// `(if` or `(if (result $ty))`.
     If {
-        result_ty: Option<String>,
+        result_ty: WasmBlockType,
     },
     /// `  (then`
     Then,
@@ -98,14 +98,59 @@ pub enum WasmInstr {
     I32Ctz,
     I32Popcnt,
     I32WrapI64,
+    I64ExtendI32S,
+    I64ExtendI32U,
+    I64Eqz,
+    I64Eq,
+    I64LtS,
+    I64GeU,
+    I64Add,
+    I64Sub,
+    I64Mul,
+    I64DivU,
+    I64RemU,
+    I64GtU,
+    I64And,
+    I64Or,
+    I64Xor,
+    I64Shl,
+    I64ShrS,
+    I64ShrU,
 
     // ---- memory ------------------------------------------------------------
     MemorySize,
     MemoryGrow,
+    MemoryCopy,
+    MemoryFill,
 
     // ---- load / store ------------------------------------------------------
     /// `(i32.load align=$0 offset=$1)`
     I32Load {
+        align: u32,
+        offset: u32,
+    },
+    /// `(i32.load8_s align=$0 offset=$1)`
+    I32Load8S {
+        align: u32,
+        offset: u32,
+    },
+    /// `(i32.load8_u align=$0 offset=$1)`
+    I32Load8U {
+        align: u32,
+        offset: u32,
+    },
+    /// `(i32.load16_s align=$0 offset=$1)`
+    I32Load16S {
+        align: u32,
+        offset: u32,
+    },
+    /// `(i32.load16_u align=$0 offset=$1)`
+    I32Load16U {
+        align: u32,
+        offset: u32,
+    },
+    /// `(i64.load align=$0 offset=$1)`
+    I64Load {
         align: u32,
         offset: u32,
     },
@@ -116,6 +161,16 @@ pub enum WasmInstr {
     },
     /// `(i32.store8 align=$0 offset=$1)`
     I32Store8 {
+        align: u32,
+        offset: u32,
+    },
+    /// `(i32.store16 align=$0 offset=$1)`
+    I32Store16 {
+        align: u32,
+        offset: u32,
+    },
+    /// `(i64.store align=$0 offset=$1)`
+    I64Store {
         align: u32,
         offset: u32,
     },
@@ -144,6 +199,22 @@ impl WasmValType {
         match self {
             Self::I32 => "i32",
             Self::I64 => "i64",
+        }
+    }
+}
+
+/// Wasm structured control block type.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum WasmBlockType {
+    Empty,
+    Result(WasmValType),
+}
+
+impl WasmBlockType {
+    pub fn result_type(self) -> Option<WasmValType> {
+        match self {
+            Self::Empty => None,
+            Self::Result(ty) => Some(ty),
         }
     }
 }

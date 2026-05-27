@@ -138,6 +138,12 @@ impl RuntimeLinkPlan {
                             "new Date()".to_owned(),
                         ));
                     }
+                    (Capability::WasiClockRealtime, RuntimeFn::DateEpochMsNowNumber) => {
+                        capability_reasons_to_add.push((
+                            capability.manifest_name().to_owned(),
+                            "Date epoch millisecond clock".to_owned(),
+                        ));
+                    }
                     (Capability::WasiClockRealtime, RuntimeFn::ConsoleTimeStart) => {
                         capability_reasons_to_add.push((
                             capability.manifest_name().to_owned(),
@@ -403,6 +409,8 @@ const NODE_SHIM_IMPORT_CAPABILITIES: &[(HostImport, Capability)] = &[
     (HostImport::MathTanh, Capability::HostMathTanh),
     (HostImport::MathAtan2, Capability::HostMathAtan2),
     (HostImport::MathHypot, Capability::HostMathHypot),
+    (HostImport::JsonStringify, Capability::HostJsonStringify),
+    (HostImport::JsonParse, Capability::HostJsonParse),
     (
         HostImport::IntlNumberFormatFormat,
         Capability::HostIntlNumberFormatFormat,
@@ -412,6 +420,18 @@ const NODE_SHIM_IMPORT_CAPABILITIES: &[(HostImport, Capability)] = &[
         HostImport::ReflectConstruct,
         Capability::HostReflectConstruct,
     ),
+    (HostImport::GetIterator, Capability::HostGetIterator),
+    (HostImport::IteratorNext, Capability::HostIteratorNext),
+    (HostImport::IteratorMap, Capability::HostIteratorMap),
+    (HostImport::IteratorFilter, Capability::HostIteratorFilter),
+    (HostImport::IteratorTake, Capability::HostIteratorTake),
+    (HostImport::IteratorDrop, Capability::HostIteratorDrop),
+    (HostImport::IteratorToArray, Capability::HostIteratorToArray),
+    (HostImport::IteratorReduce, Capability::HostIteratorReduce),
+    (HostImport::IteratorForEach, Capability::HostIteratorForEach),
+    (HostImport::IteratorSome, Capability::HostIteratorSome),
+    (HostImport::IteratorEvery, Capability::HostIteratorEvery),
+    (HostImport::IteratorFind, Capability::HostIteratorFind),
     (HostImport::EvalDirect, Capability::HostEvalDirect),
     (HostImport::EvalIndirect, Capability::HostEvalIndirect),
     (HostImport::FunctionCompile, Capability::HostFunctionCompile),
@@ -480,11 +500,25 @@ fn cap_is_host(cap: &Capability) -> bool {
             | Capability::HostMathSinh
             | Capability::HostMathTan
             | Capability::HostMathTanh
+            | Capability::HostJsonStringify
+            | Capability::HostJsonParse
             | Capability::HostIntlNumberFormatFormat
             | Capability::HostIntlDateTimeFormatFormat
             | Capability::HostStringNormalize
             | Capability::HostReflectApply
             | Capability::HostReflectConstruct
+            | Capability::HostGetIterator
+            | Capability::HostIteratorNext
+            | Capability::HostIteratorMap
+            | Capability::HostIteratorFilter
+            | Capability::HostIteratorTake
+            | Capability::HostIteratorDrop
+            | Capability::HostIteratorToArray
+            | Capability::HostIteratorReduce
+            | Capability::HostIteratorForEach
+            | Capability::HostIteratorSome
+            | Capability::HostIteratorEvery
+            | Capability::HostIteratorFind
             | Capability::HostEvalDirect
             | Capability::HostEvalIndirect
             | Capability::HostFunctionCompile

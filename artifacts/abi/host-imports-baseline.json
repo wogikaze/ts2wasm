@@ -100,6 +100,22 @@
     },
     {
       "module": "host",
+      "name": "eval.direct",
+      "wat_symbol": "$host_eval_direct",
+      "abi": "NodeShim",
+      "capability": "host.eval.direct",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "eval.indirect",
+      "wat_symbol": "$host_eval_indirect",
+      "abi": "NodeShim",
+      "capability": "host.eval.indirect",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
       "name": "fs.appendFileSync",
       "wat_symbol": "$host_fs_append_file_sync",
       "abi": "NodeShim",
@@ -120,6 +136,326 @@
       "wat_symbol": "$host_fs_write_file_sync",
       "abi": "NodeShim",
       "capability": "host.fs.writeFileSync",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "function.call",
+      "wat_symbol": "$host_function_call",
+      "abi": "NodeShim",
+      "capability": "host.function.call",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "function.callMethod",
+      "wat_symbol": "$host_function_call_method",
+      "abi": "NodeShim",
+      "capability": "host.function.callMethod",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "function.compile",
+      "wat_symbol": "$host_function_compile",
+      "abi": "NodeShim",
+      "capability": "host.function.compile",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "function.construct",
+      "wat_symbol": "$host_function_construct",
+      "abi": "NodeShim",
+      "capability": "host.function.construct",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "getIterator",
+      "wat_symbol": "$host_get_iterator",
+      "abi": "NodeShim",
+      "capability": "host.getIterator",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "intlDateTimeFormatFormat",
+      "wat_symbol": "$host_intl_date_time_format_format",
+      "abi": "NodeShim",
+      "capability": "host.intlDateTimeFormatFormat",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "intlNumberFormatFormat",
+      "wat_symbol": "$host_intl_number_format_format",
+      "abi": "NodeShim",
+      "capability": "host.intlNumberFormatFormat",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "iterator.drop",
+      "wat_symbol": "$host_iterator_drop",
+      "abi": "NodeShim",
+      "capability": "host.iterator.drop",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "iterator.every",
+      "wat_symbol": "$host_iterator_every",
+      "abi": "NodeShim",
+      "capability": "host.iterator.every",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "iterator.filter",
+      "wat_symbol": "$host_iterator_filter",
+      "abi": "NodeShim",
+      "capability": "host.iterator.filter",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "iterator.find",
+      "wat_symbol": "$host_iterator_find",
+      "abi": "NodeShim",
+      "capability": "host.iterator.find",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "iterator.forEach",
+      "wat_symbol": "$host_iterator_for_each",
+      "abi": "NodeShim",
+      "capability": "host.iterator.forEach",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "iterator.map",
+      "wat_symbol": "$host_iterator_map",
+      "abi": "NodeShim",
+      "capability": "host.iterator.map",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "iterator.reduce",
+      "wat_symbol": "$host_iterator_reduce",
+      "abi": "NodeShim",
+      "capability": "host.iterator.reduce",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "iterator.some",
+      "wat_symbol": "$host_iterator_some",
+      "abi": "NodeShim",
+      "capability": "host.iterator.some",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "iterator.take",
+      "wat_symbol": "$host_iterator_take",
+      "abi": "NodeShim",
+      "capability": "host.iterator.take",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "iterator.toArray",
+      "wat_symbol": "$host_iterator_to_array",
+      "abi": "NodeShim",
+      "capability": "host.iterator.toArray",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "iteratorNext",
+      "wat_symbol": "$host_iterator_next",
+      "abi": "NodeShim",
+      "capability": "host.iteratorNext",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "json.parse",
+      "wat_symbol": "$host_json_parse",
+      "abi": "NodeShim",
+      "capability": "host.json.parse",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "json.stringify",
+      "wat_symbol": "$host_json_stringify",
+      "abi": "NodeShim",
+      "capability": "host.json.stringify",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "mathAcos",
+      "wat_symbol": "$host_math_acos",
+      "abi": "NodeShim",
+      "capability": "host.mathAcos",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "mathAcosh",
+      "wat_symbol": "$host_math_acosh",
+      "abi": "NodeShim",
+      "capability": "host.mathAcosh",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "mathAsin",
+      "wat_symbol": "$host_math_asin",
+      "abi": "NodeShim",
+      "capability": "host.mathAsin",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "mathAsinh",
+      "wat_symbol": "$host_math_asinh",
+      "abi": "NodeShim",
+      "capability": "host.mathAsinh",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "mathAtan",
+      "wat_symbol": "$host_math_atan",
+      "abi": "NodeShim",
+      "capability": "host.mathAtan",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "mathAtan2",
+      "wat_symbol": "$host_math_atan2",
+      "abi": "NodeShim",
+      "capability": "host.mathAtan2",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "mathAtanh",
+      "wat_symbol": "$host_math_atanh",
+      "abi": "NodeShim",
+      "capability": "host.mathAtanh",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "mathCos",
+      "wat_symbol": "$host_math_cos",
+      "abi": "NodeShim",
+      "capability": "host.mathCos",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "mathCosh",
+      "wat_symbol": "$host_math_cosh",
+      "abi": "NodeShim",
+      "capability": "host.mathCosh",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "mathExp",
+      "wat_symbol": "$host_math_exp",
+      "abi": "NodeShim",
+      "capability": "host.mathExp",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "mathExpm1",
+      "wat_symbol": "$host_math_expm1",
+      "abi": "NodeShim",
+      "capability": "host.mathExpm1",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "mathHypot",
+      "wat_symbol": "$host_math_hypot",
+      "abi": "NodeShim",
+      "capability": "host.mathHypot",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "mathLog",
+      "wat_symbol": "$host_math_log",
+      "abi": "NodeShim",
+      "capability": "host.mathLog",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "mathLog10",
+      "wat_symbol": "$host_math_log10",
+      "abi": "NodeShim",
+      "capability": "host.mathLog10",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "mathLog1p",
+      "wat_symbol": "$host_math_log1p",
+      "abi": "NodeShim",
+      "capability": "host.mathLog1p",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "mathLog2",
+      "wat_symbol": "$host_math_log2",
+      "abi": "NodeShim",
+      "capability": "host.mathLog2",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "mathSin",
+      "wat_symbol": "$host_math_sin",
+      "abi": "NodeShim",
+      "capability": "host.mathSin",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "mathSinh",
+      "wat_symbol": "$host_math_sinh",
+      "abi": "NodeShim",
+      "capability": "host.mathSinh",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "mathTan",
+      "wat_symbol": "$host_math_tan",
+      "abi": "NodeShim",
+      "capability": "host.mathTan",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "mathTanh",
+      "wat_symbol": "$host_math_tanh",
+      "abi": "NodeShim",
+      "capability": "host.mathTanh",
       "reason_owner": "runtime-catalog"
     },
     {
@@ -160,6 +496,22 @@
       "wat_symbol": "$host_process_exit",
       "abi": "NodeShim",
       "capability": "host.process.exit",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "reflectApply",
+      "wat_symbol": "$host_reflect_apply",
+      "abi": "NodeShim",
+      "capability": "host.reflectApply",
+      "reason_owner": "runtime-catalog"
+    },
+    {
+      "module": "host",
+      "name": "reflectConstruct",
+      "wat_symbol": "$host_reflect_construct",
+      "abi": "NodeShim",
+      "capability": "host.reflectConstruct",
       "reason_owner": "runtime-catalog"
     },
     {

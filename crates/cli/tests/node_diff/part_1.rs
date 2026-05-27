@@ -149,34 +149,8 @@ fn regexp_pattern_extensions_build_succeeds() {
 }
 
 #[test]
-fn regexp_compile_fixture_reports_issue_051() {
-    let fixture = "fixtures/core-semantics/regexp-compile-unsupported.ts";
-    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../..")
-        .join(fixture);
-    let output = temp_wasm_path(fixture);
-
-    let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
-        .arg("build")
-        .arg(&fixture_path)
-        .arg("-o")
-        .arg(&output)
-        .output()
-        .unwrap();
-
-    assert!(
-        !build.status.success(),
-        "unsupported RegExp.prototype.compile fixture should not build successfully"
-    );
-    let stderr = String::from_utf8_lossy(&build.stderr);
-    assert!(
-        stderr_contains_diag_code(&stderr, "UnsupportedRegExp"),
-        "expected UnsupportedRegExp diagnostic, got:\n{stderr}"
-    );
-    assert!(
-        stderr.contains("issue-051: RegExp.prototype.compile is not supported"),
-        "expected issue-linked RegExp.prototype.compile diagnostic, got:\n{stderr}"
-    );
+fn regexp_compile_fixture_matches_node() {
+    assert_fixture_matches_node("fixtures/core-semantics/regexp-compile-unsupported.ts");
 }
 
 #[test]
@@ -411,6 +385,27 @@ fn static_indirect_eval_declaration_global_typeof_fixture_matches_node_output() 
 }
 
 #[test]
+fn static_indirect_eval_for_head_var_destructuring_global_fixture_matches_node_output() {
+    assert_fixture_matches_node(
+        "fixtures/core-semantics/indirect-eval-static-for-head-var-destructuring-global.ts",
+    );
+}
+
+#[test]
+fn static_indirect_eval_for_head_var_object_rest_global_fixture_matches_node_output() {
+    assert_fixture_matches_node(
+        "fixtures/core-semantics/indirect-eval-static-for-head-var-object-rest-global.ts",
+    );
+}
+
+#[test]
+fn static_indirect_eval_for_head_var_object_rest_computed_global_fixture_matches_node_output() {
+    assert_fixture_matches_node(
+        "fixtures/core-semantics/indirect-eval-static-for-head-var-object-rest-computed-global.ts",
+    );
+}
+
+#[test]
 fn static_indirect_eval_lexical_local_fixture_matches_node_output() {
     assert_fixture_matches_node("fixtures/core-semantics/indirect-eval-static-lexical-local.ts");
 }
@@ -450,6 +445,88 @@ fn optional_eval_short_circuit_matches_node_output() {
 #[test]
 fn direct_eval_dynamic_fixture_matches_node_output() {
     assert_fixture_matches_node("fixtures/core-semantics/direct-eval-dynamic-host-path.ts");
+}
+
+#[test]
+fn direct_eval_dynamic_for_head_var_normal_code_matches_node_output() {
+    assert_fixture_matches_node(
+        "fixtures/core-semantics/direct-eval-dynamic-for-head-var-normal-code-node-shim.ts",
+    );
+}
+
+#[test]
+fn direct_eval_dynamic_for_head_var_destructuring_normal_code_matches_node_output() {
+    assert_fixture_matches_node(
+        "fixtures/core-semantics/direct-eval-dynamic-for-head-var-destructuring-normal-code-node-shim.ts",
+    );
+}
+
+#[test]
+fn direct_eval_dynamic_arrow_writeback_matches_node_output() {
+    assert_fixture_matches_node(
+        "fixtures/core-semantics/direct-eval-dynamic-arrow-writeback-node-shim.ts",
+    );
+}
+
+#[test]
+fn direct_eval_dynamic_this_and_arguments_match_node_output() {
+    for fixture in [
+        "fixtures/core-semantics/direct-eval-dynamic-arrow-lexical-this-node-shim.ts",
+        "fixtures/core-semantics/direct-eval-dynamic-object-method-this-node-shim.ts",
+        "fixtures/core-semantics/direct-eval-dynamic-class-method-this-node-shim.ts",
+        "fixtures/core-semantics/direct-eval-dynamic-class-method-arguments-node-shim.ts",
+        "fixtures/core-semantics/direct-eval-dynamic-class-constructor-this-node-shim.ts",
+    ] {
+        assert_fixture_matches_node(fixture);
+    }
+}
+
+#[test]
+fn direct_eval_dynamic_strict_eval_static_policy_matches_node_output() {
+    for fixture in [
+        "fixtures/core-semantics/direct-eval-dynamic-strict-caller-array-binding-arguments-node-shim.ts",
+        "fixtures/core-semantics/direct-eval-dynamic-strict-caller-async-function-eval-node-shim.ts",
+        "fixtures/core-semantics/direct-eval-dynamic-strict-caller-delete-arguments-node-shim.ts",
+        "fixtures/core-semantics/direct-eval-dynamic-strict-caller-delete-node-shim.ts",
+        "fixtures/core-semantics/direct-eval-dynamic-strict-caller-function-eval-node-shim.ts",
+        "fixtures/core-semantics/direct-eval-dynamic-strict-caller-object-binding-eval-node-shim.ts",
+        "fixtures/core-semantics/direct-eval-dynamic-strict-caller-regexp-after-keyword-node-shim.ts",
+        "fixtures/core-semantics/direct-eval-dynamic-strict-caller-regexp-restricted-words-node-shim.ts",
+        "fixtures/core-semantics/direct-eval-dynamic-strict-caller-string-restricted-words-node-shim.ts",
+        "fixtures/core-semantics/direct-eval-dynamic-strict-caller-var-arguments-node-shim.ts",
+        "fixtures/core-semantics/direct-eval-dynamic-strict-caller-var-local-node-shim.ts",
+        "fixtures/core-semantics/direct-eval-dynamic-strict-lexical-shadow-node-shim.ts",
+    ] {
+        assert_fixture_matches_node(fixture);
+    }
+}
+
+#[test]
+fn direct_eval_dynamic_tdz_reference_error_matches_node_output() {
+    for fixture in [
+        "fixtures/core-semantics/direct-eval-dynamic-tdz-computed-member-node-shim.ts",
+        "fixtures/core-semantics/direct-eval-dynamic-tdz-conflict-node-shim.ts",
+        "fixtures/core-semantics/direct-eval-dynamic-tdz-member-node-shim.ts",
+        "fixtures/core-semantics/direct-eval-dynamic-tdz-optional-computed-member-node-shim.ts",
+        "fixtures/core-semantics/direct-eval-dynamic-tdz-optional-member-node-shim.ts",
+        "fixtures/core-semantics/direct-eval-dynamic-tdz-parenthesized-node-shim.ts",
+        "fixtures/core-semantics/direct-eval-dynamic-tdz-template-expression-node-shim.ts",
+        "fixtures/core-semantics/direct-eval-dynamic-tdz-typeof-node-shim.ts",
+    ] {
+        assert_fixture_matches_node(fixture);
+    }
+}
+
+#[test]
+fn direct_eval_dynamic_throw_pre_effects_match_node_output() {
+    for fixture in [
+        "fixtures/core-semantics/direct-eval-dynamic-throw-created-binding-node-shim.ts",
+        "fixtures/core-semantics/direct-eval-dynamic-throw-created-function-node-shim.ts",
+        "fixtures/core-semantics/direct-eval-dynamic-throw-created-function-normal-code-node-shim.ts",
+        "fixtures/core-semantics/direct-eval-dynamic-throw-writeback-node-shim.ts",
+    ] {
+        assert_fixture_matches_node(fixture);
+    }
 }
 
 #[test]

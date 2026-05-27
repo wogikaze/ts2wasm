@@ -7,6 +7,7 @@ use crate::builtin_resolved::{
 };
 use crate::lowered::classes::{ObjectAccessorKey, ObjectAccessorProp};
 use crate::lowered::facts::ArrowClosure;
+use crate::lowered::source_text::strip_typescript_function_source;
 use crate::lowered::*;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
@@ -65,15 +66,26 @@ impl super::Resolver {
         body: &ResolvedExpr,
         body_stmts: &[ResolvedStmt],
     ) -> Result<LoweredExpr, Diagnostic> {
-        self.lower_arrow_fn_with_self(params, body, body_stmts, None)
+        self.lower_arrow_fn_with_source_text(params, body, body_stmts, "")
     }
 
-    pub(super) fn lower_arrow_fn_with_self(
+    pub(super) fn lower_arrow_fn_with_source_text(
+        &mut self,
+        params: &[String],
+        body: &ResolvedExpr,
+        body_stmts: &[ResolvedStmt],
+        source_text: &str,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        self.lower_arrow_fn_with_self_and_source_text(params, body, body_stmts, None, source_text)
+    }
+
+    pub(super) fn lower_arrow_fn_with_self_and_source_text(
         &mut self,
         params: &[String],
         body: &ResolvedExpr,
         body_stmts: &[ResolvedStmt],
         self_name: Option<&str>,
+        source_text: &str,
     ) -> Result<LoweredExpr, Diagnostic> {
         let mut excluded = binding_param_names(params.iter().map(|param| (param.as_str(), None)))?;
         let active_self_name = self_name.filter(|name| {
@@ -168,6 +180,11 @@ impl super::Resolver {
 
         let func_id = FuncId(self.ctx.functions.next_func_id);
         self.ctx.functions.next_func_id += 1;
+        if !source_text.is_empty() {
+            self.ctx
+                .function_sources
+                .insert(func_id, strip_typescript_function_source(source_text));
+        }
         if !capture_names.is_empty() {
             self.ctx
                 .functions
@@ -335,6 +352,7 @@ impl super::Resolver {
                     || block_contains_dynamic_direct_eval(body))
                     && !params.iter().any(|param| param.name == "arguments"),
                 has_rest: params.iter().any(|param| param.is_rest),
+                returns_static_string: crate::lowered::program::body_returns_static_string(body),
                 ..FunctionSignature::default()
             },
         );
@@ -426,7 +444,8 @@ impl super::Resolver {
             params,
             body,
             NestedFunctionOptions {
-                force_receiver: is_function_constructor && block_contains_this(body),
+                force_receiver: (is_function_constructor || origin == FunctionExprOrigin::User)
+                    && block_contains_this(body),
                 is_generator,
                 suppress_captures: constructor_metadata.is_some_and(|meta| meta.suppress_captures)
                     || origin == FunctionExprOrigin::FunctionConstructor,
@@ -457,9 +476,15 @@ impl super::Resolver {
         {
             return None;
         }
-        let closure = self.ctx.facts.arrow_locals.get(&local)?;
+        let func_id = self
+            .ctx
+            .facts
+            .arrow_locals
+            .get(&local)
+            .map(|closure| closure.func_id)
+            .or_else(|| self.ctx.symbols.function_ids.get(name).copied())?;
         Some(ClassPrototypeRef {
-            constructor: closure.func_id,
+            constructor: func_id,
             parent_constructors: Vec::new(),
         })
     }
@@ -621,7 +646,7 @@ impl super::Resolver {
         if let Some(source_text) = &options.source_text {
             self.ctx
                 .function_sources
-                .insert(func_id, source_text.clone());
+                .insert(func_id, strip_typescript_function_source(source_text));
         }
         let self_closure = (!options.suppress_captures && !name.is_empty())
             .then_some(SelfClosureOptions {
@@ -665,6 +690,7 @@ impl super::Resolver {
                     .metadata_length
                     .or_else(|| Some(function_length_metadata(params))),
                 metadata_name: options.metadata_name,
+                returns_static_string: crate::lowered::program::body_returns_static_string(body),
                 ..FunctionSignature::default()
             },
         );

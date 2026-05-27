@@ -237,14 +237,15 @@ impl super::super::Resolver {
             )]);
         }
 
-        // Dynamic path: use RestObject runtime function directly.
-        let mut rest_args = vec![value.clone()];
+        // Dynamic path: pass excluded keys as a single array so the runtime
+        // helper has a fixed native ABI.
+        let mut excluded_keys = Vec::new();
         for sibling in siblings.iter().filter(|sibling| !sibling.is_rest) {
             if sibling.computed {
                 let key_raw = sibling.key.trim_start_matches('[').trim_end_matches(']');
-                rest_args.push(self.lower_computed_object_binding_key_expr(key_raw)?);
+                excluded_keys.push(self.lower_computed_object_binding_key_expr(key_raw)?);
             } else {
-                rest_args.push(LoweredExpr::String(
+                excluded_keys.push(LoweredExpr::String(
                     sibling.key.clone(),
                     Span::generated("str"),
                 ));
@@ -254,7 +255,13 @@ impl super::super::Resolver {
             local_id,
             LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::RestObject,
-                args: rest_args,
+                args: vec![
+                    value.clone(),
+                    LoweredExpr::ArrayNew {
+                        elements: excluded_keys,
+                        span: Span::generated("rest_excluded_keys"),
+                    },
+                ],
                 span: Span::generated("runtime_call"),
             },
             Span::generated("let_stmt"),
@@ -678,14 +685,15 @@ impl super::super::Resolver {
             )]);
         }
 
-        // Dynamic path: use RestObject runtime function directly.
-        let mut rest_args = vec![value.clone()];
+        // Dynamic path: pass excluded keys as a single array so the runtime
+        // helper has a fixed native ABI.
+        let mut excluded_keys = Vec::new();
         for sibling in siblings.iter().filter(|sibling| !sibling.is_rest) {
             if sibling.computed {
                 let key_raw = sibling.key.trim_start_matches('[').trim_end_matches(']');
-                rest_args.push(self.lower_computed_object_binding_key_expr(key_raw)?);
+                excluded_keys.push(self.lower_computed_object_binding_key_expr(key_raw)?);
             } else {
-                rest_args.push(LoweredExpr::String(
+                excluded_keys.push(LoweredExpr::String(
                     sibling.key.clone(),
                     Span::generated("str"),
                 ));
@@ -695,7 +703,13 @@ impl super::super::Resolver {
             local_id,
             LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::RestObject,
-                args: rest_args,
+                args: vec![
+                    value.clone(),
+                    LoweredExpr::ArrayNew {
+                        elements: excluded_keys,
+                        span: Span::generated("rest_excluded_keys"),
+                    },
+                ],
                 span: Span::generated("runtime_call"),
             },
             Span::generated("assign"),

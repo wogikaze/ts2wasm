@@ -25,6 +25,8 @@ pub enum ObjectAccessorKey {
 pub struct ObjectAccessorProp {
     pub get: Option<FuncId>,
     pub set: Option<FuncId>,
+    pub enumerable: bool,
+    pub configurable: bool,
 }
 
 /// Class hierarchy context for the lowering pass.

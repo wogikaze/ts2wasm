@@ -5,6 +5,13 @@ use crate::builtin_resolved::ResolvedExpr;
 use crate::lowered::*;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
+use ts2wasm_syntax::UnaryOp;
+
+#[derive(Clone, Copy, Debug)]
+pub(super) struct ClassAccessorDescriptor {
+    pub get: Option<FuncId>,
+    pub set: Option<FuncId>,
+}
 
 impl super::Resolver {
     pub(super) fn append_class_method_captures(
@@ -62,6 +69,45 @@ impl super::Resolver {
                 .copied()
             {
                 return Some(id);
+            }
+            current = self
+                .ctx
+                .classes
+                .class_parents
+                .get(&class)
+                .and_then(|p| p.clone());
+        }
+        None
+    }
+
+    pub(super) fn resolve_class_getter(&self, class_name: &str, key: &str) -> Option<FuncId> {
+        self.resolve_class_accessor(class_name, key)
+            .and_then(|accessor| accessor.get)
+    }
+
+    pub(super) fn resolve_class_accessor(
+        &self,
+        class_name: &str,
+        key: &str,
+    ) -> Option<ClassAccessorDescriptor> {
+        let get_name = format!("get {key}");
+        let set_name = format!("set {key}");
+        let mut current = Some(class_name.to_owned());
+        while let Some(class) = current {
+            let get = self
+                .ctx
+                .classes
+                .class_method_ids
+                .get(&(class.clone(), get_name.clone()))
+                .copied();
+            let set = self
+                .ctx
+                .classes
+                .class_method_ids
+                .get(&(class.clone(), set_name.clone()))
+                .copied();
+            if get.is_some() || set.is_some() {
+                return Some(ClassAccessorDescriptor { get, set });
             }
             current = self
                 .ctx
@@ -211,15 +257,20 @@ impl super::Resolver {
                 phase: None,
             });
         };
-        let class_name = self.ctx.classes.current_class.as_ref().ok_or_else(|| Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: format!(
+        let class_name = self
+            .ctx
+            .classes
+            .current_class
+            .as_ref()
+            .ok_or_else(|| Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!(
                 "issue-255: private field `#{field_name}` access requires declaring class context"
             ),
-            span: Some(span),
+                span: Some(span),
 
-            phase: None,
-        })?;
+                phase: None,
+            })?;
         let Some(mut slot) = self
             .ctx
             .classes
@@ -507,10 +558,24 @@ impl super::Resolver {
             {
                 Some("Object".to_owned())
             }
+            ResolvedExpr::MethodCall { object, method, .. }
+                if method == "toArray" && resolved_expr_is_iterator_helper_chain(object) =>
+            {
+                Some("Array".to_owned())
+            }
             ResolvedExpr::String(raw) if looks_like_regexp_literal(raw) => {
                 Some("RegExp".to_owned())
             }
             ResolvedExpr::String(_) => Some("String".to_owned()),
+            ResolvedExpr::Unary { op, expr }
+                if matches!(op, UnaryOp::Negate | UnaryOp::Plus)
+                    && matches!(
+                        expr.as_ref(),
+                        ResolvedExpr::Number(_) | ResolvedExpr::DecimalNumber(_)
+                    ) =>
+            {
+                Some("Number".to_owned())
+            }
             ResolvedExpr::Number(_) | ResolvedExpr::DecimalNumber(_) => Some("Number".to_owned()),
             ResolvedExpr::Bool(_) => Some("Boolean".to_owned()),
             ResolvedExpr::Array(_) => Some("Array".to_owned()),
@@ -560,5 +625,34 @@ impl super::Resolver {
             }
         }
         None
+    }
+}
+
+fn resolved_expr_is_iterator_helper_chain(expr: &ResolvedExpr) -> bool {
+    match expr {
+        ResolvedExpr::MethodCall { object, method, .. }
+            if matches!(object.as_ref(), ResolvedExpr::Ident(name) if name == "Iterator")
+                && method == "from" =>
+        {
+            true
+        }
+        ResolvedExpr::MethodCall { object, method, .. }
+            if matches!(
+                method.as_str(),
+                "map"
+                    | "filter"
+                    | "take"
+                    | "drop"
+                    | "toArray"
+                    | "reduce"
+                    | "forEach"
+                    | "some"
+                    | "every"
+                    | "find"
+            ) =>
+        {
+            resolved_expr_is_iterator_helper_chain(object)
+        }
+        _ => false,
     }
 }

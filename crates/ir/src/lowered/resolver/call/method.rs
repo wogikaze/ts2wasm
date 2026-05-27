@@ -4,8 +4,9 @@ use super::super::{
     is_array_prototype_every_some_call_receiver, is_array_prototype_map_call_receiver,
     is_array_prototype_push_expr, is_identity_arrow_callback, is_set_prototype_property_expr,
     is_static_date_constructor_expr, is_string_split_result_expr, is_typed_array_class,
-    numeric_ascending_sort_arrow_callback, private_storage_observable_access_diagnostic,
-    string_constructor_arrow_callback, string_split_arrow_separator, unary_plus_arrow_callback,
+    iterator_method_runtime_fn, numeric_ascending_sort_callback,
+    private_storage_observable_access_diagnostic, string_constructor_arrow_callback,
+    string_split_arrow_separator, unary_plus_arrow_callback,
     unsupported_annex_b_date_method_diagnostic, unsupported_array_map_diagnostic,
     unsupported_array_sort_diagnostic,
 };
@@ -20,6 +21,7 @@ use crate::lowered::facts::{
     GeneratorMethodIteratorBinding, GeneratorObjectResumePlan, HostExternalKind,
     IntlDateTimeFormatOptions, IntlNumberFormatOptions, ProxyTrapKind,
 };
+use crate::lowered::source_text::strip_typescript_function_source;
 use crate::lowered::*;
 use std::collections::HashMap;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
@@ -131,6 +133,14 @@ impl super::super::Resolver {
             {
                 return Ok(result);
             }
+            if let Some(result) = self.lower_static_generator_next(object, args)? {
+                return Ok(result);
+            }
+            if args.is_empty()
+                && let Some(result) = self.lower_static_direct_generator_call_next(object)
+            {
+                return Ok(result);
+            }
             return Ok(LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::GeneratorNext,
                 args: vec![self.lower_expr(object)?],
@@ -144,6 +154,11 @@ impl super::super::Resolver {
             )
         {
             if let Some(result) = self.lower_static_generator_next(object, args)? {
+                return Ok(result);
+            }
+            if args.is_empty()
+                && let Some(result) = self.lower_static_direct_generator_call_next(object)
+            {
                 return Ok(result);
             }
             return Ok(LoweredExpr::RuntimeCall {
@@ -360,6 +375,34 @@ impl super::super::Resolver {
         Some(Self::generator_next_result(value, true))
     }
 
+    fn lower_static_direct_generator_call_next(&self, expr: &ResolvedExpr) -> Option<LoweredExpr> {
+        let func_name =
+            crate::lowered::resolver::expr::facts::resolved_generator_function_call_name(
+                &self.ctx, expr,
+            )?;
+        let function = self
+            .ctx
+            .functions
+            .generated_functions
+            .iter()
+            .find(|function| {
+                function.is_generator
+                    && function
+                        .metadata_name
+                        .as_deref()
+                        .is_some_and(|name| name == func_name)
+            })?;
+        if let [LoweredStmt::Return(expr, _)] = function.body.as_slice() {
+            let value = static_generator_completion_value(expr)?;
+            return Some(Self::generator_next_result(value, true));
+        }
+        if let Some(value) = static_generator_first_yield_value(&function.body) {
+            return Some(Self::generator_next_result(value, false));
+        }
+        let value = static_generator_implicit_completion_value(&function.body)?;
+        Some(Self::generator_next_result(value, true))
+    }
+
     fn local_arrow_function_data_descriptor(&self, target: &str, key: &str) -> Option<LoweredExpr> {
         let value = match key {
             "name" => {
@@ -437,11 +480,11 @@ impl super::super::Resolver {
         props.extend([
             (
                 "enumerable".to_owned(),
-                LoweredExpr::Bool(true, Span::generated("bool")),
+                LoweredExpr::Bool(accessor.enumerable, Span::generated("bool")),
             ),
             (
                 "configurable".to_owned(),
-                LoweredExpr::Bool(true, Span::generated("bool")),
+                LoweredExpr::Bool(accessor.configurable, Span::generated("bool")),
             ),
         ]);
         Some(LoweredExpr::ObjectNew {
@@ -1116,6 +1159,35 @@ impl super::super::Resolver {
         }))
     }
 
+    fn try_lower_regexp_compile(
+        &mut self,
+        object: &ResolvedExpr,
+        args: &[ResolvedExpr],
+        span: Span,
+    ) -> Result<Option<LoweredExpr>, Diagnostic> {
+        if !self.is_unsupported_regexp_compile_receiver(object, "compile") {
+            return Ok(None);
+        }
+        let compiled = LoweredExpr::String(
+            crate::lowered::program_builtins::regexp_constructor_literal(&self.ctx, args)?,
+            Span::generated("regexp_compile"),
+        );
+        if let ResolvedExpr::Ident(name) = object
+            && let Ok(local_id) = self.resolve_local(name)
+        {
+            return Ok(Some(LoweredExpr::Block {
+                stmts: vec![LoweredStmt::Assign(
+                    local_id,
+                    compiled,
+                    Span::generated("regexp_compile_assign"),
+                )],
+                result: Box::new(LoweredExpr::Local(local_id, Span::generated("local"))),
+                span,
+            }));
+        }
+        Ok(Some(compiled))
+    }
+
     fn lower_mcall_arraybuffer(
         &mut self,
         object: &ResolvedExpr,
@@ -1139,6 +1211,7 @@ impl super::super::Resolver {
             Some("ArrayBuffer" | "SharedArrayBuffer")
         ) && method == "transfer"
         {
+            let receiver = self.lower_expr(object)?;
             let new_len = args
                 .first()
                 .map(|arg| self.lower_expr(arg))
@@ -1146,7 +1219,7 @@ impl super::super::Resolver {
                 .unwrap_or_else(|| LoweredExpr::Number(0, Span::generated("num")));
             return Ok(Some(LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::ArrayBufferTransfer,
-                args: vec![new_len],
+                args: vec![receiver, new_len],
                 span: Span::generated("runtime_call"),
             }));
         }
@@ -1227,37 +1300,25 @@ impl super::super::Resolver {
                 &self.ctx.symbols.function_signatures,
             )?;
             let mut lowered_args = Vec::with_capacity(3);
-            let value = if let (ResolvedExpr::Object(props), Some(replacer_keys)) = (
-                &args[0],
-                json_stringify_replacer_keys(args, &self.ctx.symbols.function_ids),
-            ) {
-                let mut lowered_props = Vec::new();
-                for allowed_key in replacer_keys {
-                    if lowered_props
-                        .iter()
-                        .any(|(key, _): &(String, LoweredExpr)| key == &allowed_key)
-                    {
-                        continue;
-                    }
-                    if let Some(prop) = props
-                        .iter()
-                        .rev()
-                        .find(|prop| prop.static_key() == Some(allowed_key.as_str()))
-                    {
-                        lowered_props.push((allowed_key.clone(), self.lower_expr(prop.value())?));
-                    }
-                }
-                LoweredExpr::ObjectNew {
-                    props: lowered_props,
-                    non_enumerable: 0,
-                    span: Span::generated("object_new"),
-                }
-            } else {
-                self.lower_expr(&args[0])?
-            };
-            lowered_args.push(value);
+            let replacer_keys = self.json_stringify_replacer_keys(args);
+            lowered_args.push(self.lower_expr(&args[0])?);
             lowered_args.push(match args.get(1) {
-                Some(ResolvedExpr::Array(_)) => LoweredExpr::Null(Span::generated("null")),
+                Some(ResolvedExpr::Array(_)) => {
+                    if let Some(replacer_keys) = replacer_keys {
+                        LoweredExpr::ArrayNew {
+                            elements: replacer_keys
+                                .into_iter()
+                                .map(|key| LoweredExpr::String(key, Span::generated("string")))
+                                .collect(),
+                            span: Span::generated("array_new"),
+                        }
+                    } else {
+                        return Err(json_stringify_replacer_diagnostic(
+                            "array replacer property lists outside the supported static String/Number property-name and ignored-entry subset",
+                            span,
+                        ));
+                    }
+                }
                 Some(replacer) => {
                     if let Some(func_id) = json_stringify_function_replacer_id(
                         replacer,
@@ -1387,9 +1448,6 @@ impl super::super::Resolver {
                 span: Span::generated("runtime_call"),
             }));
         }
-        if self.is_unsupported_regexp_compile_receiver(object, method) {
-            return Err(unsupported_regexp_compile_diagnostic(Some(span)));
-        }
         if self.is_object_key_enumeration_leak(object, method, args) {
             return Err(private_storage_observable_access_diagnostic(Some(span)));
         }
@@ -1405,6 +1463,11 @@ impl super::super::Resolver {
                     self.lower_string_match_all_literal(object, args, span)?,
                 ));
             }
+        }
+        if method == "compile"
+            && let Some(result) = self.try_lower_regexp_compile(object, args, span)?
+        {
+            return Ok(Some(result));
         }
         if let Some(result) = self.try_lower_regexp_ident_local(object, method, args, span)? {
             return Ok(Some(result));
@@ -1514,7 +1577,7 @@ impl super::super::Resolver {
                         )));
                     }
                     return Ok(Some(LoweredExpr::String(
-                        source_text.clone(),
+                        strip_typescript_function_source(source_text),
                         Span::generated("str"),
                     )));
                 }
@@ -1533,7 +1596,7 @@ impl super::super::Resolver {
                         )));
                     }
                     return Ok(Some(LoweredExpr::String(
-                        source_text.clone(),
+                        strip_typescript_function_source(source_text),
                         Span::generated("str"),
                     )));
                 }
@@ -1999,6 +2062,31 @@ impl super::super::Resolver {
         Ok(None)
     }
 
+    fn json_stringify_replacer_keys(&self, args: &[ResolvedExpr]) -> Option<Vec<String>> {
+        match args.get(1) {
+            Some(ResolvedExpr::Array(elements)) => {
+                let mut keys = Vec::new();
+                for element in elements {
+                    let ResolvedArrayElement::Present(expr) = element else {
+                        continue;
+                    };
+                    if let Some(key) = super::super::string::resolved_expr_static_property_key_value(
+                        &self.ctx, expr,
+                    ) {
+                        keys.push(key);
+                        continue;
+                    }
+                    match json_stringify_replacer_entry(expr, &self.ctx.symbols.function_ids)? {
+                        JsonStringifyReplacerEntry::Key(key) => keys.push(key),
+                        JsonStringifyReplacerEntry::Ignored => {}
+                    }
+                }
+                Some(keys)
+            }
+            _ => None,
+        }
+    }
+
     /// Helper for lower_method_call_expr: Date local-time getters, Date getYear,
     /// Date UTC getters, Date toString/toISOString, and String builtins.
     fn lower_mcall_date_string(
@@ -2224,7 +2312,7 @@ impl super::super::Resolver {
                 });
             }
             return Ok(Some(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeFn::DateToString,
+                intrinsic: RuntimeFn::DateToGMTString,
                 args: vec![self.lower_expr(object)?],
 
                 span: Span::generated("runtime_call"),
@@ -2573,14 +2661,34 @@ impl super::super::Resolver {
         if method == "lastIndexOf"
             && crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object)
         {
+            let receiver = self.lower_expr(object)?;
             let search = if let Some(arg) = args.first() {
                 self.lower_expr(arg)?
             } else {
                 LoweredExpr::Undefined(Span::generated("undef"))
             };
+            let receiver = if let Some(from_index) = args.get(1) {
+                let end = LoweredExpr::Binary {
+                    left: Box::new(self.lower_expr(from_index)?),
+                    op: crate::lowered::LoweredBinaryOp::Add,
+                    right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
+                    span,
+                };
+                LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::ArraySlice,
+                    args: vec![
+                        receiver,
+                        LoweredExpr::Number(0, Span::generated("num")),
+                        end,
+                    ],
+                    span: Span::generated("runtime_call"),
+                }
+            } else {
+                receiver
+            };
             return Ok(Some(LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::ArrayLastIndexOf,
-                args: vec![self.lower_expr(object)?, search],
+                args: vec![receiver, search],
                 span: Span::generated("runtime_call"),
             }));
         }
@@ -2695,6 +2803,8 @@ impl super::super::Resolver {
                         if accessor.set.is_some() {
                             existing.set = accessor.set;
                         }
+                        existing.enumerable = accessor.enumerable;
+                        existing.configurable = accessor.configurable;
                     })
                     .or_insert(accessor);
             }
@@ -2738,6 +2848,10 @@ impl super::super::Resolver {
             && crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object)
         {
             // fall through to class dispatch — Array.toString → ArrayJoin
+        } else if method == "toString"
+            && matches!(self.infer_class_for_expr(object).as_deref(), Some("Number"))
+        {
+            // fall through to class dispatch — Number.toString(value, radix)
         } else if let Some(intrinsic) = resolve_method_to_runtime_fn(object, method) {
             if intrinsic == RuntimeFn::JsonParse {
                 if args.is_empty() || args.len() > 2 {
@@ -2918,6 +3032,7 @@ impl super::super::Resolver {
                         || name == "Symbol"
                         || name == "Array"
                         || name == "Promise"
+                        || name == "Iterator"
                         || name == "Atomics"
                         || name == "Reflect"
                         || name == "$262"
@@ -3046,6 +3161,57 @@ impl super::super::Resolver {
 
         if !matches!(object, ResolvedExpr::Ident(name) if name == "Object") {
             return Ok(None);
+        }
+        if method == "keys"
+            && let [ResolvedExpr::Ident(target)] = args
+            && let Ok(local_id) = self.resolve_local(target)
+            && let Some(array_like) = self
+                .ctx
+                .facts
+                .static_function_array_like_locals
+                .get(&local_id)
+        {
+            return Ok(Some(LoweredExpr::ArrayNew {
+                elements: (0..array_like.elements.len())
+                    .map(|index| LoweredExpr::String(index.to_string(), Span::generated("str")))
+                    .collect(),
+                span: Span::generated("arguments_keys"),
+            }));
+        }
+        if method == "getOwnPropertyDescriptor"
+            && let [ResolvedExpr::Ident(target), ResolvedExpr::String(key)] = args
+            && target == "arguments"
+            && key == "callee"
+            && !self.ctx.is_strict_context()
+            && let Some(func_id) = self.current_func_id
+        {
+            return Ok(Some(LoweredExpr::ObjectNew {
+                props: vec![
+                    (
+                        "value".to_owned(),
+                        LoweredExpr::ArrowFn {
+                            func_id,
+                            captures: Vec::new(),
+                            representation: ClosureRepresentation::DirectLocalToken,
+                            span: Span::generated("arguments_callee"),
+                        },
+                    ),
+                    (
+                        "writable".to_owned(),
+                        LoweredExpr::Bool(true, Span::generated("bool")),
+                    ),
+                    (
+                        "enumerable".to_owned(),
+                        LoweredExpr::Bool(false, Span::generated("bool")),
+                    ),
+                    (
+                        "configurable".to_owned(),
+                        LoweredExpr::Bool(true, Span::generated("bool")),
+                    ),
+                ],
+                non_enumerable: 0,
+                span: Span::generated("arguments_callee_descriptor"),
+            }));
         }
         if method == "getOwnPropertyDescriptor"
             && let [ResolvedExpr::Ident(target), ResolvedExpr::String(key)] = args
@@ -3335,7 +3501,7 @@ impl super::super::Resolver {
                     span: Span::generated("runtime_call"),
                 }));
             }
-            if numeric_ascending_sort_arrow_callback(args) {
+            if numeric_ascending_sort_callback(args) {
                 return Ok(Some(LoweredExpr::RuntimeCall {
                     intrinsic: RuntimeFn::ArraySortNumeric,
                     args: vec![self.lower_expr(object)?],
@@ -3444,6 +3610,28 @@ impl super::super::Resolver {
         // Ident receivers are handled by lower_mcall_class_dispatch
         if matches!(object, ResolvedExpr::Ident(_)) {
             return Ok(None);
+        }
+
+        if iterator_helper_receiver_expr(object) {
+            if method == "toArray"
+                && args.is_empty()
+                && let Some(lowered) = self.lower_iterator_array_helper_chain(object, span)?
+            {
+                return Ok(Some(lowered));
+            }
+            if iterator_array_callback_terminal_method(method)
+                && !args.is_empty()
+                && let Some(receiver) = self.lower_iterator_array_helper_chain(object, span)?
+            {
+                return Ok(Some(self.lower_array_callback_method(
+                    method, receiver, object, args, span,
+                )?));
+            }
+            if let Some(intrinsic) = iterator_method_runtime_fn(method) {
+                return Ok(Some(self.lower_iterator_helper_method(
+                    intrinsic, object, method, args, span,
+                )?));
+            }
         }
 
         // Array.prototype callback methods with ArrowFn/FunctionExpr callback —
@@ -3637,6 +3825,22 @@ impl super::super::Resolver {
             });
         }
 
+        // Symbol non-ident receiver (e.g. Symbol("desc").toString()) - route to SymbolToString
+        if matches!(method, "toString" | "valueOf")
+            && matches!(object, ResolvedExpr::Call { callee, .. }
+                if matches!(callee.as_ref(), ResolvedExpr::Ident(name) if name == "Symbol"))
+        {
+            let receiver = self.lower_expr(object)?;
+            if method == "valueOf" {
+                return Ok(Some(receiver));
+            }
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::SymbolToString,
+                args: vec![receiver],
+                span: Span::generated("runtime_call"),
+            }));
+        }
+
         // Fall through to runtime_fn_arg dispatch
         if let Some(intrinsic) = number_format_method_runtime_fn(method) {
             let mut lowered_args = vec![self.lower_expr(object)?];
@@ -3678,22 +3882,6 @@ impl super::super::Resolver {
             return Ok(Some(LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::BigIntToString,
                 args: bi_args,
-                span: Span::generated("runtime_call"),
-            }));
-        }
-
-        // Symbol non-ident receiver (e.g. Symbol("desc").toString()) - route to SymbolToString
-        if matches!(method, "toString" | "valueOf")
-            && matches!(object, ResolvedExpr::Call { callee, .. }
-                if matches!(callee.as_ref(), ResolvedExpr::Ident(name) if name == "Symbol"))
-        {
-            let receiver = self.lower_expr(object)?;
-            if method == "valueOf" {
-                return Ok(Some(receiver));
-            }
-            return Ok(Some(LoweredExpr::RuntimeCall {
-                intrinsic: RuntimeFn::SymbolToString,
-                args: vec![receiver],
                 span: Span::generated("runtime_call"),
             }));
         }
@@ -3797,13 +3985,8 @@ impl super::super::Resolver {
         if let ResolvedExpr::New { class_name, .. } = object
             && let Some(method_id) = self.resolve_class_method(class_name, method)
         {
-            let lowered_receiver = self.lower_expr(object)?;
-            let mut lowered_args = vec![lowered_receiver];
-            lowered_args.extend(
-                args.iter()
-                    .map(|e| self.lower_expr(e))
-                    .collect::<Result<Vec<_>, _>>()?,
-            );
+            let receiver = self.lower_expr(object)?;
+            let mut lowered_args = self.lower_function_call_args(method_id, receiver, args)?;
             self.append_class_method_captures(method_id, &mut lowered_args)?;
             return Ok(Some(LoweredExpr::Call {
                 kind: FunctionCallKind::User(method_id),
@@ -4693,6 +4876,139 @@ impl super::super::Resolver {
         })
     }
 
+    fn lower_iterator_helper_method(
+        &mut self,
+        intrinsic: RuntimeFn,
+        object: &ResolvedExpr,
+        method: &str,
+        args: &[ResolvedExpr],
+        _span: Span,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        let receiver = self.lower_expr(object)?;
+        let lowered_args = self.lower_iterator_helper_args(receiver, method, args)?;
+        Ok(LoweredExpr::RuntimeCall {
+            intrinsic,
+            args: lowered_args,
+            span: Span::generated("runtime_call"),
+        })
+    }
+
+    fn lower_iterator_helper_args(
+        &mut self,
+        receiver: LoweredExpr,
+        method: &str,
+        args: &[ResolvedExpr],
+    ) -> Result<Vec<LoweredExpr>, Diagnostic> {
+        let arity_ok = match method {
+            "toArray" => args.is_empty(),
+            "reduce" => (1..=2).contains(&args.len()),
+            "map" | "filter" | "take" | "drop" | "forEach" | "some" | "every" | "find" => {
+                args.len() == 1
+            }
+            _ => false,
+        };
+        if !arity_ok {
+            let expected = match method {
+                "toArray" => "0 arguments",
+                "reduce" => "1 or 2 arguments",
+                _ => "1 argument",
+            };
+            return Err(Diagnostic {
+                code: DiagCode::ArityMismatch,
+                message: format!(
+                    "Iterator.prototype.{method} expects {expected}, got {}",
+                    args.len()
+                ),
+                span: None,
+                phase: None,
+            });
+        }
+
+        let mut lowered_args = vec![receiver];
+        match method {
+            "toArray" => {}
+            "reduce" => {
+                lowered_args.push(self.lower_expr(&args[0])?);
+                if let Some(initial) = args.get(1) {
+                    lowered_args.push(self.lower_expr(initial)?);
+                    lowered_args.push(LoweredExpr::Bool(true, Span::generated("bool")));
+                } else {
+                    lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
+                    lowered_args.push(LoweredExpr::Bool(false, Span::generated("bool")));
+                }
+            }
+            _ => {
+                lowered_args.push(self.lower_expr(&args[0])?);
+            }
+        }
+        Ok(lowered_args)
+    }
+
+    fn lower_iterator_array_helper_chain(
+        &mut self,
+        expr: &ResolvedExpr,
+        span: Span,
+    ) -> Result<Option<LoweredExpr>, Diagnostic> {
+        let ResolvedExpr::MethodCall {
+            object,
+            method,
+            args,
+            span: call_span,
+        } = expr
+        else {
+            return Ok(None);
+        };
+
+        if matches!(object.as_ref(), ResolvedExpr::Ident(name) if name == "Iterator")
+            && method == "from"
+            && let [source] = args.as_slice()
+        {
+            if let ResolvedExpr::MethodCall {
+                object,
+                method,
+                args,
+                ..
+            } = source
+                && matches!(object.as_ref(), ResolvedExpr::Ident(name) if name == "Array")
+                && method == "from"
+                && let [array_source] = args.as_slice()
+                && crate::lowered::resolver::expr::facts::is_known_array_expr(
+                    &self.ctx,
+                    array_source,
+                )
+            {
+                return Ok(Some(self.lower_expr(array_source)?));
+            }
+            if crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, source)
+                || crate::lowered::resolver::expr::facts::resolved_expr_produces_dense_array(
+                    &self.ctx, source,
+                )
+            {
+                return Ok(Some(self.lower_expr(source)?));
+            }
+            return Ok(None);
+        }
+
+        if method == "map"
+            && let Some((source, elements)) = iterator_from_array_literal_source(object)
+        {
+            return Ok(Some(
+                self.lower_array_map_elements(source, elements, args, *call_span)?,
+            ));
+        }
+
+        if iterator_array_transform_method(method)
+            && !args.is_empty()
+            && let Some(receiver) = self.lower_iterator_array_helper_chain(object, span)?
+        {
+            return Ok(Some(self.lower_array_callback_method(
+                method, receiver, object, args, *call_span,
+            )?));
+        }
+
+        Ok(None)
+    }
+
     fn lower_collection_method_args(
         &mut self,
         receiver: LoweredExpr,
@@ -4700,6 +5016,9 @@ impl super::super::Resolver {
         method: &str,
         args: &[ResolvedExpr],
     ) -> Result<Vec<LoweredExpr>, Diagnostic> {
+        if class_name == "Iterator" {
+            return self.lower_iterator_helper_args(receiver, method, args);
+        }
         let mut lowered_args = vec![receiver];
         lowered_args.extend(
             args.iter()
@@ -4936,22 +5255,9 @@ impl super::super::Resolver {
                 })
             }
             "formatToParts" => {
-                if let Some(static_val) = args
-                    .first()
-                    .and_then(|arg| static_number_format_arg(arg, options))
-                {
+                if let Some(static_value) = args.first().and_then(static_i32_expr) {
                     return Ok(LoweredExpr::ArrayNew {
-                        elements: vec![LoweredExpr::ObjectNew {
-                            props: vec![
-                                (
-                                    "type".to_owned(),
-                                    string_lit(number_format_part_type(options)),
-                                ),
-                                ("value".to_owned(), string_lit(static_val)),
-                            ],
-                            non_enumerable: 0,
-                            span: Span::generated("object_new"),
-                        }],
+                        elements: static_intl_number_format_parts(static_value, options),
                         span: Span::generated("array_new"),
                     });
                 }
@@ -5151,10 +5457,6 @@ impl super::super::Resolver {
                     ("calendar".to_owned(), string_lit("gregory")),
                     ("numberingSystem".to_owned(), string_lit("latn")),
                     ("timeZone".to_owned(), string_lit(options.time_zone.clone())),
-                    (
-                        "localeMatcher".to_owned(),
-                        string_lit(options.locale_matcher.clone()),
-                    ),
                 ],
                 non_enumerable: 0,
                 span: Span::generated("object_new"),
@@ -5561,6 +5863,10 @@ fn static_number_format_arg(
     }
 }
 
+fn static_i32_expr(expr: &ResolvedExpr) -> Option<i32> {
+    i32::try_from(static_i64_number_expr(expr)?).ok()
+}
+
 fn default_intl_number_format_options() -> IntlNumberFormatOptions {
     IntlNumberFormatOptions {
         locale: "en-US".to_owned(),
@@ -5569,14 +5875,6 @@ fn default_intl_number_format_options() -> IntlNumberFormatOptions {
         notation: "standard".to_owned(),
         compact_display: "short".to_owned(),
         sign_display: "auto".to_owned(),
-    }
-}
-
-fn number_format_part_type(options: &IntlNumberFormatOptions) -> &'static str {
-    match options.style.as_str() {
-        "currency" => "currency",
-        "percent" => "percent",
-        _ => "integer",
     }
 }
 
@@ -5592,6 +5890,75 @@ fn format_intl_number_i32(value: i32, options: &IntlNumberFormatOptions) -> Stri
         format_i32_grouped(scaled)
     };
     apply_intl_number_affixes(formatted, options)
+}
+
+fn static_intl_number_format_parts(
+    value: i32,
+    options: &IntlNumberFormatOptions,
+) -> Vec<LoweredExpr> {
+    let scaled = if options.style == "percent" {
+        value.saturating_mul(100)
+    } else {
+        value
+    };
+
+    let mut parts = Vec::new();
+    if options.sign_display == "always" && scaled >= 0 {
+        parts.push(intl_number_part("plusSign", "+"));
+    } else if scaled < 0 {
+        parts.push(intl_number_part("minusSign", "-"));
+    }
+
+    if options.style == "currency" && options.currency == "USD" {
+        parts.push(intl_number_part("currency", "$"));
+        push_grouped_integer_parts(&mut parts, scaled);
+        parts.push(intl_number_part("decimal", "."));
+        parts.push(intl_number_part("fraction", "00"));
+        return parts;
+    }
+
+    if options.notation == "compact" {
+        parts.push(intl_number_part(
+            "integer",
+            format_compact_i32(scaled, options),
+        ));
+    } else {
+        push_grouped_integer_parts(&mut parts, scaled);
+    }
+
+    if options.style == "percent" {
+        parts.push(intl_number_part("percentSign", "%"));
+    }
+    parts
+}
+
+fn push_grouped_integer_parts(parts: &mut Vec<LoweredExpr>, value: i32) {
+    let digits = (value as i64).abs().to_string();
+    let mut groups = Vec::new();
+    let mut end = digits.len();
+    while end > 3 {
+        let start = end - 3;
+        groups.push(digits[start..end].to_owned());
+        end = start;
+    }
+    groups.push(digits[..end].to_owned());
+    for (idx, group) in groups.into_iter().rev().enumerate() {
+        if idx > 0 {
+            parts.push(intl_number_part("group", ","));
+        }
+        parts.push(intl_number_part("integer", group));
+    }
+}
+
+fn intl_number_part(kind: &str, value: impl Into<String>) -> LoweredExpr {
+    LoweredExpr::ObjectNew {
+        props: vec![
+            ("type".to_owned(), string_lit(kind)),
+            ("value".to_owned(), string_lit(value.into())),
+        ],
+        non_enumerable: 0,
+        span: Span::generated("object_new"),
+    }
 }
 
 fn apply_intl_number_affixes(mut formatted: String, options: &IntlNumberFormatOptions) -> String {
@@ -6004,30 +6371,79 @@ fn static_generator_completion_value(expr: &LoweredExpr) -> Option<LoweredExpr> 
 }
 
 fn static_generator_first_yield_value(body: &[LoweredStmt]) -> Option<LoweredExpr> {
+    let mut locals = HashMap::new();
+    static_generator_first_yield_value_with_locals(body, &mut locals)
+}
+
+fn static_generator_first_yield_value_with_locals(
+    body: &[LoweredStmt],
+    locals: &mut HashMap<LocalId, LoweredExpr>,
+) -> Option<LoweredExpr> {
     for stmt in body {
         match stmt {
             LoweredStmt::Yield(expr, _) => return Some(expr.clone()),
             LoweredStmt::Block(stmts, _) | LoweredStmt::While { body: stmts, .. } => {
-                if let Some(expr) = static_generator_first_yield_value(stmts) {
+                if let Some(expr) = static_generator_first_yield_value_with_locals(stmts, locals) {
                     return Some(expr);
                 }
             }
+            LoweredStmt::If {
+                condition,
+                then_body,
+                else_body,
+                ..
+            } => match static_generator_bool_expr(condition, locals) {
+                Some(true) => {
+                    if let Some(expr) =
+                        static_generator_first_yield_value_with_locals(then_body, locals)
+                    {
+                        return Some(expr);
+                    }
+                }
+                Some(false) => {
+                    if let Some(expr) =
+                        static_generator_first_yield_value_with_locals(else_body, locals)
+                    {
+                        return Some(expr);
+                    }
+                }
+                None => return None,
+            },
             LoweredStmt::Switch { cases, .. } => {
                 // Look inside the first case (case 0 / initial state)
                 if let Some((_, case_body)) = cases.first() {
-                    if let Some(expr) = static_generator_first_yield_value(case_body) {
+                    if let Some(expr) =
+                        static_generator_first_yield_value_with_locals(case_body, locals)
+                    {
                         return Some(expr);
                     }
                 }
             }
-            LoweredStmt::Let(_, expr, _)
-            | LoweredStmt::Assign(_, expr, _)
-            | LoweredStmt::Expr(expr, _)
+            LoweredStmt::Let(local, expr, _) | LoweredStmt::Assign(local, expr, _)
+                if static_generator_implicit_completion_expr_is_local_only(expr) =>
+            {
+                locals.insert(*local, expr.clone());
+            }
+            LoweredStmt::Expr(expr, _)
                 if static_generator_implicit_completion_expr_is_local_only(expr) => {}
             _ => return None,
         }
     }
     None
+}
+
+fn static_generator_bool_expr(
+    expr: &LoweredExpr,
+    locals: &HashMap<LocalId, LoweredExpr>,
+) -> Option<bool> {
+    match expr {
+        LoweredExpr::Bool(value, _) => Some(*value),
+        LoweredExpr::Local(local, _) => match locals.get(local)? {
+            LoweredExpr::Bool(value, _) => Some(*value),
+            _ => None,
+        },
+        _ => None,
+    }
 }
 
 fn static_generator_bind_receiver(
@@ -6220,6 +6636,57 @@ fn static_generator_implicit_completion_expr_is_local_only(expr: &LoweredExpr) -
 fn static_usize_number_expr(expr: &ResolvedExpr) -> Option<usize> {
     let value = static_i64_number_expr(expr)?;
     usize::try_from(value).ok().filter(|value| *value <= 100)
+}
+
+fn iterator_helper_receiver_expr(expr: &ResolvedExpr) -> bool {
+    match expr {
+        ResolvedExpr::MethodCall { object, method, .. }
+            if matches!(object.as_ref(), ResolvedExpr::Ident(name) if name == "Iterator")
+                && method == "from" =>
+        {
+            true
+        }
+        ResolvedExpr::MethodCall { object, method, .. }
+            if iterator_method_runtime_fn(method).is_some() =>
+        {
+            iterator_helper_receiver_expr(object)
+        }
+        _ => false,
+    }
+}
+
+fn iterator_array_transform_method(method: &str) -> bool {
+    matches!(method, "map" | "filter")
+}
+
+fn iterator_array_callback_terminal_method(method: &str) -> bool {
+    matches!(method, "forEach" | "some" | "every" | "find" | "reduce")
+}
+
+fn iterator_from_array_literal_source(
+    expr: &ResolvedExpr,
+) -> Option<(&ResolvedExpr, &[ResolvedArrayElement])> {
+    let ResolvedExpr::MethodCall {
+        object,
+        method,
+        args,
+        ..
+    } = expr
+    else {
+        return None;
+    };
+    if !matches!(object.as_ref(), ResolvedExpr::Ident(name) if name == "Iterator")
+        || method != "from"
+    {
+        return None;
+    }
+    let [source] = args.as_slice() else {
+        return None;
+    };
+    let ResolvedExpr::Array(elements) = source else {
+        return None;
+    };
+    Some((source, elements))
 }
 
 fn format_number_to_fixed_i64(value: i64, digits: usize) -> String {

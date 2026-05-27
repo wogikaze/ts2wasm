@@ -1836,11 +1836,19 @@ impl NameResolver {
         }
     }
 
-
-    fn resolve_pipeline(&mut self, left: &Expr, right: &Expr, span: Span) -> Result<Expr, Diagnostic> {
+    fn resolve_pipeline(
+        &mut self,
+        left: &Expr,
+        right: &Expr,
+        span: Span,
+    ) -> Result<Expr, Diagnostic> {
         let left = self.resolve_expr(left)?;
         match right {
-            Expr::Call { callee, args, span: call_span } => {
+            Expr::Call {
+                callee,
+                args,
+                span: call_span,
+            } => {
                 let resolved_callee = self.resolve_expr(callee)?;
                 let mut resolved_args: Vec<Expr> = Vec::with_capacity(args.len() + 1);
                 let mut topic_seen = false;
@@ -1855,11 +1863,19 @@ impl NameResolver {
                 if !topic_seen {
                     resolved_args.insert(0, left);
                 }
-                Ok(Expr::Call { callee: Box::new(resolved_callee), args: resolved_args, span: *call_span })
+                Ok(Expr::Call {
+                    callee: Box::new(resolved_callee),
+                    args: resolved_args,
+                    span: *call_span,
+                })
             }
             _ => {
                 let resolved_callee = self.resolve_expr(right)?;
-                Ok(Expr::Call { callee: Box::new(resolved_callee), args: vec![left], span })
+                Ok(Expr::Call {
+                    callee: Box::new(resolved_callee),
+                    args: vec![left],
+                    span,
+                })
             }
         }
     }
@@ -1892,10 +1908,7 @@ impl NameResolver {
                     self.predeclare_binding(name, Some(*span))?;
                 }
             }
-            if let Stmt::Using {
-                name, span, ..
-            } = unwrapped_stmt(stmt)
-            {
+            if let Stmt::Using { name, span, .. } = unwrapped_stmt(stmt) {
                 self.predeclare_binding(name, Some(*span))?;
             }
         }

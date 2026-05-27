@@ -268,6 +268,25 @@ impl super::super::Resolver {
         if key.starts_with('#') {
             return self.lower_private_field_assign(object, key, value, span);
         }
+        if let ResolvedExpr::Ident(name) = object
+            && let Ok(obj_local) = self.resolve_local(name)
+            && let Some(class_name) = self.ctx.classes.local_classes.get(&obj_local).cloned()
+            && let Some(accessor) = self.resolve_class_accessor(&class_name, key)
+        {
+            if let Some(setter_id) = accessor.set {
+                let lowered_args = self.lower_function_call_args(
+                    setter_id,
+                    LoweredExpr::Local(obj_local, Span::generated("local")),
+                    std::slice::from_ref(value),
+                )?;
+                return Ok(LoweredExpr::Call {
+                    kind: FunctionCallKind::User(setter_id),
+                    args: lowered_args,
+                    span: Span::generated("call"),
+                });
+            }
+            return self.lower_expr(value);
+        }
         // Interface-typed property assignment: if the object local has an
         // interface type that defines this property, bypass proxy checks and
         // go directly to ordinary_set to avoid misrouting proxy traps.

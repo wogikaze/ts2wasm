@@ -50,6 +50,14 @@ impl super::super::Resolver {
         }
         if *op == UnaryOp::TypeOf {
             if let ResolvedExpr::Ident(name) = expr
+                && matches!(name.as_str(), "Atomics" | "Intl")
+            {
+                return Ok(LoweredExpr::String(
+                    "object".to_owned(),
+                    Span::generated("typeof_builtin_object"),
+                ));
+            }
+            if let ResolvedExpr::Ident(name) = expr
                 && self.resolve_local(name).is_err()
                 && self.ctx.classes.class_constructor_ids.contains_key(name)
             {

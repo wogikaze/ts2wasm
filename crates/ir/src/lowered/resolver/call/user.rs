@@ -637,6 +637,16 @@ impl super::super::Resolver {
                 span: Span::generated("runtime_call"),
             });
         }
+        if let Some(value) = self.static_generator_first_yield_for_name(func_name) {
+            return Ok(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::GeneratorYield,
+                args: vec![LoweredExpr::ArrayNew {
+                    elements: vec![value],
+                    span: Span::generated("array"),
+                }],
+                span: Span::generated("runtime_call"),
+            });
+        }
         let yields = self
             .ctx
             .facts
@@ -656,6 +666,23 @@ impl super::super::Resolver {
             }],
             span: Span::generated("runtime_call"),
         })
+    }
+
+    fn static_generator_first_yield_for_name(&self, func_name: &str) -> Option<LoweredExpr> {
+        let function = self
+            .ctx
+            .functions
+            .generated_functions
+            .iter()
+            .find(|function| {
+                function.is_generator
+                    && function
+                        .metadata_name
+                        .as_deref()
+                        .is_some_and(|name| name == func_name)
+            })?;
+        let mut locals = HashMap::new();
+        static_generator_first_yield_with_locals(&function.body, &mut locals)
     }
 
     /// Helper for lower_call_expr: emit the function call after resolution,
@@ -1309,6 +1336,8 @@ impl super::super::Resolver {
             match (key.as_str(), value) {
                 ("get", LoweredExpr::ArrowFn { func_id, .. }) => accessor.get = Some(*func_id),
                 ("set", LoweredExpr::ArrowFn { func_id, .. }) => accessor.set = Some(*func_id),
+                ("enumerable", LoweredExpr::Bool(value, _)) => accessor.enumerable = *value,
+                ("configurable", LoweredExpr::Bool(value, _)) => accessor.configurable = *value,
                 _ => {}
             }
         }
@@ -1331,6 +1360,8 @@ impl super::super::Resolver {
                     if accessor.set.is_some() {
                         existing.set = accessor.set;
                     }
+                    existing.enumerable = accessor.enumerable;
+                    existing.configurable = accessor.configurable;
                 })
                 .or_insert(accessor);
             return;
@@ -1554,4 +1585,77 @@ fn function_apply_explicit_args(
             phase: None,
         }),
     }
+}
+
+fn static_generator_first_yield_with_locals(
+    body: &[LoweredStmt],
+    locals: &mut HashMap<LocalId, LoweredExpr>,
+) -> Option<LoweredExpr> {
+    for stmt in body {
+        match stmt {
+            LoweredStmt::Yield(expr, _) => return Some(expr.clone()),
+            LoweredStmt::Block(stmts, _) | LoweredStmt::While { body: stmts, .. } => {
+                if let Some(expr) = static_generator_first_yield_with_locals(stmts, locals) {
+                    return Some(expr);
+                }
+            }
+            LoweredStmt::If {
+                condition,
+                then_body,
+                else_body,
+                ..
+            } => match static_generator_bool_expr(condition, locals) {
+                Some(true) => {
+                    if let Some(expr) = static_generator_first_yield_with_locals(then_body, locals)
+                    {
+                        return Some(expr);
+                    }
+                }
+                Some(false) => {
+                    if let Some(expr) = static_generator_first_yield_with_locals(else_body, locals)
+                    {
+                        return Some(expr);
+                    }
+                }
+                None => return None,
+            },
+            LoweredStmt::Let(local, expr, _) | LoweredStmt::Assign(local, expr, _)
+                if static_generator_local_expr(expr) =>
+            {
+                locals.insert(*local, expr.clone());
+            }
+            LoweredStmt::Expr(expr, _) if static_generator_local_expr(expr) => {}
+            _ => return None,
+        }
+    }
+    None
+}
+
+fn static_generator_bool_expr(
+    expr: &LoweredExpr,
+    locals: &HashMap<LocalId, LoweredExpr>,
+) -> Option<bool> {
+    match expr {
+        LoweredExpr::Bool(value, _) => Some(*value),
+        LoweredExpr::Local(local, _) => match locals.get(local)? {
+            LoweredExpr::Bool(value, _) => Some(*value),
+            _ => None,
+        },
+        _ => None,
+    }
+}
+
+fn static_generator_local_expr(expr: &LoweredExpr) -> bool {
+    matches!(
+        expr,
+        LoweredExpr::Number(..)
+            | LoweredExpr::DecimalNumber(..)
+            | LoweredExpr::BigIntLiteral { .. }
+            | LoweredExpr::String(..)
+            | LoweredExpr::Bool(..)
+            | LoweredExpr::Null(..)
+            | LoweredExpr::Undefined(..)
+            | LoweredExpr::Local(..)
+            | LoweredExpr::ArrowFn { .. }
+    )
 }

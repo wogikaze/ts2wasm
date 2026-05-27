@@ -189,8 +189,20 @@ pub(crate) fn update_symbol_iterator_object_local(
 ) {
     if resolved_expr_has_symbol_iterator_property(ctx, expr) {
         ctx.facts.symbol_iterator_object_locals.insert(local_id);
+        if let Some(props) = resolved_expr_symbol_iterator_object_props(ctx, expr) {
+            ctx.facts
+                .symbol_iterator_object_literal_locals
+                .insert(local_id, props);
+        } else {
+            ctx.facts
+                .symbol_iterator_object_literal_locals
+                .remove(&local_id);
+        }
     } else {
         ctx.facts.symbol_iterator_object_locals.remove(&local_id);
+        ctx.facts
+            .symbol_iterator_object_literal_locals
+            .remove(&local_id);
     }
 }
 
@@ -398,6 +410,26 @@ pub(crate) fn resolved_expr_has_symbol_iterator_property(
     }
 }
 
+pub(crate) fn resolved_expr_symbol_iterator_object_props(
+    ctx: &LoweringCtx,
+    expr: &ResolvedExpr,
+) -> Option<Vec<ResolvedObjectProp>> {
+    match expr {
+        ResolvedExpr::Object(props) => props
+            .iter()
+            .any(|prop| prop.static_key() == Some(SYMBOL_ITERATOR_OBJECT_KEY))
+            .then(|| props.clone()),
+        ResolvedExpr::Ident(name) => {
+            let local_id = ctx.resolve_local(name).ok()?;
+            ctx.facts
+                .symbol_iterator_object_literal_locals
+                .get(&local_id)
+                .cloned()
+        }
+        _ => None,
+    }
+}
+
 pub(crate) fn is_generator_call_spread_operand(ctx: &LoweringCtx, expr: &ResolvedExpr) -> bool {
     let ResolvedExpr::Call { callee, args, .. } = expr else {
         return false;
@@ -447,6 +479,22 @@ pub(crate) fn update_static_object_literal_local_on_let(
         ctx.facts.static_object_literal_locals.remove(&local_id);
         ctx.facts
             .static_object_literal_alias_sources
+            .remove(&local_id);
+    }
+}
+
+pub(crate) fn update_object_toprimitive_literal_local_on_let(
+    ctx: &mut LoweringCtx,
+    local_id: LocalId,
+    expr: &ResolvedExpr,
+) {
+    if let Some(props) = object_toprimitive_literal_props_for_expr(ctx, expr) {
+        ctx.facts
+            .object_toprimitive_literal_locals
+            .insert(local_id, props);
+    } else {
+        ctx.facts
+            .object_toprimitive_literal_locals
             .remove(&local_id);
     }
 }
@@ -533,6 +581,9 @@ pub(crate) fn static_function_array_like_elements(
 pub(crate) fn invalidate_static_object_literal_local(ctx: &mut LoweringCtx, local_id: LocalId) {
     ctx.facts.static_object_literal_locals.remove(&local_id);
     ctx.facts
+        .object_toprimitive_literal_locals
+        .remove(&local_id);
+    ctx.facts
         .static_object_literal_alias_sources
         .remove(&local_id);
     let dependent_aliases = ctx
@@ -543,8 +594,37 @@ pub(crate) fn invalidate_static_object_literal_local(ctx: &mut LoweringCtx, loca
         .collect::<Vec<_>>();
     for alias in dependent_aliases {
         ctx.facts.static_object_literal_locals.remove(&alias);
+        ctx.facts.object_toprimitive_literal_locals.remove(&alias);
         ctx.facts.static_object_literal_alias_sources.remove(&alias);
     }
+}
+
+pub(crate) fn object_toprimitive_literal_props_for_expr(
+    ctx: &LoweringCtx,
+    expr: &ResolvedExpr,
+) -> Option<Vec<ResolvedObjectProp>> {
+    match expr {
+        ResolvedExpr::Object(props) if object_literal_has_toprimitive_hook(props) => {
+            Some(props.clone())
+        }
+        ResolvedExpr::Ident(name) => {
+            let local_id = ctx.resolve_local(name).ok()?;
+            if ctx.facts.env_cell_locals.contains(&local_id) {
+                return None;
+            }
+            ctx.facts
+                .object_toprimitive_literal_locals
+                .get(&local_id)
+                .cloned()
+        }
+        _ => None,
+    }
+}
+
+fn object_literal_has_toprimitive_hook(props: &[ResolvedObjectProp]) -> bool {
+    props
+        .iter()
+        .any(|prop| matches!(prop.static_key(), Some("valueOf" | "toString")))
 }
 
 pub(crate) fn static_copy_safe_object_literal_props(
@@ -630,9 +710,25 @@ pub(crate) fn resolved_expr_produces_dense_array(ctx: &LoweringCtx, expr: &Resol
             method,
             args,
             ..
+        } if matches!(object.as_ref(), ResolvedExpr::Ident(name) if name == "Array")
+            && method == "from"
+            && matches!(args.as_slice(), [source] if is_known_array_expr(ctx, source)) =>
+        {
+            true
+        }
+        ResolvedExpr::MethodCall {
+            object,
+            method,
+            args,
+            ..
         } if method == "map" => {
             is_known_array_expr(ctx, object)
                 && (string_constructor_arrow_callback(args) || unary_plus_arrow_callback(args))
+        }
+        ResolvedExpr::MethodCall { object, method, .. }
+            if method == "toArray" && resolved_expr_is_iterator_helper_chain(object) =>
+        {
+            true
         }
         ResolvedExpr::MethodCall {
             object,
@@ -667,6 +763,35 @@ pub(crate) fn resolved_expr_produces_dense_array(ctx: &LoweringCtx, expr: &Resol
                 .is_some_and(|signature| signature.returns_dense_array),
             _ => false,
         },
+        _ => false,
+    }
+}
+
+fn resolved_expr_is_iterator_helper_chain(expr: &ResolvedExpr) -> bool {
+    match expr {
+        ResolvedExpr::MethodCall { object, method, .. }
+            if matches!(object.as_ref(), ResolvedExpr::Ident(name) if name == "Iterator")
+                && method == "from" =>
+        {
+            true
+        }
+        ResolvedExpr::MethodCall { object, method, .. }
+            if matches!(
+                method.as_str(),
+                "map"
+                    | "filter"
+                    | "take"
+                    | "drop"
+                    | "toArray"
+                    | "reduce"
+                    | "forEach"
+                    | "some"
+                    | "every"
+                    | "find"
+            ) =>
+        {
+            resolved_expr_is_iterator_helper_chain(object)
+        }
         _ => false,
     }
 }

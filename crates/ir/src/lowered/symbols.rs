@@ -66,6 +66,8 @@ pub struct FunctionSignature {
     pub returns_dense_array: bool,
     /// Whether the function is exactly `function f(x) { return x; }`.
     pub returns_first_param_identity: bool,
+    /// Static string returned by functions whose last completion is `return "..."`.
+    pub returns_static_string: Option<String>,
 }
 
 impl SymbolEnv {

@@ -1,6 +1,6 @@
 use super::types::*;
-use crate::binding_pattern::{ArrayBinding, BindingPattern, BindingTarget, ObjectBinding};
 use crate::binding_pattern::parse_binding_pattern;
+use crate::binding_pattern::{ArrayBinding, BindingPattern, BindingTarget};
 use crate::builtin_resolved::{
     ClassMethodKind, EvalCompletionStep, ResolvedArrayElement, ResolvedExpr, ResolvedObjectProp,
     ResolvedParam, ResolvedStmt,
@@ -9,6 +9,7 @@ use crate::lowered::classes::{ObjectAccessorKey, ObjectAccessorProp};
 use crate::lowered::facts::{
     GeneratorObjectResumePlan, GeneratorYieldStep, HostExternalKind, IntlNumberFormatOptions,
 };
+use crate::lowered::source_text::strip_typescript_function_source;
 use crate::lowered::symbols::FunctionSignature;
 use std::collections::{HashMap, HashSet};
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
@@ -86,6 +87,8 @@ fn lower_program_inner(
     let mutable_class_capture_names = collect_mutable_class_capture_names(program);
     let mutable_object_method_capture_names =
         collect_block_object_method_mutable_captures(program)?;
+    let mutable_nested_function_capture_names =
+        collect_block_nested_function_mutable_captures(program)?;
     let direct_eval_env = collect_direct_eval_block_function_env(program);
     let dynamic_direct_eval_env_cell_names =
         collect_dynamic_direct_eval_env_cell_names(&[], program, false, false);
@@ -100,6 +103,9 @@ fn lower_program_inner(
         .union(&collect_mutable_function_capture_names(
             &function_mutable_captures,
         ))
+        .cloned()
+        .collect::<HashSet<_>>()
+        .union(&mutable_nested_function_capture_names)
         .cloned()
         .collect::<HashSet<_>>()
         .union(&direct_eval_env.env_cell_names)
@@ -513,16 +519,18 @@ fn lower_program_inner(
     // in the user program (or are ancestors of such targets).
     let needed_builtins = collect_needed_builtins(&class_parents, builtin_class_parents);
     let builtin_ctor_base = function_ids.len();
+    let builtin_ctor_ids = builtin_class_parents
+        .iter()
+        .filter(|(name, _)| needed_builtins.contains(*name))
+        .enumerate()
+        .map(|(idx, (name, _))| ((*name).to_string(), FuncId(builtin_ctor_base + idx)))
+        .collect::<HashMap<_, _>>();
     let mut builtin_class_decls: Vec<LoweredStmt> = Vec::new();
     for (name, parent_name) in builtin_class_parents {
         if !needed_builtins.contains(*name) {
             continue;
         }
-        let idx = builtin_class_parents
-            .iter()
-            .position(|(n, _)| n == name)
-            .expect("builtin name in list");
-        let ctor_id = FuncId(builtin_ctor_base + idx);
+        let ctor_id = builtin_ctor_ids[*name];
         resolver
             .ctx
             .classes
@@ -609,13 +617,25 @@ fn lower_program_inner(
             ResolvedStmt::AmbientValue(name) => {
                 resolver.declare_local(name)?;
             }
-            ResolvedStmt::Function { name, .. } => {
+            ResolvedStmt::Function {
+                name,
+                is_async,
+                is_generator,
+                ..
+            } => {
                 // Register function name in the lowered resolver's scope
                 // so it can be referenced as a value (e.g., `let cb = myFunc`)
                 // Call lowering falls through to resolve_func path, which handles
                 // arguments/this correctly — do NOT add to arrow_locals.
                 let local_id = resolver.declare_local(name)?;
                 let func_id = resolver.resolve_func(name)?;
+                if !is_async && !is_generator {
+                    resolver
+                        .ctx
+                        .facts
+                        .constructable_function_locals
+                        .insert(local_id);
+                }
                 top_level_statements.push(LoweredStmt::Let(
                     local_id,
                     LoweredExpr::ArrowFn {
@@ -643,15 +663,12 @@ fn lower_program_inner(
                 let ctor_id = Some(function_ids[&ctor_key]);
                 let mut instance_methods = Vec::new();
                 let mut static_methods = Vec::new();
-                for method in methods
-                    .iter()
-                    .filter(|method| method.kind == ClassMethodKind::Method)
-                {
+                for method in methods {
                     let key = class_method_key(name, &method.name);
                     let method_id = function_ids[&key];
                     if let Some(stripped) = method.name.strip_prefix("static::") {
                         static_methods.push((stripped.to_owned(), method_id));
-                    } else {
+                    } else if method.kind == ClassMethodKind::Method {
                         instance_methods.push((method.name.clone(), method_id));
                     }
                 }
@@ -713,20 +730,19 @@ fn lower_program_inner(
     let needed_count = needed_builtins.len();
     if needed_count > 0 {
         functions_by_id.resize(function_ids.len() + needed_count, None);
-        let mut fill_idx = 0;
         for (name, _parent_name) in builtin_class_parents.iter() {
             if !needed_builtins.contains(*name) {
                 continue;
             }
-            let ctor_id = FuncId(builtin_ctor_base + fill_idx);
-            functions_by_id[builtin_ctor_base + fill_idx] = Some(LoweredFunction {
+            let ctor_id = builtin_ctor_ids[*name];
+            functions_by_id[ctor_id.0] = Some(LoweredFunction {
                 id: ctor_id,
                 params: Vec::new(),
                 uses_receiver: false,
                 min_required_params: 0,
                 rest_param_index: None,
                 metadata_length: None,
-                metadata_name: None,
+                metadata_name: Some((*name).to_owned()),
                 locals: Vec::new(),
                 body: Vec::new(),
                 recursion_depth: 0,
@@ -734,7 +750,6 @@ fn lower_program_inner(
                 is_generator: false,
                 generator_state: None,
             });
-            fill_idx += 1;
         }
     }
 
@@ -1382,6 +1397,17 @@ impl GeneratorYieldEvaluator {
                 Some(())
             }
             ResolvedStmt::Block { statements } => self.eval_stmts(statements),
+            ResolvedStmt::If {
+                condition,
+                then_body,
+                else_body,
+            } => {
+                if self.eval_bool_expr(condition)? {
+                    self.eval_stmts(then_body)
+                } else {
+                    self.eval_stmts(else_body)
+                }
+            }
             _ => None,
         }
     }
@@ -1397,6 +1423,13 @@ impl GeneratorYieldEvaluator {
             | ResolvedExpr::Undefined => Some(expr.clone()),
             ResolvedExpr::Ident(name) => self.locals.get(name).cloned(),
             ResolvedExpr::Binary { left, op, right } => self.eval_binary_expr(left, *op, right),
+            _ => None,
+        }
+    }
+
+    fn eval_bool_expr(&self, expr: &ResolvedExpr) -> Option<bool> {
+        match self.eval_expr(expr)? {
+            ResolvedExpr::Bool(value) => Some(value),
             _ => None,
         }
     }
@@ -3093,6 +3126,7 @@ fn collect_function_signatures(
                         returns_first_param_identity: body_returns_first_param_identity(
                             params, body,
                         ),
+                        returns_static_string: body_returns_static_string(body),
                     },
                 );
             }
@@ -3120,6 +3154,9 @@ fn collect_function_signatures(
                 let ctor_returns_dense_array = constructor
                     .as_ref()
                     .is_some_and(|(_, body)| block_returns_dense_array_local(body));
+                let ctor_returns_static_string = constructor
+                    .as_ref()
+                    .and_then(|(_, body)| body_returns_static_string(body));
                 let ctor_needs_arguments = constructor.as_ref().is_some_and(|(params, body)| {
                     (block_contains_arguments(body) || block_contains_dynamic_direct_eval(body))
                         && !params.iter().any(|param| param.name == "arguments")
@@ -3134,6 +3171,7 @@ fn collect_function_signatures(
                         is_strict: true,
                         returns_heap_closure: ctor_returns_heap_closure,
                         returns_dense_array: ctor_returns_dense_array,
+                        returns_static_string: ctor_returns_static_string,
                         ..FunctionSignature::default()
                     },
                 );
@@ -3155,6 +3193,7 @@ fn collect_function_signatures(
                             is_strict: true,
                             returns_heap_closure: block_returns_declared_function(&method.body),
                             returns_dense_array: block_returns_dense_array_local(&method.body),
+                            returns_static_string: body_returns_static_string(&method.body),
                             ..FunctionSignature::default()
                         },
                     );
@@ -3178,7 +3217,10 @@ fn collect_function_sources(
         } = stmt
             && !source_text.is_empty()
         {
-            sources.insert(function_ids[name], source_text.clone());
+            sources.insert(
+                function_ids[name],
+                strip_typescript_function_source(source_text),
+            );
         }
     }
     sources
@@ -3270,6 +3312,7 @@ fn function_signature_for_params_body(
         returns_heap_closure: block_returns_declared_function(body),
         returns_dense_array: block_returns_dense_array_local(body),
         returns_first_param_identity: body_returns_first_param_identity(params, body),
+        returns_static_string: body_returns_static_string(body),
     }
 }
 
@@ -5081,6 +5124,7 @@ fn lower_function_with_resolved_params(
             .map(|param| param.name.clone())
             .collect::<Vec<_>>()
             .as_slice(),
+        id,
         synthetic_arguments_param_index,
         class_parents,
         class_private_fields,
@@ -5192,7 +5236,8 @@ fn lower_function_param_initializers(
 ) -> Result<Vec<LoweredStmt>, Diagnostic> {
     let mut stmts = Vec::new();
     for param in lowered_params {
-        let param_local = resolver.resolve_local(&param.name)?;
+        let clean_name = param.name.strip_prefix("...").unwrap_or(&param.name);
+        let param_local = resolver.resolve_local(clean_name)?;
         if let Some(default) = &param.default {
             stmts.push(default_param_assignment(
                 param_local,
@@ -5202,16 +5247,23 @@ fn lower_function_param_initializers(
         if let Some(pattern) = parse_binding_pattern(&param.name, param.span)? {
             if param.is_rest {
                 // Handle rest pattern binding
-                if let BindingPattern::Array(bindings) = pattern {
+                if let BindingPattern::Array(_) = pattern {
                     // Array rest: [...rest]
                     // Create a local for the rest array
-                    let rest_local = resolver.declare_local(param.name.strip_prefix("...").unwrap_or(&param.name))?;
+                    let rest_local = resolver
+                        .declare_local(param.name.strip_prefix("...").unwrap_or(&param.name))?;
                     // Use runtime ArraySlice for array rest binding
                     // We need to call lower_array_binding_declaration with a single ArrayBinding
                     // Create one ArrayBinding for the rest element
                     let rest_binding = ArrayBinding {
                         index: 0,
-                        target: BindingTarget::Identifier(param.name.strip_prefix("...").unwrap_or(&param.name).to_string()),
+                        target: BindingTarget::Identifier(
+                            param
+                                .name
+                                .strip_prefix("...")
+                                .unwrap_or(&param.name)
+                                .to_string(),
+                        ),
                         default: None,
                         is_rest: true,
                     };

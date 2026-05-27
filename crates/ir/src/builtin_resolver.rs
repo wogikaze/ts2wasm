@@ -74,11 +74,7 @@ fn desugar_using_declarations(stmts: &[Stmt]) -> Vec<Stmt> {
 
                 // Step 3: Build the dispose call: `name[Symbol.dispose]()` or
                 // `await name[Symbol.asyncDispose]()` for async
-                let dispose_property = if *is_async {
-                    "asyncDispose"
-                } else {
-                    "dispose"
-                };
+                let dispose_property = if *is_async { "asyncDispose" } else { "dispose" };
                 let dispose_call = Expr::Call {
                     callee: Box::new(Expr::Index {
                         object: Box::new(Expr::Ident {
@@ -179,12 +175,20 @@ fn desugar_stmt_inner(stmt: &Stmt) -> Stmt {
             else_body: desugar_using_declarations(else_body),
             span: *span,
         },
-        Stmt::While { condition, body, span } => Stmt::While {
+        Stmt::While {
+            condition,
+            body,
+            span,
+        } => Stmt::While {
             condition: condition.clone(),
             body: desugar_using_declarations(body),
             span: *span,
         },
-        Stmt::DoWhile { body, condition, span } => Stmt::DoWhile {
+        Stmt::DoWhile {
+            body,
+            condition,
+            span,
+        } => Stmt::DoWhile {
             body: desugar_using_declarations(body),
             condition: condition.clone(),
             span: *span,
@@ -239,9 +243,7 @@ fn desugar_stmt_inner(stmt: &Stmt) -> Stmt {
             expr: expr.clone(),
             cases: cases
                 .iter()
-                .map(|(case_expr, body)| {
-                    (case_expr.clone(), desugar_using_declarations(body))
-                })
+                .map(|(case_expr, body)| (case_expr.clone(), desugar_using_declarations(body)))
                 .collect(),
             span: *span,
         },
@@ -1547,9 +1549,13 @@ fn object_toprimitive_supported_primitive_expr(expr: &Expr) -> Option<Expr> {
         .iter()
         .find(|prop| prop.static_key() == Some("valueOf"));
     if let Some(prop) = value_of {
-        match object_toprimitive_return_expr(prop.value()) {
+        match object_toprimitive_return_expr(prop.value(), props) {
             Some(Ok(expr)) => return Some(expr),
-            Some(Err(())) => {}
+            Some(Err(()))
+                if props
+                    .iter()
+                    .any(|prop| prop.static_key() == Some("toString")) => {}
+            Some(Err(())) => return Some(Expr::Undefined { span: expr.span() }),
             None => return None,
         }
     }
@@ -1557,10 +1563,13 @@ fn object_toprimitive_supported_primitive_expr(expr: &Expr) -> Option<Expr> {
     props
         .iter()
         .find(|prop| prop.static_key() == Some("toString"))
-        .and_then(|prop| object_toprimitive_return_expr(prop.value()).and_then(Result::ok))
+        .and_then(|prop| object_toprimitive_return_expr(prop.value(), props).and_then(Result::ok))
 }
 
-fn object_toprimitive_return_expr(value: &Expr) -> Option<Result<Expr, ()>> {
+fn object_toprimitive_return_expr(
+    value: &Expr,
+    object_props: &[ObjectProp],
+) -> Option<Result<Expr, ()>> {
     match value {
         Expr::ArrowFn { params, body, .. } if params.is_empty() => {
             object_toprimitive_return_value(body)
@@ -1569,10 +1578,37 @@ fn object_toprimitive_return_expr(value: &Expr) -> Option<Result<Expr, ()>> {
             let [Stmt::Return { expr, .. }] = body.as_slice() else {
                 return None;
             };
+            if let Some(value) = object_toprimitive_this_member_return_value(expr, object_props) {
+                return Some(value);
+            }
             object_toprimitive_return_value(expr)
         }
         _ => None,
     }
+}
+
+fn object_toprimitive_this_member_return_value(
+    expr: &Expr,
+    object_props: &[ObjectProp],
+) -> Option<Result<Expr, ()>> {
+    let Expr::Member {
+        object,
+        property,
+        span,
+    } = expr
+    else {
+        return None;
+    };
+    if !matches!(object.as_ref(), Expr::This { .. }) {
+        return None;
+    }
+    let Some(prop) = object_props
+        .iter()
+        .find(|prop| prop.static_key() == Some(property.as_str()))
+    else {
+        return Some(Ok(Expr::Undefined { span: *span }));
+    };
+    object_toprimitive_return_value(prop.value())
 }
 
 fn object_toprimitive_return_value(expr: &Expr) -> Option<Result<Expr, ()>> {

@@ -15,6 +15,7 @@ pub mod mir_validate;
 pub mod object_kernel;
 pub mod program;
 pub mod resolver;
+pub(crate) mod source_text;
 pub mod symbols;
 pub mod types;
 pub mod validate;

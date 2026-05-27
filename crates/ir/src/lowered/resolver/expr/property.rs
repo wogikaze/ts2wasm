@@ -11,6 +11,11 @@ use crate::lowered::*;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
 
+const STATIC_TYPED_ARRAY_BUFFER_MARKER_KEY: &str = "@@ts2wasm_typed_array_buffer";
+const STATIC_TYPED_ARRAY_BUFFER_SOURCE_KEY: &str = "@@ts2wasm_typed_array_buffer_source";
+const STATIC_TYPED_ARRAY_BUFFER_ELEMENT_SIZE_KEY: &str =
+    "@@ts2wasm_typed_array_buffer_element_size";
+
 impl super::super::Resolver {
     pub(super) fn lower_builtin_property_expr(
         &mut self,
@@ -76,6 +81,18 @@ impl super::super::Resolver {
         if matches!(object, ResolvedExpr::ImportMeta { .. }) && key == "url" {
             return Ok(self.lower_module_meta_url(span));
         }
+        if matches!(object, ResolvedExpr::Ident(name) if name == "arguments")
+            && key == "callee"
+            && !self.ctx.is_strict_context()
+            && let Some(func_id) = self.current_func_id
+        {
+            return Ok(LoweredExpr::ArrowFn {
+                func_id,
+                captures: Vec::new(),
+                representation: ClosureRepresentation::DirectLocalToken,
+                span: Span::generated("arguments_callee"),
+            });
+        }
         if matches!(object, ResolvedExpr::Ident(name) if name == "Object") && key == "prototype" {
             return Ok(LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::ObjectPrototype,
@@ -83,12 +100,24 @@ impl super::super::Resolver {
                 span: Span::generated("object_prototype"),
             });
         }
+        if key == "prototype"
+            && let ResolvedExpr::Ident(name) = object
+            && let Some(prototype) = static_builtin_prototype_object(name, span)
+        {
+            return Ok(prototype);
+        }
         if let ResolvedExpr::Ident(name) = object
             && name == "Number"
             && let Some(token) =
                 crate::lowered::program_builtins::builtin_function_token_expr(key, span)
         {
             return Ok(token);
+        }
+        if let ResolvedExpr::Ident(name) = object
+            && let Some(value) =
+                crate::lowered::program_builtins::known_global_property_value_expr(name, key, span)
+        {
+            return Ok(value);
         }
         if let ResolvedExpr::PropertyAccess {
             object: inner_object,
@@ -194,6 +223,37 @@ impl super::super::Resolver {
                 LoweredExpr::Local(obj_local, Span::generated("local")),
                 &[],
             )?;
+            return Ok(LoweredExpr::Call {
+                kind: FunctionCallKind::User(getter_id),
+                args: lowered_args,
+                span: Span::generated("call"),
+            });
+        }
+        if let ResolvedExpr::Ident(name) = object
+            && let Ok(obj_local) = self.resolve_local(name)
+            && let Some(class_name) = self.ctx.classes.local_classes.get(&obj_local).cloned()
+            && let Some(getter_id) = self.resolve_class_getter(&class_name, key)
+        {
+            let lowered_args = self.lower_function_call_args(
+                getter_id,
+                LoweredExpr::Local(obj_local, Span::generated("local")),
+                &[],
+            )?;
+            return Ok(LoweredExpr::Call {
+                kind: FunctionCallKind::User(getter_id),
+                args: lowered_args,
+                span: Span::generated("call"),
+            });
+        }
+        if let ResolvedExpr::Ident(name) = object
+            && self.ctx.classes.class_constructor_ids.contains_key(name)
+            && let Some(getter_id) = self.resolve_static_class_method(name, &format!("get {key}"))
+        {
+            let receiver = LoweredExpr::ClassPrototype(
+                self.class_prototype_ref(name)?,
+                Span::generated("class_static_getter"),
+            );
+            let lowered_args = self.lower_function_call_args(getter_id, receiver, &[])?;
             return Ok(LoweredExpr::Call {
                 kind: FunctionCallKind::User(getter_id),
                 args: lowered_args,
@@ -937,6 +997,9 @@ impl super::super::Resolver {
                 span: Some(span),
                 phase: None,
             })?;
+        if let Some(method_id) = self.resolve_class_method(&parent_name, key) {
+            return self.lower_direct_function_token(method_id);
+        }
         let parent_ref = self.class_prototype_ref(&parent_name)?;
         Ok(object_kernel::ordinary_get(
             LoweredExpr::ClassPrototype(parent_ref, Span::generated("class_proto")),
@@ -979,12 +1042,37 @@ impl super::super::Resolver {
                 span: Some(Span::generated("super-computed")),
                 phase: None,
             })?;
+        if let Some(ObjectAccessorKey::Property(key)) =
+            super::super::string::resolved_expr_static_accessor_key(&self.ctx, index)
+            && let Some(method_id) = self.resolve_class_method(&parent_name, &key)
+        {
+            return self.lower_direct_function_token(method_id);
+        }
         let parent_ref = self.class_prototype_ref(&parent_name)?;
         Ok(object_kernel::ordinary_get_dynamic(
             LoweredExpr::ClassPrototype(parent_ref, Span::generated("class_proto")),
             self.lower_expr(index)?,
             Span::generated("super_index_get"),
         ))
+    }
+
+    fn lower_direct_function_token(&mut self, func_id: FuncId) -> Result<LoweredExpr, Diagnostic> {
+        let captures = self
+            .ctx
+            .functions
+            .function_captures
+            .get(&func_id)
+            .map(Vec::as_slice)
+            .unwrap_or(&[])
+            .iter()
+            .map(|capture| self.resolve_local(capture))
+            .collect::<Result<Vec<_>, _>>()?;
+        Ok(LoweredExpr::ArrowFn {
+            func_id,
+            captures,
+            representation: ClosureRepresentation::DirectLocalToken,
+            span: Span::generated("class_method_token"),
+        })
     }
 
     fn lower_collection_size(
@@ -1106,9 +1194,35 @@ impl super::super::Resolver {
                         args: vec![self.lower_expr(object)?],
                         span,
                     }))
+                } else if let Some(elem_size) = typed_array_element_size(cn) {
+                    let source = self.lower_expr(object)?;
+                    let byte_length = LoweredExpr::Binary {
+                        left: Box::new(LoweredExpr::GetLength(
+                            Box::new(source.clone()),
+                            Span::generated("get_length"),
+                        )),
+                        op: crate::lowered::LoweredBinaryOp::Multiply,
+                        right: Box::new(LoweredExpr::Number(elem_size, Span::generated("num"))),
+                        span,
+                    };
+                    Ok(Some(LoweredExpr::ObjectNew {
+                        props: vec![
+                            (
+                                STATIC_TYPED_ARRAY_BUFFER_MARKER_KEY.to_owned(),
+                                LoweredExpr::Bool(true, Span::generated("typed_array_buffer")),
+                            ),
+                            (STATIC_TYPED_ARRAY_BUFFER_SOURCE_KEY.to_owned(), source),
+                            (
+                                STATIC_TYPED_ARRAY_BUFFER_ELEMENT_SIZE_KEY.to_owned(),
+                                LoweredExpr::Number(elem_size, Span::generated("num")),
+                            ),
+                            ("byteLength".to_owned(), byte_length),
+                        ],
+                        non_enumerable: 0b1111,
+                        span,
+                    }))
                 } else {
-                    // TypedArray: no proper ArrayBuffer backing yet; return undefined
-                    Ok(Some(LoweredExpr::Undefined(span)))
+                    Ok(None)
                 }
             }
             _ => Ok(None),
@@ -1272,6 +1386,49 @@ impl super::super::Resolver {
             ],
             span: Span::generated("runtime_call"),
         })
+    }
+}
+
+fn static_builtin_prototype_object(name: &str, span: Span) -> Option<LoweredExpr> {
+    match name {
+        "Date" => Some(LoweredExpr::ObjectNew {
+            props: vec![
+                (
+                    "getYear".to_owned(),
+                    LoweredExpr::Undefined(Span::generated("date_get_year")),
+                ),
+                (
+                    "setYear".to_owned(),
+                    LoweredExpr::Undefined(Span::generated("date_set_year")),
+                ),
+                (
+                    "toGMTString".to_owned(),
+                    LoweredExpr::Undefined(Span::generated("date_to_gmt_string")),
+                ),
+            ],
+            non_enumerable: 0b111,
+            span,
+        }),
+        "Error" | "EvalError" | "RangeError" | "ReferenceError" | "SyntaxError" | "TypeError"
+        | "URIError" | "AggregateError" => Some(LoweredExpr::ObjectNew {
+            props: vec![
+                (
+                    "constructor".to_owned(),
+                    LoweredExpr::Undefined(Span::generated("error_prototype_constructor")),
+                ),
+                (
+                    "name".to_owned(),
+                    LoweredExpr::String(name.to_owned(), Span::generated("error_prototype_name")),
+                ),
+                (
+                    "message".to_owned(),
+                    LoweredExpr::String(String::new(), Span::generated("error_prototype_message")),
+                ),
+            ],
+            non_enumerable: 0b111,
+            span,
+        }),
+        _ => None,
     }
 }
 

@@ -2,8 +2,8 @@
 // New code should import from `ts2wasm_backend_core` directly.
 
 pub use ts2wasm_backend_core::wasm_ir::{
-    WasmCustomSection, WasmDataSegment, WasmExport, WasmExportKind, WasmFunction, WasmGlobal,
-    WasmImport, WasmInstr, WasmMemory, WasmModule, WasmValType,
+    WasmBlockType, WasmCustomSection, WasmDataSegment, WasmExport, WasmExportKind, WasmFunction,
+    WasmGlobal, WasmImport, WasmInstr, WasmMemory, WasmModule, WasmValType,
 };
 
 use super::runtime_fn::{HostImportSpec, RuntimeFn};

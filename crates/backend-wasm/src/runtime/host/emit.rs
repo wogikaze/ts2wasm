@@ -425,20 +425,61 @@ impl WatEmitter<'_> {
   (func $math_random (result i32)
     (local $errno i32)
     (local $raw i32)
+    (local $rem i32)
+    (local $result i32)
+    (local $data_ptr i32)
     (local.set $errno (call $random_get (i32.const {scratch}) (i32.const 4)))
     (if (i32.ne (local.get $errno) (i32.const 0))
       (then unreachable))
     (local.set $raw (i32.load (i32.const {scratch})))
+    (local.set $rem (i32.rem_u (local.get $raw) (i32.const 1000)))
+    (local.set $result (call $alloc_heap (i32.const {heap_number_size})))
+    (i32.store (local.get $result) (i32.const {heap_number_sentinel}))
+    (i32.store
+      (i32.add (local.get $result) (i32.const {prototype_offset}))
+      (i32.const 0))
+    (i32.store
+      (i32.add (local.get $result) (i32.const {heap_number_len}))
+      (i32.const {decimal_len}))
+    (local.set $data_ptr
+      (i32.add (local.get $result) (i32.const {heap_number_data})))
+    (i32.store8 (local.get $data_ptr) (i32.const {ascii_zero}))
+    (i32.store8
+      (i32.add (local.get $data_ptr) (i32.const 1))
+      (i32.const {ascii_dot}))
+    (i32.store8
+      (i32.add (local.get $data_ptr) (i32.const 2))
+      (i32.add
+        (i32.div_u
+          (i32.rem_u (local.get $raw) (i32.const 1000))
+          (i32.const 100))
+        (i32.const {ascii_zero})))
+    (i32.store8
+      (i32.add (local.get $data_ptr) (i32.const 3))
+      (i32.add
+        (i32.rem_u
+          (i32.div_u (local.get $rem) (i32.const 10))
+          (i32.const 10))
+        (i32.const {ascii_zero})))
+    (i32.store8
+      (i32.add (local.get $data_ptr) (i32.const 4))
+      (i32.add
+        (i32.rem_u (local.get $rem) (i32.const 10))
+        (i32.const {ascii_zero})))
     (i32.or
-      (i32.shl
-        (i32.rem_u (local.get $raw) (i32.const {modulus}))
-        (i32.const {number_shift}))
-      (i32.const {number_tag})))
+      (local.get $result)
+      (i32.const {object_tag})))
 "#,
             scratch = Layout::SCRATCH_OFFSET,
-            modulus = 1000,
-            number_shift = ValueTag::NUMBER_SHIFT,
-            number_tag = ValueTag::NUMBER,
+            heap_number_size = Layout::HEAP_NUMBER_DECIMAL_DATA_OFFSET as i32 + 5,
+            heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
+            prototype_offset = Layout::OBJECT_PROTOTYPE_OFFSET,
+            heap_number_len = Layout::HEAP_NUMBER_DECIMAL_LEN_OFFSET,
+            heap_number_data = Layout::HEAP_NUMBER_DECIMAL_DATA_OFFSET,
+            decimal_len = 5,
+            ascii_zero = b'0',
+            ascii_dot = b'.',
+            object_tag = ValueTag::OBJECT,
         ));
     }
 

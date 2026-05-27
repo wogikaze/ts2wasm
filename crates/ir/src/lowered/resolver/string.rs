@@ -146,6 +146,14 @@ pub(crate) fn resolved_expr_static_string_value(
             }
             let func_id = ctx.resolve_func(name).ok()?;
             let signature = ctx.symbols.function_signatures.get(&func_id)?;
+            if args.is_empty()
+                && let Some(value) = signature
+                    .returns_static_string
+                    .as_ref()
+                    .or_else(|| ctx.functions.static_string_returns.get(&func_id))
+            {
+                return Some(value.clone());
+            }
             if signature.returns_first_param_identity && args.len() == 1 {
                 resolved_expr_static_string_value(ctx, &args[0])
             } else {

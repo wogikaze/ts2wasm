@@ -147,7 +147,11 @@ fn run_reference_coverage(repo: &Path, args: &[&str], path_value: &str) -> Value
         .expect("summary JSON should parse")
 }
 
-fn run_reference_coverage_with_output(repo: &Path, args: &[&str], path_value: &str) -> (Output, Value) {
+fn run_reference_coverage_with_output(
+    repo: &Path,
+    args: &[&str],
+    path_value: &str,
+) -> (Output, Value) {
     let ts2wasm_binary = repo.join("target/debug/ts2wasm");
     let ts2wasm_binary_str = ts2wasm_binary
         .to_str()
@@ -169,9 +173,10 @@ fn run_reference_coverage_with_output(repo: &Path, args: &[&str], path_value: &s
     );
 
     let summary_path = repo.join("artifacts/coverage/results/test262-summary.json");
-    let summary: Value =
-        serde_json::from_slice(&std::fs::read(summary_path).expect("summary JSON should be written"))
-            .expect("summary JSON should parse");
+    let summary: Value = serde_json::from_slice(
+        &std::fs::read(summary_path).expect("summary JSON should be written"),
+    )
+    .expect("summary JSON should parse");
     (output, summary)
 }
 
@@ -303,7 +308,10 @@ fn runner_completes_test262_without_wabt_and_without_panic_or_accounting_drift()
         summary["differential_pass"].as_u64().unwrap_or(0) > 0,
         "completion gate requires non-zero differential semantic confirmations"
     );
-    assert_eq!(summary["fail"], 0, "completion gate should not retain failing test262 cases");
+    assert_eq!(
+        summary["fail"], 0,
+        "completion gate should not retain failing test262 cases"
+    );
     assert_eq!(
         summary["runtime_error"], 0,
         "completion gate should not retain runtime-error cases"

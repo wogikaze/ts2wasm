@@ -362,6 +362,78 @@ impl ModuleGraphBuilder {
             });
         }
 
+        for specifier in collect_static_require_specifiers(program) {
+            let already_registered = self.modules[module_id]
+                .dependencies
+                .iter()
+                .any(|dep| dep.specifier == specifier.value);
+            if already_registered {
+                continue;
+            }
+
+            let Ok(resolved_path) = resolve_local_specifier(&path, &specifier) else {
+                // Node/core requires such as require("fs") are handled by the
+                // builtin resolver; unresolved package requires remain a
+                // ModuleLoad placeholder for later diagnostics.
+                continue;
+            };
+
+            if self.visiting.contains(&resolved_path) {
+                self.cycle_diagnostics.push(Diagnostic {
+                    code: DiagCode::UnsupportedModule,
+                    message: format!(
+                        "issue-5038: module cycle detected involving `{}`",
+                        resolved_path.display()
+                    ),
+                    span: Some(specifier.span),
+
+                    phase: None,
+                });
+            }
+
+            let resolved_module_id = if let Some(existing_id) =
+                self.module_ids_by_path.get(&resolved_path)
+            {
+                *existing_id
+            } else {
+                let source = fs::read_to_string(&resolved_path).map_err(|error| Diagnostic {
+                    code: DiagCode::BackendIo,
+                    message: format!("failed to read {}: {error}", resolved_path.display()),
+                    span: None,
+
+                    phase: None,
+                })?;
+                let resolved_source = if resolved_path.to_string_lossy().ends_with(".d.ts") {
+                    source
+                        .lines()
+                        .map(|line| {
+                            let trimmed = line.trim();
+                            if trimmed.starts_with("export const")
+                                && !trimmed.contains("=")
+                                && trimmed.ends_with(";")
+                                && !trimmed.contains("declare")
+                            {
+                                line.replacen("export const", "export declare const", 1)
+                            } else {
+                                line.to_string()
+                            }
+                        })
+                        .collect::<Vec<_>>()
+                        .join("\n")
+                } else {
+                    source
+                };
+                let resolved_program = parse_module_source(&resolved_source)?;
+                self.visit_module(resolved_path.clone(), &resolved_program)?
+            };
+
+            self.modules[module_id].dependencies.push(ModuleDependency {
+                specifier: specifier.value.clone(),
+                resolved_module_id,
+                resolved_path,
+            });
+        }
+
         // Dynamic import() expressions: scan the entire program tree for
         // __ts2wasm_dynamic_import("...") calls and register their targets
         // as module dependencies so the referenced modules are compiled.
@@ -453,6 +525,392 @@ fn collect_static_module_specifiers(program: &[Stmt]) -> Vec<&ModuleSpecifier> {
             _ => None,
         })
         .collect()
+}
+
+fn collect_static_require_specifiers(program: &[Stmt]) -> Vec<ModuleSpecifier> {
+    let mut specifiers = Vec::new();
+    for stmt in program {
+        collect_static_require_specifiers_stmt(stmt, &mut specifiers);
+    }
+    specifiers
+}
+
+fn collect_static_require_specifiers_stmt(stmt: &Stmt, specifiers: &mut Vec<ModuleSpecifier>) {
+    match stmt {
+        Stmt::Block { statements, .. } => {
+            for child in statements {
+                collect_static_require_specifiers_stmt(child, specifiers);
+            }
+        }
+        Stmt::If {
+            condition,
+            then_body,
+            else_body,
+            ..
+        } => {
+            collect_static_require_specifiers_expr(condition, specifiers);
+            for child in then_body {
+                collect_static_require_specifiers_stmt(child, specifiers);
+            }
+            for child in else_body {
+                collect_static_require_specifiers_stmt(child, specifiers);
+            }
+        }
+        Stmt::While {
+            condition, body, ..
+        }
+        | Stmt::DoWhile {
+            condition, body, ..
+        } => {
+            collect_static_require_specifiers_expr(condition, specifiers);
+            for child in body {
+                collect_static_require_specifiers_stmt(child, specifiers);
+            }
+        }
+        Stmt::For {
+            init,
+            condition,
+            update,
+            body,
+            ..
+        } => {
+            if let Some(init) = init {
+                collect_static_require_specifiers_stmt(init, specifiers);
+            }
+            if let Some(condition) = condition {
+                collect_static_require_specifiers_expr(condition, specifiers);
+            }
+            if let Some(update) = update {
+                collect_static_require_specifiers_expr(update, specifiers);
+            }
+            for child in body {
+                collect_static_require_specifiers_stmt(child, specifiers);
+            }
+        }
+        Stmt::ForIn { iter, body, .. }
+        | Stmt::ForOf { iter, body, .. }
+        | Stmt::ForAwaitOf { iter, body, .. } => {
+            collect_static_require_specifiers_expr(iter, specifiers);
+            for child in body {
+                collect_static_require_specifiers_stmt(child, specifiers);
+            }
+        }
+        Stmt::Let { expr, .. }
+        | Stmt::Using { expr, .. }
+        | Stmt::Assign { expr, .. }
+        | Stmt::Expr { expr, .. }
+        | Stmt::ExportDefault { expr, .. }
+        | Stmt::ExportAssignment { expr, .. }
+        | Stmt::Return { expr, .. }
+        | Stmt::Throw { expr, .. } => {
+            collect_static_require_specifiers_expr(expr, specifiers);
+        }
+        Stmt::ExportDecl { declaration, .. } => {
+            collect_static_require_specifiers_stmt(declaration, specifiers);
+        }
+        Stmt::Function { params, body, .. } => {
+            for (_, default, _) in params {
+                if let Some(default) = default {
+                    collect_static_require_specifiers_expr(default, specifiers);
+                }
+            }
+            for child in body {
+                collect_static_require_specifiers_stmt(child, specifiers);
+            }
+        }
+        Stmt::ClassDecl {
+            extends,
+            body,
+            static_blocks,
+            private_elements,
+            interface_heritage,
+            ..
+        } => {
+            if let Some(extends) = extends {
+                collect_static_require_specifiers_expr(extends, specifiers);
+            }
+            for heritage in interface_heritage {
+                collect_static_require_specifiers_expr(heritage, specifiers);
+            }
+            for child in body {
+                collect_static_require_specifiers_stmt(child, specifiers);
+            }
+            for block in static_blocks {
+                for child in &block.body {
+                    collect_static_require_specifiers_stmt(child, specifiers);
+                }
+            }
+            for element in private_elements {
+                collect_static_require_specifiers_private_element(element, specifiers);
+            }
+        }
+        Stmt::TryCatch {
+            try_block,
+            catch_block,
+            finally_block,
+            ..
+        } => {
+            for child in try_block {
+                collect_static_require_specifiers_stmt(child, specifiers);
+            }
+            if let Some(catch_block) = catch_block {
+                for child in catch_block {
+                    collect_static_require_specifiers_stmt(child, specifiers);
+                }
+            }
+            if let Some(finally_block) = finally_block {
+                for child in finally_block {
+                    collect_static_require_specifiers_stmt(child, specifiers);
+                }
+            }
+        }
+        Stmt::Switch { expr, cases, .. } => {
+            collect_static_require_specifiers_expr(expr, specifiers);
+            for (case_expr, case_body) in cases {
+                if let Some(case_expr) = case_expr {
+                    collect_static_require_specifiers_expr(case_expr, specifiers);
+                }
+                for child in case_body {
+                    collect_static_require_specifiers_stmt(child, specifiers);
+                }
+            }
+        }
+        Stmt::Labeled { body, .. } => {
+            collect_static_require_specifiers_stmt(body, specifiers);
+        }
+        Stmt::ImportSideEffect { .. }
+        | Stmt::ImportNamed { .. }
+        | Stmt::ImportDefault { .. }
+        | Stmt::ImportDefaultNamed { .. }
+        | Stmt::ImportNamespace { .. }
+        | Stmt::ImportDefaultNamespace { .. }
+        | Stmt::ExportNamed { .. }
+        | Stmt::ExportNamedFrom { .. }
+        | Stmt::ExportAllFrom { .. }
+        | Stmt::ExportNamespaceFrom { .. }
+        | Stmt::Break { .. }
+        | Stmt::Continue { .. }
+        | Stmt::AmbientValueDecl { .. }
+        | Stmt::EnumDecl { .. }
+        | Stmt::TypeAlias { .. }
+        | Stmt::InterfaceDecl { .. } => {}
+    }
+}
+
+fn collect_static_require_specifiers_expr(expr: &Expr, specifiers: &mut Vec<ModuleSpecifier>) {
+    match expr {
+        Expr::Call { callee, args, .. } => {
+            if let Expr::Ident { name, .. } = callee.as_ref()
+                && name == "require"
+                && let Some(Expr::String { value, span }) = args.first()
+            {
+                specifiers.push(ModuleSpecifier {
+                    value: value.clone(),
+                    span: *span,
+                });
+                return;
+            }
+            collect_static_require_specifiers_expr(callee, specifiers);
+            for arg in args {
+                collect_static_require_specifiers_expr(arg, specifiers);
+            }
+        }
+        Expr::Await { expr, .. }
+        | Expr::Unary { expr, .. }
+        | Expr::TypeOf { expr, .. }
+        | Expr::Spread { expr, .. }
+        | Expr::Member { object: expr, .. }
+        | Expr::OptionalMember { object: expr, .. } => {
+            collect_static_require_specifiers_expr(expr, specifiers);
+        }
+        Expr::Yield { expr, .. } => {
+            if let Some(expr) = expr {
+                collect_static_require_specifiers_expr(expr, specifiers);
+            }
+        }
+        Expr::Binary { left, right, .. } => {
+            collect_static_require_specifiers_expr(left, specifiers);
+            collect_static_require_specifiers_expr(right, specifiers);
+        }
+        Expr::Ternary {
+            condition,
+            then_expr,
+            else_expr,
+            ..
+        } => {
+            collect_static_require_specifiers_expr(condition, specifiers);
+            collect_static_require_specifiers_expr(then_expr, specifiers);
+            collect_static_require_specifiers_expr(else_expr, specifiers);
+        }
+        Expr::Array { elements, .. } => {
+            for element in elements {
+                match element {
+                    ArrayLiteralElement::Present(expr) | ArrayLiteralElement::Spread(expr) => {
+                        collect_static_require_specifiers_expr(expr, specifiers);
+                    }
+                    ArrayLiteralElement::Hole(_) => {}
+                }
+            }
+        }
+        Expr::Object { props, .. } => {
+            for prop in props {
+                match prop {
+                    ObjectProp::KeyValue { value, .. }
+                    | ObjectProp::Shorthand { value, .. }
+                    | ObjectProp::MethodShorthand { value, .. } => {
+                        collect_static_require_specifiers_expr(value, specifiers);
+                    }
+                    ObjectProp::ComputedKey { key, value, .. } => {
+                        collect_static_require_specifiers_expr(key, specifiers);
+                        collect_static_require_specifiers_expr(value, specifiers);
+                    }
+                }
+            }
+        }
+        Expr::OptionalCall { callee, args, .. } => {
+            collect_static_require_specifiers_expr(callee, specifiers);
+            for arg in args {
+                collect_static_require_specifiers_expr(arg, specifiers);
+            }
+        }
+        Expr::Index { object, index, .. } | Expr::OptionalIndex { object, index, .. } => {
+            collect_static_require_specifiers_expr(object, specifiers);
+            collect_static_require_specifiers_expr(index, specifiers);
+        }
+        Expr::New { expr, args, .. } => {
+            collect_static_require_specifiers_expr(expr, specifiers);
+            for arg in args {
+                collect_static_require_specifiers_expr(arg, specifiers);
+            }
+        }
+        Expr::Assign { expr, .. } | Expr::LogicalAssign { expr, .. } => {
+            collect_static_require_specifiers_expr(expr, specifiers);
+        }
+        Expr::LogicalPropertyAssign {
+            object_expr,
+            computed_key,
+            expr,
+            ..
+        } => {
+            if let Some(object_expr) = object_expr {
+                collect_static_require_specifiers_expr(object_expr, specifiers);
+            }
+            if let Some(computed_key) = computed_key {
+                collect_static_require_specifiers_expr(computed_key, specifiers);
+            }
+            collect_static_require_specifiers_expr(expr, specifiers);
+        }
+        Expr::PropertyAssign { object, value, .. } => {
+            collect_static_require_specifiers_expr(object, specifiers);
+            collect_static_require_specifiers_expr(value, specifiers);
+        }
+        Expr::IndexAssign {
+            object,
+            index,
+            value,
+            ..
+        } => {
+            collect_static_require_specifiers_expr(object, specifiers);
+            collect_static_require_specifiers_expr(index, specifiers);
+            collect_static_require_specifiers_expr(value, specifiers);
+        }
+        Expr::InstanceOf {
+            expr, type_expr, ..
+        } => {
+            collect_static_require_specifiers_expr(expr, specifiers);
+            collect_static_require_specifiers_expr(type_expr, specifiers);
+        }
+        Expr::ArrowFn {
+            body, body_stmts, ..
+        } => {
+            collect_static_require_specifiers_expr(body, specifiers);
+            for stmt in body_stmts {
+                collect_static_require_specifiers_stmt(stmt, specifiers);
+            }
+        }
+        Expr::FunctionExpr { params, body, .. } => {
+            for (_, default, _) in params {
+                if let Some(default) = default {
+                    collect_static_require_specifiers_expr(default, specifiers);
+                }
+            }
+            for stmt in body {
+                collect_static_require_specifiers_stmt(stmt, specifiers);
+            }
+        }
+        Expr::ClassExpr {
+            extends,
+            body,
+            static_blocks,
+            private_elements,
+            interface_heritage,
+            ..
+        } => {
+            if let Some(extends) = extends {
+                collect_static_require_specifiers_expr(extends, specifiers);
+            }
+            for heritage in interface_heritage {
+                collect_static_require_specifiers_expr(heritage, specifiers);
+            }
+            for stmt in body {
+                collect_static_require_specifiers_stmt(stmt, specifiers);
+            }
+            for block in static_blocks {
+                for stmt in &block.body {
+                    collect_static_require_specifiers_stmt(stmt, specifiers);
+                }
+            }
+            for element in private_elements {
+                collect_static_require_specifiers_private_element(element, specifiers);
+            }
+        }
+        Expr::Sequence { exprs, .. } => {
+            for expr in exprs {
+                collect_static_require_specifiers_expr(expr, specifiers);
+            }
+        }
+        Expr::Number { .. }
+        | Expr::DecimalNumber { .. }
+        | Expr::BigInt { .. }
+        | Expr::String { .. }
+        | Expr::Bool { .. }
+        | Expr::Null { .. }
+        | Expr::Undefined { .. }
+        | Expr::Ident { .. }
+        | Expr::PrivateIdent { .. }
+        | Expr::This { .. }
+        | Expr::NewTarget { .. }
+        | Expr::ImportMeta { .. } => {}
+        Expr::Topic { .. } => {}
+    }
+}
+
+fn collect_static_require_specifiers_private_element(
+    element: &ClassPrivateElement,
+    specifiers: &mut Vec<ModuleSpecifier>,
+) {
+    match element {
+        ClassPrivateElement::Field { value, .. } => {
+            if let Some(value) = value {
+                collect_static_require_specifiers_expr(value, specifiers);
+            }
+        }
+        ClassPrivateElement::Method { params, body, .. } => {
+            for (_, default, _) in params {
+                if let Some(default) = default {
+                    collect_static_require_specifiers_expr(default, specifiers);
+                }
+            }
+            for stmt in body {
+                collect_static_require_specifiers_stmt(stmt, specifiers);
+            }
+        }
+        ClassPrivateElement::Getter { body, .. } | ClassPrivateElement::Setter { body, .. } => {
+            for stmt in body {
+                collect_static_require_specifiers_stmt(stmt, specifiers);
+            }
+        }
+    }
 }
 
 /// Collect specifiers from dynamic `import()` expressions (`__ts2wasm_dynamic_import("...")`).

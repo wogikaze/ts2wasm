@@ -652,6 +652,7 @@ pub(super) struct BigIntRuntimeGuard {
     nullish_locals: HashSet<String>,
     object_toprimitive_locals: HashSet<String>,
     object_toprimitive_string_boundary_locals: HashSet<String>,
+    object_toprimitive_type_error_locals: HashSet<String>,
 }
 
 impl BigIntRuntimeGuard {
@@ -707,6 +708,12 @@ impl BigIntRuntimeGuard {
                         .insert(name.clone());
                 } else {
                     self.object_toprimitive_string_boundary_locals.remove(name);
+                }
+                if self.expr_has_object_toprimitive_type_error_boundary(expr) {
+                    self.object_toprimitive_type_error_locals
+                        .insert(name.clone());
+                } else {
+                    self.object_toprimitive_type_error_locals.remove(name);
                 }
                 Ok(())
             }
@@ -823,6 +830,7 @@ impl BigIntRuntimeGuard {
                 body_guard
                     .object_toprimitive_string_boundary_locals
                     .remove(var);
+                body_guard.object_toprimitive_type_error_locals.remove(var);
                 body_guard.visit_stmts(body)?;
                 self.locals.remove(var);
                 self.object_string_values.remove(var);
@@ -830,6 +838,7 @@ impl BigIntRuntimeGuard {
                 self.nullish_locals.remove(var);
                 self.object_toprimitive_locals.remove(var);
                 self.object_toprimitive_string_boundary_locals.remove(var);
+                self.object_toprimitive_type_error_locals.remove(var);
                 self.invalidate_assigned_in_stmts(body);
                 Ok(())
             }
@@ -874,6 +883,7 @@ impl BigIntRuntimeGuard {
             object_toprimitive_string_boundary_locals: self
                 .object_toprimitive_string_boundary_locals
                 .clone(),
+            object_toprimitive_type_error_locals: self.object_toprimitive_type_error_locals.clone(),
         }
     }
 
@@ -906,6 +916,7 @@ impl BigIntRuntimeGuard {
         self.nullish_locals.remove(name);
         self.object_toprimitive_locals.remove(name);
         self.object_toprimitive_string_boundary_locals.remove(name);
+        self.object_toprimitive_type_error_locals.remove(name);
     }
 
     pub(super) fn invalidate_assigned_in_stmts(&mut self, stmts: &[Stmt]) {
@@ -1076,6 +1087,14 @@ impl BigIntRuntimeGuard {
         }
     }
 
+    pub(super) fn expr_has_object_toprimitive_type_error_boundary(&self, expr: &Expr) -> bool {
+        match expr {
+            Expr::Ident { name, .. } => self.object_toprimitive_type_error_locals.contains(name),
+            Expr::Object { props, .. } => object_toprimitive_type_error_return(props).is_some(),
+            _ => false,
+        }
+    }
+
     pub(super) fn expr_bigint_info(
         &mut self,
         expr: &Expr,
@@ -1198,6 +1217,13 @@ impl BigIntRuntimeGuard {
                             return Err(bigint_object_toprimitive_string_boundary_diagnostic(
                                 *span,
                             ));
+                        }
+                        if (left_info.is_some()
+                            && self.expr_has_object_toprimitive_type_error_boundary(right))
+                            || (right_info.is_some()
+                                && self.expr_has_object_toprimitive_type_error_boundary(left))
+                        {
+                            return Ok(None);
                         }
                         if (left_info.is_some() && self.expr_is_object_toprimitive_boundary(right))
                             || (right_info.is_some()
@@ -1382,6 +1408,12 @@ impl BigIntRuntimeGuard {
                         .insert(name.clone());
                 } else {
                     self.object_toprimitive_string_boundary_locals.remove(name);
+                }
+                if self.expr_has_object_toprimitive_type_error_boundary(expr) {
+                    self.object_toprimitive_type_error_locals
+                        .insert(name.clone());
+                } else {
+                    self.object_toprimitive_type_error_locals.remove(name);
                 }
                 Ok(info)
             }
@@ -1615,4 +1647,63 @@ fn object_toprimitive_string_boundary_return(props: &[ObjectProp]) -> Option<()>
             }
             _ => None,
         })
+}
+
+fn object_toprimitive_type_error_return(props: &[ObjectProp]) -> Option<()> {
+    if let Some(prop) = props
+        .iter()
+        .find(|prop| prop.static_key() == Some("valueOf"))
+    {
+        match object_toprimitive_static_return_kind(prop.value())? {
+            ObjectToPrimitiveReturnKind::Primitive => return None,
+            ObjectToPrimitiveReturnKind::Object => {}
+        }
+    }
+    let Some(prop) = props
+        .iter()
+        .find(|prop| prop.static_key() == Some("toString"))
+    else {
+        return None;
+    };
+    match object_toprimitive_static_return_kind(prop.value())? {
+        ObjectToPrimitiveReturnKind::Primitive => None,
+        ObjectToPrimitiveReturnKind::Object => Some(()),
+    }
+}
+
+enum ObjectToPrimitiveReturnKind {
+    Primitive,
+    Object,
+}
+
+fn object_toprimitive_static_return_kind(value: &Expr) -> Option<ObjectToPrimitiveReturnKind> {
+    match value {
+        Expr::ArrowFn { params, body, .. } if params.is_empty() => {
+            object_toprimitive_static_expr_kind(body)
+        }
+        Expr::FunctionExpr { params, body, .. } if params.is_empty() => {
+            let [Stmt::Return { expr, .. }] = body.as_slice() else {
+                return None;
+            };
+            object_toprimitive_static_expr_kind(expr)
+        }
+        _ => None,
+    }
+}
+
+fn object_toprimitive_static_expr_kind(expr: &Expr) -> Option<ObjectToPrimitiveReturnKind> {
+    match expr {
+        Expr::Object { .. } => Some(ObjectToPrimitiveReturnKind::Object),
+        Expr::BigInt { .. }
+        | Expr::Bool { .. }
+        | Expr::Null { .. }
+        | Expr::Undefined { .. }
+        | Expr::Number { .. }
+        | Expr::String { .. } => Some(ObjectToPrimitiveReturnKind::Primitive),
+        Expr::Unary { op, expr, .. } if *op == UnaryOp::Negate => {
+            matches!(expr.as_ref(), Expr::Number { .. } | Expr::BigInt { .. })
+                .then_some(ObjectToPrimitiveReturnKind::Primitive)
+        }
+        _ => None,
+    }
 }

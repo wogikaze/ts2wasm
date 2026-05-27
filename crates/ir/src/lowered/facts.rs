@@ -55,6 +55,8 @@ pub struct StaticFacts {
     pub static_array_slots: HashMap<LocalId, Vec<ResolvedArrayElement>>,
     /// Locals with Symbol.iterator property (for custom iteration).
     pub symbol_iterator_object_locals: HashSet<LocalId>,
+    /// Static object literal contents for locals with Symbol.iterator.
+    pub symbol_iterator_object_literal_locals: HashMap<LocalId, Vec<ResolvedObjectProp>>,
     /// Locals known to hold symbol values.
     pub symbol_value_locals: HashSet<LocalId>,
     /// Static Symbol descriptions for symbol locals; `None` means Symbol().
@@ -77,6 +79,8 @@ pub struct StaticFacts {
     pub generator_method_iterator_bindings: HashMap<LocalId, GeneratorMethodIteratorBinding>,
     /// Static object literal contents: local → property records.
     pub static_object_literal_locals: HashMap<LocalId, Vec<ResolvedObjectProp>>,
+    /// Static object literals with valueOf/toString hooks for ToPrimitive checks.
+    pub object_toprimitive_literal_locals: HashMap<LocalId, Vec<ResolvedObjectProp>>,
     /// Alias source tracking for static object literals: alias → source_ids.
     pub static_object_literal_alias_sources: HashMap<LocalId, HashSet<LocalId>>,
     /// Locals that are function-like arrays (e.g., `arguments` based on function params).
@@ -256,6 +260,7 @@ impl StaticFacts {
             array_locals: HashSet::new(),
             static_array_slots: HashMap::new(),
             symbol_iterator_object_locals: HashSet::new(),
+            symbol_iterator_object_literal_locals: HashMap::new(),
             symbol_value_locals: HashSet::new(),
             symbol_description_locals: HashMap::new(),
             array_iterator_locals: HashSet::new(),
@@ -267,6 +272,7 @@ impl StaticFacts {
             generator_iterator_bindings: HashMap::new(),
             generator_method_iterator_bindings: HashMap::new(),
             static_object_literal_locals: HashMap::new(),
+            object_toprimitive_literal_locals: HashMap::new(),
             static_object_literal_alias_sources: HashMap::new(),
             static_function_array_like_locals: HashMap::new(),
             string_literal_locals: HashMap::new(),

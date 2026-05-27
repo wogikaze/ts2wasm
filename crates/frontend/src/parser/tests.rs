@@ -240,9 +240,7 @@ mod tests {
             parse_program("function* gen() { yield* other; let value = yield* other; }").unwrap();
         assert_eq!(program.len(), 1);
         let Stmt::Function {
-            is_generator,
-            body,
-            ..
+            is_generator, body, ..
         } = &program[0]
         else {
             panic!("expected generator function declaration");
@@ -890,8 +888,7 @@ mod tests {
 
     #[test]
     fn parses_new_expression_with_multiple_spread() {
-        let program =
-            parse_program("let x = new Foo(...a, ...b, c);").unwrap();
+        let program = parse_program("let x = new Foo(...a, ...b, c);").unwrap();
         let Stmt::Let {
             expr: Expr::New { args, .. },
             ..
@@ -935,7 +932,9 @@ mod tests {
         let Stmt::Let { expr, .. } = &program[1] else {
             panic!("expected result let statement");
         };
-        assert!(matches!(expr, Expr::Call { callee, .. } if matches!(callee.as_ref(), Expr::Ident { name, .. } if name == "Function")));
+        assert!(
+            matches!(expr, Expr::Call { callee, .. } if matches!(callee.as_ref(), Expr::Ident { name, .. } if name == "Function"))
+        );
     }
 
     #[test]
@@ -953,8 +952,12 @@ mod tests {
         else {
             panic!("expected second let statement");
         };
-        assert!(matches!(first_expr, Expr::Call { callee, .. } if matches!(callee.as_ref(), Expr::Ident { name, .. } if name == "Function")));
-        assert!(matches!(second_expr, Expr::New { expr, .. } if matches!(expr.as_ref(), Expr::Ident { name, .. } if name == "Function")));
+        assert!(
+            matches!(first_expr, Expr::Call { callee, .. } if matches!(callee.as_ref(), Expr::Ident { name, .. } if name == "Function"))
+        );
+        assert!(
+            matches!(second_expr, Expr::New { expr, .. } if matches!(expr.as_ref(), Expr::Ident { name, .. } if name == "Function"))
+        );
     }
 
     #[test]
@@ -1014,7 +1017,10 @@ mod tests {
             let program = parse_program(source).unwrap_or_else(|e| {
                 panic!("indirect eval should not be parser-rejected: {source}: {e}")
             });
-            assert!(!program.is_empty(), "should produce statements for {source}");
+            assert!(
+                !program.is_empty(),
+                "should produce statements for {source}"
+            );
         }
     }
 
@@ -1352,8 +1358,7 @@ mod tests {
 
     #[test]
     fn parses_nested_template_literal_inside_interpolation() {
-        let program =
-            parse_program("let message = `${name ? ` ${String(name)}` : ''}`;").unwrap();
+        let program = parse_program("let message = `${name ? ` ${String(name)}` : ''}`;").unwrap();
 
         match &program[0] {
             Stmt::Let {
@@ -1397,9 +1402,10 @@ mod tests {
 
     #[test]
     fn parses_tagged_template_with_nested_template_conditional() {
-        let program =
-            parse_program("let out = lazyResult`function${value.name ? ` ${String(value.name)}` : ''}`;")
-                .unwrap();
+        let program = parse_program(
+            "let out = lazyResult`function${value.name ? ` ${String(value.name)}` : ''}`;",
+        )
+        .unwrap();
 
         match &program[0] {
             Stmt::Let {
@@ -1538,7 +1544,13 @@ mod tests {
             panic!("expected ForIn statement, got {:?}", stmts[0]);
         };
         assert_eq!(var, "key");
-        assert!(matches!(body.as_slice(), [Stmt::Expr { expr: Expr::Call { .. }, .. }]));
+        assert!(matches!(
+            body.as_slice(),
+            [Stmt::Expr {
+                expr: Expr::Call { .. },
+                ..
+            }]
+        ));
     }
 
     #[test]
@@ -1561,14 +1573,19 @@ mod tests {
             panic!("expected ForOf statement, got {:?}", stmts[0]);
         };
         assert_eq!(var, "item");
-        assert!(matches!(body.as_slice(), [Stmt::Expr { expr: Expr::Call { .. }, .. }]));
+        assert!(matches!(
+            body.as_slice(),
+            [Stmt::Expr {
+                expr: Expr::Call { .. },
+                ..
+            }]
+        ));
     }
 
     #[test]
     fn parses_for_of_with_object_binding_pattern() {
-        let stmts =
-            parse_program("var parts: any[];\nfor (let {value, type} of parts) { value; }")
-                .unwrap();
+        let stmts = parse_program("var parts: any[];\nfor (let {value, type} of parts) { value; }")
+            .unwrap();
 
         assert_eq!(stmts.len(), 2);
         let Stmt::ForOf { var, body, .. } = &stmts[1] else {
@@ -1770,6 +1787,33 @@ mod tests {
         };
         assert_eq!(body.len(), 2);
         // Both methods should be present (access modifiers are erased)
+    }
+
+    #[test]
+    fn parses_typed_class_field_initializer() {
+        let stmts = parse_program("class C { private value: number = 7; }").unwrap();
+
+        let Stmt::ClassDecl { body, .. } = &stmts[0] else {
+            panic!("expected class declaration");
+        };
+        let Some(Stmt::Function {
+            name,
+            body: constructor_body,
+            ..
+        }) = body
+            .iter()
+            .find(|stmt| matches!(stmt, Stmt::Function { name, .. } if name == "constructor"))
+        else {
+            panic!("expected synthetic constructor");
+        };
+        assert_eq!(name, "constructor");
+        assert!(matches!(
+            constructor_body.first(),
+            Some(Stmt::Expr {
+                expr: Expr::PropertyAssign { value, .. },
+                ..
+            }) if matches!(value.as_ref(), Expr::Number { value: 7, .. })
+        ));
     }
 
     #[test]
@@ -2040,10 +2084,9 @@ b /* parameter b */,
             panic!("expected function declaration");
         };
         let Stmt::Return {
-            expr:
-                Expr::Member {
-                    object, property, ..
-                },
+            expr: Expr::Member {
+                object, property, ..
+            },
             ..
         } = &body[0]
         else {
@@ -2486,8 +2529,8 @@ b /* parameter b */,
 
     #[test]
     fn parses_sloppy_let_and_await_binding_identifiers_for_object_shorthand() {
-        let program = parse_program("var let = 1; var await = 2; var object = { let, await };")
-            .unwrap();
+        let program =
+            parse_program("var let = 1; var await = 2; var object = { let, await };").unwrap();
 
         match &program[0] {
             Stmt::Let { name, .. } => assert_eq!(name, "let"),
@@ -2695,8 +2738,8 @@ b /* parameter b */,
 
     #[test]
     fn parses_object_accessor_parameter_trailing_comma() {
-        let program = parse_program("let object = { set value(next,) { this.x = next; } };")
-            .unwrap();
+        let program =
+            parse_program("let object = { set value(next,) { this.x = next; } };").unwrap();
 
         match &program[0] {
             Stmt::Let {
@@ -2718,8 +2761,8 @@ b /* parameter b */,
 
     #[test]
     fn parses_computed_method_key_expression() {
-        let program = parse_program("let key = 'run'; let object = { [key]() { return 1; } };")
-            .unwrap();
+        let program =
+            parse_program("let key = 'run'; let object = { [key]() { return 1; } };").unwrap();
 
         match &program[1] {
             Stmt::Let {
@@ -2750,8 +2793,8 @@ b /* parameter b */,
 
     #[test]
     fn parses_object_generator_methods() {
-        let program = parse_program("let object = { *g() { yield 1; }, *['a']() { yield 2; } };")
-            .unwrap();
+        let program =
+            parse_program("let object = { *g() { yield 1; }, *['a']() { yield 2; } };").unwrap();
 
         match &program[0] {
             Stmt::Let {
@@ -3244,8 +3287,8 @@ b /* parameter b */,
 
     #[test]
     fn parses_import_assertions() {
-        let program = parse_program("import data from './data.json' assert { type: 'json' };")
-            .unwrap();
+        let program =
+            parse_program("import data from './data.json' assert { type: 'json' };").unwrap();
         assert_eq!(program.len(), 1);
 
         match &program[0] {
@@ -3744,6 +3787,27 @@ b /* parameter b */,
                     assert!(matches!(expr.as_ref(), Expr::Number { .. }));
                 }
                 other => panic!("unexpected logical assignment statement: {other:?}"),
+            }
+        }
+    }
+
+    #[test]
+    fn parses_assignment_started_comma_expression_statement() {
+        let program = parse_program("a = 2, b = c, c = 0;").unwrap();
+        assert_eq!(program.len(), 1);
+
+        let Stmt::Expr {
+            expr: Expr::Sequence { exprs, .. },
+            ..
+        } = &program[0]
+        else {
+            panic!("expected comma sequence expression statement");
+        };
+        assert_eq!(exprs.len(), 3);
+        for (expr, expected_name) in exprs.iter().zip(["a", "b", "c"]) {
+            match expr {
+                Expr::Assign { name, .. } => assert_eq!(name, expected_name),
+                other => panic!("expected assignment expression, got {other:?}"),
             }
         }
     }
@@ -5085,10 +5149,9 @@ b /* parameter b */,
     fn accepts_new_target_in_class_field_initializer_in_constructor_context() {
         // new.target is valid in class field initializers when the class is
         // inside a function body (fn_depth > 0, in constructor context)
-        let program = parse_program(
-            "class Outer { constructor() { class Inner { x = new.target; } } }",
-        )
-        .unwrap();
+        let program =
+            parse_program("class Outer { constructor() { class Inner { x = new.target; } } }")
+                .unwrap();
         assert_eq!(program.len(), 1);
     }
 
@@ -5103,10 +5166,9 @@ b /* parameter b */,
 
     #[test]
     fn parses_regexp_with_named_capture_group() {
-        let program = parse_program(
-            "let a = /(?<name>.)/; let b = /(?<year>\\d{4})-(?<month>\\d{2})/;",
-        )
-        .unwrap();
+        let program =
+            parse_program("let a = /(?<name>.)/; let b = /(?<year>\\d{4})-(?<month>\\d{2})/;")
+                .unwrap();
         assert_eq!(program.len(), 2);
     }
 
@@ -5129,7 +5191,8 @@ b /* parameter b */,
             let source = format!("function f() {{ {reserved}: while (true) {{}} }}");
             let err = parse_program(&source).unwrap_err();
             assert_eq!(
-                err.code, DiagCode::SyntaxError,
+                err.code,
+                DiagCode::SyntaxError,
                 "expected SyntaxError for label `{reserved}`, got {err:?}"
             );
             assert!(
@@ -5156,10 +5219,7 @@ b /* parameter b */,
 
     #[test]
     fn rejects_duplicate_label_in_same_scope() {
-        let err = parse_program(
-            "label: while (true) { label: while (false) { } }",
-        )
-        .unwrap_err();
+        let err = parse_program("label: while (true) { label: while (false) { } }").unwrap_err();
         assert_eq!(err.code, DiagCode::SyntaxError);
         assert!(err.message.contains("duplicate label"));
         assert!(err.message.contains("label"));
@@ -5177,10 +5237,8 @@ b /* parameter b */,
 
     #[test]
     fn rejects_duplicate_label_in_same_function_top_level() {
-        let err = parse_program(
-            "function f() { label: while (true) {} label: while (false) {} }",
-        )
-        .unwrap_err();
+        let err = parse_program("function f() { label: while (true) {} label: while (false) {} }")
+            .unwrap_err();
         assert_eq!(err.code, DiagCode::SyntaxError);
         assert!(err.message.contains("duplicate label"));
         assert!(err.message.contains("label"));

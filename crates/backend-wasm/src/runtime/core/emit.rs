@@ -394,7 +394,7 @@ impl WatEmitter<'_> {
             object_flags_offset = Layout::OBJECT_FLAGS_OFFSET,
             object_prototype_offset = Layout::OBJECT_PROTOTYPE_OFFSET,
             object_entries_offset = Layout::OBJECT_ENTRIES_OFFSET,
-            object_entry_value_offset = Layout::OBJECT_VALUE_OFFSET,
+            object_entry_value_offset = Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_VALUE_OFFSET,
             prototype_global = prototype_global,
             message_key = message_key,
             message_value = message_value,

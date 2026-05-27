@@ -336,6 +336,7 @@ function coverageCsvRows(coverage: CoverageData) {
       semantic_coverage_percent: coverage.semantic_coverage_percent ?? '0.00',
       differential_pass: coverage.differential_pass ?? 0,
       negative_compile_pass: coverage.negative_compile_pass ?? 0,
+      native_builder_missing: coverage.native_runtime_builder_coverage?.missing_non_pseudo ?? 0,
       unresolved_name_by_symbol: '{}',
     },
     ...suites,
@@ -930,6 +931,42 @@ function App() {
                 </div>
               </div>
             </div>
+
+            {coverage.native_runtime_builder_coverage ? (
+              <div className="bg-gray-800 rounded-lg p-6 border border-gray-700 mb-5">
+                <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <h3 className="text-lg font-semibold">Native Runtime Builders</h3>
+                  </div>
+                  <span className={`px-2 py-1 rounded text-sm font-medium ${coverage.native_runtime_builder_coverage.missing_non_pseudo === 0 ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
+                    {coverage.native_runtime_builder_coverage.missing_non_pseudo.toLocaleString()} missing
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-sm">
+                  <div>
+                    <div className="text-gray-400">Available</div>
+                    <div className="mt-1 text-xl font-semibold text-gray-100">{coverage.native_runtime_builder_coverage.available.toLocaleString()}</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-400">Non-pseudo total</div>
+                    <div className="mt-1 text-xl font-semibold text-gray-100">{coverage.native_runtime_builder_coverage.non_pseudo_total.toLocaleString()}</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-400">Pseudo</div>
+                    <div className="mt-1 text-xl font-semibold text-gray-100">{coverage.native_runtime_builder_coverage.pseudo.toLocaleString()}</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-400">Coverage</div>
+                    <div className="mt-1 text-xl font-semibold text-gray-100">{coverage.native_runtime_builder_coverage.coverage_percent}%</div>
+                  </div>
+                </div>
+                {coverage.native_runtime_builder_coverage.missing.length > 0 ? (
+                  <div className="mt-4 rounded-md border border-red-500/20 bg-red-500/5 p-3 text-sm text-red-100">
+                    {coverage.native_runtime_builder_coverage.missing.join(', ')}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
 
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-5 mb-5">
               <div className="bg-gray-800 rounded-lg p-6 border border-gray-700 xl:col-span-1">

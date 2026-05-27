@@ -951,13 +951,13 @@ impl super::super::Resolver {
         caller_scope_index: usize,
     ) -> Result<Vec<LoweredStmt>, Diagnostic> {
         let rest_temp = self.alloc_temp();
-        let mut rest_args = vec![value.clone()];
+        let mut excluded_keys = Vec::new();
         for sibling in siblings.iter().filter(|sibling| !sibling.is_rest) {
             if sibling.computed {
                 let key_raw = sibling.key.trim_start_matches('[').trim_end_matches(']');
-                rest_args.push(self.lower_eval_for_head_computed_key_expr(key_raw, landing)?);
+                excluded_keys.push(self.lower_eval_for_head_computed_key_expr(key_raw, landing)?);
             } else {
-                rest_args.push(LoweredExpr::String(
+                excluded_keys.push(LoweredExpr::String(
                     sibling.key.clone(),
                     Span::generated("str"),
                 ));
@@ -967,7 +967,13 @@ impl super::super::Resolver {
             rest_temp,
             LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::RestObject,
-                args: rest_args,
+                args: vec![
+                    value.clone(),
+                    LoweredExpr::ArrayNew {
+                        elements: excluded_keys,
+                        span: Span::generated("eval_for_rest_excluded_keys"),
+                    },
+                ],
                 span: Span::generated("eval_for_object_rest"),
             },
             Span::generated("eval_for_object_rest_temp"),

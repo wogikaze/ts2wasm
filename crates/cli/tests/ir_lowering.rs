@@ -1764,33 +1764,21 @@ fn lowering_accepts_char_class_direct_new_regexp_exec() {
 }
 
 #[test]
-fn lowering_rejects_regexp_literal_compile_with_issue_051() {
+fn lowering_accepts_regexp_literal_compile() {
     let program = parse_and_resolve("let r = /abc/; r.compile(\"def\");");
-    let err = ts2wasm_ir::lowered::lower_program(&program).unwrap_err();
-
-    assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-    assert!(err.message.contains("issue-051"));
-    assert!(err.message.contains("RegExp.prototype.compile"));
+    assert!(ts2wasm_ir::lowered::lower_program(&program).is_ok());
 }
 
 #[test]
-fn lowering_rejects_new_regexp_compile_with_issue_051() {
+fn lowering_accepts_new_regexp_compile() {
     let program = parse_and_resolve("let r = new RegExp(\"abc\"); r.compile(\"def\");");
-    let err = ts2wasm_ir::lowered::lower_program(&program).unwrap_err();
-
-    assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-    assert!(err.message.contains("issue-051"));
-    assert!(err.message.contains("RegExp.prototype.compile"));
+    assert!(ts2wasm_ir::lowered::lower_program(&program).is_ok());
 }
 
 #[test]
-fn lowering_rejects_direct_new_regexp_compile_with_issue_051() {
+fn lowering_accepts_direct_new_regexp_compile() {
     let program = parse_and_resolve("new RegExp(\"abc\").compile(\"def\");");
-    let err = ts2wasm_ir::lowered::lower_program(&program).unwrap_err();
-
-    assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-    assert!(err.message.contains("issue-051"));
-    assert!(err.message.contains("RegExp.prototype.compile"));
+    assert!(ts2wasm_ir::lowered::lower_program(&program).is_ok());
 }
 
 #[test]
@@ -1887,7 +1875,7 @@ fn validate_rejects_non_contiguous_top_level_locals() {
 }
 
 #[test]
-fn typescript_semantics_rejects_block_scoped_same_name_extra_argument() {
+fn typescript_semantics_allows_block_scoped_same_name_extra_argument() {
     let program = parse_and_resolve(
         r#"
         function foo(a: number) {
@@ -1899,12 +1887,8 @@ fn typescript_semantics_rejects_block_scoped_same_name_extra_argument() {
         }
         "#,
     );
-    let err = ts2wasm_ir::validate_typescript_call_arity(&program).unwrap_err();
 
-    assert_eq!(err.code, DiagCode::ArityMismatch);
-    assert!(err.message.contains("TS2554"));
-    assert!(err.message.contains("Expected 0 arguments, but got 1"));
-    assert!(err.span.is_some(), "call-site span should be preserved");
+    ts2wasm_ir::validate_typescript_call_arity(&program).unwrap();
 }
 
 #[test]
@@ -1950,7 +1934,23 @@ fn typescript_semantics_uses_ambient_optional_and_rest_arity() {
 }
 
 #[test]
-fn typescript_semantics_rejects_outer_same_name_missing_argument() {
+fn typescript_semantics_rejects_ambient_function_missing_argument() {
+    let program = parse_and_resolve(
+        r#"
+        declare function required(value: number): number;
+        required();
+        "#,
+    );
+    let err = ts2wasm_ir::validate_typescript_call_arity(&program).unwrap_err();
+
+    assert_eq!(err.code, DiagCode::ArityMismatch);
+    assert!(err.message.contains("TS2554"));
+    assert!(err.message.contains("Expected 1 arguments, but got 0"));
+    assert!(err.span.is_some(), "call-site span should be preserved");
+}
+
+#[test]
+fn typescript_semantics_accepts_bodyful_function_missing_argument_without_arguments_object() {
     let program = parse_and_resolve(
         r#"
         function foo(a: number) {
@@ -1962,12 +1962,8 @@ fn typescript_semantics_rejects_outer_same_name_missing_argument() {
         }
         "#,
     );
-    let err = ts2wasm_ir::validate_typescript_call_arity(&program).unwrap_err();
 
-    assert_eq!(err.code, DiagCode::ArityMismatch);
-    assert!(err.message.contains("TS2554"));
-    assert!(err.message.contains("Expected 1 arguments, but got 0"));
-    assert!(err.span.is_some(), "call-site span should be preserved");
+    ts2wasm_ir::validate_typescript_call_arity(&program).unwrap();
 }
 
 #[test]

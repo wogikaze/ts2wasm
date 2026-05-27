@@ -1634,6 +1634,15 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(crate) fn emit_set_values_iterator(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $set_values_iterator (param $set i32) (result i32)
+    (call $set_values_array (local.get $set)))
+"#,
+        );
+    }
+
     pub(crate) fn emit_set_entries_array(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
@@ -2120,6 +2129,15 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(crate) fn emit_map_values_iterator(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $map_values_iterator (param $map i32) (result i32)
+    (call $map_values_array (local.get $map)))
+"#,
+        );
+    }
+
     pub(crate) fn emit_map_keys_array(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
@@ -2197,6 +2215,15 @@ impl WatEmitter<'_> {
             one = RuntimeConst::ONE,
             undefined = ValueTag::UNDEFINED,
         ));
+    }
+
+    pub(crate) fn emit_map_keys_iterator(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $map_keys_iterator (param $map i32) (result i32)
+    (call $map_keys_array (local.get $map)))
+"#,
+        );
     }
 
     pub(crate) fn emit_map_entries_array(&self, wat: &mut String) {

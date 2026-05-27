@@ -53,7 +53,20 @@ export interface CoverageData {
     p3: number;
     future: number;
   };
+  native_runtime_builder_coverage?: NativeRuntimeBuilderCoverage;
   suites?: CoverageSuite[];
+}
+
+export interface NativeRuntimeBuilderCoverage {
+  schema_version?: number;
+  runtime_fn_total: number;
+  non_pseudo_total: number;
+  available: number;
+  pseudo: number;
+  missing_non_pseudo: number;
+  coverage_percent: string;
+  missing: string[];
+  sources?: string[];
 }
 
 export interface HistoricalData {

@@ -8,6 +8,7 @@ use crate::lowered::object_kernel;
 use crate::lowered::*;
 use ts2wasm_diagnostic::{DiagCode, Diagnostic};
 use ts2wasm_source::Span;
+use ts2wasm_syntax::{BinaryOp, SYMBOL_ITERATOR_OBJECT_KEY};
 
 impl super::Resolver {
     pub(super) fn lower_array_literal(
@@ -56,6 +57,13 @@ impl super::Resolver {
                         continue;
                     }
 
+                    if let Some(values) =
+                        self.lower_static_generator_call_spread_values(spread_expr.as_ref())?
+                    {
+                        pending_dense.extend(values);
+                        continue;
+                    }
+
                     if let Some(value) =
                         crate::lowered::resolver::string::static_string_spread_value(
                             &self.ctx,
@@ -87,6 +95,15 @@ impl super::Resolver {
                     if let Some(map_array) = self.lower_map_spread_operand(spread_expr.as_ref())? {
                         Self::flush_array_segment(&mut segments, &mut pending_dense);
                         segments.push(map_array);
+                        continue;
+                    }
+
+                    if let Some(values) =
+                        self.static_custom_iterable_spread_values(spread_expr.as_ref())
+                    {
+                        for value in values {
+                            pending_dense.push(self.lower_expr(&value)?);
+                        }
                         continue;
                     }
 
@@ -137,6 +154,29 @@ impl super::Resolver {
             };
         }
         Ok(combined)
+    }
+
+    fn lower_static_generator_call_spread_values(
+        &mut self,
+        expr: &ResolvedExpr,
+    ) -> Result<Option<Vec<LoweredExpr>>, Diagnostic> {
+        let ResolvedExpr::Call { callee, args, .. } = expr else {
+            return Ok(None);
+        };
+        if !args.is_empty() {
+            return Ok(None);
+        }
+        let ResolvedExpr::Ident(name) = callee.as_ref() else {
+            return Ok(None);
+        };
+        let Some(yields) = self.ctx.facts.generator_function_yields.get(name).cloned() else {
+            return Ok(None);
+        };
+        yields
+            .iter()
+            .map(|expr| self.lower_expr(expr))
+            .collect::<Result<Vec<_>, _>>()
+            .map(Some)
     }
 
     pub(super) fn lower_array_literal_map(
@@ -756,6 +796,44 @@ impl super::Resolver {
         Ok(None)
     }
 
+    pub(super) fn static_custom_iterable_spread_values(
+        &self,
+        spread_expr: &ResolvedExpr,
+    ) -> Option<Vec<ResolvedExpr>> {
+        self.static_custom_iterable_values(spread_expr, None)
+    }
+
+    pub(super) fn static_custom_iterable_for_of_values(
+        &self,
+        iter_expr: &ResolvedExpr,
+        max_yields: Option<usize>,
+    ) -> Option<Vec<ResolvedExpr>> {
+        self.static_custom_iterable_values(iter_expr, max_yields)
+    }
+
+    fn static_custom_iterable_values(
+        &self,
+        iter_expr: &ResolvedExpr,
+        max_yields: Option<usize>,
+    ) -> Option<Vec<ResolvedExpr>> {
+        let props =
+            crate::lowered::resolver::expr::facts::resolved_expr_symbol_iterator_object_props(
+                &self.ctx, iter_expr,
+            )?;
+        let iterator_fn = resolved_object_prop(&props, SYMBOL_ITERATOR_OBJECT_KEY)?;
+        let ResolvedExpr::FunctionExpr { params, body, .. } = iterator_fn else {
+            return None;
+        };
+        if !params.is_empty() {
+            return None;
+        }
+
+        let mut state_i = 0;
+        let mut env = StaticIteratorEnv::default();
+        let next_fn = static_iterator_next_function(body, &mut state_i, &mut env)?;
+        static_iterator_next_values(next_fn, state_i, &env, max_yields)
+    }
+
     #[allow(dead_code)]
     pub(super) fn is_known_dense_array_local_spread_operand(
         &self,
@@ -986,6 +1064,13 @@ impl super::Resolver {
         } else {
             None
         };
+        let callback_this_arg = if method == "reduce" || method == "reduceRight" {
+            LoweredExpr::Undefined(Span::generated("undef"))
+        } else if let Some(this_arg) = args.get(1) {
+            self.lower_expr(this_arg)?
+        } else {
+            LoweredExpr::Undefined(Span::generated("undef"))
+        };
 
         // For now, only handle Ident receivers (variable arrays)
         let receiver_local = match &receiver {
@@ -1003,6 +1088,7 @@ impl super::Resolver {
                     captures,
                     param_count,
                     init_expr,
+                    callback_this_arg,
                     span,
                 );
             }
@@ -1016,7 +1102,36 @@ impl super::Resolver {
             captures,
             param_count,
             init_expr,
+            callback_this_arg,
         )
+    }
+
+    fn lower_array_callback_call_args(
+        &self,
+        func_id: FuncId,
+        callback_this_arg: &LoweredExpr,
+        explicit_args: Vec<LoweredExpr>,
+        captures: &[LocalId],
+        param_count: usize,
+    ) -> Vec<LoweredExpr> {
+        let mut call_args = Vec::new();
+        if self
+            .ctx
+            .symbols
+            .function_signatures
+            .get(&func_id)
+            .is_some_and(|signature| signature.needs_receiver)
+        {
+            call_args.push(callback_this_arg.clone());
+        }
+        call_args.extend(explicit_args.into_iter().take(param_count));
+        call_args.extend(
+            captures
+                .iter()
+                .copied()
+                .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
+        );
+        call_args
     }
 
     pub(super) fn lower_object_group_by_callback(
@@ -1437,6 +1552,7 @@ impl super::Resolver {
         captures: Vec<LocalId>,
         param_count: usize,
         init_expr: Option<LoweredExpr>,
+        callback_this_arg: LoweredExpr,
     ) -> Result<LoweredExpr, Diagnostic> {
         let i = self.alloc_temp();
         let len_local = self.alloc_temp();
@@ -1471,6 +1587,7 @@ impl super::Resolver {
                 func_id,
                 &captures,
                 param_count,
+                &callback_this_arg,
                 method,
             )?,
             "findLast" | "findLastIndex" => self.lower_array_find_last_callback(
@@ -1479,6 +1596,7 @@ impl super::Resolver {
                 func_id,
                 &captures,
                 param_count,
+                &callback_this_arg,
                 method,
             )?,
             "some" => self.lower_array_some_every_callback(
@@ -1692,6 +1810,7 @@ impl super::Resolver {
         captures: Vec<LocalId>,
         param_count: usize,
         init_expr: Option<LoweredExpr>,
+        callback_this_arg: LoweredExpr,
         _span: Span,
     ) -> Result<LoweredExpr, Diagnostic> {
         // Store receiver in a temp, then delegate to variable array handling
@@ -1709,6 +1828,7 @@ impl super::Resolver {
             captures,
             param_count,
             init_expr,
+            callback_this_arg,
         )?;
 
         // Prepend the Let(arr_temp, receiver) before the inner Block's stmts
@@ -1956,7 +2076,8 @@ impl super::Resolver {
         ));
         while_body.push(LoweredStmt::If {
             condition: LoweredExpr::Local(pred, Span::generated("local")),
-            then_body: vec![LoweredStmt::Expr(
+            then_body: vec![LoweredStmt::Assign(
+                result,
                 LoweredExpr::RuntimeCall {
                     intrinsic: RuntimeFn::ArrayPushGrow,
                     args: vec![
@@ -1994,6 +2115,7 @@ impl super::Resolver {
         func_id: FuncId,
         captures: &[LocalId],
         param_count: usize,
+        callback_this_arg: &LoweredExpr,
         method: &str,
     ) -> Result<(Vec<LoweredStmt>, Vec<LoweredStmt>, LoweredExpr), Diagnostic> {
         let mut init_stmts = Vec::new();
@@ -2035,17 +2157,15 @@ impl super::Resolver {
                 LoweredExpr::Local(i, Span::generated("local")),
                 arr_ref(),
             ];
-            let mut call_args: Vec<LoweredExpr> =
-                explicit_args.into_iter().take(param_count).collect();
-            call_args.extend(
-                captures
-                    .iter()
-                    .copied()
-                    .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
-            );
             LoweredExpr::Call {
                 kind: FunctionCallKind::User(func_id),
-                args: call_args,
+                args: self.lower_array_callback_call_args(
+                    func_id,
+                    callback_this_arg,
+                    explicit_args,
+                    captures,
+                    param_count,
+                ),
 
                 span: Span::generated("call"),
             }
@@ -2109,6 +2229,7 @@ impl super::Resolver {
         func_id: FuncId,
         captures: &[LocalId],
         param_count: usize,
+        callback_this_arg: &LoweredExpr,
         method: &str,
     ) -> Result<(Vec<LoweredStmt>, Vec<LoweredStmt>, LoweredExpr), Diagnostic> {
         let mut init_stmts = Vec::new();
@@ -2150,17 +2271,15 @@ impl super::Resolver {
                 LoweredExpr::Local(i, Span::generated("local")),
                 arr_ref(),
             ];
-            let mut call_args: Vec<LoweredExpr> =
-                explicit_args.into_iter().take(param_count).collect();
-            call_args.extend(
-                captures
-                    .iter()
-                    .copied()
-                    .map(|id| LoweredExpr::Local(id, Span::generated("local"))),
-            );
             LoweredExpr::Call {
                 kind: FunctionCallKind::User(func_id),
-                args: call_args,
+                args: self.lower_array_callback_call_args(
+                    func_id,
+                    callback_this_arg,
+                    explicit_args,
+                    captures,
+                    param_count,
+                ),
 
                 span: Span::generated("call"),
             }
@@ -2575,7 +2694,8 @@ impl super::Resolver {
             call_args,
             Span::generated("let_stmt"),
         ));
-        while_body.push(LoweredStmt::Expr(
+        while_body.push(LoweredStmt::Assign(
+            result,
             LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::ArrayPushGrow,
                 args: vec![
@@ -2624,4 +2744,311 @@ fn dense_array_like_object_elements(props: &[ResolvedObjectProp]) -> Option<Vec<
         elements.push(value);
     }
     Some(elements)
+}
+
+fn resolved_object_prop<'a>(
+    props: &'a [ResolvedObjectProp],
+    key: &str,
+) -> Option<&'a ResolvedExpr> {
+    props
+        .iter()
+        .find_map(|prop| (prop.static_key() == Some(key)).then_some(prop.value()))
+}
+
+#[derive(Clone, Default)]
+struct StaticIteratorEnv {
+    numbers: Vec<(String, i32)>,
+    arrays: Vec<(String, Vec<ResolvedExpr>)>,
+}
+
+impl StaticIteratorEnv {
+    fn set_number(&mut self, name: &str, value: i32) {
+        if let Some((_, slot)) = self.numbers.iter_mut().find(|(key, _)| key == name) {
+            *slot = value;
+        } else {
+            self.numbers.push((name.to_owned(), value));
+        }
+    }
+
+    fn get_number(&self, name: &str) -> Option<i32> {
+        self.numbers
+            .iter()
+            .rev()
+            .find_map(|(key, value)| (key == name).then_some(*value))
+    }
+
+    fn set_array(&mut self, name: &str, value: Vec<ResolvedExpr>) {
+        if let Some((_, slot)) = self.arrays.iter_mut().find(|(key, _)| key == name) {
+            *slot = value;
+        } else {
+            self.arrays.push((name.to_owned(), value));
+        }
+    }
+
+    fn get_array(&self, name: &str) -> Option<&[ResolvedExpr]> {
+        self.arrays
+            .iter()
+            .rev()
+            .find_map(|(key, value)| (key == name).then_some(value.as_slice()))
+    }
+}
+
+fn static_iterator_next_function<'a>(
+    body: &'a [ResolvedStmt],
+    state_i: &mut i32,
+    env: &mut StaticIteratorEnv,
+) -> Option<&'a ResolvedExpr> {
+    let mut next_fn = None;
+    for stmt in body {
+        match stmt {
+            ResolvedStmt::Let(name, expr) if name == "state" => {
+                *state_i = static_object_number_prop(expr, "i")?;
+            }
+            ResolvedStmt::Let(name, ResolvedExpr::Array(elements)) => {
+                let values = dense_static_array_elements(elements)?;
+                env.set_array(name, values);
+            }
+            ResolvedStmt::Return(ResolvedExpr::Object(props)) => {
+                next_fn = Some(resolved_object_prop(props, "next")?);
+            }
+            _ => return None,
+        }
+    }
+    next_fn
+}
+
+fn static_iterator_next_values(
+    next_fn: &ResolvedExpr,
+    mut state_i: i32,
+    env: &StaticIteratorEnv,
+    max_yields: Option<usize>,
+) -> Option<Vec<ResolvedExpr>> {
+    let ResolvedExpr::FunctionExpr { params, body, .. } = next_fn else {
+        return None;
+    };
+    if !params.is_empty() {
+        return None;
+    }
+
+    let mut values = Vec::new();
+    for _ in 0..1024 {
+        let mut call_env = env.clone();
+        let result = static_iterator_next_result(body, &mut state_i, &mut call_env)?;
+        if result.done {
+            return Some(values);
+        }
+        values.push(result.value);
+        if max_yields.is_some_and(|limit| values.len() >= limit) {
+            return Some(values);
+        }
+    }
+    None
+}
+
+struct StaticIteratorNextResult {
+    value: ResolvedExpr,
+    done: bool,
+}
+
+fn static_iterator_next_result(
+    body: &[ResolvedStmt],
+    state_i: &mut i32,
+    env: &mut StaticIteratorEnv,
+) -> Option<StaticIteratorNextResult> {
+    for stmt in body {
+        match static_apply_iterator_stmt(stmt, state_i, env)? {
+            StaticIteratorStmtResult::Continue => {}
+            StaticIteratorStmtResult::Return(result) => return Some(result),
+        }
+    }
+    None
+}
+
+enum StaticIteratorStmtResult {
+    Continue,
+    Return(StaticIteratorNextResult),
+}
+
+fn static_apply_iterator_stmt(
+    stmt: &ResolvedStmt,
+    state_i: &mut i32,
+    env: &mut StaticIteratorEnv,
+) -> Option<StaticIteratorStmtResult> {
+    match stmt {
+        ResolvedStmt::Let(name, expr) => {
+            let value = static_eval_iterator_expr(expr, *state_i, env)?;
+            match value {
+                ResolvedExpr::Number(value) => env.set_number(name, value),
+                ResolvedExpr::Array(elements) => {
+                    env.set_array(name, dense_static_array_elements(&elements)?);
+                }
+                _ => return None,
+            }
+            Some(StaticIteratorStmtResult::Continue)
+        }
+        ResolvedStmt::Expr(expr) => {
+            static_apply_iterator_state_expr(expr, state_i, env)?;
+            Some(StaticIteratorStmtResult::Continue)
+        }
+        ResolvedStmt::If {
+            condition,
+            then_body,
+            else_body,
+        } => {
+            let branch = if static_eval_iterator_bool(condition, *state_i, env)? {
+                then_body
+            } else {
+                else_body
+            };
+            for stmt in branch {
+                match static_apply_iterator_stmt(stmt, state_i, env)? {
+                    StaticIteratorStmtResult::Continue => {}
+                    result @ StaticIteratorStmtResult::Return(_) => return Some(result),
+                }
+            }
+            Some(StaticIteratorStmtResult::Continue)
+        }
+        ResolvedStmt::Return(ResolvedExpr::Object(props)) => {
+            let value =
+                static_eval_iterator_expr(resolved_object_prop(props, "value")?, *state_i, env)?;
+            let done =
+                static_eval_iterator_bool(resolved_object_prop(props, "done")?, *state_i, env)?;
+            Some(StaticIteratorStmtResult::Return(StaticIteratorNextResult {
+                value,
+                done,
+            }))
+        }
+        _ => None,
+    }
+}
+
+fn static_apply_iterator_state_expr(
+    expr: &ResolvedExpr,
+    state_i: &mut i32,
+    env: &StaticIteratorEnv,
+) -> Option<()> {
+    let ResolvedExpr::PropertyAssign {
+        object, key, value, ..
+    } = expr
+    else {
+        return None;
+    };
+    if !matches!(object.as_ref(), ResolvedExpr::Ident(name) if name == "state") || key != "i" {
+        return None;
+    }
+    let ResolvedExpr::Number(value) = static_eval_iterator_expr(value, *state_i, env)? else {
+        return None;
+    };
+    *state_i = value;
+    Some(())
+}
+
+fn static_eval_iterator_expr(
+    expr: &ResolvedExpr,
+    state_i: i32,
+    env: &StaticIteratorEnv,
+) -> Option<ResolvedExpr> {
+    match expr {
+        ResolvedExpr::Number(_) | ResolvedExpr::Bool(_) | ResolvedExpr::Undefined => {
+            Some(expr.clone())
+        }
+        ResolvedExpr::Ident(name) => env.get_number(name).map(ResolvedExpr::Number),
+        ResolvedExpr::PropertyAccess { object, key, .. }
+            if matches!(object.as_ref(), ResolvedExpr::Ident(name) if name == "state")
+                && key == "i" =>
+        {
+            Some(ResolvedExpr::Number(state_i))
+        }
+        ResolvedExpr::PropertyAccess { object, key, .. } if key == "length" => {
+            let ResolvedExpr::Ident(name) = object.as_ref() else {
+                return None;
+            };
+            Some(ResolvedExpr::Number(env.get_array(name)?.len() as i32))
+        }
+        ResolvedExpr::BuiltinProperty {
+            builtin: crate::builtin::BuiltinPropertyId::Length,
+            object,
+            ..
+        } => {
+            let ResolvedExpr::Ident(name) = object.as_ref() else {
+                return None;
+            };
+            Some(ResolvedExpr::Number(env.get_array(name)?.len() as i32))
+        }
+        ResolvedExpr::ComputedIndex { object, index } => {
+            let ResolvedExpr::Ident(name) = object.as_ref() else {
+                return None;
+            };
+            let index = static_eval_iterator_number(index, state_i, env)?;
+            let array = env.get_array(name)?;
+            let value = array.get(usize::try_from(index).ok()?)?;
+            Some(value.clone())
+        }
+        ResolvedExpr::Binary { left, op, right } => {
+            let left = static_eval_iterator_number(left, state_i, env)?;
+            let right = static_eval_iterator_number(right, state_i, env)?;
+            match op {
+                BinaryOp::Add => Some(ResolvedExpr::Number(left + right)),
+                BinaryOp::Subtract => Some(ResolvedExpr::Number(left - right)),
+                BinaryOp::Multiply => Some(ResolvedExpr::Number(left * right)),
+                BinaryOp::Divide if right != 0 => Some(ResolvedExpr::Number(left / right)),
+                BinaryOp::Greater => Some(ResolvedExpr::Bool(left > right)),
+                BinaryOp::GreaterEqual => Some(ResolvedExpr::Bool(left >= right)),
+                BinaryOp::Less => Some(ResolvedExpr::Bool(left < right)),
+                BinaryOp::LessEqual => Some(ResolvedExpr::Bool(left <= right)),
+                BinaryOp::StrictEqual | BinaryOp::EqualEqual => {
+                    Some(ResolvedExpr::Bool(left == right))
+                }
+                BinaryOp::StrictNotEqual | BinaryOp::BangEqual => {
+                    Some(ResolvedExpr::Bool(left != right))
+                }
+                _ => None,
+            }
+        }
+        _ => None,
+    }
+}
+
+fn static_eval_iterator_number(
+    expr: &ResolvedExpr,
+    state_i: i32,
+    env: &StaticIteratorEnv,
+) -> Option<i32> {
+    match static_eval_iterator_expr(expr, state_i, env)? {
+        ResolvedExpr::Number(value) => Some(value),
+        _ => None,
+    }
+}
+
+fn static_eval_iterator_bool(
+    expr: &ResolvedExpr,
+    state_i: i32,
+    env: &StaticIteratorEnv,
+) -> Option<bool> {
+    match static_eval_iterator_expr(expr, state_i, env)? {
+        ResolvedExpr::Bool(value) => Some(value),
+        ResolvedExpr::Number(value) => Some(value != 0),
+        ResolvedExpr::Undefined | ResolvedExpr::Null => Some(false),
+        _ => None,
+    }
+}
+
+fn dense_static_array_elements(elements: &[ResolvedArrayElement]) -> Option<Vec<ResolvedExpr>> {
+    elements
+        .iter()
+        .map(|element| match element {
+            ResolvedArrayElement::Present(expr) => Some(expr.clone()),
+            ResolvedArrayElement::Hole => None,
+        })
+        .collect()
+}
+
+fn static_object_number_prop(expr: &ResolvedExpr, key: &str) -> Option<i32> {
+    let ResolvedExpr::Object(props) = expr else {
+        return None;
+    };
+    let ResolvedExpr::Number(value) = resolved_object_prop(props, key)? else {
+        return None;
+    };
+    Some(*value)
 }

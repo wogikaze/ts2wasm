@@ -41,6 +41,8 @@ pub fn build_runtime_link_plan(program: &LoweredProgram) -> RuntimeLinkPlan {
         .any(|function| function.rest_param_index.is_some())
     {
         plan.add_required_runtime(RuntimeFn::AllocHeap);
+        plan.add_required_runtime(RuntimeFn::ArrayCtorWithLength);
+        plan.add_required_runtime(RuntimeFn::ArrayPushGrow);
     }
     // Async functions need AllocHeap for their state-machine frame.
     if program.functions.iter().any(|function| function.is_async) {
@@ -69,6 +71,9 @@ pub fn build_runtime_link_plan(program: &LoweredProgram) -> RuntimeLinkPlan {
             .contains(&RuntimeFn::BigIntDivisionByZeroRangeError)
     {
         plan.add_required_runtime(RuntimeFn::ObjectPrototype);
+    }
+    if plan.required_runtime.contains(&RuntimeFn::MathRandom) {
+        plan.add_required_runtime(RuntimeFn::AllocHeap);
     }
     plan.populate_derived_sets();
     plan
@@ -475,6 +480,7 @@ fn collect_required_runtime_expr(plan: &mut RuntimeLinkPlan, expr: &LoweredExpr)
         }
         LoweredExpr::GetLength(inner, _) => {
             plan.add_required_runtime(RuntimeFn::GetLength);
+            plan.add_required_runtime(RuntimeFn::NumberToI32);
             collect_required_runtime_expr(plan, inner);
         }
         LoweredExpr::ObjectNew { props, .. } => {
@@ -503,10 +509,16 @@ fn collect_required_runtime_expr(plan: &mut RuntimeLinkPlan, expr: &LoweredExpr)
         }
         LoweredExpr::PropertyGet { obj, .. } => {
             plan.add_required_runtime(RuntimeFn::PropertyGet);
+            plan.add_required_runtime(RuntimeFn::Index);
+            plan.add_required_runtime(RuntimeFn::GetLength);
+            plan.add_required_runtime(RuntimeFn::NumberToI32);
             collect_required_runtime_expr(plan, obj);
         }
         LoweredExpr::OptionalPropertyGet { obj, .. } => {
             plan.add_required_runtime(RuntimeFn::PropertyGet);
+            plan.add_required_runtime(RuntimeFn::Index);
+            plan.add_required_runtime(RuntimeFn::GetLength);
+            plan.add_required_runtime(RuntimeFn::NumberToI32);
             collect_required_runtime_expr(plan, obj);
         }
         LoweredExpr::PropertyGetDynamic { obj, key, .. } => {
@@ -581,6 +593,7 @@ fn collect_required_runtime_expr(plan: &mut RuntimeLinkPlan, expr: &LoweredExpr)
                 plan.add_required_runtime(RuntimeFn::GetLength);
             }
             if *intrinsic == RuntimeFn::ArrayPushGrow {
+                plan.add_required_runtime(RuntimeFn::ArrayCtorWithLength);
                 plan.add_required_runtime(RuntimeFn::ArrayPushGrow);
             }
             if *intrinsic == RuntimeFn::HeapClosureCall {

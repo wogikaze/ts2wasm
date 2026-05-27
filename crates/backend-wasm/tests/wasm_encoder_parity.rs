@@ -6,12 +6,10 @@
 //   1. WatWriter::emit_module()  — the text/WAT path (always available)
 //   2. emit_wasm_module_binary() — the wasm-encoder binary path (feature-gated)
 //
-// Validation uses wat2wasm for both paths:
-//   - The WAT path is validated directly by wat2wasm.
-//   - The binary path is roundtripped through wat2wasm for structural checking.
+// Validation is WABT-free:
+//   - The WAT path is parsed in-process and validated with wasmparser.
+//   - The binary path is validated directly with wasmparser.
 // ---------------------------------------------------------------------------
-
-use std::process::Command;
 
 use ts2wasm_backend_core::wasm_ir::{
     WasmCustomSection, WasmDataSegment, WasmExport, WasmFunction, WasmGlobal, WasmImport,
@@ -23,62 +21,17 @@ use ts2wasm_backend_wasm::wat_writer::WatWriter;
 // Validation helpers
 // ---------------------------------------------------------------------------
 
-/// Validate that the given WAT text is syntactically valid using wat2wasm.
+/// Validate that the given WAT text parses and produces a valid wasm module.
 fn validate_wat(wat: &str) {
-    let mut child = Command::new("wat2wasm")
-        .arg("-o")
-        .arg("/dev/null")
-        .arg("-")
-        .stdin(std::process::Stdio::piped())
-        .stdout(std::process::Stdio::null())
-        .stderr(std::process::Stdio::piped())
-        .spawn()
-        .expect("wat2wasm not found; install wabt tools");
-
-    use std::io::Write;
-    child
-        .stdin
-        .take()
-        .unwrap()
-        .write_all(wat.as_bytes())
-        .expect("write stdin");
-
-    let output = child.wait_with_output().expect("wait for wat2wasm");
-    assert!(
-        output.status.success(),
-        "wat2wasm validation failed:\n--- WAT ---\n{}\n--- stderr ---\n{}",
-        wat,
-        String::from_utf8_lossy(&output.stderr),
-    );
+    let bytes = wat::parse_str(wat).expect("WAT should parse");
+    validate_binary(&bytes);
 }
 
-/// Validate that the given binary wasm bytes decode correctly via wasm2wat.
-/// Uses `wasm2wat` to convert binary to WAT; success means the binary is valid.
+/// Validate that the given binary wasm bytes decode and validate correctly.
 fn validate_binary(wasm_bytes: &[u8]) {
-    let mut child = Command::new("wasm2wat")
-        .arg("-o")
-        .arg("/dev/null")
-        .arg("-") // read from stdin
-        .stdin(std::process::Stdio::piped())
-        .stdout(std::process::Stdio::null())
-        .stderr(std::process::Stdio::piped())
-        .spawn()
-        .expect("wasm2wat not found; install wabt tools");
-
-    use std::io::Write;
-    child
-        .stdin
-        .take()
-        .unwrap()
-        .write_all(wasm_bytes)
-        .expect("write stdin");
-
-    let output = child.wait_with_output().expect("wait for wat2wasm");
-    assert!(
-        output.status.success(),
-        "wasm2wat binary validation failed:\n--- stderr ---\n{}",
-        String::from_utf8_lossy(&output.stderr),
-    );
+    wasmparser::Validator::new()
+        .validate_all(wasm_bytes)
+        .expect("wasm binary should validate");
 }
 
 /// Emit a WasmModule through the WAT path and validate it.
@@ -118,7 +71,7 @@ fn fixture_import_and_memory() -> WasmModule {
         .import(WasmImport::func(
             "env",
             "print_i32",
-            "print_i32",
+            "$print_i32",
             vec![WasmValType::I32],
             vec![],
         ))
@@ -169,6 +122,71 @@ fn fixture_data_segment() -> WasmModule {
         .export(WasmExport::func("load_byte", "load_byte"))
 }
 
+/// Fixture: module that exercises typed memory instructions used by native runtime builders.
+fn fixture_memory_instructions() -> WasmModule {
+    WasmModule::new()
+        .memory(WasmMemory::new(1, 1))
+        .function(
+            WasmFunction::new("memory_ops")
+                .result(WasmValType::I64)
+                .body(vec![
+                    WasmInstr::I32Const(0),
+                    WasmInstr::I32Const(-1),
+                    WasmInstr::I32Store8 {
+                        align: 0,
+                        offset: 0,
+                    },
+                    WasmInstr::I32Const(1),
+                    WasmInstr::I32Const(0x1234),
+                    WasmInstr::I32Store16 {
+                        align: 1,
+                        offset: 0,
+                    },
+                    WasmInstr::I32Const(8),
+                    WasmInstr::I64Const(0x0102_0304_0506_0708),
+                    WasmInstr::I64Store {
+                        align: 2,
+                        offset: 0,
+                    },
+                    WasmInstr::I32Const(16),
+                    WasmInstr::I32Const(0),
+                    WasmInstr::I32Const(4),
+                    WasmInstr::MemoryFill,
+                    WasmInstr::I32Const(0),
+                    WasmInstr::I32Load8S {
+                        align: 0,
+                        offset: 0,
+                    },
+                    WasmInstr::Drop,
+                    WasmInstr::I32Const(0),
+                    WasmInstr::I32Load8U {
+                        align: 0,
+                        offset: 0,
+                    },
+                    WasmInstr::Drop,
+                    WasmInstr::I32Const(1),
+                    WasmInstr::I32Load16S {
+                        align: 1,
+                        offset: 0,
+                    },
+                    WasmInstr::Drop,
+                    WasmInstr::I32Const(1),
+                    WasmInstr::I32Load16U {
+                        align: 1,
+                        offset: 0,
+                    },
+                    WasmInstr::Drop,
+                    WasmInstr::I32Const(8),
+                    WasmInstr::I64Load {
+                        align: 2,
+                        offset: 0,
+                    },
+                    WasmInstr::Return,
+                ]),
+        )
+        .export(WasmExport::func("memory_ops", "memory_ops"))
+}
+
 /// Fixture: module with an ABI custom section.
 /// Covers: custom sections.
 fn fixture_abi_custom_section() -> WasmModule {
@@ -191,7 +209,7 @@ fn fixture_full_featured() -> WasmModule {
         .import(WasmImport::func(
             "env",
             "log",
-            "log",
+            "$log",
             vec![WasmValType::I32],
             vec![],
         ))
@@ -247,6 +265,25 @@ fn parity_data_segment_wat() {
 }
 
 #[test]
+fn parity_memory_instructions_wat() {
+    let module = fixture_memory_instructions();
+    let wat = emit_and_validate_wat(&module, "memory_instructions");
+    for needle in [
+        "i32.load8_s",
+        "i32.load8_u",
+        "i32.load16_s",
+        "i32.load16_u",
+        "i32.store8",
+        "i32.store16",
+        "i64.load",
+        "i64.store",
+        "memory.fill",
+    ] {
+        assert!(wat.contains(needle), "WAT should contain {needle}");
+    }
+}
+
+#[test]
 fn parity_abi_custom_section_wat() {
     let module = fixture_abi_custom_section();
     let wat = emit_and_validate_wat(&module, "abi_custom_section");
@@ -279,7 +316,8 @@ fn parity_full_featured_wat() {
 #[test]
 fn parity_simple_function_binary() {
     let module = fixture_simple_function();
-    let bytes = ts2wasm_backend_wasm::emit_wasm_module_binary(&module);
+    let bytes =
+        ts2wasm_backend_wasm::emit_wasm_module_binary(&module).expect("module should encode");
     assert!(!bytes.is_empty(), "binary output should not be empty");
     validate_binary(&bytes);
 }
@@ -287,7 +325,8 @@ fn parity_simple_function_binary() {
 #[test]
 fn parity_import_and_memory_binary() {
     let module = fixture_import_and_memory();
-    let bytes = ts2wasm_backend_wasm::emit_wasm_module_binary(&module);
+    let bytes =
+        ts2wasm_backend_wasm::emit_wasm_module_binary(&module).expect("module should encode");
     assert!(!bytes.is_empty(), "binary output should not be empty");
     validate_binary(&bytes);
 }
@@ -295,7 +334,8 @@ fn parity_import_and_memory_binary() {
 #[test]
 fn parity_global_binary() {
     let module = fixture_global();
-    let bytes = ts2wasm_backend_wasm::emit_wasm_module_binary(&module);
+    let bytes =
+        ts2wasm_backend_wasm::emit_wasm_module_binary(&module).expect("module should encode");
     assert!(!bytes.is_empty(), "binary output should not be empty");
     validate_binary(&bytes);
 }
@@ -303,7 +343,17 @@ fn parity_global_binary() {
 #[test]
 fn parity_data_segment_binary() {
     let module = fixture_data_segment();
-    let bytes = ts2wasm_backend_wasm::emit_wasm_module_binary(&module);
+    let bytes =
+        ts2wasm_backend_wasm::emit_wasm_module_binary(&module).expect("module should encode");
+    assert!(!bytes.is_empty(), "binary output should not be empty");
+    validate_binary(&bytes);
+}
+
+#[test]
+fn parity_memory_instructions_binary() {
+    let module = fixture_memory_instructions();
+    let bytes =
+        ts2wasm_backend_wasm::emit_wasm_module_binary(&module).expect("module should encode");
     assert!(!bytes.is_empty(), "binary output should not be empty");
     validate_binary(&bytes);
 }
@@ -311,7 +361,8 @@ fn parity_data_segment_binary() {
 #[test]
 fn parity_abi_custom_section_binary() {
     let module = fixture_abi_custom_section();
-    let bytes = ts2wasm_backend_wasm::emit_wasm_module_binary(&module);
+    let bytes =
+        ts2wasm_backend_wasm::emit_wasm_module_binary(&module).expect("module should encode");
     assert!(!bytes.is_empty(), "binary output should not be empty");
     validate_binary(&bytes);
     // Check that the custom section name appears in the raw binary
@@ -327,7 +378,8 @@ fn parity_abi_custom_section_binary() {
 #[test]
 fn parity_full_featured_binary() {
     let module = fixture_full_featured();
-    let bytes = ts2wasm_backend_wasm::emit_wasm_module_binary(&module);
+    let bytes =
+        ts2wasm_backend_wasm::emit_wasm_module_binary(&module).expect("module should encode");
     assert!(!bytes.is_empty(), "binary output should not be empty");
     validate_binary(&bytes);
 }

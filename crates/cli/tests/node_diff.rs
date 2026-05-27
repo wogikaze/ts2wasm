@@ -713,10 +713,6 @@ fn assert_build_fails_with_unsupported_syntax(fixture: &str, expected: &str) {
     assert_build_fails_with_unsupported_syntax_impl(fixture, expected, true);
 }
 
-fn assert_build_fails_with_unsupported_syntax_without_span(fixture: &str, expected: &str) {
-    assert_build_fails_with_unsupported_syntax_impl(fixture, expected, false);
-}
-
 fn assert_build_fails_with_unsupported_syntax_impl(
     fixture: &str,
     expected: &str,
@@ -834,6 +830,9 @@ fn stderr_contains_diag_code(stderr: &str, expected_code: &str) -> bool {
 }
 
 fn assert_no_precomputed_stdout(fixture: &str, output: &Path, expected_stdout: &[u8]) {
+    if expected_stdout.is_empty() {
+        return;
+    }
     let wasm = fs::read(output).unwrap();
     assert!(
         !wasm

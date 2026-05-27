@@ -2,7 +2,6 @@ use super::*;
 
 pub(super) const BIGINT_ISSUE_370: &str = "issue-370:";
 pub(super) const BIGINT_ISSUE_373_TOPRIMITIVE_STRING_BOUNDARY: &str = "issue-373: direct object ToPrimitive toString string returns that are invalid or outside the signed-i32 StringToBigInt comparison boundary require source-backed diagnostics in this slice";
-pub(super) const BIGINT_ISSUE_374: &str = "issue-374:";
 
 #[path = "node_diff_fixture_tests/part_1.rs"]
 mod part_1;

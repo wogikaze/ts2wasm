@@ -13,6 +13,26 @@ fn direct_function_token(func_id: FuncId) -> LoweredExpr {
     }
 }
 
+fn arguments_object_expr(args: &[LoweredExpr]) -> LoweredExpr {
+    let argument_count = args.len();
+    let mut props = args
+        .iter()
+        .cloned()
+        .enumerate()
+        .map(|(index, arg)| (index.to_string(), arg))
+        .collect::<Vec<_>>();
+    let length_index = props.len();
+    props.push((
+        "length".to_owned(),
+        LoweredExpr::Number(argument_count as i32, Span::generated("num")),
+    ));
+    LoweredExpr::ObjectNew {
+        props,
+        non_enumerable: 1 << length_index,
+        span: Span::generated("object_new"),
+    }
+}
+
 impl super::super::Resolver {
     pub(crate) fn lower_function_call_args(
         &mut self,
@@ -99,23 +119,7 @@ impl super::super::Resolver {
         }
 
         if signature.needs_arguments {
-            let argument_count = explicit_args.len();
-            let mut props = explicit_args
-                .iter()
-                .cloned()
-                .enumerate()
-                .map(|(index, arg)| (index.to_string(), arg))
-                .collect::<Vec<_>>();
-            let length_index = props.len(); // index of "length" after push
-            props.push((
-                "length".to_owned(),
-                LoweredExpr::Number(argument_count as i32, Span::generated("num")),
-            ));
-            lowered_args.push(LoweredExpr::ObjectNew {
-                props,
-                non_enumerable: 1 << length_index, // length is non-enumerable
-                span: Span::generated("object_new"),
-            });
+            lowered_args.push(arguments_object_expr(&explicit_args));
         }
 
         if signature.has_rest && (signature.needs_arguments || signature.needs_new_target) {
@@ -160,23 +164,7 @@ impl super::super::Resolver {
         }
 
         if signature.needs_arguments {
-            let argument_count = explicit_args.len();
-            let mut props = explicit_args
-                .iter()
-                .cloned()
-                .enumerate()
-                .map(|(index, arg)| (index.to_string(), arg))
-                .collect::<Vec<_>>();
-            let length_index = props.len();
-            props.push((
-                "length".to_owned(),
-                LoweredExpr::Number(argument_count as i32, Span::generated("num")),
-            ));
-            lowered_args.push(LoweredExpr::ObjectNew {
-                props,
-                non_enumerable: 1 << length_index,
-                span: Span::generated("object_new"),
-            });
+            lowered_args.push(arguments_object_expr(&explicit_args));
         }
 
         if signature.has_rest {

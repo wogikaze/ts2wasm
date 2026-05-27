@@ -454,7 +454,7 @@ fn assert_module_emits_with_wat_and_wasm_encoder(test_name: &str, module: &WasmM
     let wat = writer.into_string();
     validate_wat_if_available(test_name, &wat);
 
-    let wasm = emit_wasm_module_binary(module);
+    let wasm = emit_wasm_module_binary(module).expect("module should encode");
     assert!(
         wasm.starts_with(b"\0asm"),
         "wasm encoder output should start with wasm magic for {test_name}"

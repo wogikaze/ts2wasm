@@ -31,6 +31,11 @@ fn global_this_matches_node_under_iwasm() {
 }
 
 #[test]
+fn this_basic_matches_node_under_iwasm() {
+    assert_fixture_matches_node("fixtures/this-binding/this-basic.ts");
+}
+
+#[test]
 fn global_properties_matches_node_output() {
     for fixture in [
         "fixtures/builtins-and-io/global-0-args.ts",
@@ -124,6 +129,21 @@ fn number_formatting_matches_node() {
 #[test]
 fn number_formatting_decimal_matches_node() {
     assert_fixture_matches_node("fixtures/builtins-and-io/number-formatting-decimal.ts");
+}
+
+#[test]
+fn number_formatting_dynamic_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/number-format-dynamic.ts");
+}
+
+#[test]
+fn number_arithmetic_dynamic_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/number-arithmetic-dynamic.ts");
+}
+
+#[test]
+fn intl_datetimeformat_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/intl-datetimeformat.ts");
 }
 
 #[test]
@@ -423,13 +443,8 @@ fn core_expression_class_expr_fixture_builds_successfully() {
 }
 
 #[test]
-fn core_expression_instanceof_date_fixture_reports_unsupported_date() {
-    assert_build_fails_with_diagnostic(
-        "fixtures/core-expressions/instanceof.ts",
-        "[UnsupportedDate]",
-        "instanceof right-hand side must be a supported class constructor `Date`",
-        false,
-    );
+fn core_expression_instanceof_date_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-expressions/instanceof.ts");
 }
 
 #[test]
@@ -444,14 +459,10 @@ fn core_statement_fixtures_match_node_output_under_iwasm() {
         "fixtures/core-statements/function.ts",
         "fixtures/core-statements/switch.ts",
         "fixtures/core-statements/labeled.ts",
+        "fixtures/core-statements/for-in.ts",
     ] {
         assert_fixture_matches_node(fixture);
     }
-}
-
-#[test]
-fn for_in_fixture_iwasm_traps() {
-    assert_fixture_iwasm_trap("fixtures/core-statements/for-in.ts");
 }
 
 #[test]
@@ -724,6 +735,11 @@ fn object_is_sealed_fixture_matches_node_output_under_iwasm() {
 #[test]
 fn iterator_protocol_matches_node_output() {
     assert_fixture_matches_node("fixtures/core-semantics/iterator-protocol.ts");
+}
+
+#[test]
+fn custom_iterator_symbol_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/custom-iterator-symbol.ts");
 }
 
 #[test]

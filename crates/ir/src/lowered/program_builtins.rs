@@ -34,6 +34,97 @@ pub(crate) fn builtin_function_data_descriptor(name: &str, span: Span) -> Option
     })
 }
 
+pub(crate) fn known_global_value_expr(name: &str, span: Span) -> Option<LoweredExpr> {
+    let (display, typeof_name) = known_global_value_display_and_typeof(name)?;
+    Some(global_marker_object_expr(display, typeof_name, span))
+}
+
+pub(crate) fn known_global_property_value_expr(
+    object: &str,
+    key: &str,
+    span: Span,
+) -> Option<LoweredExpr> {
+    let (display, typeof_name) = match (object, key) {
+        ("Symbol", "for") => ("[Function: for]", "function"),
+        ("Symbol", "keyFor") => ("[Function: keyFor]", "function"),
+        _ => return None,
+    };
+    Some(global_marker_object_expr(display, typeof_name, span))
+}
+
+fn global_marker_object_expr(display: &str, typeof_name: &str, span: Span) -> LoweredExpr {
+    let _ = typeof_name;
+    LoweredExpr::String(display.to_owned(), span)
+}
+
+fn known_global_value_display_and_typeof(name: &str) -> Option<(&'static str, &'static str)> {
+    let typeof_name = match name {
+        "Math" | "JSON" | "Reflect" | "Atomics" | "Intl" | "console" | "process" | "global"
+        | "performance" | "WebAssembly" => "object",
+        _ => "function",
+    };
+    let display = match name {
+        "Number" => "[Function: Number]",
+        "Boolean" => "[Function: Boolean]",
+        "Object" => "[Function: Object]",
+        "String" => "[Function: String]",
+        "Function" => "[Function: Function]",
+        "Array" => "[Function: Array]",
+        "BigInt" => "[Function: BigInt]",
+        "Date" => "[Function: Date]",
+        "RegExp" => "[Function: RegExp]",
+        "Map" => "[Function: Map]",
+        "Set" => "[Function: Set]",
+        "Symbol" => "[Function: Symbol]",
+        "Promise" => "[Function: Promise]",
+        "WeakMap" => "[Function: WeakMap]",
+        "WeakSet" => "[Function: WeakSet]",
+        "ArrayBuffer" => "[Function: ArrayBuffer]",
+        "SharedArrayBuffer" => "[Function: SharedArrayBuffer]",
+        "DataView" => "[Function: DataView]",
+        "Int8Array" => "[Function: Int8Array]",
+        "Uint8Array" => "[Function: Uint8Array]",
+        "Uint8ClampedArray" => "[Function: Uint8ClampedArray]",
+        "Int16Array" => "[Function: Int16Array]",
+        "Uint16Array" => "[Function: Uint16Array]",
+        "Int32Array" => "[Function: Int32Array]",
+        "Uint32Array" => "[Function: Uint32Array]",
+        "Float16Array" => "[Function: Float16Array]",
+        "Float32Array" => "[Function: Float32Array]",
+        "Float64Array" => "[Function: Float64Array]",
+        "BigInt64Array" => "[Function: BigInt64Array]",
+        "BigUint64Array" => "[Function: BigUint64Array]",
+        "Proxy" => "[Function: Proxy]",
+        "Error" => "[Function: Error]",
+        "TypeError" => "[Function: TypeError]",
+        "SyntaxError" => "[Function: SyntaxError]",
+        "RangeError" => "[Function: RangeError]",
+        "ReferenceError" => "[Function: ReferenceError]",
+        "URIError" => "[Function: URIError]",
+        "EvalError" => "[Function: EvalError]",
+        "AggregateError" => "[Function: AggregateError]",
+        "FinalizationRegistry" => "[Function: FinalizationRegistry]",
+        "WeakRef" => "[Function: WeakRef]",
+        "Iterator" => "[Function: Iterator]",
+        "AsyncIterator" => "[Function: AsyncIterator]",
+        "SuppressedError" => "[Function: SuppressedError]",
+        "DisposableStack" => "[Function: DisposableStack]",
+        "AsyncDisposableStack" => "[Function: AsyncDisposableStack]",
+        "Math" => "Object [Math] {}",
+        "JSON" => "Object [JSON] {}",
+        "Reflect" => "Object [Reflect] {}",
+        "Atomics" => "Object [Atomics] {}",
+        "Intl" => "Object [Intl] {}",
+        "console" => "Object [console] {}",
+        "process" => "process",
+        "global" => "Object [global] {}",
+        "performance" => "Performance {}",
+        "WebAssembly" => "Object [WebAssembly] {}",
+        _ => return None,
+    };
+    Some((display, typeof_name))
+}
+
 pub(crate) fn resolve_method_to_runtime_fn(
     object: &ResolvedExpr,
     method: &str,
@@ -147,6 +238,13 @@ pub(crate) fn resolve_method_to_runtime_fn(
                 "isFinite" => Some(RuntimeFn::NumberIsFinite),
                 "isInteger" => Some(RuntimeFn::NumberIsInteger),
                 "isSafeInteger" => Some(RuntimeFn::NumberIsSafeInteger),
+                "parseInt" => Some(RuntimeFn::GlobalParseInt),
+                "parseFloat" => Some(RuntimeFn::GlobalParseFloat),
+                _ => None,
+            };
+        }
+        if name == "globalThis" {
+            return match method {
                 "parseInt" => Some(RuntimeFn::GlobalParseInt),
                 "parseFloat" => Some(RuntimeFn::GlobalParseFloat),
                 _ => None,
@@ -325,8 +423,8 @@ pub(crate) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("Map", "delete") => Some(RuntimeFn::MapDelete),
         ("Map", "clear") => Some(RuntimeFn::MapClear),
         ("Map", "entries") => Some(RuntimeFn::MapEntryPairsArray),
-        ("Map", "keys") => Some(RuntimeFn::MapKeysArray),
-        ("Map", "values") => Some(RuntimeFn::MapValuesArray),
+        ("Map", "keys") => Some(RuntimeFn::MapKeysIterator),
+        ("Map", "values") => Some(RuntimeFn::MapValuesIterator),
         ("Map", "forEach") => Some(RuntimeFn::MapForEach),
         ("WeakMap", "set") => Some(RuntimeFn::WeakMapSet),
         ("WeakMap", "get") => Some(RuntimeFn::WeakMapGet),
@@ -338,8 +436,8 @@ pub(crate) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("Set", "clear") => Some(RuntimeFn::SetClear),
         ("Set", "entries") => Some(RuntimeFn::SetEntriesArray),
         ("Set", "forEach") => Some(RuntimeFn::SetForEach),
-        ("Set", "keys") => Some(RuntimeFn::SetValuesArray),
-        ("Set", "values") => Some(RuntimeFn::SetValuesArray),
+        ("Set", "keys") => Some(RuntimeFn::SetValuesIterator),
+        ("Set", "values") => Some(RuntimeFn::SetValuesIterator),
         ("Set", "isDisjointFrom") => Some(RuntimeFn::SetIsDisjointFrom),
         ("Set", "isSubsetOf") => Some(RuntimeFn::SetIsSubsetOf),
         ("Set", "isSupersetOf") => Some(RuntimeFn::SetIsSupersetOf),
@@ -399,6 +497,17 @@ pub(crate) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("Promise", "then") => Some(RuntimeFn::PromiseThen),
         ("Promise", "catch") => Some(RuntimeFn::PromiseCatch),
         ("Promise", "finally") => Some(RuntimeFn::PromiseFinally),
+        // Iterator helper proposal methods.
+        ("Iterator", "map") => Some(RuntimeFn::IteratorMap),
+        ("Iterator", "filter") => Some(RuntimeFn::IteratorFilter),
+        ("Iterator", "take") => Some(RuntimeFn::IteratorTake),
+        ("Iterator", "drop") => Some(RuntimeFn::IteratorDrop),
+        ("Iterator", "toArray") => Some(RuntimeFn::IteratorToArray),
+        ("Iterator", "reduce") => Some(RuntimeFn::IteratorReduce),
+        ("Iterator", "forEach") => Some(RuntimeFn::IteratorForEach),
+        ("Iterator", "some") => Some(RuntimeFn::IteratorSome),
+        ("Iterator", "every") => Some(RuntimeFn::IteratorEvery),
+        ("Iterator", "find") => Some(RuntimeFn::IteratorFind),
         // String prototype methods
         ("String", "charAt") => Some(RuntimeFn::StringCharAt),
         ("String", "charCodeAt") => Some(RuntimeFn::StringCharCodeAt),
@@ -433,6 +542,22 @@ pub(crate) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("String", "normalize") => Some(RuntimeFn::StringNormalize),
         ("String", "toLocaleString") => Some(RuntimeFn::StringToLocaleString),
         _ if is_typed_array_class(class_name) => typed_array_method_runtime_fn(method),
+        _ => None,
+    }
+}
+
+pub(crate) fn iterator_method_runtime_fn(method: &str) -> Option<RuntimeFn> {
+    match method {
+        "map" => Some(RuntimeFn::IteratorMap),
+        "filter" => Some(RuntimeFn::IteratorFilter),
+        "take" => Some(RuntimeFn::IteratorTake),
+        "drop" => Some(RuntimeFn::IteratorDrop),
+        "toArray" => Some(RuntimeFn::IteratorToArray),
+        "reduce" => Some(RuntimeFn::IteratorReduce),
+        "forEach" => Some(RuntimeFn::IteratorForEach),
+        "some" => Some(RuntimeFn::IteratorSome),
+        "every" => Some(RuntimeFn::IteratorEvery),
+        "find" => Some(RuntimeFn::IteratorFind),
         _ => None,
     }
 }
@@ -728,6 +853,7 @@ pub(crate) fn is_supported_json_stringify_replacer_array(
     elements.iter().all(|element| match element {
         ResolvedArrayElement::Present(expr) => {
             json_stringify_replacer_entry(expr, function_ids).is_some()
+                || matches!(expr, ResolvedExpr::Ident(name) if !function_ids.contains_key(name))
         }
         ResolvedArrayElement::Hole => true,
     })
@@ -820,28 +946,6 @@ pub(crate) fn json_stringify_number_key(element: &ResolvedExpr) -> Option<String
                 ResolvedExpr::Number(value) => Some(format!("-{value}")),
                 _ => None,
             }
-        }
-        _ => None,
-    }
-}
-
-pub(crate) fn json_stringify_replacer_keys(
-    args: &[ResolvedExpr],
-    function_ids: &HashMap<String, FuncId>,
-) -> Option<Vec<String>> {
-    match args.get(1) {
-        Some(ResolvedExpr::Array(elements)) => {
-            let mut keys = Vec::new();
-            for element in elements {
-                let ResolvedArrayElement::Present(expr) = element else {
-                    continue;
-                };
-                match json_stringify_replacer_entry(expr, function_ids)? {
-                    JsonStringifyReplacerEntry::Key(key) => keys.push(key),
-                    JsonStringifyReplacerEntry::Ignored => {}
-                }
-            }
-            Some(keys)
         }
         _ => None,
     }

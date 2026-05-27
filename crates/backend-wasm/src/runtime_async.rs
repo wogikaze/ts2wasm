@@ -1,4 +1,4 @@
-use crate::wasm_ir::{WasmFunction, WasmInstr, WasmValType};
+use crate::wasm_ir::{WasmBlockType, WasmFunction, WasmInstr, WasmValType};
 use crate::wat_writer::WatWriter;
 use ts2wasm_runtime_abi::ValueTag;
 
@@ -60,7 +60,9 @@ fn build_task_result_fn() -> WasmFunction {
             WasmInstr::LocalGet(1),
             WasmInstr::I32Const(2),
             WasmInstr::I32Eq,
-            WasmInstr::If { result_ty: None },
+            WasmInstr::If {
+                result_ty: WasmBlockType::Empty,
+            },
             WasmInstr::Then,
             WasmInstr::LocalGet(2),
             WasmInstr::GlobalSet("$exception_pending".to_owned()),

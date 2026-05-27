@@ -79,6 +79,24 @@ fn dynamic_function_compile_flattens_spread_array_args_through_node_shim_host_im
 }
 
 #[test]
+fn dynamic_json_parse_and_stringify_through_node_shim_host_imports() {
+    let fixture = "fixtures/core-semantics/json-dynamic-node-shim.ts";
+    assert_node_shim_stdout(fixture, "1\nok\n{\"n\":1,\"label\":\"ok\"}\n");
+}
+
+#[test]
+fn iterator_helpers_execute_through_node_shim_host_imports() {
+    let fixture = "fixtures/core-semantics/iterator-helpers-node-shim.ts";
+    assert_node_shim_stdout(fixture, "2\n0\n");
+}
+
+#[test]
+fn iterator_helper_callbacks_execute_with_native_lowering() {
+    let fixture = "fixtures/core-semantics/iterator-helpers-callback-node-shim.ts";
+    assert_node_shim_stdout(fixture, "2\n6\n8\n6\n2\n6\n8\n20\n");
+}
+
+#[test]
 fn dynamic_function_sequence_prefix_preserves_side_effect_through_node_shim_host_imports() {
     let fixture =
         "fixtures/core-semantics/function-constructor-dynamic-sequence-prefix-node-shim.ts";

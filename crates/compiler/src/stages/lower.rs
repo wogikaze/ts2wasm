@@ -1605,18 +1605,25 @@ fn process_collected_export_stmt(
             literal_locals.insert(name.clone(), class_expr);
         }
     } else if let Stmt::ExportDefault { expr, .. } = stmt {
-        if !is_static_export_literal(expr) {
+        let export_expr = if let Expr::Ident { name, .. } = expr {
+            literal_locals.get(name).cloned()
+        } else if is_static_export_literal(expr) {
+            Some(expr.clone())
+        } else {
+            None
+        };
+        let Some(export_expr) = export_expr else {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!(
-                    "issue-233: default export in {} uses a non-literal; only literal default exports are supported",
+                    "issue-233: default export in {} uses a non-literal; only literal default exports and static local aliases are supported",
                     path.display()
                 ),
                 span: None,
                 phase: None,
             });
-        }
-        exports.insert("default".to_owned(), expr.clone());
+        };
+        exports.insert("default".to_owned(), export_expr);
     } else if let Stmt::Let { name, expr, .. } = stmt {
         if is_static_export_literal(expr) {
             literal_locals.insert(name.clone(), expr.clone());

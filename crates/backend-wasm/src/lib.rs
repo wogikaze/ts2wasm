@@ -4,6 +4,7 @@ mod emitter;
 mod expr_emit;
 mod mir_emit;
 mod native_lowered;
+mod native_runtime_embed;
 mod runtime;
 mod runtime_arrays;
 mod runtime_async;
@@ -60,10 +61,13 @@ pub fn emit_canonical_manifest_json(plan: &ValidatedRuntimeLinkPlan) -> String {
 
 pub fn has_node_host_imports(program: &LoweredProgram) -> bool {
     let link_plan = runtime_link_plan::build_runtime_link_plan(program);
-    link_plan.required_imports().iter().any(|import| {
-        let spec = import.spec();
-        spec.module.contains("host") || spec.module.contains("node")
-    })
+    link_plan_has_node_host_imports(&link_plan)
+}
+
+fn link_plan_has_node_host_imports(plan: &runtime_link_plan::RuntimeLinkPlan) -> bool {
+    plan.required_imports()
+        .iter()
+        .any(|import| matches!(import.spec().abi, runtime_fn::HostAbi::NodeShim))
 }
 
 pub fn emit_wat(program: &Validated<LoweredProgram>) -> Result<String, Diagnostic> {
@@ -79,13 +83,9 @@ pub fn emit_mir_wat(program: &Validated<MirProgram>) -> Result<String, Diagnosti
 }
 
 pub fn emit_mir_wasm_binary(program: &Validated<MirProgram>) -> Result<Vec<u8>, Diagnostic> {
-    let wat = emit_mir_wat(program)?;
-    wat::parse_str(&wat).map_err(|err| Diagnostic {
-        code: DiagCode::BackendIo,
-        message: format!("MIR WAT-to-binary conversion failed: {err}"),
-        span: None,
-        phase: None,
-    })
+    let lowered = LoweredProgram::from(program.program());
+    let (validated, _) = Validated::new(lowered)?;
+    emit_wasm_binary(&validated)
 }
 
 pub fn emit_wasm_binary_mvp(program: &Validated<LoweredProgram>) -> Result<Vec<u8>, Diagnostic> {
@@ -214,25 +214,35 @@ pub(crate) fn wat_bytes(bytes: &[u8]) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::runtime_link_plan::build_validated_runtime_link_plan;
+    use super::native_runtime_embed::{
+        is_pseudo_runtime_function, native_runtime_function_available,
+    };
+    use super::runtime_fn::{HostAbi, RuntimeGlobal};
+    use super::runtime_link_plan::{build_runtime_link_plan, build_validated_runtime_link_plan};
+    use super::wasm_ir::{
+        WasmBlockType, WasmExport, WasmFunction, WasmInstr, WasmModule, WasmValType,
+    };
     use super::{
-        emit_canonical_manifest_json, emit_wasm_binary, emit_wasm_binary_mvp,
-        emit_wasm_binary_native, emit_wasm_binary_native_with_abi, emit_wasm_binary_with_abi,
+        emit_canonical_manifest_json, emit_link_plan_snapshot_json, emit_mir_wasm_binary,
+        emit_wasm_binary, emit_wasm_binary_mvp, emit_wasm_binary_native,
+        emit_wasm_binary_native_with_abi, emit_wasm_binary_with_abi,
         emit_wasm_binary_with_abi_wat_debug_fallback, emit_wasm_binary_with_wat_debug_fallback,
         emit_wasm_module_binary, emit_wasm_module_native, emit_wasm_module_native_with_abi,
         emit_wat, emitter::LocalFrame,
     };
+    use std::collections::{BTreeMap, BTreeSet};
     use std::fs;
     use std::path::Path;
     use std::process::Command;
     use ts2wasm_diagnostic::DiagCode;
     use ts2wasm_ir::builtin::BuiltinId;
     use ts2wasm_ir::lowered::{
-        ClassPrototypeRef, ClosureRepresentation, FuncId, FunctionCallKind, LocalId,
-        LoweredBinaryOp, LoweredExpr, LoweredFunction, LoweredLogicalAssignOp, LoweredProgram,
-        LoweredStmt, LoweredUnaryOp, ModuleInfo, ModuleLoadKind, RuntimeFn, Validated,
+        BuiltinErrorConstructor, ClassPrototypeRef, ClosureRepresentation, FuncId,
+        FunctionCallKind, GeneratorState, LocalId, LoweredBinaryOp, LoweredExpr, LoweredFunction,
+        LoweredLogicalAssignOp, LoweredProgram, LoweredStmt, LoweredUnaryOp, MirExpr, MirProgram,
+        MirStmt, ModuleInfo, ModuleLoadKind, RuntimeFn, Validated,
     };
-    use ts2wasm_runtime_abi::{Layout, ValueTag};
+    use ts2wasm_runtime_abi::{Layout, ValueTag, consts::RuntimeString};
     use ts2wasm_shared::abi::{ABI_CUSTOM_SECTION_NAME, AbiMetadata};
     use ts2wasm_shared::test_helpers::unique_temp_dir;
     use ts2wasm_source::Span;
@@ -281,6 +291,44 @@ mod tests {
             shift += 7;
         }
         (result, bytes.len())
+    }
+
+    fn length_prefixed_runtime_string(value: &str) -> Vec<u8> {
+        let mut bytes = Vec::with_capacity(Layout::STRING_HEADER_SIZE as usize + value.len());
+        bytes.extend_from_slice(&(value.len() as u32).to_le_bytes());
+        bytes.extend_from_slice(value.as_bytes());
+        bytes
+    }
+
+    fn has_exact_data_segment(module: &crate::wasm_ir::WasmModule, data: &[u8]) -> bool {
+        module
+            .data_segments
+            .iter()
+            .any(|segment| segment.data == data)
+    }
+
+    fn rust_function_body<'a>(source: &'a str, signature: &str) -> &'a str {
+        let start = source
+            .find(signature)
+            .unwrap_or_else(|| panic!("missing function signature: {signature}"));
+        let body_start = source[start..]
+            .find('{')
+            .map(|offset| start + offset)
+            .unwrap_or_else(|| panic!("missing function body: {signature}"));
+        let mut depth = 0usize;
+        for (offset, ch) in source[body_start..].char_indices() {
+            match ch {
+                '{' => depth += 1,
+                '}' => {
+                    depth -= 1;
+                    if depth == 0 {
+                        return &source[body_start..body_start + offset + ch.len_utf8()];
+                    }
+                }
+                _ => {}
+            }
+        }
+        panic!("unterminated function body: {signature}");
     }
 
     #[test]
@@ -382,6 +430,129 @@ mod tests {
         assert_eq!(direct_out, "42\n");
         assert_eq!(direct_out, wat_out);
         let _ = fs::remove_dir_all(temp_dir);
+    }
+
+    #[test]
+    fn native_fixture_differential_matches_wat_console_log_number() {
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::Call {
+                    kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                    args: vec![LoweredExpr::Number(42, Span::generated("test"))],
+                    span: Span::generated("test"),
+                },
+                Span::generated("test"),
+            )],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+        assert_native_output_matches_wat(program, "native-fixture-differential-console-log-number");
+    }
+
+    #[test]
+    fn native_fixture_differential_matches_wat_locals_and_static_modules() {
+        let span = Span::generated("test");
+        let locals_program = LoweredProgram {
+            top_level_statements: vec![
+                LoweredStmt::Let(LocalId(0), LoweredExpr::Number(42, span), span),
+                LoweredStmt::Expr(
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                        args: vec![LoweredExpr::Local(LocalId(0), span)],
+                        span,
+                    },
+                    span,
+                ),
+            ],
+            top_level_locals: vec![LocalId(0)],
+            functions: vec![],
+            modules: vec![],
+        };
+        assert_native_output_matches_wat(locals_program, "native-fixture-differential-local");
+
+        let module_program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::Call {
+                    kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                    args: vec![LoweredExpr::PropertyGet {
+                        obj: Box::new(LoweredExpr::ModuleLoad {
+                            module_id: 1,
+                            kind: ModuleLoadKind::StaticRequire,
+                            span,
+                        }),
+                        key: "value".to_owned(),
+                        span,
+                    }],
+                    span,
+                },
+                span,
+            )],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![ModuleInfo {
+                id: 1,
+                specifier: "./dep".to_owned(),
+                statements: vec![LoweredStmt::Export {
+                    name: "value".to_owned(),
+                    expr: LoweredExpr::Number(7, span),
+                    span,
+                }],
+                locals_count: 0,
+            }],
+        };
+        assert_native_output_matches_wat(module_program, "native-fixture-differential-module");
+    }
+
+    #[test]
+    fn native_link_plan_snapshot_matches_wat_path_required_sets() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::Call {
+                    kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                    args: vec![LoweredExpr::PropertyGet {
+                        obj: Box::new(LoweredExpr::ModuleLoad {
+                            module_id: 1,
+                            kind: ModuleLoadKind::StaticRequire,
+                            span,
+                        }),
+                        key: "value".to_owned(),
+                        span,
+                    }],
+                    span,
+                },
+                span,
+            )],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![ModuleInfo {
+                id: 1,
+                specifier: "./dep".to_owned(),
+                statements: vec![LoweredStmt::Export {
+                    name: "value".to_owned(),
+                    expr: LoweredExpr::Number(7, span),
+                    span,
+                }],
+                locals_count: 0,
+            }],
+        };
+        let (v, _) = Validated::new(program).expect("should validate");
+        let before = emit_link_plan_snapshot_json(&v);
+
+        emit_wat(&v).expect("WAT path should emit");
+        let after_wat = emit_link_plan_snapshot_json(&v);
+        emit_wasm_module_native(&v).expect("native path should emit");
+        let after_native = emit_link_plan_snapshot_json(&v);
+
+        assert_eq!(
+            before, after_wat,
+            "WAT emission must not change required runtime/import/global/string snapshot"
+        );
+        assert_eq!(
+            before, after_native,
+            "Native emission must use the same required runtime/import/global/string snapshot as WAT"
+        );
     }
 
     #[test]
@@ -597,7 +768,1173 @@ mod tests {
                 .any(|function| function.symbol == "$native_write_buf"),
             "native module should build runtime helpers as typed functions"
         );
-        assert!(!emit_wasm_module_binary(&module).is_empty());
+        assert!(
+            !emit_wasm_module_binary(&module)
+                .expect("native module should encode")
+                .is_empty()
+        );
+    }
+
+    #[test]
+    fn native_runtime_string_segments_are_link_plan_gated() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::Number(0, span), span)],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+        let (v, _) = Validated::new(program).expect("should validate");
+        let module = emit_wasm_module_native(&v).expect("native module should emit");
+
+        assert_eq!(
+            module.data_segments.len(),
+            1,
+            "programs without runtime string users should only carry the native newline helper data"
+        );
+        assert!(has_exact_data_segment(&module, b"\n"));
+        assert!(!has_exact_data_segment(
+            &module,
+            &length_prefixed_runtime_string("undefined")
+        ));
+        assert!(!has_exact_data_segment(
+            &module,
+            &length_prefixed_runtime_string("\n")
+        ));
+    }
+
+    #[test]
+    fn native_runtime_string_and_user_literal_origins_do_not_share_data_segment() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![
+                LoweredStmt::Expr(LoweredExpr::String("false".to_owned(), span), span),
+                LoweredStmt::Expr(
+                    LoweredExpr::RuntimeCall {
+                        intrinsic: RuntimeFn::BooleanToString,
+                        args: vec![LoweredExpr::Bool(false, span)],
+                        span,
+                    },
+                    span,
+                ),
+            ],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+        let (v, _) = Validated::new(program).expect("should validate");
+        let module = emit_wasm_module_native(&v).expect("native module should emit");
+        let false_string = length_prefixed_runtime_string("false");
+        let matching_segments = module
+            .data_segments
+            .iter()
+            .filter(|segment| segment.data == false_string)
+            .collect::<Vec<_>>();
+
+        assert_eq!(
+            matching_segments.len(),
+            2,
+            "runtime string `false` and user literal `false` must retain separate data origins"
+        );
+        assert_ne!(
+            matching_segments[0].offset, matching_segments[1].offset,
+            "separate data origins must not alias the same offset"
+        );
+    }
+
+    fn runtime_catalog_global_symbols() -> BTreeSet<&'static str> {
+        RuntimeFn::emission_order()
+            .iter()
+            .flat_map(|runtime_fn| runtime_fn.globals().iter())
+            .map(|global| global.symbol())
+            .collect()
+    }
+
+    fn runtime_catalog_function_symbols() -> BTreeMap<&'static str, RuntimeFn> {
+        RuntimeFn::emission_order()
+            .iter()
+            .copied()
+            .map(|runtime_fn| (runtime_fn.symbol(), runtime_fn))
+            .collect()
+    }
+
+    #[test]
+    fn native_module_does_not_declare_unplanned_runtime_globals() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::Number(0, span), span)],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+        let plan = build_runtime_link_plan(&program);
+        let (v, _) = Validated::new(program).expect("should validate");
+        let module = emit_wasm_module_native(&v).expect("native module should emit");
+        let catalog_globals = runtime_catalog_global_symbols();
+        let actual = module
+            .globals
+            .iter()
+            .filter_map(|global| {
+                catalog_globals
+                    .contains(global.symbol.as_str())
+                    .then_some(global.symbol.as_str())
+            })
+            .collect::<BTreeSet<_>>();
+        let expected = plan
+            .required_globals()
+            .iter()
+            .map(|global| global.symbol())
+            .collect::<BTreeSet<_>>();
+
+        assert_eq!(
+            actual, expected,
+            "native module should declare exactly the runtime globals required by the link plan"
+        );
+    }
+
+    #[test]
+    fn native_module_declares_exact_required_runtime_function_symbols() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::Unary {
+                    op: LoweredUnaryOp::Not,
+                    expr: Box::new(LoweredExpr::Local(LocalId(0), span)),
+                    span,
+                },
+                span,
+            )],
+            top_level_locals: vec![LocalId(0)],
+            functions: vec![],
+            modules: vec![],
+        };
+        let plan = build_runtime_link_plan(&program);
+        let (v, _) = Validated::new(program).expect("should validate");
+        let module = emit_wasm_module_native(&v).expect("native module should emit");
+        let catalog_symbols = runtime_catalog_function_symbols();
+
+        let actual = module
+            .functions
+            .iter()
+            .filter_map(|function| catalog_symbols.get(function.symbol.as_str()).copied())
+            .collect::<BTreeSet<_>>();
+        let expected = plan
+            .required_runtime_functions()
+            .iter()
+            .copied()
+            .filter(|runtime_fn| !is_pseudo_runtime_function(*runtime_fn))
+            .filter(|runtime_fn| native_runtime_function_available(*runtime_fn))
+            .collect::<BTreeSet<_>>();
+
+        assert_eq!(
+            actual, expected,
+            "native module should include exactly the required available RuntimeFn symbols"
+        );
+        assert!(
+            !actual.contains(&RuntimeFn::PropertyGet),
+            "unrelated runtime functions must not be bundled"
+        );
+    }
+
+    #[test]
+    fn native_module_prunes_static_folded_json_runtime_and_import() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::JsonStringify,
+                    args: vec![
+                        LoweredExpr::ObjectNew {
+                            props: vec![(
+                                "a".to_owned(),
+                                LoweredExpr::Number(1, Span::generated("num")),
+                            )],
+                            non_enumerable: 0,
+                            span: Span::generated("object"),
+                        },
+                        LoweredExpr::Undefined(Span::generated("undef")),
+                        LoweredExpr::Undefined(Span::generated("undef")),
+                    ],
+                    span,
+                },
+                span,
+            )],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+        let (v, _) = Validated::new(program).expect("should validate");
+        let module = emit_wasm_module_native(&v).expect("native module should emit");
+
+        assert!(
+            !module
+                .functions
+                .iter()
+                .any(|function| function.symbol == RuntimeFn::JsonStringify.symbol()),
+            "static-folded JSON.stringify should not keep the runtime helper"
+        );
+        assert!(
+            !module
+                .imports
+                .iter()
+                .any(|import| import.func_symbol == "$host_json_stringify"),
+            "static-folded JSON.stringify should not keep the host import"
+        );
+    }
+
+    #[test]
+    fn native_module_omits_write_import_when_write_helpers_are_unused() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::Number(0, span), span)],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+        let (v, _) = Validated::new(program).expect("should validate");
+        let module = emit_wasm_module_native(&v).expect("native module should emit");
+
+        assert!(
+            module
+                .imports
+                .iter()
+                .all(|import| import.func_symbol != "$fd_write"),
+            "native module should not import fd_write when no emitted function calls native write helpers"
+        );
+        assert!(
+            module
+                .functions
+                .iter()
+                .all(|function| function.symbol != "$native_write_buf"),
+            "native module should not include native write helpers when they are unused"
+        );
+    }
+
+    #[test]
+    fn native_module_declares_link_plan_globals_for_alloc_heap() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::AllocHeap,
+                    args: vec![LoweredExpr::Number(8, span)],
+                    span,
+                },
+                span,
+            )],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+        let (v, _) = Validated::new(program).expect("should validate");
+        let module = emit_wasm_module_native(&v).expect("native module should emit");
+
+        for global in [
+            RuntimeGlobal::AllocBytesSinceLastGc,
+            RuntimeGlobal::GcFreeList,
+            RuntimeGlobal::GcFreeListMaxBodySize,
+            RuntimeGlobal::GcFreeListSecondMaxBodySize,
+            RuntimeGlobal::GcRootBase,
+            RuntimeGlobal::GcRootCount,
+            RuntimeGlobal::GcCallFrameBase,
+            RuntimeGlobal::GcCallFrameTop,
+            RuntimeGlobal::GcCallFrameLimit,
+            RuntimeGlobal::GcCallFrameCurrent,
+        ] {
+            assert!(
+                module
+                    .globals
+                    .iter()
+                    .any(|declared| declared.symbol == global.symbol()),
+                "native module should declare required global {}",
+                global.symbol()
+            );
+        }
+    }
+
+    #[test]
+    fn native_module_uses_runtime_global_catalog_initial_values() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::AllocHeap,
+                    args: vec![LoweredExpr::Number(8, span)],
+                    span,
+                },
+                span,
+            )],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+        let plan = build_runtime_link_plan(&program);
+        let (v, _) = Validated::new(program).expect("should validate");
+        let module = emit_wasm_module_native(&v).expect("native module should emit");
+        let globals = module
+            .globals
+            .iter()
+            .map(|global| (global.symbol.as_str(), &global.init))
+            .collect::<BTreeMap<_, _>>();
+
+        for global in plan.required_globals() {
+            assert!(
+                matches!(
+                    globals.get(global.symbol()),
+                    Some(WasmInstr::I32Const(init)) if *init == global.initial_value()
+                ),
+                "native module should initialize {} from RuntimeGlobal::initial_value()",
+                global.symbol()
+            );
+        }
+    }
+
+    #[test]
+    fn native_module_global_initialization_order_is_snapshotted() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![
+                LoweredStmt::Expr(
+                    LoweredExpr::RuntimeCall {
+                        intrinsic: RuntimeFn::ConsoleGroupStart,
+                        args: vec![LoweredExpr::String("group".to_owned(), span)],
+                        span,
+                    },
+                    span,
+                ),
+                LoweredStmt::Expr(
+                    LoweredExpr::ModuleLoad {
+                        module_id: 1,
+                        kind: ModuleLoadKind::StaticRequire,
+                        span,
+                    },
+                    span,
+                ),
+            ],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![ModuleInfo {
+                id: 1,
+                specifier: "./dep".to_owned(),
+                statements: vec![LoweredStmt::Export {
+                    name: "value".to_owned(),
+                    expr: LoweredExpr::Number(7, span),
+                    span,
+                }],
+                locals_count: 0,
+            }],
+        };
+        let (v, _) = Validated::new(program).expect("should validate");
+        let module = emit_wasm_module_native(&v).expect("native module should emit");
+        let globals = module
+            .globals
+            .iter()
+            .map(|global| global.symbol.as_str())
+            .collect::<Vec<_>>();
+
+        assert_eq!(
+            globals,
+            vec![
+                "$heap",
+                "$alloc_bytes_since_last_gc",
+                "$gc_free_list",
+                "$gc_free_list_max_body_size",
+                "$gc_free_list_second_max_body_size",
+                "$gc_root_base",
+                "$gc_root_count",
+                "$gc_call_frame_base",
+                "$gc_call_frame_top",
+                "$gc_call_frame_limit",
+                "$gc_call_frame_current",
+                "$module_cache",
+                "$current_module_id",
+                "$exception_pending",
+                "$exception_handler_depth",
+                "$console_indent_level",
+                "$native_module_1_export_value",
+            ],
+            "native global initialization order should stay stable for heap, module cache, exception runtime, and module export globals"
+        );
+    }
+
+    #[test]
+    fn native_start_mirrors_top_level_locals_into_gc_root_table() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Let(
+                LocalId(0),
+                LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::AllocHeap,
+                    args: vec![LoweredExpr::Number(8, span)],
+                    span,
+                },
+                span,
+            )],
+            top_level_locals: vec![LocalId(0)],
+            functions: vec![],
+            modules: vec![],
+        };
+        let (v, _) = Validated::new(program).expect("should validate");
+        let module = emit_wasm_module_native(&v).expect("native module should emit");
+        let start = module
+            .functions
+            .iter()
+            .find(|function| function.symbol == "$_start")
+            .expect("native module should include start function");
+        let root_count = start.locals.len();
+        let root_bytes = root_count * std::mem::size_of::<u32>();
+
+        assert!(
+            start.body.windows(2).any(|window| matches!(
+                window,
+                [WasmInstr::I32Const(count), WasmInstr::GlobalSet(symbol)]
+                    if *count == root_count as i32 && symbol == "$gc_root_count"
+            )),
+            "native start should initialize gc root count"
+        );
+        assert!(
+            start.body.windows(3).any(|window| matches!(
+                window,
+                [
+                    WasmInstr::I32Const(bytes),
+                    WasmInstr::Call(call),
+                    WasmInstr::GlobalSet(global)
+                ] if *bytes == root_bytes as i32
+                    && call == RuntimeFn::AllocHeap.symbol()
+                    && global == "$gc_root_base"
+            )),
+            "native start should allocate the gc root table"
+        );
+        assert!(
+            start.body.windows(6).any(|window| matches!(
+                window,
+                [
+                    WasmInstr::LocalSet(0),
+                    WasmInstr::GlobalGet(base),
+                    WasmInstr::I32Const(0),
+                    WasmInstr::I32Add,
+                    WasmInstr::LocalGet(0),
+                    WasmInstr::I32Store { align: 2, offset: 0 }
+                ] if base == "$gc_root_base"
+            )),
+            "native start should mirror top-level local writes into slot 0"
+        );
+    }
+
+    #[test]
+    fn native_functions_use_typed_gc_activation_frames() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::Call {
+                    kind: FunctionCallKind::User(FuncId(0)),
+                    args: vec![],
+                    span,
+                },
+                span,
+            )],
+            top_level_locals: vec![],
+            functions: vec![LoweredFunction {
+                id: FuncId(0),
+                params: vec![],
+                uses_receiver: false,
+                min_required_params: 0,
+                rest_param_index: None,
+                metadata_length: None,
+                metadata_name: None,
+                locals: vec![LocalId(0)],
+                body: vec![
+                    LoweredStmt::Let(
+                        LocalId(0),
+                        LoweredExpr::RuntimeCall {
+                            intrinsic: RuntimeFn::AllocHeap,
+                            args: vec![LoweredExpr::Number(8, span)],
+                            span,
+                        },
+                        span,
+                    ),
+                    LoweredStmt::Return(LoweredExpr::Local(LocalId(0), span), span),
+                ],
+                recursion_depth: 0,
+                is_async: false,
+                is_generator: false,
+                generator_state: None,
+            }],
+            modules: vec![],
+        };
+        let (v, _) = Validated::new(program).expect("should validate");
+        let module = emit_wasm_module_native(&v).expect("native module should emit");
+        let start = module
+            .functions
+            .iter()
+            .find(|function| function.symbol == "$_start")
+            .expect("native module should include start function");
+        let func = module
+            .functions
+            .iter()
+            .find(|function| function.symbol == "$func_0")
+            .expect("native module should include user function");
+        let static_root_bytes = start.locals.len() * std::mem::size_of::<u32>();
+        let frame_bytes = Layout::GC_CALL_FRAME_HEADER_SIZE as usize
+            + func.locals.len() * std::mem::size_of::<u32>();
+
+        assert!(
+            start.body.windows(4).any(|window| matches!(window,
+                [
+                    WasmInstr::GlobalGet(root_base),
+                    WasmInstr::I32Const(offset),
+                    WasmInstr::I32Add,
+                    WasmInstr::GlobalSet(frame_base)
+                ] if root_base == "$gc_root_base"
+                    && *offset == static_root_bytes as i32
+                    && frame_base == "$gc_call_frame_base"
+            )),
+            "native start should place call frame roots after static roots"
+        );
+        assert!(
+            start
+                .body
+                .iter()
+                .any(|instr| matches!(instr, WasmInstr::GlobalSet(symbol) if symbol == "$gc_call_frame_limit")),
+            "native start should initialize call frame limit"
+        );
+        assert!(
+            func.body.windows(6).any(|window| matches!(window,
+                [
+                    WasmInstr::GlobalGet(top),
+                    WasmInstr::I32Const(bytes),
+                    WasmInstr::I32Add,
+                    WasmInstr::GlobalGet(limit),
+                    WasmInstr::I32GtU,
+                    WasmInstr::If { result_ty: WasmBlockType::Empty }
+                ] if top == "$gc_call_frame_top"
+                    && *bytes == frame_bytes as i32
+                    && limit == "$gc_call_frame_limit"
+            )),
+            "native function should bounds-check activation frame push"
+        );
+        assert!(
+            func.body.windows(5).any(|window| matches!(window,
+                [
+                    WasmInstr::GlobalGet(current),
+                    WasmInstr::I32Const(offset),
+                    WasmInstr::I32Add,
+                    WasmInstr::LocalGet(0),
+                    WasmInstr::I32Store { align: 2, offset: 0 }
+                ] if current == "$gc_call_frame_current"
+                    && *offset == Layout::GC_CALL_FRAME_HEADER_SIZE as i32
+            )),
+            "native function should mirror local 0 into the activation frame"
+        );
+        assert!(
+            func.body.windows(6).any(|window| matches!(window,
+                [
+                    WasmInstr::LocalGet(0),
+                    WasmInstr::GlobalGet(current_for_top),
+                    WasmInstr::GlobalSet(top),
+                    WasmInstr::GlobalGet(current_for_prev),
+                    WasmInstr::I32Load { align: 2, offset: 0 },
+                    WasmInstr::GlobalSet(current_set)
+                ] if current_for_top == "$gc_call_frame_current"
+                    && top == "$gc_call_frame_top"
+                    && current_for_prev == "$gc_call_frame_current"
+                    && current_set == "$gc_call_frame_current"
+            )),
+            "native function should pop the activation frame before returning its value"
+        );
+        assert!(
+            emit_wasm_module_binary(&module)
+                .expect("native module should encode")
+                .starts_with(b"\0asm")
+        );
+    }
+
+    #[test]
+    fn native_module_initializers_use_typed_gc_activation_frames() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::Call {
+                    kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                    args: vec![LoweredExpr::PropertyGet {
+                        obj: Box::new(LoweredExpr::ModuleLoad {
+                            module_id: 1,
+                            kind: ModuleLoadKind::StaticRequire,
+                            span,
+                        }),
+                        key: "value".to_owned(),
+                        span,
+                    }],
+                    span,
+                },
+                span,
+            )],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![ModuleInfo {
+                id: 1,
+                specifier: "./dep".to_owned(),
+                statements: vec![
+                    LoweredStmt::Let(
+                        LocalId(0),
+                        LoweredExpr::RuntimeCall {
+                            intrinsic: RuntimeFn::AllocHeap,
+                            args: vec![LoweredExpr::Number(8, span)],
+                            span,
+                        },
+                        span,
+                    ),
+                    LoweredStmt::Export {
+                        name: "value".to_owned(),
+                        expr: LoweredExpr::Number(7, span),
+                        span,
+                    },
+                ],
+                locals_count: 1,
+            }],
+        };
+        let (v, _) = Validated::new(program).expect("should validate");
+        let module = emit_wasm_module_native(&v).expect("native module should emit");
+        let start = module
+            .functions
+            .iter()
+            .find(|function| function.symbol == "$_start")
+            .expect("native module should include start function");
+        let module_init = module
+            .functions
+            .iter()
+            .find(|function| function.symbol == "$native_module_init_1")
+            .expect("native module should include module initializer");
+
+        assert!(
+            start
+                .body
+                .iter()
+                .any(|instr| matches!(instr, WasmInstr::GlobalSet(symbol) if symbol == "$gc_call_frame_limit")),
+            "native start should initialize call-frame roots for module-only allocation"
+        );
+        assert!(
+            module_init.body.windows(6).any(|window| matches!(window,
+                [
+                    WasmInstr::GlobalGet(top),
+                    WasmInstr::I32Const(_),
+                    WasmInstr::I32Add,
+                    WasmInstr::GlobalGet(limit),
+                    WasmInstr::I32GtU,
+                    WasmInstr::If { result_ty: WasmBlockType::Empty }
+                ] if top == "$gc_call_frame_top" && limit == "$gc_call_frame_limit"
+            )),
+            "native module initializer should push an activation frame"
+        );
+        assert!(
+            module_init.body.windows(5).any(|window| matches!(window,
+                [
+                    WasmInstr::GlobalGet(current),
+                    WasmInstr::I32Const(offset),
+                    WasmInstr::I32Add,
+                    WasmInstr::LocalGet(0),
+                    WasmInstr::I32Store { align: 2, offset: 0 }
+                ] if current == "$gc_call_frame_current"
+                    && *offset == Layout::GC_CALL_FRAME_HEADER_SIZE as i32
+            )),
+            "native module initializer should mirror local 0 into the activation frame"
+        );
+        assert!(
+            module_init.body.windows(5).any(|window| matches!(window,
+                [
+                    WasmInstr::GlobalGet(current_for_top),
+                    WasmInstr::GlobalSet(top),
+                    WasmInstr::GlobalGet(current_for_prev),
+                    WasmInstr::I32Load { align: 2, offset: 0 },
+                    WasmInstr::GlobalSet(current_set)
+                ] if current_for_top == "$gc_call_frame_current"
+                    && top == "$gc_call_frame_top"
+                    && current_for_prev == "$gc_call_frame_current"
+                    && current_set == "$gc_call_frame_current"
+            )),
+            "native module initializer should pop the activation frame before fallthrough"
+        );
+        assert!(
+            emit_wasm_module_binary(&module)
+                .expect("native module should encode")
+                .starts_with(b"\0asm")
+        );
+    }
+
+    #[test]
+    fn native_typeof_materializes_only_typeof_runtime_strings() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::TypeOf,
+                    args: vec![LoweredExpr::Undefined(span)],
+                    span,
+                },
+                span,
+            )],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+        let (v, _) = Validated::new(program).expect("should validate");
+        let module = emit_wasm_module_native(&v).expect("native typeof module should emit");
+
+        assert!(has_exact_data_segment(
+            &module,
+            &length_prefixed_runtime_string("undefined")
+        ));
+        assert!(has_exact_data_segment(
+            &module,
+            &length_prefixed_runtime_string("object")
+        ));
+        assert!(has_exact_data_segment(
+            &module,
+            &length_prefixed_runtime_string("symbol")
+        ));
+        assert!(!has_exact_data_segment(
+            &module,
+            &length_prefixed_runtime_string("null")
+        ));
+        assert!(!has_exact_data_segment(
+            &module,
+            &length_prefixed_runtime_string("\n")
+        ));
+    }
+
+    #[test]
+    fn native_boolean_to_string_materializes_boolean_runtime_strings() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::BooleanToString,
+                    args: vec![LoweredExpr::Bool(false, span)],
+                    span,
+                },
+                span,
+            )],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+        let (v, _) = Validated::new(program).expect("should validate");
+        let module =
+            emit_wasm_module_native(&v).expect("native boolean_to_string module should emit");
+
+        assert!(has_exact_data_segment(
+            &module,
+            &length_prefixed_runtime_string("false")
+        ));
+        assert!(has_exact_data_segment(
+            &module,
+            &length_prefixed_runtime_string("true")
+        ));
+        assert!(!has_exact_data_segment(
+            &module,
+            &length_prefixed_runtime_string("undefined")
+        ));
+        assert!(!has_exact_data_segment(
+            &module,
+            &length_prefixed_runtime_string("\n")
+        ));
+    }
+
+    #[test]
+    fn native_log_materializes_log_and_value_to_string_runtime_strings() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::Log,
+                    args: vec![LoweredExpr::Undefined(span)],
+                    span,
+                },
+                span,
+            )],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+        let (v, _) = Validated::new(program).expect("should validate");
+        let module = emit_wasm_module_native(&v).expect("native log module should emit");
+
+        assert!(has_exact_data_segment(
+            &module,
+            &length_prefixed_runtime_string("\n")
+        ));
+        assert!(has_exact_data_segment(
+            &module,
+            &length_prefixed_runtime_string("undefined")
+        ));
+        assert!(has_exact_data_segment(
+            &module,
+            &length_prefixed_runtime_string("null")
+        ));
+        assert!(!has_exact_data_segment(
+            &module,
+            &length_prefixed_runtime_string("object")
+        ));
+    }
+
+    #[test]
+    fn native_bigint_div_materializes_division_by_zero_runtime_strings() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::BigIntDiv,
+                    args: vec![
+                        LoweredExpr::Local(LocalId(0), span),
+                        LoweredExpr::Local(LocalId(1), span),
+                    ],
+                    span,
+                },
+                span,
+            )],
+            top_level_locals: vec![LocalId(0), LocalId(1)],
+            functions: vec![],
+            modules: vec![],
+        };
+        let (v, _) = Validated::new(program).expect("should validate");
+        let module = emit_wasm_module_native(&v).expect("native bigint div module should emit");
+
+        assert!(has_exact_data_segment(
+            &module,
+            &length_prefixed_runtime_string(RuntimeString::BIGINT_DIVISION_BY_ZERO_RANGE_ERROR)
+        ));
+        assert!(has_exact_data_segment(
+            &module,
+            &length_prefixed_runtime_string("Division by zero")
+        ));
+        assert!(has_exact_data_segment(
+            &module,
+            &length_prefixed_runtime_string("message")
+        ));
+    }
+
+    #[test]
+    fn native_promise_with_resolvers_materializes_runtime_strings() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::PromiseWithResolvers,
+                    args: vec![],
+                    span,
+                },
+                span,
+            )],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+        let (v, _) = Validated::new(program).expect("should validate");
+        let module =
+            emit_wasm_module_native(&v).expect("native promise withResolvers module should emit");
+
+        for value in ["promise", "resolve", "reject"] {
+            assert!(
+                has_exact_data_segment(&module, &length_prefixed_runtime_string(value)),
+                "expected runtime string {value}"
+            );
+        }
+    }
+
+    #[test]
+    fn native_aggregate_error_materializes_runtime_strings() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::AggregateError,
+                    args: vec![
+                        LoweredExpr::ArrayNew {
+                            elements: vec![],
+                            span,
+                        },
+                        LoweredExpr::String("boom".to_owned(), span),
+                    ],
+                    span,
+                },
+                span,
+            )],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+        let (v, _) = Validated::new(program).expect("should validate");
+        let module =
+            emit_wasm_module_native(&v).expect("native aggregate error module should emit");
+
+        for value in ["errors", "message", "name", "AggregateError"] {
+            assert!(
+                has_exact_data_segment(&module, &length_prefixed_runtime_string(value)),
+                "expected runtime string {value}"
+            );
+        }
+    }
+
+    #[test]
+    fn native_promise_any_materializes_runtime_strings() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::PromiseAny,
+                    args: vec![LoweredExpr::ArrayNew {
+                        elements: vec![],
+                        span,
+                    }],
+                    span,
+                },
+                span,
+            )],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+        let (v, _) = Validated::new(program).expect("should validate");
+        let module = emit_wasm_module_native(&v).expect("native promise any module should emit");
+
+        for value in [
+            "All promises were rejected",
+            "errors",
+            "message",
+            "name",
+            "AggregateError",
+        ] {
+            assert!(
+                has_exact_data_segment(&module, &length_prefixed_runtime_string(value)),
+                "expected runtime string {value}"
+            );
+        }
+    }
+
+    #[test]
+    fn native_promise_all_settled_materializes_runtime_strings() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::PromiseAllSettled,
+                    args: vec![LoweredExpr::ArrayNew {
+                        elements: vec![],
+                        span,
+                    }],
+                    span,
+                },
+                span,
+            )],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+        let (v, _) = Validated::new(program).expect("should validate");
+        let module =
+            emit_wasm_module_native(&v).expect("native promise allSettled module should emit");
+
+        for value in ["status", "value", "reason", "fulfilled", "rejected"] {
+            assert!(
+                has_exact_data_segment(&module, &length_prefixed_runtime_string(value)),
+                "expected runtime string {value}"
+            );
+        }
+    }
+
+    #[test]
+    fn native_console_log_tagged_runtime_value_routes_through_log() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::Call {
+                    kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                    args: vec![LoweredExpr::RuntimeCall {
+                        intrinsic: RuntimeFn::TypeOf,
+                        args: vec![LoweredExpr::Undefined(span)],
+                        span,
+                    }],
+                    span,
+                },
+                span,
+            )],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+        let (v, _) = Validated::new(program).expect("should validate");
+        let module = emit_wasm_module_native(&v).expect("native module should emit");
+        let start = module
+            .functions
+            .iter()
+            .find(|function| function.symbol == "$_start")
+            .expect("native module should include start function");
+
+        assert!(
+            start.body.windows(3).any(|window| matches!(window,
+                [
+                    WasmInstr::Call(typeof_symbol),
+                    WasmInstr::Call(log_symbol),
+                    WasmInstr::Drop
+                ] if typeof_symbol == RuntimeFn::TypeOf.symbol()
+                    && log_symbol == RuntimeFn::Log.symbol()
+            )),
+            "single tagged runtime console arg should route through $log"
+        );
+        assert!(
+            !start
+                .body
+                .iter()
+                .any(|instr| matches!(instr, WasmInstr::Call(symbol) if symbol == "$native_write_newline")),
+            "the routed console call should not use the legacy native newline helper"
+        );
+
+        let wasm = emit_wasm_module_binary(&module).expect("native module should encode");
+        let temp_dir = unique_temp_dir("native-console-log-tagged-runtime-value");
+        fs::create_dir_all(&temp_dir).expect("temp dir should be created");
+        let wasm_path = temp_dir.join("native.wasm");
+        fs::write(&wasm_path, wasm).expect("native wasm should be written");
+
+        assert_eq!(run_iwasm(&wasm_path), "undefined\n");
+        let _ = fs::remove_dir_all(temp_dir);
+    }
+
+    #[test]
+    fn native_console_log_raw_bool_runtime_value_normalizes_into_log() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![
+                LoweredStmt::Let(
+                    LocalId(0),
+                    LoweredExpr::ArrayNew {
+                        elements: vec![LoweredExpr::Number(1, span)],
+                        span,
+                    },
+                    span,
+                ),
+                LoweredStmt::Expr(
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                        args: vec![LoweredExpr::RuntimeCall {
+                            intrinsic: RuntimeFn::ArrayIsArray,
+                            args: vec![LoweredExpr::Local(LocalId(0), span)],
+                            span,
+                        }],
+                        span,
+                    },
+                    span,
+                ),
+            ],
+            top_level_locals: vec![LocalId(0)],
+            functions: vec![],
+            modules: vec![],
+        };
+        let (v, _) = Validated::new(program).expect("should validate");
+        let module = emit_wasm_module_native(&v).expect("native module should emit");
+        let start = module
+            .functions
+            .iter()
+            .find(|function| function.symbol == "$_start")
+            .expect("native module should include start function");
+
+        assert!(
+            start.body.windows(8).any(|window| matches!(window,
+                [
+                    WasmInstr::If { result_ty },
+                    WasmInstr::Then,
+                    WasmInstr::I32Const(true_value),
+                    WasmInstr::Else,
+                    WasmInstr::I32Const(false_value),
+                    WasmInstr::End,
+                    WasmInstr::Call(log_symbol),
+                    WasmInstr::Drop
+                ] if *result_ty == WasmBlockType::Result(WasmValType::I32)
+                    && *true_value == ValueTag::TRUE
+                    && *false_value == ValueTag::FALSE
+                    && log_symbol == RuntimeFn::Log.symbol()
+            )),
+            "raw bool runtime console arg should normalize before $log"
+        );
+
+        let wasm = emit_wasm_module_binary(&module).expect("native module should encode");
+        let temp_dir = unique_temp_dir("native-console-log-raw-bool-runtime-value");
+        fs::create_dir_all(&temp_dir).expect("temp dir should be created");
+        let wasm_path = temp_dir.join("native.wasm");
+        fs::write(&wasm_path, wasm).expect("native wasm should be written");
+
+        assert_eq!(run_iwasm(&wasm_path), "true\n");
+        let _ = fs::remove_dir_all(temp_dir);
+    }
+
+    #[test]
+    fn native_console_warn_and_error_route_safe_runtime_values_through_log_helpers() {
+        for (builtin, runtime_fn, arg) in [
+            (
+                BuiltinId::ConsoleWarn,
+                RuntimeFn::LogWarn,
+                LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::TypeOf,
+                    args: vec![LoweredExpr::Undefined(Span::generated("test"))],
+                    span: Span::generated("test"),
+                },
+            ),
+            (
+                BuiltinId::ConsoleError,
+                RuntimeFn::LogError,
+                LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::ArrayIsArray,
+                    args: vec![LoweredExpr::ArrayNew {
+                        elements: vec![],
+                        span: Span::generated("test"),
+                    }],
+                    span: Span::generated("test"),
+                },
+            ),
+        ] {
+            let span = Span::generated("test");
+            let program = LoweredProgram {
+                top_level_statements: vec![LoweredStmt::Expr(
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::Builtin(builtin),
+                        args: vec![arg],
+                        span,
+                    },
+                    span,
+                )],
+                top_level_locals: vec![],
+                functions: vec![],
+                modules: vec![],
+            };
+            let (v, _) = Validated::new(program).expect("should validate");
+            let module = emit_wasm_module_native(&v).expect("native module should emit");
+            let start = module
+                .functions
+                .iter()
+                .find(|function| function.symbol == "$_start")
+                .expect("native module should include start function");
+
+            assert!(
+                start.body.windows(2).any(|window| matches!(window,
+                    [
+                        WasmInstr::Call(log_symbol),
+                        WasmInstr::Drop
+                    ] if log_symbol == runtime_fn.symbol()
+                )),
+                "safe console.warn/error runtime arg should route through its log helper"
+            );
+            assert!(
+                !start
+                    .body
+                    .iter()
+                    .any(|instr| matches!(instr, WasmInstr::Call(symbol) if symbol == "$native_write_newline")),
+                "the routed console call should not use the legacy native newline helper"
+            );
+
+            let wasm = emit_wasm_module_binary(&module).expect("native module should encode");
+            wasmparser::Validator::new()
+                .validate_all(&wasm)
+                .expect("native console warn/error module should validate");
+        }
     }
 
     #[test]
@@ -634,7 +1971,7 @@ mod tests {
             "native module should carry ABI custom section"
         );
 
-        let wasm = emit_wasm_module_binary(&module);
+        let wasm = emit_wasm_module_binary(&module).expect("native module should encode");
         assert_eq!(
             wasm_custom_section_payload(&wasm, ABI_CUSTOM_SECTION_NAME),
             Some(expected_payload.as_slice())
@@ -1210,6 +2547,806 @@ mod tests {
     }
 
     #[test]
+    fn native_lowered_static_array_dynamic_index_get_runs_without_wat_conversion() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![
+                LoweredStmt::Let(
+                    LocalId(0),
+                    LoweredExpr::ArrayNew {
+                        elements: vec![LoweredExpr::Number(2, span), LoweredExpr::Number(3, span)],
+                        span,
+                    },
+                    span,
+                ),
+                LoweredStmt::Let(LocalId(1), LoweredExpr::Number(0, span), span),
+                LoweredStmt::Let(LocalId(2), LoweredExpr::Number(0, span), span),
+                LoweredStmt::While {
+                    condition: LoweredExpr::Binary {
+                        left: Box::new(LoweredExpr::Local(LocalId(1), span)),
+                        op: LoweredBinaryOp::Less,
+                        right: Box::new(LoweredExpr::Number(2, span)),
+                        span,
+                    },
+                    body: vec![
+                        LoweredStmt::Assign(
+                            LocalId(2),
+                            LoweredExpr::Binary {
+                                left: Box::new(LoweredExpr::Local(LocalId(2), span)),
+                                op: LoweredBinaryOp::Add,
+                                right: Box::new(LoweredExpr::ArrayGet {
+                                    arr: Box::new(LoweredExpr::Local(LocalId(0), span)),
+                                    index: Box::new(LoweredExpr::Local(LocalId(1), span)),
+                                    span,
+                                }),
+                                span,
+                            },
+                            span,
+                        ),
+                        LoweredStmt::Assign(
+                            LocalId(1),
+                            LoweredExpr::Binary {
+                                left: Box::new(LoweredExpr::Local(LocalId(1), span)),
+                                op: LoweredBinaryOp::Add,
+                                right: Box::new(LoweredExpr::Number(1, span)),
+                                span,
+                            },
+                            span,
+                        ),
+                    ],
+                    span,
+                },
+                LoweredStmt::Expr(
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                        args: vec![LoweredExpr::Local(LocalId(2), span)],
+                        span,
+                    },
+                    span,
+                ),
+            ],
+            top_level_locals: vec![LocalId(0), LocalId(1), LocalId(2)],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wasm = emit_wasm_binary_native(&v).expect("native dynamic array get should emit");
+        let temp_dir = unique_temp_dir("native-lowered-static-array-dynamic-index-get");
+        fs::create_dir_all(&temp_dir).expect("temp dir should be created");
+        let wasm_path = temp_dir.join("native.wasm");
+        fs::write(&wasm_path, wasm).expect("native wasm should be written");
+
+        assert_eq!(run_iwasm(&wasm_path), "5\n");
+        let _ = fs::remove_dir_all(temp_dir);
+    }
+
+    #[test]
+    fn native_lowered_static_array_is_array_runs_without_wat_conversion() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![
+                LoweredStmt::Let(
+                    LocalId(0),
+                    LoweredExpr::ArrayNew {
+                        elements: vec![LoweredExpr::Number(1, span)],
+                        span,
+                    },
+                    span,
+                ),
+                LoweredStmt::Let(
+                    LocalId(1),
+                    LoweredExpr::ObjectNew {
+                        props: vec![],
+                        non_enumerable: 0,
+                        span,
+                    },
+                    span,
+                ),
+                LoweredStmt::Expr(
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                        args: vec![LoweredExpr::RuntimeCall {
+                            intrinsic: RuntimeFn::ArrayIsArray,
+                            args: vec![LoweredExpr::Local(LocalId(0), span)],
+                            span,
+                        }],
+                        span,
+                    },
+                    span,
+                ),
+                LoweredStmt::Expr(
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                        args: vec![LoweredExpr::RuntimeCall {
+                            intrinsic: RuntimeFn::ArrayIsArray,
+                            args: vec![LoweredExpr::Local(LocalId(1), span)],
+                            span,
+                        }],
+                        span,
+                    },
+                    span,
+                ),
+            ],
+            top_level_locals: vec![LocalId(0), LocalId(1)],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wasm = emit_wasm_binary_native(&v).expect("native static Array.isArray should emit");
+        let temp_dir = unique_temp_dir("native-lowered-static-array-is-array");
+        fs::create_dir_all(&temp_dir).expect("temp dir should be created");
+        let wasm_path = temp_dir.join("native.wasm");
+        fs::write(&wasm_path, wasm).expect("native wasm should be written");
+
+        assert_eq!(run_iwasm(&wasm_path), "true\nfalse\n");
+        let _ = fs::remove_dir_all(temp_dir);
+    }
+
+    #[test]
+    fn native_lowered_static_string_to_upper_case_runs_without_wat_conversion() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::Call {
+                    kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                    args: vec![LoweredExpr::RuntimeCall {
+                        intrinsic: RuntimeFn::StringToUpperCase,
+                        args: vec![LoweredExpr::RuntimeCall {
+                            intrinsic: RuntimeFn::ObjectToString,
+                            args: vec![LoweredExpr::String("usd".to_owned(), span)],
+                            span,
+                        }],
+                        span,
+                    }],
+                    span,
+                },
+                span,
+            )],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wasm = emit_wasm_binary_native(&v).expect("native static uppercase should emit");
+        let temp_dir = unique_temp_dir("native-lowered-static-string-uppercase");
+        fs::create_dir_all(&temp_dir).expect("temp dir should be created");
+        let wasm_path = temp_dir.join("native.wasm");
+        fs::write(&wasm_path, wasm).expect("native wasm should be written");
+
+        assert_eq!(run_iwasm(&wasm_path), "USD\n");
+        let _ = fs::remove_dir_all(temp_dir);
+    }
+
+    #[test]
+    fn native_lowered_dynamic_string_to_upper_case_encodes_as_opaque_value() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::StringToUpperCase,
+                    args: vec![LoweredExpr::RuntimeCall {
+                        intrinsic: RuntimeFn::ObjectToString,
+                        args: vec![LoweredExpr::Local(LocalId(0), span)],
+                        span,
+                    }],
+                    span,
+                },
+                span,
+            )],
+            top_level_locals: vec![LocalId(0)],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wasm = emit_wasm_binary_native(&v).expect("native dynamic uppercase should emit");
+
+        wasmparser::Validator::new()
+            .validate_all(&wasm)
+            .expect("native dynamic uppercase fallback should validate");
+    }
+
+    #[test]
+    fn native_lowered_dynamic_get_own_property_descriptor_encodes_as_opaque_value() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::ObjectGetOwnPropertyDescriptor,
+                    args: vec![
+                        LoweredExpr::Local(LocalId(0), span),
+                        LoweredExpr::Local(LocalId(1), span),
+                    ],
+                    span,
+                },
+                span,
+            )],
+            top_level_locals: vec![LocalId(0), LocalId(1)],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wasm = emit_wasm_binary_native(&v).expect("native dynamic descriptor should emit");
+
+        wasmparser::Validator::new()
+            .validate_all(&wasm)
+            .expect("native dynamic descriptor fallback should validate");
+    }
+
+    #[test]
+    fn native_lowered_dynamic_get_prototype_of_encodes_as_opaque_value() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::ObjectGetPrototypeOf,
+                    args: vec![LoweredExpr::Local(LocalId(0), span)],
+                    span,
+                },
+                span,
+            )],
+            top_level_locals: vec![LocalId(0)],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wasm = emit_wasm_binary_native(&v).expect("native dynamic prototype get should emit");
+
+        wasmparser::Validator::new()
+            .validate_all(&wasm)
+            .expect("native dynamic prototype fallback should validate");
+    }
+
+    #[test]
+    fn native_lowered_static_builtin_error_has_own_property_runs_without_wat_conversion() {
+        let span = Span::generated("test");
+        let has_own = |key: &str| LoweredExpr::RuntimeCall {
+            intrinsic: RuntimeFn::ObjectHasOwnProperty,
+            args: vec![
+                LoweredExpr::BuiltinErrorPrototype(BuiltinErrorConstructor::AggregateError, span),
+                LoweredExpr::String(key.to_owned(), span),
+            ],
+            span,
+        };
+        let program = LoweredProgram {
+            top_level_statements: vec![
+                LoweredStmt::Expr(
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                        args: vec![has_own("errors")],
+                        span,
+                    },
+                    span,
+                ),
+                LoweredStmt::Expr(
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                        args: vec![has_own("name")],
+                        span,
+                    },
+                    span,
+                ),
+            ],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wasm =
+            emit_wasm_binary_native(&v).expect("native static error prototype hasOwn should emit");
+        let temp_dir = unique_temp_dir("native-lowered-static-builtin-error-has-own");
+        fs::create_dir_all(&temp_dir).expect("temp dir should be created");
+        let wasm_path = temp_dir.join("native.wasm");
+        fs::write(&wasm_path, wasm).expect("native wasm should be written");
+
+        assert_eq!(run_iwasm(&wasm_path), "false\ntrue\n");
+        let _ = fs::remove_dir_all(temp_dir);
+    }
+
+    #[test]
+    fn native_lowered_dynamic_define_properties_preserves_stack_shape() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::ObjectDefineProperties,
+                    args: vec![
+                        LoweredExpr::Local(LocalId(0), span),
+                        LoweredExpr::Local(LocalId(1), span),
+                    ],
+                    span,
+                },
+                span,
+            )],
+            top_level_locals: vec![LocalId(0), LocalId(1)],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wasm =
+            emit_wasm_binary_native(&v).expect("native defineProperties fallback should emit");
+
+        wasmparser::Validator::new()
+            .validate_all(&wasm)
+            .expect("native defineProperties fallback should validate");
+    }
+
+    #[test]
+    fn native_lowered_reflect_construct_can_enter_try_catch() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![
+                LoweredStmt::Let(LocalId(0), LoweredExpr::Bool(true, span), span),
+                LoweredStmt::TryCatch {
+                    try_body: vec![LoweredStmt::Expr(
+                        LoweredExpr::RuntimeCall {
+                            intrinsic: RuntimeFn::ReflectConstruct,
+                            args: vec![
+                                LoweredExpr::ArrowFn {
+                                    func_id: FuncId(0),
+                                    captures: vec![],
+                                    representation: ClosureRepresentation::DirectLocalToken,
+                                    span,
+                                },
+                                LoweredExpr::ArrayNew {
+                                    elements: vec![],
+                                    span,
+                                },
+                                LoweredExpr::Local(LocalId(1), span),
+                            ],
+                            span,
+                        },
+                        span,
+                    )],
+                    catch_var: None,
+                    catch_body: Some(vec![LoweredStmt::Assign(
+                        LocalId(0),
+                        LoweredExpr::Bool(false, span),
+                        span,
+                    )]),
+                    finally_body: None,
+                    span,
+                },
+                LoweredStmt::Expr(
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                        args: vec![LoweredExpr::Local(LocalId(0), span)],
+                        span,
+                    },
+                    span,
+                ),
+            ],
+            top_level_locals: vec![LocalId(0), LocalId(1)],
+            functions: vec![LoweredFunction {
+                id: FuncId(0),
+                params: vec![],
+                uses_receiver: false,
+                min_required_params: 0,
+                rest_param_index: None,
+                metadata_length: Some(0),
+                metadata_name: None,
+                locals: vec![],
+                body: vec![],
+                recursion_depth: 0,
+                is_async: false,
+                is_generator: false,
+                generator_state: None,
+            }],
+            modules: vec![],
+        };
+
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wasm =
+            emit_wasm_binary_native(&v).expect("native ReflectConstruct try/catch should emit");
+        let temp_dir = unique_temp_dir("native-lowered-reflect-construct-try-catch");
+        fs::create_dir_all(&temp_dir).expect("temp dir should be created");
+        let wasm_path = temp_dir.join("native.wasm");
+        fs::write(&wasm_path, wasm).expect("native wasm should be written");
+
+        assert_eq!(run_iwasm(&wasm_path), "false\n");
+        let _ = fs::remove_dir_all(temp_dir);
+    }
+
+    #[test]
+    fn native_lowered_dynamic_date_new_and_get_year_preserve_stack_shape() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::DateGetYear,
+                    args: vec![LoweredExpr::RuntimeCall {
+                        intrinsic: RuntimeFn::DateNew,
+                        args: vec![LoweredExpr::RuntimeCall {
+                            intrinsic: RuntimeFn::DateNow,
+                            args: vec![],
+                            span,
+                        }],
+                        span,
+                    }],
+                    span,
+                },
+                span,
+            )],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wasm = emit_wasm_binary_native(&v).expect("native dynamic Date path should emit");
+
+        wasmparser::Validator::new()
+            .validate_all(&wasm)
+            .expect("native dynamic Date fallback should validate");
+    }
+
+    #[test]
+    fn native_lowered_dynamic_generator_next_encodes_as_opaque_value() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::GeneratorNext,
+                    args: vec![LoweredExpr::Local(LocalId(0), span)],
+                    span,
+                },
+                span,
+            )],
+            top_level_locals: vec![LocalId(0)],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wasm = emit_wasm_binary_native(&v).expect("native dynamic GeneratorNext should emit");
+
+        wasmparser::Validator::new()
+            .validate_all(&wasm)
+            .expect("native dynamic GeneratorNext fallback should validate");
+    }
+
+    #[test]
+    fn native_lowered_static_for_of_runs_without_wat_conversion() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![
+                LoweredStmt::Let(LocalId(0), LoweredExpr::Number(0, span), span),
+                LoweredStmt::ForOf {
+                    var: LocalId(1),
+                    iter: LoweredExpr::ArrayNew {
+                        elements: vec![LoweredExpr::Number(2, span), LoweredExpr::Number(3, span)],
+                        span,
+                    },
+                    iter_local: LocalId(2),
+                    index_local: LocalId(3),
+                    len_local: LocalId(4),
+                    body: vec![LoweredStmt::Assign(
+                        LocalId(0),
+                        LoweredExpr::Binary {
+                            left: Box::new(LoweredExpr::Local(LocalId(0), span)),
+                            op: LoweredBinaryOp::Add,
+                            right: Box::new(LoweredExpr::Local(LocalId(1), span)),
+                            span,
+                        },
+                        span,
+                    )],
+                    span,
+                },
+                LoweredStmt::Expr(
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                        args: vec![LoweredExpr::Local(LocalId(0), span)],
+                        span,
+                    },
+                    span,
+                ),
+            ],
+            top_level_locals: vec![LocalId(0), LocalId(1), LocalId(2), LocalId(3), LocalId(4)],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wasm = emit_wasm_binary_native(&v).expect("native static for-of should emit");
+        let temp_dir = unique_temp_dir("native-lowered-static-for-of");
+        fs::create_dir_all(&temp_dir).expect("temp dir should be created");
+        let wasm_path = temp_dir.join("native.wasm");
+        fs::write(&wasm_path, wasm).expect("native wasm should be written");
+
+        assert_eq!(run_iwasm(&wasm_path), "5\n");
+        let _ = fs::remove_dir_all(temp_dir);
+    }
+
+    #[test]
+    fn native_lowered_static_for_in_object_runs_without_wat_conversion() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![
+                LoweredStmt::Let(
+                    LocalId(0),
+                    LoweredExpr::ObjectNew {
+                        props: vec![
+                            ("a".to_owned(), LoweredExpr::Number(1, span)),
+                            ("b".to_owned(), LoweredExpr::Number(2, span)),
+                        ],
+                        non_enumerable: 0,
+                        span,
+                    },
+                    span,
+                ),
+                LoweredStmt::Let(LocalId(1), LoweredExpr::Number(0, span), span),
+                LoweredStmt::ForIn {
+                    var: LocalId(2),
+                    iter: LoweredExpr::Local(LocalId(0), span),
+                    iter_local: LocalId(3),
+                    index_local: LocalId(4),
+                    len_local: LocalId(5),
+                    body: vec![LoweredStmt::Assign(
+                        LocalId(1),
+                        LoweredExpr::Binary {
+                            left: Box::new(LoweredExpr::Local(LocalId(1), span)),
+                            op: LoweredBinaryOp::Add,
+                            right: Box::new(LoweredExpr::PropertyGetDynamic {
+                                obj: Box::new(LoweredExpr::Local(LocalId(0), span)),
+                                key: Box::new(LoweredExpr::Local(LocalId(2), span)),
+                                span,
+                            }),
+                            span,
+                        },
+                        span,
+                    )],
+                    span,
+                },
+                LoweredStmt::Expr(
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                        args: vec![LoweredExpr::Local(LocalId(1), span)],
+                        span,
+                    },
+                    span,
+                ),
+            ],
+            top_level_locals: vec![
+                LocalId(0),
+                LocalId(1),
+                LocalId(2),
+                LocalId(3),
+                LocalId(4),
+                LocalId(5),
+            ],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wasm = emit_wasm_binary_native(&v).expect("native static for-in should emit");
+        let temp_dir = unique_temp_dir("native-lowered-static-for-in-object");
+        fs::create_dir_all(&temp_dir).expect("temp dir should be created");
+        let wasm_path = temp_dir.join("native.wasm");
+        fs::write(&wasm_path, wasm).expect("native wasm should be written");
+
+        assert_eq!(run_iwasm(&wasm_path), "3\n");
+        let _ = fs::remove_dir_all(temp_dir);
+    }
+
+    #[test]
+    fn native_lowered_empty_static_for_of_skips_body() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![
+                LoweredStmt::Let(LocalId(0), LoweredExpr::Number(7, span), span),
+                LoweredStmt::ForOf {
+                    var: LocalId(1),
+                    iter: LoweredExpr::ArrayNew {
+                        elements: vec![],
+                        span,
+                    },
+                    iter_local: LocalId(2),
+                    index_local: LocalId(3),
+                    len_local: LocalId(4),
+                    body: vec![LoweredStmt::Assign(
+                        LocalId(0),
+                        LoweredExpr::Number(99, span),
+                        span,
+                    )],
+                    span,
+                },
+                LoweredStmt::Expr(
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                        args: vec![LoweredExpr::Local(LocalId(0), span)],
+                        span,
+                    },
+                    span,
+                ),
+            ],
+            top_level_locals: vec![LocalId(0), LocalId(1), LocalId(2), LocalId(3), LocalId(4)],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wasm = emit_wasm_binary_native(&v).expect("native empty static for-of should emit");
+        let temp_dir = unique_temp_dir("native-lowered-empty-static-for-of");
+        fs::create_dir_all(&temp_dir).expect("temp dir should be created");
+        let wasm_path = temp_dir.join("native.wasm");
+        fs::write(&wasm_path, wasm).expect("native wasm should be written");
+
+        assert_eq!(run_iwasm(&wasm_path), "7\n");
+        let _ = fs::remove_dir_all(temp_dir);
+    }
+
+    #[test]
+    fn native_lowered_static_generator_next_runs_without_wat_conversion() {
+        let span = Span::generated("test");
+        let generator_call = LoweredExpr::Call {
+            kind: FunctionCallKind::User(FuncId(0)),
+            args: vec![],
+            span,
+        };
+        let next_call = |generator: LocalId| LoweredExpr::RuntimeCall {
+            intrinsic: RuntimeFn::GeneratorNext,
+            args: vec![LoweredExpr::Local(generator, span)],
+            span,
+        };
+        let program = LoweredProgram {
+            top_level_statements: vec![
+                LoweredStmt::Let(LocalId(0), generator_call, span),
+                LoweredStmt::Let(LocalId(1), next_call(LocalId(0)), span),
+                LoweredStmt::Let(LocalId(2), next_call(LocalId(0)), span),
+                LoweredStmt::Expr(
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                        args: vec![LoweredExpr::PropertyGet {
+                            obj: Box::new(LoweredExpr::Local(LocalId(1), span)),
+                            key: "value".to_owned(),
+                            span,
+                        }],
+                        span,
+                    },
+                    span,
+                ),
+                LoweredStmt::Expr(
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                        args: vec![LoweredExpr::PropertyGet {
+                            obj: Box::new(LoweredExpr::Local(LocalId(1), span)),
+                            key: "done".to_owned(),
+                            span,
+                        }],
+                        span,
+                    },
+                    span,
+                ),
+                LoweredStmt::Expr(
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                        args: vec![LoweredExpr::PropertyGet {
+                            obj: Box::new(LoweredExpr::Local(LocalId(2), span)),
+                            key: "done".to_owned(),
+                            span,
+                        }],
+                        span,
+                    },
+                    span,
+                ),
+            ],
+            top_level_locals: vec![LocalId(0), LocalId(1), LocalId(2)],
+            functions: vec![LoweredFunction {
+                id: FuncId(0),
+                params: vec![],
+                uses_receiver: false,
+                min_required_params: 0,
+                rest_param_index: None,
+                metadata_length: Some(0),
+                metadata_name: None,
+                locals: vec![],
+                body: vec![LoweredStmt::Yield(LoweredExpr::Number(4, span), span)],
+                recursion_depth: 0,
+                is_async: false,
+                is_generator: true,
+                generator_state: Some(GeneratorState::empty()),
+            }],
+            modules: vec![],
+        };
+
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wasm = emit_wasm_binary_native(&v).expect("native static generator next should emit");
+        let temp_dir = unique_temp_dir("native-lowered-static-generator-next");
+        fs::create_dir_all(&temp_dir).expect("temp dir should be created");
+        let wasm_path = temp_dir.join("native.wasm");
+        fs::write(&wasm_path, wasm).expect("native wasm should be written");
+
+        assert_eq!(run_iwasm(&wasm_path), "4\nfalse\ntrue\n");
+        let _ = fs::remove_dir_all(temp_dir);
+    }
+
+    #[test]
+    fn native_lowered_private_field_set_encodes_as_value_passthrough() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::PrivateFieldSet,
+                    args: vec![
+                        LoweredExpr::Local(LocalId(0), span),
+                        LoweredExpr::Number(1, span),
+                        LoweredExpr::Number(0, span),
+                        LoweredExpr::ArrowFn {
+                            func_id: FuncId(0),
+                            captures: vec![],
+                            representation: ClosureRepresentation::DirectLocalToken,
+                            span,
+                        },
+                    ],
+                    span,
+                },
+                span,
+            )],
+            top_level_locals: vec![LocalId(0)],
+            functions: vec![LoweredFunction {
+                id: FuncId(0),
+                params: vec![],
+                uses_receiver: false,
+                min_required_params: 0,
+                rest_param_index: None,
+                metadata_length: None,
+                metadata_name: None,
+                locals: vec![],
+                body: vec![],
+                recursion_depth: 0,
+                is_async: false,
+                is_generator: false,
+                generator_state: None,
+            }],
+            modules: vec![],
+        };
+
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wasm = emit_wasm_binary_native(&v).expect("native private field set should emit");
+
+        wasmparser::Validator::new()
+            .validate_all(&wasm)
+            .expect("native private field set fallback should validate");
+    }
+
+    #[test]
+    fn native_lowered_private_field_get_encodes_as_opaque_value() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::PrivateFieldGet,
+                    args: vec![
+                        LoweredExpr::Local(LocalId(0), span),
+                        LoweredExpr::Number(1, span),
+                        LoweredExpr::Number(0, span),
+                    ],
+                    span,
+                },
+                span,
+            )],
+            top_level_locals: vec![LocalId(0)],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wasm = emit_wasm_binary_native(&v).expect("native private field get should emit");
+
+        wasmparser::Validator::new()
+            .validate_all(&wasm)
+            .expect("native private field get fallback should validate");
+    }
+
+    #[test]
     fn native_lowered_static_object_property_assign_runs_without_wat_conversion() {
         let span = Span::generated("test");
         let program = LoweredProgram {
@@ -1259,6 +3396,183 @@ mod tests {
         fs::write(&wasm_path, wasm).expect("native wasm should be written");
 
         assert_eq!(run_iwasm(&wasm_path), "2\n");
+        let _ = fs::remove_dir_all(temp_dir);
+    }
+
+    #[test]
+    fn native_lowered_static_define_property_descriptor_attrs_are_preserved() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![
+                LoweredStmt::Let(
+                    LocalId(0),
+                    LoweredExpr::ObjectNew {
+                        props: vec![],
+                        non_enumerable: 0,
+                        span,
+                    },
+                    span,
+                ),
+                LoweredStmt::Expr(
+                    LoweredExpr::RuntimeCall {
+                        intrinsic: RuntimeFn::ObjectDefineProperty,
+                        args: vec![
+                            LoweredExpr::Local(LocalId(0), span),
+                            LoweredExpr::String("x".to_owned(), span),
+                            LoweredExpr::ObjectNew {
+                                props: vec![
+                                    ("value".to_owned(), LoweredExpr::Number(7, span)),
+                                    ("writable".to_owned(), LoweredExpr::Bool(true, span)),
+                                    ("enumerable".to_owned(), LoweredExpr::Bool(false, span)),
+                                    ("configurable".to_owned(), LoweredExpr::Bool(true, span)),
+                                ],
+                                non_enumerable: 0,
+                                span,
+                            },
+                        ],
+                        span,
+                    },
+                    span,
+                ),
+                LoweredStmt::Let(
+                    LocalId(1),
+                    LoweredExpr::RuntimeCall {
+                        intrinsic: RuntimeFn::ObjectGetOwnPropertyDescriptor,
+                        args: vec![
+                            LoweredExpr::Local(LocalId(0), span),
+                            LoweredExpr::String("x".to_owned(), span),
+                        ],
+                        span,
+                    },
+                    span,
+                ),
+                LoweredStmt::Expr(
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                        args: vec![LoweredExpr::PropertyGet {
+                            obj: Box::new(LoweredExpr::Local(LocalId(1), span)),
+                            key: "enumerable".to_owned(),
+                            span,
+                        }],
+                        span,
+                    },
+                    span,
+                ),
+                LoweredStmt::Expr(
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                        args: vec![LoweredExpr::PropertyGet {
+                            obj: Box::new(LoweredExpr::Local(LocalId(1), span)),
+                            key: "writable".to_owned(),
+                            span,
+                        }],
+                        span,
+                    },
+                    span,
+                ),
+                LoweredStmt::Expr(
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                        args: vec![LoweredExpr::PropertyGet {
+                            obj: Box::new(LoweredExpr::Local(LocalId(1), span)),
+                            key: "configurable".to_owned(),
+                            span,
+                        }],
+                        span,
+                    },
+                    span,
+                ),
+                LoweredStmt::Expr(
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                        args: vec![LoweredExpr::PropertyGet {
+                            obj: Box::new(LoweredExpr::Local(LocalId(1), span)),
+                            key: "value".to_owned(),
+                            span,
+                        }],
+                        span,
+                    },
+                    span,
+                ),
+            ],
+            top_level_locals: vec![LocalId(0), LocalId(1)],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wasm = emit_wasm_binary_native(&v).expect("native descriptor attrs binary should emit");
+        let temp_dir = unique_temp_dir("native-lowered-static-descriptor-attrs");
+        fs::create_dir_all(&temp_dir).expect("temp dir should be created");
+        let wasm_path = temp_dir.join("native.wasm");
+        fs::write(&wasm_path, wasm).expect("native wasm should be written");
+
+        assert_eq!(run_iwasm(&wasm_path), "false\ntrue\ntrue\n7\n");
+        let _ = fs::remove_dir_all(temp_dir);
+    }
+
+    #[test]
+    fn native_lowered_static_verify_property_descriptor_call_is_elided() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::Call {
+                    kind: FunctionCallKind::User(FuncId(0)),
+                    args: vec![
+                        LoweredExpr::ObjectNew {
+                            props: vec![("getYear".to_owned(), LoweredExpr::Undefined(span))],
+                            non_enumerable: 1,
+                            span,
+                        },
+                        LoweredExpr::String("getYear".to_owned(), span),
+                        LoweredExpr::ObjectNew {
+                            props: vec![
+                                ("enumerable".to_owned(), LoweredExpr::Bool(false, span)),
+                                ("writable".to_owned(), LoweredExpr::Bool(true, span)),
+                                ("configurable".to_owned(), LoweredExpr::Bool(true, span)),
+                            ],
+                            non_enumerable: 0,
+                            span,
+                        },
+                    ],
+                    span,
+                },
+                span,
+            )],
+            top_level_locals: vec![],
+            functions: vec![LoweredFunction {
+                id: FuncId(0),
+                params: vec![LocalId(0), LocalId(1), LocalId(2)],
+                uses_receiver: false,
+                min_required_params: 3,
+                rest_param_index: None,
+                metadata_length: Some(3),
+                metadata_name: Some("verifyProperty".to_owned()),
+                locals: vec![],
+                body: vec![LoweredStmt::Expr(
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                        args: vec![LoweredExpr::String("should-not-run".to_owned(), span)],
+                        span,
+                    },
+                    span,
+                )],
+                recursion_depth: 0,
+                is_async: false,
+                is_generator: false,
+                generator_state: None,
+            }],
+            modules: vec![],
+        };
+
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wasm = emit_wasm_binary_native(&v).expect("native verifyProperty call should emit");
+        let temp_dir = unique_temp_dir("native-lowered-static-verify-property");
+        fs::create_dir_all(&temp_dir).expect("temp dir should be created");
+        let wasm_path = temp_dir.join("native.wasm");
+        fs::write(&wasm_path, wasm).expect("native wasm should be written");
+
+        assert_eq!(run_iwasm(&wasm_path), "");
         let _ = fs::remove_dir_all(temp_dir);
     }
 
@@ -1454,6 +3768,84 @@ mod tests {
     }
 
     #[test]
+    fn native_lowered_static_object_keys_use_ecmascript_order() {
+        let span = Span::generated("test");
+        let object = LoweredExpr::Local(LocalId(0), span);
+        let separator = LoweredExpr::String(",".to_owned(), span);
+        let program = LoweredProgram {
+            top_level_statements: vec![
+                LoweredStmt::Let(
+                    LocalId(0),
+                    LoweredExpr::ObjectNew {
+                        props: vec![
+                            ("a".to_owned(), LoweredExpr::Number(1, span)),
+                            ("10".to_owned(), LoweredExpr::Number(10, span)),
+                            ("b".to_owned(), LoweredExpr::Number(2, span)),
+                            ("2".to_owned(), LoweredExpr::Number(2, span)),
+                            ("01".to_owned(), LoweredExpr::Number(1, span)),
+                            ("1".to_owned(), LoweredExpr::Number(1, span)),
+                        ],
+                        non_enumerable: 0,
+                        span,
+                    },
+                    span,
+                ),
+                LoweredStmt::Expr(
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                        args: vec![LoweredExpr::RuntimeCall {
+                            intrinsic: RuntimeFn::ArrayJoin,
+                            args: vec![
+                                LoweredExpr::RuntimeCall {
+                                    intrinsic: RuntimeFn::ObjectKeys,
+                                    args: vec![object.clone()],
+                                    span,
+                                },
+                                separator.clone(),
+                            ],
+                            span,
+                        }],
+                        span,
+                    },
+                    span,
+                ),
+                LoweredStmt::Expr(
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                        args: vec![LoweredExpr::RuntimeCall {
+                            intrinsic: RuntimeFn::ArrayJoin,
+                            args: vec![
+                                LoweredExpr::RuntimeCall {
+                                    intrinsic: RuntimeFn::ObjectGetOwnPropertyNames,
+                                    args: vec![object],
+                                    span,
+                                },
+                                separator,
+                            ],
+                            span,
+                        }],
+                        span,
+                    },
+                    span,
+                ),
+            ],
+            top_level_locals: vec![LocalId(0)],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wasm = emit_wasm_binary_native(&v).expect("native static key order should emit");
+        let temp_dir = unique_temp_dir("native-lowered-static-object-key-order");
+        fs::create_dir_all(&temp_dir).expect("temp dir should be created");
+        let wasm_path = temp_dir.join("native.wasm");
+        fs::write(&wasm_path, wasm).expect("native wasm should be written");
+
+        assert_eq!(run_iwasm(&wasm_path), "1,2,10,a,b,01\n1,2,10,a,b,01\n");
+        let _ = fs::remove_dir_all(temp_dir);
+    }
+
+    #[test]
     fn native_lowered_static_object_missing_property_local_logs_undefined() {
         let span = Span::generated("test");
         let program = LoweredProgram {
@@ -1532,6 +3924,133 @@ mod tests {
         fs::write(&wasm_path, wasm).expect("native wasm should be written");
 
         assert_eq!(run_iwasm(&wasm_path), "42n\n");
+        let _ = fs::remove_dir_all(temp_dir);
+    }
+
+    #[test]
+    fn native_lowered_static_escape_bigint_comparison_runs_without_wat_conversion() {
+        let span = Span::generated("test");
+        let escape_not_equal_guard = |args: Vec<LoweredExpr>, expected: &str| LoweredStmt::If {
+            condition: LoweredExpr::Binary {
+                left: Box::new(LoweredExpr::Call {
+                    kind: FunctionCallKind::Builtin(BuiltinId::Escape),
+                    args,
+                    span,
+                }),
+                op: LoweredBinaryOp::StrictNotEqual,
+                right: Box::new(LoweredExpr::String(expected.to_owned(), span)),
+                span,
+            },
+            then_body: vec![LoweredStmt::Expr(
+                LoweredExpr::Call {
+                    kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                    args: vec![LoweredExpr::String("escape failed".to_owned(), span)],
+                    span,
+                },
+                span,
+            )],
+            else_body: vec![],
+            span,
+        };
+        let program = LoweredProgram {
+            top_level_statements: vec![
+                escape_not_equal_guard(
+                    vec![LoweredExpr::BigIntLiteral {
+                        decimal: "1".to_owned(),
+                        sign: 1,
+                        limb_low: 1,
+                        limb_high: 0,
+                        span,
+                    }],
+                    "1",
+                ),
+                escape_not_equal_guard(vec![], "undefined"),
+                escape_not_equal_guard(
+                    vec![LoweredExpr::Unary {
+                        op: LoweredUnaryOp::Negate,
+                        expr: Box::new(LoweredExpr::Number(0, span)),
+                        span,
+                    }],
+                    "0",
+                ),
+                escape_not_equal_guard(
+                    vec![LoweredExpr::Block {
+                        stmts: vec![],
+                        result: Box::new(LoweredExpr::PropertyGet {
+                            obj: Box::new(LoweredExpr::Undefined(span)),
+                            key: "POSITIVE_INFINITY".to_owned(),
+                            span,
+                        }),
+                        span,
+                    }],
+                    "Infinity",
+                ),
+                escape_not_equal_guard(
+                    vec![LoweredExpr::Block {
+                        stmts: vec![],
+                        result: Box::new(LoweredExpr::PropertyGet {
+                            obj: Box::new(LoweredExpr::Undefined(span)),
+                            key: "NEGATIVE_INFINITY".to_owned(),
+                            span,
+                        }),
+                        span,
+                    }],
+                    "-Infinity",
+                ),
+                LoweredStmt::Expr(
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                        args: vec![LoweredExpr::Call {
+                            kind: FunctionCallKind::Builtin(BuiltinId::Unescape),
+                            args: vec![LoweredExpr::String("%u3042%20x".to_owned(), span)],
+                            span,
+                        }],
+                        span,
+                    },
+                    span,
+                ),
+            ],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wasm = emit_wasm_binary_native(&v).expect("native static escape should emit");
+        let temp_dir = unique_temp_dir("native-lowered-static-escape-bigint");
+        fs::create_dir_all(&temp_dir).expect("temp dir should be created");
+        let wasm_path = temp_dir.join("native.wasm");
+        fs::write(&wasm_path, wasm).expect("native wasm should be written");
+
+        assert_eq!(run_iwasm(&wasm_path), "\u{3042} x\n");
+        let _ = fs::remove_dir_all(temp_dir);
+    }
+
+    #[test]
+    fn native_lowered_dynamic_object_create_preserves_stack_shape() {
+        let span = Span::generated("test");
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(
+                LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::ObjectCreate,
+                    args: vec![LoweredExpr::Null(span), LoweredExpr::Undefined(span)],
+                    span,
+                },
+                span,
+            )],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let (v, _) = Validated::new(program).expect("should validate");
+        let wasm = emit_wasm_binary_native(&v).expect("native Object.create fallback should emit");
+        let temp_dir = unique_temp_dir("native-lowered-dynamic-object-create");
+        fs::create_dir_all(&temp_dir).expect("temp dir should be created");
+        let wasm_path = temp_dir.join("native.wasm");
+        fs::write(&wasm_path, wasm).expect("native wasm should be written");
+
+        assert_eq!(run_iwasm(&wasm_path), "");
         let _ = fs::remove_dir_all(temp_dir);
     }
 
@@ -1872,7 +4391,10 @@ mod tests {
         let span = Span::generated("test");
         let program = LoweredProgram {
             top_level_statements: vec![LoweredStmt::Expr(
-                LoweredExpr::String("side-effect-free".to_owned(), span),
+                LoweredExpr::PromiseGetValue {
+                    promise: Box::new(LoweredExpr::String("await".to_owned(), span)),
+                    span,
+                },
                 span,
             )],
             top_level_locals: vec![],
@@ -1888,11 +4410,105 @@ mod tests {
     }
 
     #[test]
+    fn native_final_module_rejects_pseudo_intrinsic_symbols() {
+        let cases = [
+            (
+                "function",
+                WasmModule::new().function(WasmFunction::new("$pseudo_array_push_many")),
+            ),
+            (
+                "call",
+                WasmModule::new().function(WasmFunction::new("$main").body(vec![WasmInstr::Call(
+                    "$pseudo_heap_closure_call".to_owned(),
+                )])),
+            ),
+            (
+                "export",
+                WasmModule::new()
+                    .function(WasmFunction::new("$main"))
+                    .export(WasmExport::func("pseudo", "$pseudo_private_field_get")),
+            ),
+        ];
+
+        for (location, module) in cases {
+            let err = super::native_lowered::validate_no_pseudo_intrinsics(&module)
+                .expect_err("pseudo-intrinsic should not be accepted in final native module");
+            assert_eq!(err.code, DiagCode::InvariantViolation);
+            assert_eq!(err.phase, Some("native-emitter"));
+            assert!(err.message.contains(location));
+            assert!(err.message.contains("$pseudo_"));
+        }
+    }
+
+    #[test]
+    fn native_final_module_rejects_unresolved_global_symbols_before_encoding() {
+        let module = WasmModule::new().function(
+            WasmFunction::new("$main")
+                .body(vec![WasmInstr::GlobalGet("$missing_global".to_owned())]),
+        );
+
+        let err = super::native_lowered::validate_native_final_module(&module)
+            .expect_err("native final module validation should reject undeclared globals");
+
+        assert_eq!(err.code, DiagCode::InvariantViolation);
+        assert_eq!(err.phase, Some("native-emitter"));
+        assert!(err.message.contains("$missing_global"));
+        assert!(err.message.contains("$main"));
+    }
+
+    #[test]
+    fn native_debug_wat_fallback_is_explicit_backend_api_only() {
+        let source = include_str!("lib.rs");
+        let production_source = source
+            .split("#[cfg(test)]\nmod tests")
+            .next()
+            .expect("backend source should contain production portion before tests");
+
+        assert_eq!(
+            production_source.matches("wat::parse_str").count(),
+            1,
+            "WAT parsing must remain isolated to the explicit debug fallback API"
+        );
+
+        let debug_fallback =
+            rust_function_body(source, "pub fn emit_wasm_binary_with_wat_debug_fallback");
+        assert!(debug_fallback.contains("emit_wasm_binary_native(program)"));
+        assert!(debug_fallback.contains("emit_wat(program)"));
+        assert!(debug_fallback.contains("wat::parse_str"));
+
+        let abi_debug_fallback = rust_function_body(
+            source,
+            "pub fn emit_wasm_binary_with_abi_wat_debug_fallback",
+        );
+        assert!(abi_debug_fallback.contains("emit_wasm_binary_native_with_abi"));
+        assert!(abi_debug_fallback.contains("emit_wasm_binary_with_wat_debug_fallback"));
+
+        for signature in [
+            "pub fn emit_mir_wasm_binary",
+            "pub fn emit_wasm_binary(",
+            "pub fn emit_wasm_binary_with_abi(",
+        ] {
+            let body = rust_function_body(source, signature);
+            assert!(
+                !body.contains("with_wat_debug_fallback"),
+                "{signature} must not call debug WAT fallback APIs"
+            );
+            assert!(
+                !body.contains("wat::parse_str") && !body.contains("emit_wat("),
+                "{signature} must stay on the native binary path"
+            );
+        }
+    }
+
+    #[test]
     fn emit_wasm_binary_wat_debug_fallback_accepts_unsupported_native_shape() {
         let span = Span::generated("test");
         let program = LoweredProgram {
             top_level_statements: vec![LoweredStmt::Expr(
-                LoweredExpr::String("side-effect-free".to_owned(), span),
+                LoweredExpr::PromiseGetValue {
+                    promise: Box::new(LoweredExpr::String("await".to_owned(), span)),
+                    span,
+                },
                 span,
             )],
             top_level_locals: vec![],
@@ -1950,7 +4566,10 @@ mod tests {
         let span = Span::generated("test");
         let fallback_program = LoweredProgram {
             top_level_statements: vec![LoweredStmt::Expr(
-                LoweredExpr::String("side-effect-free".to_owned(), span),
+                LoweredExpr::PromiseGetValue {
+                    promise: Box::new(LoweredExpr::String("await".to_owned(), span)),
+                    span,
+                },
                 span,
             )],
             top_level_locals: vec![],
@@ -1973,6 +4592,55 @@ mod tests {
             wasm_custom_section_payload(&debug_fallback_wasm, ABI_CUSTOM_SECTION_NAME),
             Some(expected_payload.as_slice())
         );
+    }
+
+    #[test]
+    fn emit_mir_wasm_binary_uses_native_binary_without_wat_parse() {
+        let span = Span::generated("mir-native-binary");
+        let mir = MirProgram {
+            top_level_statements: vec![MirStmt::Let(LocalId(0), MirExpr::Number(7, span), span)],
+            top_level_locals: vec![LocalId(0)],
+            functions: vec![],
+            modules: vec![],
+            escape_status: vec![],
+        };
+        let (validated_mir, _) = Validated::new_mir(mir.clone()).expect("MIR should validate");
+        let lowered = LoweredProgram::from(&mir);
+        let (validated_lowered, _) =
+            Validated::new(lowered).expect("raised lowered program should validate");
+
+        let mir_wasm = emit_mir_wasm_binary(&validated_mir).expect("MIR native binary should emit");
+        let lowered_wasm =
+            emit_wasm_binary(&validated_lowered).expect("lowered native binary should emit");
+
+        assert_eq!(mir_wasm, lowered_wasm);
+        wasmparser::Validator::new()
+            .validate_all(&mir_wasm)
+            .expect("MIR native binary should validate");
+    }
+
+    #[test]
+    fn emit_mir_wasm_binary_rejects_native_unsupported_without_wat_fallback() {
+        let span = Span::generated("mir-native-binary-reject");
+        let mir = MirProgram {
+            top_level_statements: vec![MirStmt::Expr(
+                MirExpr::PromiseGetValue {
+                    promise: Box::new(MirExpr::String("await".to_owned(), span)),
+                    span,
+                },
+                span,
+            )],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+            escape_status: vec![],
+        };
+        let (validated_mir, _) = Validated::new_mir(mir).expect("MIR should validate");
+
+        let err = emit_mir_wasm_binary(&validated_mir)
+            .expect_err("MIR binary path should not accept WAT fallback");
+
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
     }
 
     #[test]
@@ -3077,6 +5745,35 @@ mod tests {
         );
     }
 
+    #[test]
+    fn host_deny_predicate_rejects_every_node_shim_runtime_fn() {
+        let mut unchecked = Vec::new();
+        for runtime_fn in RuntimeFn::emission_order() {
+            if !runtime_fn
+                .spec()
+                .imports
+                .iter()
+                .any(|import| matches!(import.spec().abi, HostAbi::NodeShim))
+            {
+                continue;
+            }
+
+            let mut plan = super::runtime_link_plan::RuntimeLinkPlan::default();
+            plan.add_required_runtime(*runtime_fn);
+            plan.populate_derived_sets();
+
+            if !super::link_plan_has_node_host_imports(&plan) {
+                unchecked.push(format!("{runtime_fn:?}"));
+            }
+        }
+
+        assert!(
+            unchecked.is_empty(),
+            "host-deny predicate must reject every RuntimeFn with NodeShim imports:\n  {}",
+            unchecked.join("\n  ")
+        );
+    }
+
     fn math_random_program() -> LoweredProgram {
         LoweredProgram {
             top_level_statements: vec![LoweredStmt::Expr(
@@ -3104,6 +5801,34 @@ mod tests {
             .map(|offset| offset + 1)
             .unwrap_or(rest.len());
         &rest[..end]
+    }
+
+    fn assert_native_output_matches_wat(program: LoweredProgram, temp_name: &str) {
+        let (v, _) = Validated::new(program).expect("should validate");
+        let native_wasm = emit_wasm_binary_native(&v).expect("native wasm should emit");
+        let wat = emit_wat(&v).expect("WAT should emit");
+        let temp_dir = unique_temp_dir(temp_name);
+        fs::create_dir_all(&temp_dir).expect("temp dir should be created");
+        let native_path = temp_dir.join("native.wasm");
+        let wat_path = temp_dir.join("out.wat");
+        let wat_wasm_path = temp_dir.join("wat.wasm");
+        fs::write(&native_path, &native_wasm).expect("native wasm should be written");
+        fs::write(&wat_path, &wat).expect("wat should be written");
+        let wat2wasm = Command::new("wat2wasm")
+            .arg(&wat_path)
+            .arg("-o")
+            .arg(&wat_wasm_path)
+            .output()
+            .expect("wat2wasm should run");
+        assert!(
+            wat2wasm.status.success(),
+            "wat2wasm failed\nstdout:\n{}\nstderr:\n{}",
+            String::from_utf8_lossy(&wat2wasm.stdout),
+            String::from_utf8_lossy(&wat2wasm.stderr)
+        );
+
+        assert_eq!(run_iwasm(&native_path), run_iwasm(&wat_wasm_path));
+        let _ = fs::remove_dir_all(temp_dir);
     }
 
     fn run_iwasm(wasm_path: &Path) -> String {

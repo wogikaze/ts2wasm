@@ -69,23 +69,13 @@ fn fncsem_call_arity_mismatch_matches_node_output() {
 }
 
 #[test]
-fn fncsem_call_extra_args_reports_arity_mismatch() {
-    assert_build_fails_with_diagnostic(
-        "fixtures/core-semantics/call-extra-args-reject.ts",
-        "[ArityMismatch]",
-        "Expected 2 arguments, but got 3",
-        true,
-    );
+fn fncsem_call_extra_args_reject_fixture_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/call-extra-args-reject.ts");
 }
 
 #[test]
-fn fncsem_v2_call_fewer_args_reports_arity_mismatch() {
-    assert_build_fails_with_diagnostic(
-        "fixtures/core-semantics/call-fewer-args-reject.ts",
-        "[ArityMismatch]",
-        "Expected 2 arguments, but got 1",
-        true,
-    );
+fn fncsem_v2_call_fewer_args_reject_fixture_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/call-fewer-args-reject.ts");
 }
 
 #[test]
@@ -99,13 +89,8 @@ fn fncsem_v2_builtin_call_hir_matches_node_output() {
 }
 
 #[test]
-fn fncsem_dynamic_call_assign_reports_unresolved_function() {
-    assert_build_fails_with_diagnostic(
-        "fixtures/core-semantics/dynamic-call-assign-unsupported.ts",
-        "[UnresolvedFunction]",
-        "unresolved function",
-        false,
-    );
+fn fncsem_dynamic_call_assign_matches_node_output() {
+    assert_fixture_matches_node("fixtures/core-semantics/dynamic-call-assign-unsupported.ts");
 }
 
 // FNCSEM: semantic call test fixture suite (fixtures/semantic/functions/)
@@ -178,6 +163,33 @@ fn global_uri_component_fixture_matches_node_output() {
     assert_fixture_matches_node("fixtures/builtins-and-io/global-uri-component.ts");
 }
 
+#[test]
+fn strict_mode_basic_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/strict-mode-basic.ts");
+}
+
+#[test]
+fn weakref_finalization_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/weakref-finalization.ts");
+}
+
+#[test]
+fn reflect_apply_construct_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/reflect-apply-construct.ts");
+}
+
+#[test]
+fn dynamic_eval_host_path_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/dynamic-eval-host-path.ts");
+}
+
+#[test]
+fn module_exports_assign_matches_node_output() {
+    assert_fixture_matches_node(
+        "fixtures/modules-and-typed-optimizations/module-exports-assign.ts",
+    );
+}
+
 // Common builtin API coverage (issue I-20260514-HGZJCJ)
 #[test]
 fn common_builtin_api_fixtures_match_node_output() {
@@ -212,12 +224,8 @@ fn returned_closure_nested_object_gc_pressure_matches_node_output() {
 }
 
 // covers: I-20260515-PMTJTQ
-// Comma expression statement in statement position after assignment
-// is a parser gap — test it as an expected-fail (RED test excluded from default gate)
+// Comma expression statement in statement position after assignment.
 #[test]
-fn comma_expression_statement_reports_unsupported_syntax() {
-    assert_build_fails_with_unsupported_syntax(
-        "fixtures/parser/comma-expression-statement.ts",
-        "expected Semicolon, got Some(Comma)",
-    );
+fn comma_expression_statement_matches_node_output() {
+    assert_fixture_matches_node("fixtures/parser/comma-expression-statement.ts");
 }

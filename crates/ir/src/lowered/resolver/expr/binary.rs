@@ -1,4 +1,4 @@
-use crate::builtin_resolved::ResolvedExpr;
+use crate::builtin_resolved::{ResolvedExpr, ResolvedObjectProp, ResolvedStmt};
 use crate::lowered::BuiltinErrorConstructor;
 use crate::lowered::object_kernel;
 use crate::lowered::*;
@@ -171,6 +171,9 @@ impl super::super::Resolver {
         }
         if *op == BinaryOp::In {
             return self.lower_in_expr(left, right);
+        }
+        if let Some(result) = self.lower_bigint_toprimitive_type_error(left, op, right) {
+            return Ok(result);
         }
         if let Some(result) = self.lower_bigint_binary_expr(left, op, right)? {
             return Ok(result);
@@ -418,11 +421,15 @@ impl super::super::Resolver {
             || crate::lowered::resolver::expr::facts::resolved_expr_is_bigint(&self.ctx, right))
         {
             if *op == BinaryOp::Add {
-                return Ok(Some(LoweredExpr::Binary {
-                    left: Box::new(self.lower_expr(left)?),
-                    op: LoweredBinaryOp::Add,
-                    right: Box::new(self.lower_expr(right)?),
-                    span: Span::generated("binary"),
+                if matches!(left, ResolvedExpr::String(_))
+                    || matches!(right, ResolvedExpr::String(_))
+                {
+                    return Ok(None);
+                }
+                return Ok(Some(LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::BigIntMixedArithmeticTypeError,
+                    args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
+                    span: Span::generated("runtime_call"),
                 }));
             } else {
                 return Ok(Some(LoweredExpr::RuntimeCall {
@@ -497,5 +504,127 @@ impl super::super::Resolver {
             }
         }
         Ok(None)
+    }
+
+    fn lower_bigint_toprimitive_type_error(
+        &self,
+        left: &ResolvedExpr,
+        op: &BinaryOp,
+        right: &ResolvedExpr,
+    ) -> Option<LoweredExpr> {
+        if !matches!(
+            op,
+            BinaryOp::EqualEqual
+                | BinaryOp::BangEqual
+                | BinaryOp::Less
+                | BinaryOp::LessEqual
+                | BinaryOp::Greater
+                | BinaryOp::GreaterEqual
+        ) {
+            return None;
+        }
+        let left_bigint =
+            crate::lowered::resolver::expr::facts::resolved_expr_is_bigint(&self.ctx, left);
+        let right_bigint =
+            crate::lowered::resolver::expr::facts::resolved_expr_is_bigint(&self.ctx, right);
+        if (left_bigint && resolved_expr_toprimitive_type_error(&self.ctx, right))
+            || (right_bigint && resolved_expr_toprimitive_type_error(&self.ctx, left))
+        {
+            let span = Span::generated("bigint_toprimitive_type_error");
+            return Some(LoweredExpr::Block {
+                stmts: vec![LoweredStmt::Throw(
+                    LoweredExpr::ErrorNew {
+                        constructor: BuiltinErrorConstructor::TypeError,
+                        message: Box::new(LoweredExpr::String(
+                            "Cannot convert object to primitive value".to_owned(),
+                            span,
+                        )),
+                        cause: None,
+                        errors: None,
+                        span,
+                    },
+                    span,
+                )],
+                result: Box::new(LoweredExpr::Undefined(span)),
+                span,
+            });
+        }
+        None
+    }
+}
+
+fn resolved_expr_toprimitive_type_error(
+    ctx: &crate::lowered::ctx::LoweringCtx,
+    expr: &ResolvedExpr,
+) -> bool {
+    let Some(props) =
+        crate::lowered::resolver::expr::facts::object_toprimitive_literal_props_for_expr(ctx, expr)
+    else {
+        return false;
+    };
+    object_toprimitive_type_error_props(&props)
+}
+
+fn object_toprimitive_type_error_props(props: &[ResolvedObjectProp]) -> bool {
+    if let Some(prop) = props
+        .iter()
+        .find(|prop| prop.static_key() == Some("valueOf"))
+    {
+        match object_toprimitive_return_kind(prop.value()) {
+            Some(ObjectToPrimitiveReturnKind::Primitive) => return false,
+            Some(ObjectToPrimitiveReturnKind::Object) => {}
+            None => return false,
+        }
+    }
+    let Some(prop) = props
+        .iter()
+        .find(|prop| prop.static_key() == Some("toString"))
+    else {
+        return false;
+    };
+    matches!(
+        object_toprimitive_return_kind(prop.value()),
+        Some(ObjectToPrimitiveReturnKind::Object)
+    )
+}
+
+enum ObjectToPrimitiveReturnKind {
+    Primitive,
+    Object,
+}
+
+fn object_toprimitive_return_kind(expr: &ResolvedExpr) -> Option<ObjectToPrimitiveReturnKind> {
+    match expr {
+        ResolvedExpr::ArrowFn { params, body, .. } if params.is_empty() => {
+            object_toprimitive_expr_kind(body)
+        }
+        ResolvedExpr::FunctionExpr { params, body, .. } if params.is_empty() => {
+            let [ResolvedStmt::Return(expr)] = body.as_slice() else {
+                return None;
+            };
+            object_toprimitive_expr_kind(expr)
+        }
+        _ => None,
+    }
+}
+
+fn object_toprimitive_expr_kind(expr: &ResolvedExpr) -> Option<ObjectToPrimitiveReturnKind> {
+    match expr {
+        ResolvedExpr::Object(_) => Some(ObjectToPrimitiveReturnKind::Object),
+        ResolvedExpr::BigIntLiteral { .. }
+        | ResolvedExpr::Bool(_)
+        | ResolvedExpr::Null
+        | ResolvedExpr::Undefined
+        | ResolvedExpr::Number(_)
+        | ResolvedExpr::DecimalNumber(_)
+        | ResolvedExpr::String(_) => Some(ObjectToPrimitiveReturnKind::Primitive),
+        ResolvedExpr::Unary { op, expr } if *op == ts2wasm_syntax::UnaryOp::Negate => matches!(
+            expr.as_ref(),
+            ResolvedExpr::Number(_)
+                | ResolvedExpr::DecimalNumber(_)
+                | ResolvedExpr::BigIntLiteral { .. }
+        )
+        .then_some(ObjectToPrimitiveReturnKind::Primitive),
+        _ => None,
     }
 }

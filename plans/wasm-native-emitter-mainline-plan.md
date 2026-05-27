@@ -4430,6 +4430,201 @@ Runtime global 側の TODO:
      `super` property access、destructuring default initializer、
      private/static TDZ diagnostics の順。
 
+## 2026-05-27 追加確認: Reflect.construct static non-constructor TypeError
+
+- [x] `fixtures/builtins-and-io/proxy-reflect-unsupported-diagnostic.ts`:
+  `const target = { x: 42 }; console.log(Reflect.construct(target, []));`
+  は native build 時に `host.reflectConstruct` import へ落ち、final native validation の
+  `native LoweredProgram emitter does not support unlinked host import host.reflectConstruct`
+  で止まっていた。Node oracle は同じ入力で `TypeError: #<Object> is not a constructor`。
+- [x] native emitter では dynamic `Reflect.construct` bridge を広げず、
+  static exception completion に限定して対応した。
+  `Reflect.construct(target, args)` の `target` が static plain object と判定できる場合だけ
+  TypeError object を静的生成し、console exception path から throw/unreachable を出す。
+  `ClassPrototype` と class constructor alias は既存の positive path を壊さないよう除外した。
+- [x] focused parity:
+  `target/debug/ts2wasm build -o /tmp/proxy-reflect-native.wasm fixtures/builtins-and-io/proxy-reflect-unsupported-diagnostic.ts --explain-unsupported`
+  は exit 0。
+  `iwasm /tmp/proxy-reflect-native.wasm` は `TypeError: #<Object> is not a constructorException: unreachable`
+  で exit 1。Node も TypeError で exit 1 のため、full differential では Node oracle nonzero により
+  `feature:node-oracle-fail` へ分類される。
+  既存 positive regression の `reflect-apply-construct.ts` は Node/iwasm diff pass。
+- [x] verification:
+  `cargo fmt --check`, `cargo check -p ts2wasm-backend-wasm`, `cargo build -p ts2wasm-cli` は pass。
+  `bash scripts/run/verify-harness.sh --quick|--cargo|--fixtures` は
+  `scripts/run/verify-harness.sh` 不在で exit 127。
+  `git diff --check -- crates/backend-wasm/src/native_lowered.rs plans/wasm-native-emitter-mainline-plan.md`
+  は pass。
+- [x] full fixture differential:
+  `/tmp/ts2wasm-fixture-differential-proxy-reflect-nonconstructor-20260527.log`
+  `pass=1168(86%) fail=0 unsupported=126 blocked=57 total=1351 elapsed=198.0s`。
+  `proxy-reflect-unsupported-diagnostic.ts` は `feature:node-oracle-fail` に移動し、
+  `reflect-apply-construct.ts` は pass のまま。
+  残 unsupported bucket は `feature:unknown-unsupported=103`, `feature:class=12`,
+  `feature:import-export=10`, `feature:async=1`。
+- [ ] 次の実装順:
+  1. dynamic import は `UnsupportedModule/unknown-unsupported` のままで、
+     module graph/runtime Promise completion/diagnostic policy を横断するため単独 issue とする。
+  2. `crypto-random-bytes.ts` は backend `UnsupportedBuiltin` だが nondeterministic oracle と
+     capability policy の決定が先。
+  3. import/export 残 10 件は resolver/module graph と Node oracle の extensionless ESM 解決の
+     どちらが先かを分ける。
+  4. class 12 件と for-await 1 件は lowering/parser first。
+
+## 2026-05-27 追加確認: fixture oracle fs workdir / crypto Buffer normalization
+
+- [x] `fixtures/node-apis/fs-read.ts` と `fixtures/node-apis/wasi-fs-read-write.ts`:
+  native build/runtime は既に `input.txt` を持つ cwd と `iwasm --dir=.` で Node と一致していたが、
+  full differential runner は Node/iwasm とも repo root cwd で実行していたため、
+  Node oracle が `ENOENT: no such file or directory, open './input.txt'` で blocked になっていた。
+  `scripts/check/fixture-differential.py` に fixture-local temporary filesystem を追加し、
+  Node oracle は同じ temp cwd、iwasm は同じ入力を持つ別 temp cwd + `--dir=.` で実行するようにした。
+- [x] `fixtures/node-apis/crypto-random-bytes.ts`:
+  current native emitter/runtime は `require("crypto").randomBytes(16)` を build/run でき、
+  Node と iwasm はどちらも `<Buffer ..>` 形式を出す。ただし値自体は nondeterministic なので
+  stdout exact diff では false fail になる。`Math.random` と同じ扱いで、Buffer 形式だけを検証する
+  `NONDETERMINISTIC_BUFFER_FIXTURES` normalization を追加した。
+- [x] focused harness proof:
+  `python3 -m py_compile scripts/check/fixture-differential.py` は pass。
+  `run_fixture` direct call で `fs-read.ts`, `wasi-fs-read-write.ts`,
+  `crypto-random-bytes.ts` はすべて pass。
+  手動確認でも `fs-read.ts` は temp cwd + `iwasm --dir=.` で `fixture-input`、
+  `wasi-fs-read-write.ts` は `fixture-input` / `done` と `output.txt=wasi-output` を確認。
+- [x] required harness commands:
+  `bash scripts/run/verify-harness.sh --quick`, `--cargo`, `--fixtures` は
+  `scripts/run/verify-harness.sh` 不在で exit 127。
+  `git diff --check -- scripts/check/fixture-differential.py plans/wasm-native-emitter-mainline-plan.md`
+  は pass。
+- [x] full fixture differential:
+  `/tmp/ts2wasm-fixture-differential-fs-workdir-crypto-buffer-20260527.log`
+  `pass=1172(86%) fail=0 unsupported=125 blocked=54 total=1351 elapsed=182.1s`。
+  前回の `pass=1168 fail=0 unsupported=126 blocked=57` から、
+  `proxy-reflect-unsupported-diagnostic.ts`, `crypto-random-bytes.ts`,
+  `fs-read.ts`, `wasi-fs-read-write.ts` が pass に移動した。
+  残 unsupported bucket は `feature:unknown-unsupported=102`,
+  `feature:class=12`, `feature:import-export=10`, `feature:async=1`。
+- [ ] 次の実装順:
+  1. Node/WASI fs read/write/append/crypto の current fixture lane は pass。
+     残る host/capability issue は fixture 外の capability-deny と host shim contract で扱う。
+  2. native emitter 直撃の unsupported はさらに薄くなったため、
+     次は static import/export の resolver/module graph 残件か、
+     dynamic import の Promise/module completion policy を個別 issue として切る。
+  3. class 12 件と for-await 1 件は引き続き lowering/parser first。
+
+## 2026-05-27 追加確認: Node oracle extensionless TS module imports
+
+- [x] `fixtures/module-system/*-entry.ts` と `fixtures/stmt/{import,export}-*.ts`:
+  native build/iwasm 側は static module graph で `.ts` source を解決して pass できる一方、
+  Node v23.6.0 の strip-only TypeScript 実行は `import "./source"` の extensionless ESM 解決で
+  `ERR_MODULE_NOT_FOUND` になり、full differential では `feature:node-oracle-fail` に分類されていた。
+- [x] `scripts/check/fixture-differential.py` の Node oracle で、
+  `fixtures/module-system` と `fixtures/stmt` だけ temporary module workdir を作り、
+  `from "./x"` / `import "./x"` / `import("./x")` が同じ fixture directory の `x.ts` を指す場合だけ
+  `./x.ts` に rewrite するようにした。ts2wasm build は元 fixture を使うため、
+  compiler/module graph の入力は変えない。
+- [x] focused proof:
+  direct `run_fixture` で `import-named.ts`, `import-namespace.ts`, `import-side-effect.ts`,
+  `export-named-from.ts`, `export-all-from.ts`,
+  `static-namespace-re-export-import-entry.ts` は pass。
+  `cargo test -p ts2wasm-cli static_namespace_re_export_module_import_fixture_matches_node_output_under_iwasm -- --nocapture`
+  は pass (`TS2WASM_RUN_NODE_DIFF` 未指定のため既存 test harness は differential assertion を skip するが、
+  fixture-specific test discovery と build path は通過)。
+- [x] transient check:
+  `/tmp/ts2wasm-fixture-differential-node-ts-extensionless-20260527.log` では
+  `static-namespace-re-export-import-entry.ts` が一度 `actual=undefined` で fail したが、
+  focused `run_fixture` 3回、手動 `ts2wasm build` + `iwasm`、再 full differential では `1` で pass。
+  同 run の `spread-call-array-local.ts` も `feature:ts2wasm-unavailable` になったが direct `run_fixture`
+  と手動 build/iwasm は pass で、再 full differential では回復。
+- [x] full fixture differential:
+  `/tmp/ts2wasm-fixture-differential-node-ts-extensionless-clean-20260527.log`
+  `pass=1195(88%) fail=0 unsupported=125 blocked=31 total=1351 elapsed=185.1s`。
+  直前の `pass=1172 fail=0 unsupported=125 blocked=54` から 23 件が
+  `feature:node-oracle-fail` blocked から pass に移動した。
+  残 unsupported bucket は `feature:unknown-unsupported=102`,
+  `feature:class=12`, `feature:import-export=10`, `feature:async=1`。
+  残 blocked は `feature:node-oracle-fail=31`。
+- [x] required harness commands:
+  `bash scripts/run/verify-harness.sh --quick`, `--cargo`, `--fixtures` は
+  `scripts/run/verify-harness.sh` 不在で exit 127。
+  `python3 -m py_compile scripts/check/fixture-differential.py` と
+  `git diff --check -- scripts/check/fixture-differential.py plans/wasm-native-emitter-mainline-plan.md`
+  は pass。
+- [ ] 次の実装順:
+  1. import/export 残 10 件は now clearer:
+     default/default+namespace import は module-resolver 側、`export namespace from` と type-only import は
+     name-resolver/TS erasure 側、missing/duplicate export diagnostics は module-resolver contract。
+  2. `feature:unknown-unsupported=102` から native emitter 直撃を再抽出する。
+     多くは parser/name/lowering reject なので、`dynamic-import-unsupported.ts` の
+     Promise/module completion policy か class lowering 残件を別 issue 化する。
+  3. `feature:node-oracle-fail=31` は Node strip-only TypeScript limitation と expected-rejection
+     oracle 整備として emitter backlog から分離する。
+
+## 2026-05-27 追加確認: Static default local alias exports
+
+- [x] 停止点:
+  `fixtures/stmt/import-default*.ts` のうち `import-default.ts`,
+  `import-default-named.ts`, `import-default-namespace.ts` は
+  dependency 側が `const d = ...; export default d;` の形になっており、
+  `collect_literal_named_exports` が `export default <literal>` だけを受け付けていたため
+  `feature:import-export` unsupported に残っていた。
+- [x] compiler 側:
+  `process_collected_export_stmt` の `Stmt::ExportDefault` で、
+  default expression が identifier の場合は同一 module 内で収集済みの static literal/function/class local alias を
+  `"default"` export として解決するようにした。非 static alias は従来通り unsupported。
+  `static_default_import_binding_accepts_static_local_alias_export` と
+  `static_default_named_import_binding_accepts_static_local_alias_export` を追加し、
+  default import / default+named import の binding と lowered `PropertyGet(ModuleLoad, "...")` を固定した。
+- [x] native emitter 側:
+  `console.log(def, named)` は lowered IR では multi-arg ではなく
+  `RuntimeCall::Concat(Concat(def, " "), named)` の単一引数になるため、
+  native console の static path に module-aware concat 解決を追加した。
+  対象は static module import local が含まれる concat に限定し、
+  BigInt など通常の string concat は runtime path のままにした。
+  また `ModuleExportsUpdate` がある live binding export は静的値へ固定せず、
+  CommonJS `require(...).prop` は runtime module property path に戻した。
+- [x] focused proof:
+  direct `run_fixture` で以下は pass:
+  `fixtures/stmt/import-default.ts`,
+  `fixtures/stmt/import-default-named.ts`,
+  `fixtures/stmt/import-default-namespace.ts`。
+  回帰確認として `fixtures/builtins-and-io/es-module-live-binding.ts`,
+  `fixtures/core-semantics/bigint-builtins-string-conversion.ts`,
+  `fixtures/modules-and-typed-optimizations/require-cache.ts`,
+  `fixtures/modules-and-typed-optimizations/require-relative.ts` も pass。
+- [x] full fixture differential:
+  `/tmp/ts2wasm-fixture-differential-default-local-alias-r3-20260527.log`
+  `pass=1199(88%) fail=0 unsupported=121 blocked=31 total=1351 elapsed=172.6s`。
+  直前 clean baseline
+  `/tmp/ts2wasm-fixture-differential-node-ts-extensionless-clean-20260527.log`
+  `pass=1195(88%) fail=0 unsupported=125 blocked=31 total=1351 elapsed=185.1s`
+  から +4 pass / -4 unsupported。`feature:import-export` は 10 から 7 に低下した。
+  途中の r2 full run では `array-filter-thisarg.ts` が一度
+  `feature:ts2wasm-unavailable` になったが、focused rerun と r3 full run では pass。
+- [x] 残 unsupported bucket:
+  `feature:unknown-unsupported=101`, `feature:class=12`,
+  `feature:import-export=7`, `feature:async=1`。
+  残 `feature:import-export` は
+  `fixtures/core-semantics/type-only-import-unsupported.ts`,
+  `fixtures/module-system/static-bare-import-unsupported.ts`,
+  `fixtures/module-system/static-local-named-export-duplicate-unsupported.ts`,
+  `fixtures/module-system/static-missing-named-export.ts`,
+  `fixtures/negative/unsupported-module.ts`,
+  `fixtures/stmt/export-namespace-from.ts`,
+  `fixtures/typescript-directives/type-only-import-unsupported.ts`。
+- [x] required harness commands:
+  `bash scripts/run/verify-harness.sh --quick`, `--cargo`, `--fixtures` は
+  `scripts/run/verify-harness.sh` 不在で exit 127。
+  `cargo fmt --check`, focused compiler tests, `cargo build -p ts2wasm-cli`,
+  focused `run_fixture`, full fixture differential r3 は上記結果。
+- [ ] 次の実装順:
+  1. import/export 残 7 件のうち、type-only import は TS erasure/name-resolver 方針、
+     `export namespace from` は namespace re-export lowering、
+     missing/duplicate export は module-resolver diagnostics contract として分ける。
+  2. `feature:unknown-unsupported=101` を compiler/parser reject と native-emitter reject に再分類し、
+     emitter 直撃分だけ次 slice にする。
+  3. `feature:class=12` は native emitter の class 残件として別 issue 化し、
+     module/import scope と混ぜない。
+
 ## 注意
 
 この計画は静的確認から開始した。2026-05-25 時点で backend-wasm の focused/lib tests と

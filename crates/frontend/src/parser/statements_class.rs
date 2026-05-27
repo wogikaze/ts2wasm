@@ -12,7 +12,8 @@ impl Parser {
                 message: format!("namespace before class: `{name}`"),
                 span: Some(span),
 
-                phase: None,});
+                phase: None,
+            });
         }
 
         let _ = self.consume_typescript_generic_parameter_list()?;
@@ -96,10 +97,7 @@ impl Parser {
             // Also handle qualified member-access chains such as M.I2<T>:
             // consume the dot-chain before looking for `<` type arguments.
             if matches!(self.peek(), Some(Token::Ident(_)))
-                && matches!(
-                    self.peek_n(1),
-                    Some(Token::Less | Token::Dot)
-                )
+                && matches!(self.peek_n(1), Some(Token::Less | Token::Dot))
             {
                 let (name, name_span) = self.expect_binding_ident()?;
                 let mut expr: Expr = Expr::Ident {
@@ -152,7 +150,8 @@ impl Parser {
                     message: "classes can only extend a single class".to_owned(),
                     span: Some(comma_span),
 
-                    phase: None,});
+                    phase: None,
+                });
             }
             Ok(Some(Box::new(expr)))
         } else {
@@ -165,19 +164,21 @@ impl Parser {
             self.advance();
             while !self.is_at_end() && !matches!(self.peek(), Some(Token::LeftBrace)) {
                 if let Some(Token::Ident(name)) = self.peek().cloned()
-                    && matches!(name.as_str(), "string" | "number" | "boolean") {
-                        let span = self.peek_span().expect("ident token must have span");
-                        self.advance();
-                        return Err(Diagnostic {
-                            code: DiagCode::UnsupportedTypeScriptSyntax,
-                            message: format!(
-                                "`{name}` is a primitive, \
+                    && matches!(name.as_str(), "string" | "number" | "boolean")
+                {
+                    let span = self.peek_span().expect("ident token must have span");
+                    self.advance();
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedTypeScriptSyntax,
+                        message: format!(
+                            "`{name}` is a primitive, \
                                  not a valid class implements type"
-                            ),
-                            span: Some(span),
+                        ),
+                        span: Some(span),
 
-                            phase: None,});
-                    }
+                        phase: None,
+                    });
+                }
                 self.advance();
             }
         }
@@ -204,7 +205,8 @@ impl Parser {
                     message: "unterminated class body".to_owned(),
                     span: self.prev_span().or_else(|| self.peek_span()),
 
-                    phase: None,});
+                    phase: None,
+                });
             }
 
             if self.consume(TokenKind::Semicolon) {
@@ -244,9 +246,12 @@ impl Parser {
                 name.as_str(),
                 "public" | "private" | "protected" | "readonly" | "override" | "accessor"
             )) || matches!(self.peek(), Some(Token::Static))
-                || matches!(self.peek(), Some(
-                Token::Const | Token::Var | Token::Let | Token::Export
-            )) || matches!(self.peek(), Some(Token::Abstract)) {
+                || matches!(
+                    self.peek(),
+                    Some(Token::Const | Token::Var | Token::Let | Token::Export)
+                )
+                || matches!(self.peek(), Some(Token::Abstract))
+            {
                 self.advance();
             }
             // Check if abstract modifier was used — don't add to body/initializers
@@ -299,12 +304,17 @@ impl Parser {
                 self.skip_balanced_bracket_block()?;
                 // Computed method: `["method"]() { ... }`
                 if self.consume(TokenKind::LeftParen) {
-                    while !self.consume(TokenKind::RightParen) { self.advance(); }
+                    while !self.consume(TokenKind::RightParen) {
+                        self.advance();
+                    }
                     if matches!(self.peek(), Some(Token::Colon)) {
                         self.advance();
                         self.skip_type_annotation_until(&[
-                            TokenKind::LeftBrace, TokenKind::Semicolon, TokenKind::RightBrace,
-                        ]).ok();
+                            TokenKind::LeftBrace,
+                            TokenKind::Semicolon,
+                            TokenKind::RightBrace,
+                        ])
+                        .ok();
                     }
                     if self.consume(TokenKind::Semicolon) {
                         continue;
@@ -315,10 +325,8 @@ impl Parser {
                     continue;
                 }
                 if self.consume(TokenKind::Colon) {
-                    self.skip_type_annotation_until(&[
-                        TokenKind::Semicolon,
-                        TokenKind::RightBrace,
-                    ]).ok();
+                    self.skip_type_annotation_until(&[TokenKind::Semicolon, TokenKind::RightBrace])
+                        .ok();
                 }
                 // Computed field with initializer: `[key] = value`
                 if self.consume(TokenKind::Equal) {
@@ -345,6 +353,7 @@ impl Parser {
             if matches!(self.peek(), Some(Token::Colon)) {
                 self.expect(TokenKind::Colon)?;
                 self.skip_type_annotation_until(&[
+                    TokenKind::Equal,
                     TokenKind::Semicolon,
                     TokenKind::Comma,
                     TokenKind::RightBrace,
@@ -510,10 +519,7 @@ impl Parser {
                 }
             }
             if self.consume(TokenKind::Colon) {
-                self.skip_type_annotation_until(&[
-                    TokenKind::LeftBrace,
-                    TokenKind::Semicolon,
-                ])?;
+                self.skip_type_annotation_until(&[TokenKind::LeftBrace, TokenKind::Semicolon])?;
             }
 
             // TypeScript TS1053: A 'set' accessor cannot have rest parameter — erase member.
@@ -592,9 +598,10 @@ impl Parser {
         if !public_field_initializers.is_empty() {
             if let Some(Stmt::Function {
                 body: method_body, ..
-            }) = body.iter_mut().find(|stmt| {
-                matches!(stmt, Stmt::Function { name, .. } if name == "constructor")
-            }) {
+            }) = body
+                .iter_mut()
+                .find(|stmt| matches!(stmt, Stmt::Function { name, .. } if name == "constructor"))
+            {
                 let merged = merge_constructor_initializers(
                     public_field_initializers,
                     std::mem::take(method_body),
@@ -724,7 +731,10 @@ impl Parser {
             self.fn_depth += 1;
             let body = self.block()?;
             self.fn_depth -= 1;
-            let end = self.prev_span().map(|span| span.end).unwrap_or(name_span.end);
+            let end = self
+                .prev_span()
+                .map(|span| span.end)
+                .unwrap_or(name_span.end);
             return Ok(ClassPrivateElement::Getter {
                 name,
                 name_span,
@@ -750,20 +760,26 @@ impl Parser {
             let param_name = if param.name.starts_with('{') || param.name.starts_with('[') {
                 let pattern_text = param.name;
                 let temp_name = "_setter_p0".to_owned();
-                body.insert(0, Stmt::Let {
-                    name: pattern_text,
-                    expr: Expr::Ident {
-                        name: temp_name.clone(),
+                body.insert(
+                    0,
+                    Stmt::Let {
+                        name: pattern_text,
+                        expr: Expr::Ident {
+                            name: temp_name.clone(),
+                            span: Span::generated("setter_destructure"),
+                        },
                         span: Span::generated("setter_destructure"),
+                        is_var: false,
                     },
-                    span: Span::generated("setter_destructure"),
-                    is_var: false,
-                });
+                );
                 temp_name
             } else {
                 param.name
             };
-            let end = self.prev_span().map(|span| span.end).unwrap_or(name_span.end);
+            let end = self
+                .prev_span()
+                .map(|span| span.end)
+                .unwrap_or(name_span.end);
             return Ok(ClassPrivateElement::Setter {
                 name,
                 name_span,
@@ -805,7 +821,10 @@ impl Parser {
             let mut body = self.block()?;
             self.fn_depth -= 1;
             desugar_destructured_params(&mut params, &mut body);
-            let end = self.prev_span().map(|span| span.end).unwrap_or(name_span.end);
+            let end = self
+                .prev_span()
+                .map(|span| span.end)
+                .unwrap_or(name_span.end);
             return Ok(ClassPrivateElement::Method {
                 name,
                 name_span,

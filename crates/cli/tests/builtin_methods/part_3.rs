@@ -690,6 +690,16 @@ fn build_smoke_symbol_registry_identity() {
     );
 }
 
+#[test]
+fn build_smoke_symbol_to_string() {
+    let result = run_fixture("builtins-and-io/symbol-to-string.ts");
+    assert!(
+        result.is_ok(),
+        "Symbol.toString should build with native runtime support: {:?}",
+        result.err()
+    );
+}
+
 // Atomics — stub that resolves without error
 #[test]
 fn build_smoke_atomics_intl_stubs() {
@@ -879,19 +889,14 @@ fn build_smoke_dynamic_import() {
     );
 }
 
-// ES module live binding — W5 (precise diagnostic: mutable closure)
+// ES module live binding — W5
 #[test]
-fn live_binding_unsupported_diagnostic() {
+fn live_binding_module_builds_successfully() {
     let result = run_fixture("module-system/live-binding-unsupported.ts");
     assert!(
-        result.is_err(),
-        "ES module live binding should produce unsupported diagnostic"
-    );
-    let err_msg = result.err().unwrap();
-    assert!(
-        err_msg.contains("closure") || err_msg.contains("Unsupported"),
-        "Diagnostic should mention closure/Unsupported: {}",
-        err_msg
+        result.is_ok(),
+        "ES module live binding module should build: {:?}",
+        result.err()
     );
 }
 

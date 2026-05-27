@@ -66,16 +66,36 @@ LIVE_TIME_FIXTURES = {
 NONDETERMINISTIC_RANDOM_FIXTURES = {
     "fixtures/builtins-and-io/math-random.ts",
 }
+NONDETERMINISTIC_BUFFER_FIXTURES = {
+    "fixtures/node-apis/crypto-random-bytes.ts",
+}
 HOST_ENVIRONMENT_FIXTURES = {
     "fixtures/node-apis/process-env.ts",
 }
 WASI_ARGV_FIXTURES = {
     "fixtures/node-apis/process-argv.ts",
 }
+FIXTURE_FILESYSTEM_INPUTS = {
+    "fixtures/node-apis/fs-read.ts": {
+        "input.txt": "fixture-input",
+    },
+    "fixtures/node-apis/wasi-fs-read-write.ts": {
+        "input.txt": "fixture-input",
+    },
+}
 CONSOLE_TIMER_FIXTURES = {
     "fixtures/builtins-and-io/console-complete.ts",
     "fixtures/builtins-and-io/console-supplementary.ts",
 }
+NODE_TS_EXTENSIONLESS_IMPORT_DIRS = {
+    "fixtures/module-system",
+    "fixtures/stmt",
+}
+NODE_TS_MODULE_SPECIFIER_RE = re.compile(
+    r"(?P<prefix>\bfrom\s+[\"']|\bimport\s+[\"']|\bimport\s*\(\s*[\"'])"
+    r"(?P<specifier>\./[^\"']+)"
+    r"(?P<suffix>[\"'])"
+)
 CATALOG_ASSERTIONS: dict[str, dict] = {}
 NODE_BASELINE_ORACLES = {
     "fixtures/builtins-and-io/bun-stdin-text.ts": {
@@ -203,6 +223,12 @@ def random_stdout_in_unit_interval(stdout: str) -> bool:
     return 0.0 <= value < 1.0
 
 
+def stdout_is_crypto_random_buffer(stdout: str) -> bool:
+    return (
+        re.fullmatch(r"<Buffer(?: [0-9a-f]{2})*>\r?\n?", stdout) is not None
+    )
+
+
 def stdout_is_nonnegative_integer(stdout: str) -> bool:
     text = stdout.strip()
     return text.isdigit()
@@ -257,7 +283,12 @@ def text_contains_all(text: str, needles: tuple[str, ...]) -> bool:
     return all(needle in lower for needle in needles)
 
 
-def run_node_oracle(abs_fixture_path: Path, fixture_path: str, stdin_data: bytes | None):
+def run_node_oracle(
+    abs_fixture_path: Path,
+    fixture_path: str,
+    stdin_data: bytes | None,
+    cwd: Path | None = None,
+):
     baseline = NODE_BASELINE_ORACLES.get(fixture_path)
     if baseline:
         cmd = ["node", "-e", str(baseline["script"])]
@@ -269,7 +300,51 @@ def run_node_oracle(abs_fixture_path: Path, fixture_path: str, stdin_data: bytes
         capture_output=True,
         text=False,
         timeout=30,
+        cwd=cwd,
     )
+
+
+def create_fixture_workdir(fixture_path: str) -> tempfile.TemporaryDirectory | None:
+    files = FIXTURE_FILESYSTEM_INPUTS.get(fixture_path)
+    if not files:
+        return None
+    workdir = tempfile.TemporaryDirectory(prefix="ts2wasm-fixture-fs-")
+    root = Path(workdir.name)
+    for relative_path, contents in files.items():
+        path = root / relative_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(contents, encoding="utf-8")
+    return workdir
+
+
+def create_node_ts_module_workdir(
+    abs_fixture_path: Path,
+    fixture_path: str,
+) -> tuple[tempfile.TemporaryDirectory, Path] | None:
+    suite_path = str(Path(fixture_path).parent)
+    if suite_path not in NODE_TS_EXTENSIONLESS_IMPORT_DIRS:
+        return None
+    source_dir = abs_fixture_path.parent
+    workdir = tempfile.TemporaryDirectory(prefix="ts2wasm-node-ts-mod-")
+    root = Path(workdir.name)
+    for source in source_dir.glob("*.ts"):
+        text = source.read_text(encoding="utf-8")
+        text = rewrite_node_ts_module_specifiers(text, source_dir)
+        (root / source.name).write_text(text, encoding="utf-8")
+    return workdir, root / abs_fixture_path.name
+
+
+def rewrite_node_ts_module_specifiers(source: str, source_dir: Path) -> str:
+    def replace(match: re.Match) -> str:
+        specifier = match.group("specifier")
+        if Path(specifier).suffix:
+            return match.group(0)
+        candidate = source_dir / f"{specifier}.ts"
+        if not candidate.exists():
+            return match.group(0)
+        return f"{match.group('prefix')}{specifier}.ts{match.group('suffix')}"
+
+    return NODE_TS_MODULE_SPECIFIER_RE.sub(replace, source)
 
 
 def usage() -> argparse.Namespace:
@@ -473,8 +548,20 @@ def run_fixture(
     # Step 1: Run Node.js to get expected output
     node_stdout = None
     node_error = None
+    node_workdir = create_fixture_workdir(fixture_path)
+    node_module_workdir = create_node_ts_module_workdir(abs_fixture_path, fixture_path)
     try:
-        node_result = run_node_oracle(abs_fixture_path, fixture_path, stdin_data)
+        node_fixture_path = abs_fixture_path
+        node_cwd = Path(node_workdir.name) if node_workdir else None
+        if node_module_workdir:
+            node_workdir, node_fixture_path = node_module_workdir
+            node_cwd = Path(node_workdir.name)
+        node_result = run_node_oracle(
+            node_fixture_path,
+            fixture_path,
+            stdin_data,
+            node_cwd,
+        )
         if node_result.returncode == 0:
             node_stdout = node_result.stdout.decode("utf-8", errors="replace")
         else:
@@ -483,6 +570,9 @@ def run_fixture(
     except (subprocess.TimeoutExpired, FileNotFoundError) as e:
         node_error = str(e)
         node_stdout = fixture_expected_stdout(fixture_path)
+    finally:
+        if node_workdir:
+            node_workdir.cleanup()
 
     # Step 2: Build with ts2wasm
     wasm_fd, wasm_path = tempfile.mkstemp(suffix=".wasm", prefix="ts2wasm-")
@@ -565,16 +655,25 @@ def run_fixture(
         }
 
     # Step 3: Run with iwasm
+    iwasm_workdir = create_fixture_workdir(fixture_path)
     try:
         iwasm_started_at_ms = host_epoch_ms()
+        iwasm_cmd = ["iwasm", wasm_path]
+        iwasm_cwd = None
+        if iwasm_workdir:
+            iwasm_cmd = ["iwasm", "--dir=.", wasm_path]
+            iwasm_cwd = Path(iwasm_workdir.name)
         iwasm_result = subprocess.run(
-            ["iwasm", wasm_path],
+            iwasm_cmd,
             input=stdin_data,
             capture_output=True,
             timeout=iwasm_timeout,
+            cwd=iwasm_cwd,
         )
         iwasm_finished_at_ms = host_epoch_ms()
     except subprocess.TimeoutExpired:
+        if iwasm_workdir:
+            iwasm_workdir.cleanup()
         os.unlink(wasm_path)
         return {
             "suite": suite,
@@ -587,6 +686,8 @@ def run_fixture(
             "tracking": "feature:iwasm-timeout",
         }
     except FileNotFoundError:
+        if iwasm_workdir:
+            iwasm_workdir.cleanup()
         os.unlink(wasm_path)
         return {
             "suite": suite,
@@ -598,6 +699,9 @@ def run_fixture(
             "reason": "Failed to execute iwasm",
             "tracking": "feature:iwasm-unavailable",
         }
+    finally:
+        if iwasm_workdir:
+            iwasm_workdir.cleanup()
 
     os.unlink(wasm_path)
 
@@ -753,6 +857,34 @@ def run_fixture(
             "actual": iwasm_stdout,
             "reason": (
                 f"expected Node and iwasm random stdout in [0, 1), "
+                f"node={node_stdout!r}, iwasm={iwasm_stdout!r}"
+            ),
+            "tracking": "feature:stdout-mismatch",
+        }
+
+    if fixture_path in NONDETERMINISTIC_BUFFER_FIXTURES:
+        if stdout_is_crypto_random_buffer(node_stdout) and stdout_is_crypto_random_buffer(
+            iwasm_stdout
+        ):
+            return {
+                "suite": suite,
+                "case": case,
+                "target": target,
+                "status": "pass",
+                "expected": None,
+                "actual": None,
+                "reason": None,
+                "tracking": None,
+            }
+        return {
+            "suite": suite,
+            "case": case,
+            "target": target,
+            "status": "fail",
+            "expected": "crypto.randomBytes stdout as <Buffer ..>",
+            "actual": iwasm_stdout,
+            "reason": (
+                f"expected Node and iwasm crypto.randomBytes Buffer stdout, "
                 f"node={node_stdout!r}, iwasm={iwasm_stdout!r}"
             ),
             "tracking": "feature:stdout-mismatch",
