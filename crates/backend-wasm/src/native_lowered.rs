@@ -5,7 +5,7 @@ use std::collections::{HashMap, HashSet};
 #[cfg(unix)]
 use std::ffi::CStr;
 #[cfg(unix)]
-use std::os::raw::{c_char, c_int, c_long};
+use std::os::raw::{c_char, c_int, c_long, c_uchar};
 
 use ts2wasm_ir::builtin::BuiltinId;
 use ts2wasm_ir::lowered::{
@@ -71,6 +71,7 @@ struct NativeTm {
 unsafe extern "C" {
     fn localtime_r(timep: *const NativeTime, result: *mut NativeTm) -> *mut NativeTm;
     fn mktime(timeptr: *mut NativeTm) -> NativeTime;
+    fn strftime(str_ptr: *mut c_char, max: usize, format: *const c_char, time_ptr: *const NativeTm) -> usize;
 }
 
 pub fn emit_wasm_module_native(
@@ -19192,19 +19193,29 @@ fn static_gmt_offset(offset_seconds: c_long) -> String {
 
 #[cfg(unix)]
 fn static_timezone_name(tm: &NativeTm) -> String {
-    let abbr = if tm.tm_zone.is_null() {
-        String::new()
-    } else {
-        unsafe { CStr::from_ptr(tm.tm_zone) }
-            .to_string_lossy()
-            .into_owned()
-    };
-    match abbr.as_str() {
-        "JST" => "Japan Standard Time".to_owned(),
-        "UTC" | "GMT" => "Coordinated Universal Time".to_owned(),
-        _ if abbr.is_empty() => "Local Time".to_owned(),
-        _ => abbr,
+    if tm.tm_zone.is_null() {
+        return String::new();
     }
+    let abbr = unsafe { CStr::from_ptr(tm.tm_zone) }
+        .to_string_lossy()
+        .into_owned();
+
+    // Node's ICU library produces locale-aware timezone names from tm_zone.
+    // Map common abbreviations to locale-aware full names matching Node's output.
+    // LANG=ja_JP.utf8 → Japanese full name, otherwise English/full form.
+    let lang = std::env::var("LANG").unwrap_or_default();
+    let is_japanese = lang.contains("ja") || lang.contains("JP");
+
+    let name: &str = match abbr.as_str() {
+        "JST" => if is_japanese { "日本標準時" } else { "Japan Standard Time" },
+        "UTC" | "GMT" => if is_japanese { "協定世界時" } else { "Coordinated Universal Time" },
+        "CET" => if is_japanese { "中央ヨーロッパ標準時" } else { "Central European Time" },
+        "EST" | "EDT" => if is_japanese { "東部標準時" } else { "Eastern Time" },
+        "PST" | "PDT" => if is_japanese { "太平洋標準時" } else { "Pacific Time" },
+        _ if abbr.is_empty() => "Local Time",
+        _ => return abbr,
+    };
+    name.to_owned()
 }
 
 const STATIC_WEEKDAYS: [&str; 7] = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
