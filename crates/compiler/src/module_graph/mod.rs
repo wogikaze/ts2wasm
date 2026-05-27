@@ -1382,11 +1382,7 @@ pub fn resolve_local_specifier(
                 let scope = parts[0];
                 let name = parts[1];
                 for dir in importer_dir.ancestors() {
-                    let scoped_dir = dir
-                        .join("node_modules")
-                        .join("@")
-                        .join(scope)
-                        .join(name);
+                    let scoped_dir = dir.join("node_modules").join("@").join(scope).join(name);
                     if scoped_dir.is_dir() {
                         bare_candidates.push(scoped_dir.join("index.ts"));
                         bare_candidates.push(scoped_dir.join("index.js"));

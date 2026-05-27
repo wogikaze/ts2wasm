@@ -396,6 +396,10 @@ pub enum RuntimeFn {
     RegExpMatch,
     /// Issue 051: RegExp.prototype.search for literal-backed plain byte patterns.
     RegExpSearch,
+    /// RegExp property access for source, flags, global, ignoreCase, multiline, lastIndex
+    RegExpSourceOf,
+    /// RegExp property access for source, flags, global, ignoreCase, multiline, lastIndex
+    RegExpFlagsOf,
     /// Issue 066: Shared helper for character-level pattern matching (dot, \d, \w, \s, literals).
     RegexpMatchInner,
     /// Issue 441: Parse regexp flags from trailing chars after closing `/` delimiter.
@@ -1875,6 +1879,8 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "RegExpTest" => Some(RuntimeFn::RegExpTest),
         "RegExpMatch" => Some(RuntimeFn::RegExpMatch),
         "RegExpSearch" => Some(RuntimeFn::RegExpSearch),
+        "RegExpSourceOf" => Some(RuntimeFn::RegExpSourceOf),
+        "RegExpFlagsOf" => Some(RuntimeFn::RegExpFlagsOf),
         "RegexpParseFlags" => Some(RuntimeFn::RegexpParseFlags),
         "ArrayPush" => Some(RuntimeFn::ArrayPush),
         "ArrayPushGrow" => Some(RuntimeFn::ArrayPushGrow),
@@ -2395,7 +2401,7 @@ impl RuntimeFn {
             | Self::FunctionCallHost
             | Self::FunctionCallMethodHost
             | Self::FunctionConstructHost => RuntimeDomain::Host,
-            | Self::SuperCallExternal => RuntimeDomain::Host,
+            Self::SuperCallExternal => RuntimeDomain::Host,
             Self::GetIterator
             | Self::IteratorNext
             | Self::IteratorFrom
@@ -2725,7 +2731,50 @@ impl RuntimeFn {
             | Self::DataViewGetBigUint64
             | Self::DataViewSetBigUint64
             | Self::DataViewGetBuffer
-            | Self::DataViewGetByteOffset => RuntimeDomain::TypedArray,
+            | Self::DataViewGetByteOffset
+            | Self::RegExpSourceOf
+            | Self::RegExpFlagsOf
+            | Self::TypedArraySet
+            | Self::TypedArrayLoad
+            | Self::TypedArrayStore
+            | Self::AtomicsElementPtr
+            | Self::AtomicsLoad
+            | Self::AtomicsStore
+            | Self::AtomicsAdd
+            | Self::AtomicsSub
+            | Self::AtomicsAnd
+            | Self::AtomicsOr
+            | Self::AtomicsXor
+            | Self::AtomicsExchange
+            | Self::AtomicsCompareExchange
+            | Self::AtomicsIsLockFree
+            | Self::AtomicsWait
+            | Self::AtomicsWaitAsync
+            | Self::AtomicsNotify
+            | Self::DataViewNew
+            | Self::DataViewGetInt8
+            | Self::DataViewSetInt8
+            | Self::DataViewGetUint8
+            | Self::DataViewSetUint8
+            | Self::DataViewGetInt16
+            | Self::DataViewSetInt16
+            | Self::DataViewGetUint16
+            | Self::DataViewSetUint16
+            | Self::DataViewGetInt32
+            | Self::DataViewSetInt32
+            | Self::DataViewGetUint32
+            | Self::DataViewSetUint32
+            | Self::DataViewGetFloat32
+            | Self::DataViewSetFloat32
+            | Self::DataViewGetFloat64
+            | Self::DataViewSetFloat64
+            | Self::DataViewGetFloat16
+            | Self::DataViewSetFloat16
+            | Self::DataViewGetBigInt64
+            | Self::DataViewSetBigInt64
+            | Self::DataViewGetBigUint64
+            | Self::DataViewSetBigUint64
+            | Self::DataViewGetBuffer => RuntimeDomain::TypedArray,
         }
     }
 

@@ -1225,6 +1225,37 @@ impl super::super::Resolver {
                     Ok(None)
                 }
             }
+            // RegExp property access for class-based RegExp objects.
+            // RegExp instances are stored as strings in "/pattern/flags" format.
+            ("RegExp", "source") => {
+                // source returns the pattern text without the enclosing slashes and without flags
+                // Extract pattern from /pattern/flags format
+                let lowered = self.lower_expr(object)?;
+                // Extract source via runtime call that returns the pattern substring
+                Ok(Some(LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::RegExpSourceOf,
+                    args: vec![lowered],
+                    span,
+                }))
+            }
+            ("RegExp", "flags") => {
+                let lowered = self.lower_expr(object)?;
+                Ok(Some(LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::RegExpFlagsOf,
+                    args: vec![lowered],
+                    span,
+                }))
+            }
+            ("RegExp", "global") => {
+                // global is true when "g" is in the flags
+                Ok(Some(LoweredExpr::Bool(false, span)))
+            }
+            ("RegExp", "ignoreCase") => Ok(Some(LoweredExpr::Bool(false, span))),
+            ("RegExp", "multiline") => Ok(Some(LoweredExpr::Bool(false, span))),
+            ("RegExp", "lastIndex") => {
+                // lastIndex is reset to 0 after each match
+                Ok(Some(LoweredExpr::Number(0, span)))
+            }
             _ => Ok(None),
         }
     }

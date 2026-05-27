@@ -2951,6 +2951,22 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::RegExpSourceOf => RuntimeSpec {
+                symbol: "$regexp_source_of",
+                deps: &[],
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::RegExpFlagsOf => RuntimeSpec {
+                symbol: "$regexp_flags_of",
+                deps: &[],
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::RegexpMatchInner => RuntimeSpec {
                 symbol: "$regexp_match_inner",
                 deps: OBJECT_GET_OWN_PROPERTY_NAMES_DEPS,
@@ -3617,7 +3633,7 @@ match self {
             },
             Self::AtomicsWaitAsync => RuntimeSpec {
                 symbol: "$atomics_wait_async",
-                deps: OBJECT_GET_OWN_PROPERTY_NAMES_DEPS,
+                deps: ATOMICS_NO_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -3625,7 +3641,7 @@ match self {
             },
             Self::AtomicsNotify => RuntimeSpec {
                 symbol: "$atomics_notify",
-                deps: ATOMICS_VALUE_DEPS,
+                deps: ATOMICS_NO_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
