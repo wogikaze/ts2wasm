@@ -1021,6 +1021,17 @@ def feature_label_from_diag(diag_code: str, stderr: str, fixture_path: str) -> s
         "NumberOutOfRange": "number-range",
         "ArityMismatch": "arity",
         "InvalidTopLevelReturn": "top-level-return",
+        "UnsupportedBuiltin": "unsupported-builtin",
+        "UnsupportedDate": "unsupported-date",
+        "UnsupportedRegExp": "unsupported-regexp",
+        "UnsupportedModule": "unsupported-module",
+        "UnsupportedEval": "unsupported-eval",
+        "UnsupportedTypeScriptSyntax": "unsupported-ts-syntax",
+        "UnsupportedRuntimeSubset": "unsupported-runtime-subset",
+        "UnsupportedSyntax": "unsupported-syntax",
+        "SyntaxError": "syntax-error",
+        "TypeScriptTypeCheck": "typescript-type-check",
+        "UnsupportedTarget": "unsupported-target",
     }
     if diag_code in static_labels:
         return static_labels[diag_code]

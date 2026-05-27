@@ -1574,6 +1574,108 @@ directories:
     - fail-fixture.ts
     - pass-fixture.ts
     - unsupported-fixture.ts
+  perf:
+    category: build-smoke
+    status: unknown
+    expected: Performance benchmarks from Bun victory suite
+    fixtures:
+    - bun-victory/tier1/numeric-fibonacci.ts
+    - bun-victory/tier1/numeric-factorial.ts
+    - bun-victory/tier1/numeric-matrix-mul.ts
+    - bun-victory/tier1/numeric-sum-array.ts
+    - bun-victory/tier1/numeric-sum-raw.ts
+    - bun-victory/tier1/string-concat-loop.ts
+    - bun-victory/tier1/typedarray-scan.ts
+    host_imports: allow
+  real-world:
+    category: build-smoke
+    status: unknown
+    expected: Real-world TypeScript library implementations
+    fixtures:
+    - decimal-lib.ts
+    - decimal-test.ts
+    - semver-inline.ts
+    - semver-lib.ts
+    - semver-mini-test.ts
+    - semver-test.ts
+    - test-slice.ts
+    - test-tiny.ts
+    - test-tiny2.ts
+    - test-tiny3.ts
+    - test-tiny4.ts
+    - test-tiny5.ts
+    - test-tiny6.ts
+    - test-tiny7.ts
+    - validator-lib.ts
+    - validator-test.ts
+    host_imports: allow
+  semantic:
+    category: semantic
+    status: unknown
+    expected: Semantic verification fixtures organized by feature area
+    fixtures:
+    - arrays/holes.ts
+    - arrays/index-access.ts
+    - arrays/literal.ts
+    - arrays/length.ts
+    - arrays/methods.ts
+    - arrays/mutation.ts
+    - arrays/nested.ts
+    - arrays/pop.ts
+    - arrays/push.ts
+    - builtins/console-log.ts
+    - builtins/globals-resolution-epic-I.ts
+    - builtins/math-abs.ts
+    - builtins/math-ceil.ts
+    - builtins/math-floor.ts
+    - builtins/math-round.ts
+    - builtins/object-keys.ts
+    - builtins/object-values.ts
+    - builtins/prototype-methods-resolution-epic-I.ts
+    - builtins/string-charat.ts
+    - builtins/string-indexof.ts
+    - builtins/string-slice.ts
+    - control-flow/break-continue-in-try.ts
+    - control-flow/do-while.ts
+    - control-flow/for-in.ts
+    - control-flow/for-loop.ts
+    - control-flow/for-of.ts
+    - control-flow/if-else.ts
+    - control-flow/labeled-break.ts
+    - control-flow/labeled-continue.ts
+    - control-flow/nested-if.ts
+    - control-flow/return-in-try.ts
+    - control-flow/return.ts
+    - control-flow/switch-case.ts
+    - control-flow/try-catch-finally.ts
+    - control-flow/try-catch.ts
+    - control-flow/try-finally.ts
+    - control-flow/while-loop.ts
+    - functions/argument-count-edges.ts
+    - functions/basic-function.ts
+    - functions/closures.ts
+    - functions/dynamic-call-unsupported.ts
+    - functions/early-return.ts
+    - functions/function-expressions.ts
+    - functions/nested-calls.ts
+    - functions/parameters.ts
+    - functions/recursion.ts
+    - functions/return-values.ts
+    - numeric/arithmetic.ts
+    - numeric/coercion.ts
+    - numeric/comparison.ts
+    - numeric/infinity.ts
+    - numeric/nan.ts
+    - numeric/neg-zero.ts
+    - objects/computed.ts
+    - objects/literal.ts
+    - objects/mixed-types.ts
+    - objects/mutation.ts
+    - objects/nested.ts
+    - objects/missing-property.ts
+    - objects/property-read.ts
+    - objects/property-write.ts
+    host_imports: allow
   this-binding:
     category: semantic
     status: pass

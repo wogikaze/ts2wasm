@@ -499,4 +499,5 @@ match self {
             Self::PrivateFieldGet => "pseudo_private_field_get",
             Self::PrivateFieldSet => "pseudo_private_field_set",
             Self::PrivateBrandCheck => "pseudo_private_brand_check",
+            Self::SuperCallExternal => "super_call_external",
         }

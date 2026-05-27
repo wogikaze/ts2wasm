@@ -38,6 +38,17 @@ pub fn feature_label_from_diag(diag_code: &str, stderr: &str, case: &str) -> &'s
         "NumberOutOfRange" => return "number-range",
         "ArityMismatch" => return "arity",
         "InvalidTopLevelReturn" => return "top-level-return",
+        "UnsupportedBuiltin" => return "unsupported-builtin",
+        "UnsupportedDate" => return "unsupported-date",
+        "UnsupportedRegExp" => return "unsupported-regexp",
+        "UnsupportedModule" => return "unsupported-module",
+        "UnsupportedEval" => return "unsupported-eval",
+        "UnsupportedTypeScriptSyntax" => return "unsupported-ts-syntax",
+        "UnsupportedRuntimeSubset" => return "unsupported-runtime-subset",
+        "UnsupportedSyntax" => return "unsupported-syntax",
+        "SyntaxError" => return "syntax-error",
+        "TypeScriptTypeCheck" => return "typescript-type-check",
+        "UnsupportedTarget" => return "unsupported-target",
         _ => {}
     }
 
