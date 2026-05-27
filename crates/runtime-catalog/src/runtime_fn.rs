@@ -728,6 +728,8 @@ pub enum RuntimeFn {
     FunctionCallMethodHost,
     /// Host function-handle construct produced by dynamic Function constructor compile.
     FunctionConstructHost,
+    /// SuperCallExternal: external/ambient parent class constructor call.
+    SuperCallExternal,
     /// GeneratorYield(values) — creates a generator state object from collected yield values.
     GeneratorYield,
     /// GeneratorReturn(value) — creates a completed generator result object.
@@ -1723,6 +1725,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "FunctionCallHost" => Some(RuntimeFn::FunctionCallHost),
         "FunctionCallMethodHost" => Some(RuntimeFn::FunctionCallMethodHost),
         "FunctionConstructHost" => Some(RuntimeFn::FunctionConstructHost),
+        "SuperCallExternal" => Some(RuntimeFn::SuperCallExternal),
         "e" => Some(RuntimeFn::EvalDirectHost),
         "MathFloor" => Some(RuntimeFn::MathFloor),
         "MathCeil" => Some(RuntimeFn::MathCeil),
@@ -2392,6 +2395,7 @@ impl RuntimeFn {
             | Self::FunctionCallHost
             | Self::FunctionCallMethodHost
             | Self::FunctionConstructHost => RuntimeDomain::Host,
+            | Self::SuperCallExternal => RuntimeDomain::Host,
             Self::GetIterator
             | Self::IteratorNext
             | Self::IteratorFrom
@@ -3020,6 +3024,7 @@ impl RuntimeFn {
             | Self::EvalDirectHost
             | Self::FunctionCallHost
             | Self::FunctionConstructHost
+            | Self::SuperCallExternal
             | Self::FsReadFileSync
             | Self::FsWriteFileSync
             | Self::FsAppendFileSync
@@ -3658,6 +3663,7 @@ impl RuntimeFn {
             Self::FunctionCallHost,
             Self::FunctionCallMethodHost,
             Self::FunctionConstructHost,
+            Self::SuperCallExternal,
             Self::GeneratorYield,
             Self::GeneratorReturn,
             Self::GeneratorNext,
@@ -4153,6 +4159,7 @@ impl RuntimeFn {
             Self::FunctionCallHost,
             Self::FunctionCallMethodHost,
             Self::FunctionConstructHost,
+            Self::SuperCallExternal,
             Self::NumberIsNaN,
             Self::NumberIsFinite,
             Self::NumberIsInteger,

@@ -996,12 +996,15 @@ def run_fixture(
 
 
 def extract_diag_code(stderr: str) -> str:
-    """Extract diagnostic code from compiler stderr, e.g. [UnsupportedSyntax]."""
+    """Extract diagnostic code from compiler stderr, e.g. [UnsupportedSyntax]
+    or [DuplicateLocal/ast-validator] -> DuplicateLocal."""
     start = stderr.find("[")
     if start >= 0:
         end = stderr.find("]", start)
         if end >= 0:
-            return stderr[start + 1 : end]
+            inner = stderr[start + 1 : end]
+            # Strip phase suffix: "DuplicateLocal/ast-validator" -> "DuplicateLocal"
+            return inner.split("/")[0]
     return "Unknown"
 
 

@@ -325,7 +325,7 @@ fn static_namespace_re_export_reports_issue_232_missing_module() {
 fn static_bare_module_import_reports_issue_232_unsupported_specifier() {
     assert_build_fails_with_module_graph_diagnostic(
         "module-system/static-bare-import-unsupported.ts",
-        "issue-232: unsupported non-local module specifier `pkg`",
+        "issue-232: missing package module `pkg`",
     );
 }
 

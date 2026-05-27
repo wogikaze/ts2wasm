@@ -22,6 +22,7 @@ impl Parser {
             in_async_fn: false,
             in_generator_fn: false,
             fn_depth: 0,
+            static_block_depth: 0,
             loop_depth: 0,
             switch_depth: 0,
             has_default_export: false,

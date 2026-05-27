@@ -504,10 +504,7 @@ pub(super) fn validate_static_block_stmts(stmts: &[Stmt]) -> Result<(), Diagnost
 pub(super) fn validate_static_block_expr(expr: &Expr) -> Result<(), Diagnostic> {
     match expr {
         Expr::This { .. } => Ok(()),
-        Expr::Ident { name, span } if name == "super" => Err(static_block_unsupported(
-            "`super` in class static blocks is not supported",
-            *span,
-        )),
+        Expr::Ident { name, span } if name == "super" => Ok(()),
         Expr::NewTarget { .. } | Expr::ImportMeta { .. } => Ok(()),
         Expr::Unary { expr, .. }
         | Expr::TypeOf { expr, .. }

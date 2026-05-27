@@ -707,7 +707,9 @@ impl Parser {
 
     fn class_static_block(&mut self) -> Result<ClassStaticBlock, Diagnostic> {
         let start = self.expect(TokenKind::Static)?;
+        self.static_block_depth += 1;
         let body = self.block()?;
+        self.static_block_depth -= 1;
         let end = self.prev_span().map(|span| span.end).unwrap_or(start.end);
 
         Ok(ClassStaticBlock {

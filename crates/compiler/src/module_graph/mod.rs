@@ -1316,7 +1316,7 @@ fn direct_dependency_module_ids(module: &ModuleNode) -> Vec<usize> {
     ids
 }
 
-fn resolve_local_specifier(
+pub fn resolve_local_specifier(
     importer_path: &Path,
     specifier: &ModuleSpecifier,
 ) -> Result<PathBuf, Diagnostic> {
@@ -1344,6 +1344,11 @@ fn resolve_local_specifier(
                 bare_candidates.push(node_mod_dir.join("index.ts"));
                 bare_candidates.push(node_mod_dir.join("index.js"));
                 bare_candidates.push(node_mod_dir.join("index.d.ts"));
+                // Check package.json for main/types/exports
+                let pkg_json = node_mod_dir.join("package.json");
+                if pkg_json.is_file() {
+                    bare_candidates.push(node_mod_dir);
+                }
             } else {
                 bare_candidates.extend(
                     module_resolution_candidates(&node_mod_dir, specifier)
@@ -1370,60 +1375,96 @@ fn resolve_local_specifier(
                 break;
             }
         }
+        // Scoped packages: @scope/name -> node_modules/@scope/name
+        if specifier.value.starts_with("@/") {
+            let parts: Vec<&str> = specifier.value[2..].splitn(2, '/').collect();
+            if parts.len() == 2 {
+                let scope = parts[0];
+                let name = parts[1];
+                for dir in importer_dir.ancestors() {
+                    let scoped_dir = dir
+                        .join("node_modules")
+                        .join("@")
+                        .join(scope)
+                        .join(name);
+                    if scoped_dir.is_dir() {
+                        bare_candidates.push(scoped_dir.join("index.ts"));
+                        bare_candidates.push(scoped_dir.join("index.js"));
+                        bare_candidates.push(scoped_dir.join("index.d.ts"));
+                        bare_candidates.push(scoped_dir);
+                    } else {
+                        bare_candidates.extend(
+                            module_resolution_candidates(&scoped_dir, specifier)
+                                .unwrap_or_else(|_| vec![]),
+                        );
+                    }
+                    if dir == dir.parent().unwrap_or(dir) {
+                        break;
+                    }
+                }
+            }
+        }
         bare_candidates
+    };
+
+    // Helper to resolve package.json for a directory candidate.
+    let resolve_pkg_json = |dir: &Path| -> Option<PathBuf> {
+        let pkg_json = dir.join("package.json");
+        if !pkg_json.is_file() {
+            return None;
+        }
+        let pkg_content = std::fs::read_to_string(&pkg_json).ok()?;
+        let pkg: serde_json::Value = serde_json::from_str(&pkg_content).ok()?;
+        // Check "types" field first (TypeScript-specific)
+        if let Some(types) = pkg.get("types").and_then(|v| v.as_str()) {
+            let types_path = dir.join(types);
+            if types_path.is_file() {
+                return canonicalize_existing_path(&types_path).ok();
+            }
+        }
+        // Check "main" field
+        if let Some(main) = pkg.get("main").and_then(|v| v.as_str()) {
+            let main_path = dir.join(main);
+            if main_path.is_file() {
+                return canonicalize_existing_path(&main_path).ok();
+            }
+        }
+        // Check "exports" field as string
+        if let Some(exports) = pkg.get("exports") {
+            if let Some(export_str) = exports.as_str() {
+                let exp_path = dir.join(export_str);
+                if exp_path.is_file() {
+                    return canonicalize_existing_path(&exp_path).ok();
+                }
+            } else if let Some(export_map) = exports.as_object() {
+                // Check "." key (main entry)
+                if let Some(default_export) = export_map.get(".")
+                    && let Some(val) = default_export.as_str()
+                {
+                    let exp_path = dir.join(val);
+                    if exp_path.is_file() {
+                        return canonicalize_existing_path(&exp_path).ok();
+                    }
+                }
+            }
+        }
+        None
     };
 
     for candidate in &candidates {
         if candidate.is_file() {
             return canonicalize_existing_path(candidate);
         }
+        // For directory candidates (e.g. node_modules/pkg), resolve package.json
+        if candidate.is_dir() {
+            if let Some(resolved) = resolve_pkg_json(candidate) {
+                return Ok(resolved);
+            }
+        }
         // Check for package.json in parent directory
         if let Some(parent) = candidate.parent() {
-            let pkg_json = parent.join("package.json");
-            if pkg_json.is_file()
-                && let Ok(pkg_content) = std::fs::read_to_string(&pkg_json)
-                && let Ok(pkg) = serde_json::from_str::<serde_json::Value>(&pkg_content)
-            {
-                if let Some(types) = pkg.get("types").and_then(|v| v.as_str()) {
-                    let types_path = parent.join(types);
-                    if types_path.is_file() {
-                        return canonicalize_existing_path(&types_path);
-                    }
-                }
-                if let Some(main) = pkg.get("main").and_then(|v| v.as_str()) {
-                    let main_path = parent.join(main);
-                    if main_path.is_file() {
-                        return canonicalize_existing_path(&main_path);
-                    }
-                }
-                // Check package.json exports field (dot-separated key)
-                if let Some(imports) = pkg.get("imports").and_then(|v| v.as_object())
-                    && let Some(dot) = imports.get("#").or_else(|| imports.get("."))
-                    && let Some(val) = dot.as_str()
-                {
-                    let imp_path = parent.join(val);
-                    if imp_path.is_file() {
-                        return canonicalize_existing_path(&imp_path);
-                    }
-                }
-                if let Some(exports) = pkg.get("exports") {
-                    if let Some(export_str) = exports.as_str() {
-                        let exp_path = parent.join(export_str);
-                        if exp_path.is_file() {
-                            return canonicalize_existing_path(&exp_path);
-                        }
-                    } else if let Some(export_map) = exports.as_object() {
-                        // Check "." key (main entry)
-                        if let Some(default_export) = export_map.get(".")
-                            && let Some(val) = default_export.as_str()
-                        {
-                            let exp_path = parent.join(val);
-                            if exp_path.is_file() {
-                                return canonicalize_existing_path(&exp_path);
-                            }
-                        }
-                    }
-                }
+            if let Some(resolved) = resolve_pkg_json(parent) {
+                return Ok(resolved);
             }
         }
     }
@@ -1437,7 +1478,7 @@ fn resolve_local_specifier(
         )
     } else {
         format!(
-            "issue-232: unsupported non-local module specifier `{}`; package resolution, import maps, and absolute specifiers are not implemented",
+            "issue-232: missing package module `{}` imported from; package resolution searched node_modules ancestors and @types but found no matching file",
             specifier.value
         )
     };

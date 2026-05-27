@@ -2006,8 +2006,8 @@ impl Parser {
                 span,
             }) => {
                 // `super` outside a class/object method context is a SyntaxError.
-                // At the top level (fn_depth == 0), super is always invalid.
-                if self.fn_depth == 0 {
+                // At the top level (fn_depth == 0) and outside static blocks, super is invalid.
+                if self.fn_depth == 0 && self.static_block_depth == 0 {
                     return Err(Diagnostic {
                         code: DiagCode::SyntaxError,
                         message: "`super` is only valid inside a class or object method"

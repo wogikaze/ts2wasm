@@ -381,20 +381,6 @@ impl super::super::Resolver {
 
                     phase: None,
                 })?;
-            let parent_ctor = self
-                .ctx
-                .classes
-                .class_constructor_ids
-                .get(&parent_name)
-                .copied()
-                .ok_or_else(|| Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!("super class constructor for `{}` not found", parent_name),
-                    span: None,
-
-                    phase: None,
-                })?;
-
             // SuperCallThis: derived constructors pass the active this local into
             // the parent constructor before forwarding explicit super(...) args.
             let mut lowered_args = vec![LoweredExpr::Local(
@@ -407,11 +393,29 @@ impl super::super::Resolver {
                     .collect::<Result<Vec<_>, _>>()?,
             );
 
-            return Ok(LoweredExpr::Call {
-                kind: FunctionCallKind::User(parent_ctor),
-                args: lowered_args,
+            // If the parent class is a known ts2wasm class, call its constructor directly.
+            // Otherwise, delegate to the JavaScript runtime via a host-external call.
+            if let Some(parent_ctor) = self
+                .ctx
+                .classes
+                .class_constructor_ids
+                .get(&parent_name)
+                .copied()
+            {
+                return Ok(LoweredExpr::Call {
+                    kind: FunctionCallKind::User(parent_ctor),
+                    args: lowered_args,
 
-                span: Span::generated("call"),
+                    span: Span::generated("call"),
+                });
+            }
+
+            // External/ambient parent class: emit a host-external call to the parent
+            // constructor name. The runtime resolves it at call time.
+            return Ok(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::SuperCallExternal,
+                args: lowered_args,
+                span: Span::generated("runtime_call"),
             });
         }
 

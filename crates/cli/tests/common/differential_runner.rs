@@ -12,12 +12,15 @@ mod _iwasm;
 use _capability::{iwasm_command, node_command};
 use _iwasm::{IwasmRunResult, run_iwasm_with_timeout};
 
-/// Extract diagnostic code from compiler stderr, e.g. `[UnsupportedSyntax]`.
+/// Extract diagnostic code from compiler stderr, e.g. `[UnsupportedSyntax]`
+/// or `[DuplicateLocal/ast-validator]` → `DuplicateLocal`.
 pub fn extract_diag_code(stderr: &str) -> String {
     if let Some(start) = stderr.find('[')
         && let Some(end) = stderr[start..].find(']')
     {
-        return stderr[start + 1..start + end].to_string();
+        let inner = &stderr[start + 1..start + end];
+        // Strip phase suffix: "DuplicateLocal/ast-validator" → "DuplicateLocal"
+        return inner.split('/').next().unwrap_or(inner).to_string();
     }
     "Unknown".to_string()
 }

@@ -1769,54 +1769,11 @@ fn resolve_static_re_export_source_path(
     specifier: &str,
     span: Span,
 ) -> Result<PathBuf, Diagnostic> {
-    if !specifier.starts_with("./") && !specifier.starts_with("../") {
-        return Err(Diagnostic {
-            code: DiagCode::UnsupportedModule,
-            message: format!(
-                "issue-232: unsupported non-local module specifier `{specifier}` in static re-export"
-            ),
-            span: Some(span),
-            phase: None,
-        });
-    }
-
-    let base_dir = importer_path.parent().unwrap_or_else(|| Path::new("."));
-    let raw_candidate = base_dir.join(specifier);
-    let candidates = if raw_candidate.extension().is_some() {
-        vec![raw_candidate]
-    } else {
-        vec![
-            raw_candidate.with_extension("ts"),
-            raw_candidate.with_extension("js"),
-            raw_candidate.with_extension("d.ts"),
-        ]
+    let module_specifier = ts2wasm_syntax::ModuleSpecifier {
+        value: specifier.to_owned(),
+        span,
     };
-
-    for candidate in &candidates {
-        if candidate.exists() {
-            return candidate.canonicalize().map_err(|error| Diagnostic {
-                code: DiagCode::BackendIo,
-                message: format!("failed to canonicalize {}: {error}", candidate.display()),
-                span: Some(span),
-                phase: None,
-            });
-        }
-    }
-
-    Err(Diagnostic {
-        code: DiagCode::UnsupportedModule,
-        message: format!(
-            "issue-232: missing local module `{specifier}` re-exported from {}; tried {}",
-            importer_path.display(),
-            candidates
-                .iter()
-                .map(|path| path.display().to_string())
-                .collect::<Vec<_>>()
-                .join(", ")
-        ),
-        span: Some(span),
-        phase: None,
-    })
+    crate::module_graph::resolve_local_specifier(importer_path, &module_specifier)
 }
 
 fn module_specifier(module_graph: &ModuleGraph, module_id: usize) -> String {

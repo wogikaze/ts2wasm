@@ -21,6 +21,8 @@ pub struct Parser {
     /// Whether we are inside a generator function body (for context-sensitive `yield` parsing).
     in_generator_fn: bool,
     fn_depth: u32,
+    /// How many static block levels we're nested in (for `super` in static blocks).
+    static_block_depth: u32,
     /// How many loop levels we're nested in (for `break`/`continue` validation).
     loop_depth: u32,
     /// How many switch statement levels we're nested in (for `break` validation inside switch).
