@@ -132,6 +132,8 @@ const KNOWN_FEATURES: &[(&str, &str)] = &[
     ("resizable-arraybuffer", "issue-408"),
     ("computed-property-names", "issue-5000"),
     ("numeric-separator-literal", "issue-5000"),
+    ("decorators", "issue-5000"),
+    ("logical-assignment-operators", "issue-5000"),
     // --- prototype/symbol features (tested by test262, no runtime stub needed) ---
     // --- partially implemented features (known but may fail at compile/runtime) ---
     ("Object.fromEntries", "issue-5004"),

@@ -1,10 +1,22 @@
 // Class declaration parsing (split from statements_general.rs for issue 5043)
 
 impl Parser {
+    /// Read a class name which can be a binding identifier or `await`
+    /// (which is a valid identifier in non-module contexts: `class await {}`).
+    fn read_class_name(&mut self) -> Result<(String, Span), Diagnostic> {
+        if matches!(self.peek(), Some(Token::Await)) {
+            let span = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
+            self.advance();
+            Ok(("await".to_owned(), span))
+        } else {
+            self.expect_binding_ident()
+        }
+    }
+
     fn class_statement(&mut self) -> Result<Stmt, Diagnostic> {
         self.consume(TokenKind::Abstract); // TypeScript abstract modifier — erased at runtime
         let start = self.expect(TokenKind::Class)?;
-        let (name, _) = self.expect_binding_ident()?;
+        let (name, _) = self.read_class_name()?;
         if self.namespace_names_encountered.contains(&name) {
             let span = self.prev_span().unwrap_or(Span { start: 0, end: 0 });
             return Err(Diagnostic {
@@ -24,10 +36,11 @@ impl Parser {
     }
 
     fn class_expression(&mut self, start: Span) -> Result<Expr, Diagnostic> {
-        let name = if matches!(self.peek(), Some(Token::Ident(_)))
+        let name = if (matches!(self.peek(), Some(Token::Ident(_)))
+            || matches!(self.peek(), Some(Token::Await)))
             && !self.peek_contextual_keyword("implements")
         {
-            let (name, _) = self.expect_binding_ident()?;
+            let (name, _) = self.read_class_name()?;
             name
         } else {
             String::new()
@@ -69,7 +82,8 @@ impl Parser {
         start: Span,
     ) -> Result<Stmt, Diagnostic> {
         self.expect(TokenKind::Class)?;
-        if matches!(self.peek(), Some(Token::Ident(_)))
+        if (matches!(self.peek(), Some(Token::Ident(_)))
+            || matches!(self.peek(), Some(Token::Await)))
             && !self.peek_contextual_keyword("implements")
         {
             self.advance();
@@ -320,7 +334,13 @@ impl Parser {
                         continue;
                     }
                     self.fn_depth += 1;
+                    let prev_in_generator = self.in_generator_fn;
+                    let prev_in_async = self.in_async_fn;
+                    self.in_generator_fn = is_generator;
+                    self.in_async_fn = is_async;
                     self.block()?;
+                    self.in_generator_fn = prev_in_generator;
+                    self.in_async_fn = prev_in_async;
                     self.fn_depth -= 1;
                     continue;
                 }
@@ -337,13 +357,52 @@ impl Parser {
             }
 
             let (mut method_name, mut method_span) = self.expect_property_name()?;
-            if (method_name == "get" || method_name == "set")
-                && matches!(self.peek(), Some(Token::Ident(_)))
-            {
+            if method_name == "get" || method_name == "set" {
                 let prefix = if method_name == "get" { "get " } else { "set " };
-                let (next_name, next_span) = self.expect_ident()?;
-                method_name = format!("{prefix}{next_name}");
-                method_span = next_span;
+                // After `get`/`set`, read the actual property name which can be:
+                // an identifier (get x), computed (get [expr]), number (get 0x10),
+                // string (get "x"), keyword (get function), or leading-decimal number (get .1).
+                //
+                // For computed accessors (get [expr] / set [expr]), handle like
+                // computed methods at line 303: parse and discard (no body entry),
+                // to avoid duplicate name issues with repeated computed names.
+                if matches!(self.peek(), Some(Token::LeftBracket)) {
+                    // Computed getter/setter: get [expr]() or set [expr](param)
+                    // Parse and discard (no body entry) like computed methods.
+                    self.skip_balanced_bracket_block()?;
+                    if self.consume(TokenKind::LeftParen) {
+                        while !self.consume(TokenKind::RightParen) {
+                            self.advance();
+                        }
+                    }
+                    if self.consume(TokenKind::Semicolon) {
+                        continue;
+                    }
+                    self.fn_depth += 1;
+                    let prev_in_generator = self.in_generator_fn;
+                    let prev_in_async = self.in_async_fn;
+                    self.in_generator_fn = is_generator;
+                    self.in_async_fn = is_async;
+                    self.block()?;
+                    self.in_generator_fn = prev_in_generator;
+                    self.in_async_fn = prev_in_async;
+                    self.fn_depth -= 1;
+                    continue;
+                } else if matches!(self.peek(), Some(Token::Dot))
+                    && matches!(self.peek_n(1), Some(Token::Number(_)))
+                {
+                    // Leading-decimal number as property name: get .1() / set .1()
+                    self.advance(); // consume the Dot
+                    if let Some(SpannedToken { kind: Token::Number(num_val), span: num_span }) = self.advance() {
+                        method_name = format!("{prefix}.{}", num_val);
+                        method_span = num_span;
+                    }
+                } else if !matches!(self.peek(), Some(Token::LeftParen | Token::Semicolon | Token::Equal | Token::Colon | Token::RightBrace)) {
+                    // Any other property name token (ident, number, string, keyword)
+                    let (next_name, next_span) = self.expect_property_name()?;
+                    method_name = format!("{prefix}{next_name}");
+                    method_span = next_span;
+                }
             }
 
             let _ = self.consume_typescript_generic_parameter_list()?;
@@ -530,7 +589,13 @@ impl Parser {
                     continue;
                 }
                 self.fn_depth += 1;
+                let prev_in_generator = self.in_generator_fn;
+                let prev_in_async = self.in_async_fn;
+                self.in_generator_fn = is_generator;
+                self.in_async_fn = is_async;
                 self.block()?;
+                self.in_generator_fn = prev_in_generator;
+                self.in_async_fn = prev_in_async;
                 self.fn_depth -= 1;
                 continue;
             }
@@ -560,7 +625,13 @@ impl Parser {
             }
 
             self.fn_depth += 1;
+            let prev_in_generator = self.in_generator_fn;
+            let prev_in_async = self.in_async_fn;
+            self.in_generator_fn = is_generator;
+            self.in_async_fn = is_async;
             let mut method_body = self.block()?;
+            self.in_generator_fn = prev_in_generator;
+            self.in_async_fn = prev_in_async;
             self.fn_depth -= 1;
 
             // issue-5183: null return in typed getter — allow for build_pass
