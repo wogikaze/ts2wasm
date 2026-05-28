@@ -114,6 +114,30 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(crate) fn emit_regexp_flags_of(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+      (func $regexp<flags_ifs>" (param $pattern i32) (param $pos_buf i32) (result i32)
+        (call $is_string $pattern)
+        (call $is_string $pos_buf)
+        (i32ret 1)
+      )
+# --- RegExpSourceOf ---
+      (func $regexp<source>" (param $pattern i32) (param $pos_buf i32) (result i32)
+        (call %is_string $pattern)
+        (call %is_string $pos_buf)
+        (i32ret 1)
+      )
+# --- RegExpFlagsOf ---
+      (func $regexp<flags>" (param $pattern i32) (param $pos_buf i32) (result i32)
+        (call $regexp_parse_flags $pos_buf %p_header $pattern_len $pattern)
+        (ret $regexp<flags_ifs>)
+      )
+"#,
+        ));
+    }
+}
+impl WatEmitter<'_> {
     pub(crate) fn emit_regexp_test(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"

@@ -71,7 +71,12 @@ struct NativeTm {
 unsafe extern "C" {
     fn localtime_r(timep: *const NativeTime, result: *mut NativeTm) -> *mut NativeTm;
     fn mktime(timeptr: *mut NativeTm) -> NativeTime;
-    fn strftime(str_ptr: *mut c_char, max: usize, format: *const c_char, time_ptr: *const NativeTm) -> usize;
+    fn strftime(
+        str_ptr: *mut c_char,
+        max: usize,
+        format: *const c_char,
+        time_ptr: *const NativeTm,
+    ) -> usize;
 }
 
 pub fn emit_wasm_module_native(
@@ -19207,11 +19212,41 @@ fn static_timezone_name(tm: &NativeTm) -> String {
     let is_japanese = lang.contains("ja") || lang.contains("JP");
 
     let name: &str = match abbr.as_str() {
-        "JST" => if is_japanese { "日本標準時" } else { "Japan Standard Time" },
-        "UTC" | "GMT" => if is_japanese { "協定世界時" } else { "Coordinated Universal Time" },
-        "CET" => if is_japanese { "中央ヨーロッパ標準時" } else { "Central European Time" },
-        "EST" | "EDT" => if is_japanese { "東部標準時" } else { "Eastern Time" },
-        "PST" | "PDT" => if is_japanese { "太平洋標準時" } else { "Pacific Time" },
+        "JST" => {
+            if is_japanese {
+                "日本標準時"
+            } else {
+                "Japan Standard Time"
+            }
+        }
+        "UTC" | "GMT" => {
+            if is_japanese {
+                "協定世界時"
+            } else {
+                "Coordinated Universal Time"
+            }
+        }
+        "CET" => {
+            if is_japanese {
+                "中央ヨーロッパ標準時"
+            } else {
+                "Central European Time"
+            }
+        }
+        "EST" | "EDT" => {
+            if is_japanese {
+                "東部標準時"
+            } else {
+                "Eastern Time"
+            }
+        }
+        "PST" | "PDT" => {
+            if is_japanese {
+                "太平洋標準時"
+            } else {
+                "Pacific Time"
+            }
+        }
         _ if abbr.is_empty() => "Local Time",
         _ => return abbr,
     };

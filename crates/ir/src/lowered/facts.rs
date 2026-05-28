@@ -127,12 +127,31 @@ pub struct StaticFacts {
     pub intl_number_format_locals: HashMap<LocalId, IntlNumberFormatOptions>,
     /// Static Intl.DateTimeFormat locals with constructor options visible at compile time.
     pub intl_date_time_format_locals: HashMap<LocalId, IntlDateTimeFormatOptions>,
+    /// Return type information: LocalId → InferredType. Tracks statically inferred return types
+    /// of lowered expressions, including symbolically "any" (unknown/unspecified) types.
+    ///
+    /// "any" type appears when:
+    /// - Declared with any parameter/intrinsic type (e.g., `any x = ...`)
+    /// - For functions/methods with unknown intrinsic type from type annotations
+    /// - Used to propagate conservative typing through call graphs
+    pub any_return_type_locals: HashMap<LocalId, InferredType>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum HostExternalKind {
     FunctionHandle,
     Object,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum InferredType {
+    /// Unknown/unspecified type (the `any` intrinsic type in TypeScript).
+    /// This is the most conservative type - can be any value at runtime.
+    Any,
+    /// Concreteness level: Lowest (most specific) = Largest number.
+    /// Larger values indicate more specific types, enabling better call site optimizations.
+    /// 1 = unknown/any, 2 = blot type subclass, 3 = any-type subclass, etc.
+    Concreteness(u32),
 }
 
 impl StaticFacts {
@@ -294,6 +313,7 @@ impl StaticFacts {
             proxy_locals: HashMap::new(),
             intl_number_format_locals: HashMap::new(),
             intl_date_time_format_locals: HashMap::new(),
+            any_return_type_locals: HashMap::new(),
         }
     }
 
@@ -363,6 +383,26 @@ impl StaticFacts {
     /// Check if a name is in the heap_closure_names set.
     pub fn needs_heap_closure(&self, name: &str) -> bool {
         self.heap_closure_names.contains(name)
+    }
+
+    /// Record that a local's return type is the unconstrained `any` type.
+    pub fn record_any_return_type(&mut self, local_id: LocalId) {
+        self.any_return_type_locals.insert(
+            local_id,
+            InferredType::Any,
+        );
+    }
+
+    /// Check if a local's inferred return type is the unconstrained `any` type.
+    pub fn is_any_return_type(&self, local_id: LocalId) -> bool {
+        self.any_return_type_locals.get(&local_id)
+            .map(|t| matches!(t, InferredType::Any))
+            .unwrap_or(false)
+    }
+
+    /// Get the inferred return type for a local, if known.
+    pub fn get_return_type(&self, local_id: LocalId) -> Option<InferredType> {
+        self.any_return_type_locals.get(&local_id).copied()
     }
 }
 

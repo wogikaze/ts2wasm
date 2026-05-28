@@ -368,6 +368,33 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(super) fn emit_string_trim(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $string_trim (param $receiver i32) (result i32)
+    (call $host_string_trim (local.get $receiver)))
+"#,
+        );
+    }
+
+    pub(super) fn emit_string_trim_start(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $string_trim_start (param $receiver i32) (result i32)
+    (call $host_string_trim_start (local.get $receiver)))
+"#,
+        );
+    }
+
+    pub(super) fn emit_string_trim_end(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $string_trim_end (param $receiver i32) (result i32)
+    (call $host_string_trim_end (local.get $receiver)))
+"#,
+        );
+    }
+
     pub(super) fn emit_string_normalize(&self, wat: &mut String) {
         wat.push_str(
             r#"
