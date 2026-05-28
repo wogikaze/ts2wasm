@@ -177,6 +177,21 @@ fn auto_diff_async_await_basic_async_return_ts() {
 }
 
 #[test]
+fn auto_diff_async_await_async_chain_ts() {
+    assert_fixture_matches_node("fixtures/async-await/async-chain.ts");
+}
+
+#[test]
+fn auto_diff_async_await_async_parallel_ts() {
+    assert_fixture_matches_node("fixtures/async-await/async-parallel.ts");
+}
+
+#[test]
+fn auto_diff_async_await_basic_generator_return_ts() {
+    assert_fixture_matches_node("fixtures/async-await/basic-generator-return.ts");
+}
+
+#[test]
 fn auto_diff_atcoder_abc451_d_concat_power2_ts() {
     assert_fixture_matches_node("fixtures/atcoder/abc451-d-concat-power2.ts");
 }

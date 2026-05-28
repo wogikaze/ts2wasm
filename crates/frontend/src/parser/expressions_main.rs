@@ -1349,7 +1349,8 @@ impl Parser {
         {
             self.advance();
             let fn_span = self.expect(TokenKind::Function)?;
-            self.function_expression(fn_span)
+            let expr = self.function_expression(fn_span)?;
+            return self.finish_call_member(expr, true);
         } else if let Some(new_span) = self.consume_span(TokenKind::New) {
             // new.target metaproperty
             if self.peek() == Some(&Token::Dot)

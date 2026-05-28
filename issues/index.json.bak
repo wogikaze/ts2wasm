@@ -1,0 +1,2367 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-05-23T07:58:50+00:00",
+  "counts": {
+    "open": 99,
+    "doing": 2,
+    "blocked": 0,
+    "done": 404,
+    "dropped": 0,
+    "total": 505
+  },
+  "issues": [
+    {
+      "id": "I-20260517-WE8P5A",
+      "path": "issues/I-20260517-WE8P5A.md",
+      "legacy_id": null,
+      "status": "doing",
+      "priority": "P1",
+      "labels": [
+        "area:runtime",
+        "type:feature",
+        "feature:eval"
+      ],
+      "title": "Implement eval and Function constructor support",
+      "summary": "Complete static AOT and audited host-lane eval/Function support; remaining work is canonical eval/function lowering and ",
+      "next": "Implement the next canonical `EvalFragmentPlan` / eval-code environment slice with focused Node pari",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "codex",
+      "updated": "2026-05-18T12:47:49+09:00"
+    },
+    {
+      "id": "I-20260519-ED58NX",
+      "path": "issues/I-20260519-ED58NX.md",
+      "legacy_id": null,
+      "status": "doing",
+      "priority": "P1",
+      "labels": [
+        "type:bug",
+        "area:runtime"
+      ],
+      "title": "Runtime: Array built-in runtime failures (782 test262 fails)",
+      "summary": "782 test262 built-ins/Array tests fail at runtime. Various Array.prototype methods need WAT fixes.",
+      "next": "Run cargo nextest run -p ts2wasm-cli --test node_diff array_* with focused fixtures",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "agent-kimi",
+      "updated": "2026-05-20T11:01:35+09:00"
+    },
+    {
+      "id": "I-20260514-67ZV8S",
+      "path": "issues/I-20260514-67ZV8S.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P0",
+      "labels": [
+        "area:semantics",
+        "feature:object-literal",
+        "false-done"
+      ],
+      "title": "Unsupported: object-literal edge case gaps in test262 (307 cases)",
+      "summary": "307 test262 cases fail on object literal edge cases — computed property names, shorthand, method definitions, spread, ge",
+      "next": "",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [
+        "I-20260515-2H5D4N",
+        "I-20260515-39H6A4",
+        "I-20260515-4AWCN5",
+        "I-20260515-4GJQJD",
+        "I-20260515-5S844G",
+        "I-20260515-62DRQF",
+        "I-20260515-85YHN2",
+        "I-20260515-88J6QD",
+        "I-20260515-8D4F29",
+        "I-20260515-8D8XW7",
+        "I-20260515-98AC9G",
+        "I-20260515-9PADYP",
+        "I-20260515-AG5KYF",
+        "I-20260515-BV8N4H",
+        "I-20260515-DSDV3G",
+        "I-20260515-GBSCDJ",
+        "I-20260515-GDKMCR",
+        "I-20260515-GN2SJC",
+        "I-20260515-J89946",
+        "I-20260515-K3M485",
+        "I-20260515-K3R3PX",
+        "I-20260515-KSGXVZ",
+        "I-20260515-MA5QEQ",
+        "I-20260515-MBG86R",
+        "I-20260515-MYWCB4",
+        "I-20260515-PD44JN",
+        "I-20260515-PGZTVK",
+        "I-20260515-PMTJTQ",
+        "I-20260515-QZXYMQ",
+        "I-20260515-RNH99E",
+        "I-20260515-RTSHVA",
+        "I-20260515-S29ZXS",
+        "I-20260515-SA2YJD",
+        "I-20260515-VDFX5Y",
+        "I-20260515-VVZG8F",
+        "I-20260515-VZ9A6C",
+        "I-20260515-WJASWA",
+        "I-20260515-ZQTE47",
+        "I-20260515-ZQXCAC"
+      ],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-15T15:00:00+09:00"
+    },
+    {
+      "id": "I-20260517-AW9JQT",
+      "path": "issues/I-20260517-AW9JQT.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P0",
+      "labels": [
+        "area:runtime",
+        "type:feature",
+        "feature:test262"
+      ],
+      "title": "UnsupportedSyntax: implement missing syntax/feature support (11489 cases)",
+      "summary": "Implement syntax/feature support for 11489 test262 cases currently classified as UnsupportedSyntax",
+      "next": "Analyze top UnsupportedSyntax patterns and implement most common ones",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-17T09:03:25+09:00"
+    },
+    {
+      "id": "I-20260517-9HDRYE",
+      "path": "issues/I-20260517-9HDRYE.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P0",
+      "labels": [
+        "area:runtime",
+        "type:feature",
+        "feature:test262"
+      ],
+      "title": "UnresolvedName: resolve compile-time names in test262 full run (3489 cases)",
+      "summary": "Full 2026-05-23 test262 coverage still reports 3489 unresolved-name cases across harness globals, builtins, and feature-",
+      "next": "Map the top unresolved names from the latest JSONL run to concrete resolver/runtime owners, starting",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-23T16:43:35+09:00"
+    },
+    {
+      "id": "I-20260517-5Y2EES",
+      "path": "issues/I-20260517-5Y2EES.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P0",
+      "labels": [
+        "area:frontend",
+        "type:feature"
+      ],
+      "title": "SyntaxError: handle ECMAScript syntax error cases (5783 cases)",
+      "summary": "Full 2026-05-23 test262 coverage still reports 5783 parser/lexer SyntaxError cases, led by template literal and private ",
+      "next": "Split remaining SyntaxError cases by template-literal, private-identifier, and await/module validati",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-23T16:43:35+09:00"
+    },
+    {
+      "id": "I-20260517-R4QWD4",
+      "path": "issues/I-20260517-R4QWD4.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P0",
+      "labels": [
+        "area:runtime",
+        "type:bug"
+      ],
+      "title": "Runtime execution failures: fix wasm runtime crashes (14756 cases)",
+      "summary": "Fix 14756 test262 wasm runtime crashes (RuntimeError in lang expressions, statements, Array, Object, etc.)",
+      "next": "Diagnose top crash areas: language/expressions(2669), language/statements(2155), built-ins/Array(203",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-17T09:03:42+09:00"
+    },
+    {
+      "id": "I-20260517-XVH75P",
+      "path": "issues/I-20260517-XVH75P.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P0",
+      "labels": [
+        "area:runtime",
+        "type:bug"
+      ],
+      "title": "Semantic mismatches: fix incorrect wasm output (4115 cases)",
+      "summary": "Fix 4115 test262 semantic mismatches: wasm builds but iwasm output != Node reference",
+      "next": "Analyze top mismatch areas and fix most regressing patterns first",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-17T09:03:49+09:00"
+    },
+    {
+      "id": "I-20260519-2J5MN8",
+      "path": "issues/I-20260519-2J5MN8.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P0",
+      "labels": [
+        "type:feature",
+        "area:runtime"
+      ],
+      "title": "Unsupported: feature-unsupported (12667) and builtin-api (2431) test262 gaps",
+      "summary": "15100 test262 unsupported cases: feature-unsupported(12667) missing language features, builtin-api(2431) unimplemented A",
+      "next": "Prioritize top unsupported features by impact on semantic_pass rate",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-19T21:35:14+09:00"
+    },
+    {
+      "id": "I-20260521-3VBR92",
+      "path": "issues/I-20260521-3VBR92.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P0",
+      "labels": [
+        "goal:bun",
+        "type:refactor",
+        "area:ir",
+        "area:types"
+      ],
+      "title": "MIR ValueRep RepProof 導入",
+      "summary": "Number/String/Boolean/Unknownより細かい実行表現と安全性根拠をMIRに持たせる。",
+      "next": "Replace coarse InferredType with ValueRep plus proof strength.",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [
+        "I-20260521-7CKQ5A",
+        "I-20260521-H7X5SW",
+        "I-20260521-V7K2HP",
+        "I-20260521-X5H3DN"
+      ],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-22T03:30:00+09:00"
+    },
+    {
+      "id": "I-20260521-5ZS8WM",
+      "path": "issues/I-20260521-5ZS8WM.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P0",
+      "labels": [
+        "goal:bun",
+        "type:perf",
+        "area:wasm",
+        "area:profiler"
+      ],
+      "title": "runtime helper cost profiler WAT hot-path report",
+      "summary": "生成Wasm hot pathのruntime helper call計数、Bun差原因可視化。",
+      "next": "WAT/helper profiler + baseline for current AddFast/SubFast.",
+      "depends_on": [
+        "I-20260521-9QF7NJ"
+      ],
+      "blocked_by": [
+        "I-20260521-9QF7NJ"
+      ],
+      "blocks": [
+        "I-20260521-F2Z7KP"
+      ],
+      "ready": false,
+      "owner": "",
+      "updated": "2026-05-22T03:30:00+09:00"
+    },
+    {
+      "id": "I-20260521-6TXP3V",
+      "path": "issues/I-20260521-6TXP3V.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P0",
+      "labels": [
+        "goal:bun",
+        "type:perf",
+        "area:fixtures",
+        "area:benchmark"
+      ],
+      "title": "Bun victory fixture corpus",
+      "summary": "Bun標的を数値/TA/direct call/local shape固定fixture群定義。",
+      "next": "Add tiered corpus with golden outputs and per-fixture intent.",
+      "depends_on": [
+        "I-20260521-R4M8K2"
+      ],
+      "blocked_by": [
+        "I-20260521-R4M8K2"
+      ],
+      "blocks": [
+        "I-20260521-G8N4RY",
+        "I-20260521-Q8S6XT"
+      ],
+      "ready": false,
+      "owner": "",
+      "updated": "2026-05-22T03:30:00+09:00"
+    },
+    {
+      "id": "I-20260521-7CKQ5A",
+      "path": "issues/I-20260521-7CKQ5A.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P0",
+      "labels": [
+        "goal:bun",
+        "type:semantics",
+        "area:types",
+        "area:ir"
+      ],
+      "title": "TS annotation raw化単独根拠禁止 policy",
+      "summary": "型注釈は実行時に消える。外部境界ではguardなしraw化禁止。",
+      "next": "Add proof-strength rules for erased TS types, any, exports, dynamic.",
+      "depends_on": [
+        "I-20260521-3VBR92"
+      ],
+      "blocked_by": [
+        "I-20260521-3VBR92"
+      ],
+      "blocks": [
+        "I-20260521-MW8P6R"
+      ],
+      "ready": false,
+      "owner": "",
+      "updated": "2026-05-22T03:30:00+09:00"
+    },
+    {
+      "id": "I-20260521-9QF7NJ",
+      "path": "issues/I-20260521-9QF7NJ.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P0",
+      "labels": [
+        "goal:bun",
+        "type:perf",
+        "area:benchmark",
+        "area:ci"
+      ],
+      "title": "execute-only/compile-only/build-run分離測定",
+      "summary": "Bun比較で起動/コンパイル/実行を混ぜずモード別記録。",
+      "next": "Extend harness with explicit phase timing and mode-specific reports.",
+      "depends_on": [
+        "I-20260521-R4M8K2"
+      ],
+      "blocked_by": [
+        "I-20260521-R4M8K2"
+      ],
+      "blocks": [
+        "I-20260521-5ZS8WM",
+        "I-20260521-Q8S6XT"
+      ],
+      "ready": false,
+      "owner": "",
+      "updated": "2026-05-22T03:30:00+09:00"
+    },
+    {
+      "id": "I-20260521-A9R5QW",
+      "path": "issues/I-20260521-A9R5QW.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P0",
+      "labels": [
+        "goal:bun",
+        "type:perf",
+        "area:typedarray",
+        "area:wasm"
+      ],
+      "title": "TypedArray indexed load/store -> raw memory op",
+      "summary": "証明済みTA index read/writeをruntime lookup→i32/f64 load/store。",
+      "next": "Direct Wasm memory ops for safe TypedArrayView access.",
+      "depends_on": [
+        "I-20260521-V7K2HP",
+        "I-20260521-X5H3DN"
+      ],
+      "blocked_by": [
+        "I-20260521-V7K2HP",
+        "I-20260521-X5H3DN"
+      ],
+      "blocks": [
+        "I-20260521-S9W4JX",
+        "I-20260521-W3M6CZ"
+      ],
+      "ready": false,
+      "owner": "",
+      "updated": "2026-05-22T03:30:00+09:00"
+    },
+    {
+      "id": "I-20260521-BN2WAS",
+      "path": "issues/I-20260521-BN2WAS.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P0",
+      "labels": [
+        "goal:bun",
+        "type:epic",
+        "area:perf",
+        "area:wasm",
+        "area:ir"
+      ],
+      "title": "Epic: Bun 勝つ ts2wasm raw execution lane",
+      "summary": "JS互換 slow path と raw Wasm fast path を両立する勝利条件と全体計画を固定する。",
+      "next": "Create benchmark baselines, implement raw value lanes, guard/bailout, typed data, final gates.",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-22T03:30:00+09:00"
+    },
+    {
+      "id": "I-20260521-G8N4RY",
+      "path": "issues/I-20260521-G8N4RY.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P0",
+      "labels": [
+        "goal:bun",
+        "type:perf",
+        "area:ci",
+        "area:typedarray"
+      ],
+      "title": "TA kernel Bun execute-only victory gate",
+      "summary": "TA fixture群Bun比0.80以下をCI gate、メモリ系勝利固定。",
+      "next": "Add TA Bun-victory CI report and threshold enforcement.",
+      "depends_on": [
+        "I-20260521-D5T9KV",
+        "I-20260521-6TXP3V"
+      ],
+      "blocked_by": [
+        "I-20260521-D5T9KV",
+        "I-20260521-6TXP3V"
+      ],
+      "blocks": [
+        "I-20260521-J8Q2RD",
+        "I-20260521-P5C7YA"
+      ],
+      "ready": false,
+      "owner": "",
+      "updated": "2026-05-22T03:30:00+09:00"
+    },
+    {
+      "id": "I-20260521-J8Q2RD",
+      "path": "issues/I-20260521-J8Q2RD.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P0",
+      "labels": [
+        "goal:bun",
+        "type:perf",
+        "area:ci",
+        "area:release"
+      ],
+      "title": "Final Bun victory release gate + perf budget",
+      "summary": "数値/TA/direct call/WASI CLI勝利条件満たすまでrelease通さない最終gate。",
+      "next": "Wire all victory reports into final CI/release gate with budgets.",
+      "depends_on": [
+        "I-20260521-Q8S6XT",
+        "I-20260521-G8N4RY",
+        "I-20260521-E6N8QZ",
+        "I-20260521-P5C7YA",
+        "I-20260521-F2Z7KP"
+      ],
+      "blocked_by": [
+        "I-20260521-Q8S6XT",
+        "I-20260521-G8N4RY",
+        "I-20260521-E6N8QZ",
+        "I-20260521-P5C7YA",
+        "I-20260521-F2Z7KP"
+      ],
+      "blocks": [],
+      "ready": false,
+      "owner": "",
+      "updated": "2026-05-22T03:30:00+09:00"
+    },
+    {
+      "id": "I-20260521-K9VA2S",
+      "path": "issues/I-20260521-K9VA2S.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P0",
+      "labels": [
+        "goal:bun",
+        "type:semantics",
+        "area:runtime",
+        "area:wasm"
+      ],
+      "title": "guard + slow path bailout lowering",
+      "summary": "raw fast path前提破綻時、JS互換slow pathへ安全fallback。",
+      "next": "Lower runtime guards and slow-path continuations for raw lanes.",
+      "depends_on": [
+        "I-20260521-MW8P6R",
+        "I-20260521-X5H3DN"
+      ],
+      "blocked_by": [
+        "I-20260521-MW8P6R",
+        "I-20260521-X5H3DN"
+      ],
+      "blocks": [
+        "I-20260521-F2Z7KP",
+        "I-20260521-H7X5SW",
+        "I-20260521-NP4T8Y",
+        "I-20260521-P5C7YA"
+      ],
+      "ready": false,
+      "owner": "",
+      "updated": "2026-05-22T03:30:00+09:00"
+    },
+    {
+      "id": "I-20260521-MW8P6R",
+      "path": "issues/I-20260521-MW8P6R.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P0",
+      "labels": [
+        "goal:bun",
+        "type:refactor",
+        "area:abi",
+        "area:wasm"
+      ],
+      "title": "JsVal ABI Raw ABI 分離",
+      "summary": "外部ABIはJsVal、内部hot pathはRawI32/RawF64/BoolI32 ABI。",
+      "next": "Introduce bridge wrappers and internal raw function signatures.",
+      "depends_on": [
+        "I-20260521-7CKQ5A"
+      ],
+      "blocked_by": [
+        "I-20260521-7CKQ5A"
+      ],
+      "blocks": [
+        "I-20260521-C6Y2MN",
+        "I-20260521-K9VA2S"
+      ],
+      "ready": false,
+      "owner": "",
+      "updated": "2026-05-22T03:30:00+09:00"
+    },
+    {
+      "id": "I-20260521-NP4T8Y",
+      "path": "issues/I-20260521-NP4T8Y.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P0",
+      "labels": [
+        "goal:bun",
+        "type:perf",
+        "area:wasm",
+        "area:numeric"
+      ],
+      "title": "proven numeric arithmetic -> i32/f64",
+      "summary": "証明済み数値演算を$add/$subではなくi32/f64命令へ直接lowering。",
+      "next": "Direct Wasm arithmetic emission for RawI32/SmiI32/RawF64.",
+      "depends_on": [
+        "I-20260521-X5H3DN",
+        "I-20260521-K9VA2S"
+      ],
+      "blocked_by": [
+        "I-20260521-X5H3DN",
+        "I-20260521-K9VA2S"
+      ],
+      "blocks": [
+        "I-20260521-S9W4JX",
+        "I-20260521-Y6GQ3B"
+      ],
+      "ready": false,
+      "owner": "",
+      "updated": "2026-05-22T03:30:00+09:00"
+    },
+    {
+      "id": "I-20260521-P5C7YA",
+      "path": "issues/I-20260521-P5C7YA.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P0",
+      "labels": [
+        "goal:bun",
+        "type:semantics",
+        "area:ci",
+        "area:differential"
+      ],
+      "title": "raw lane semantic differential gate",
+      "summary": "Bun勝利最適化がJS互換壊さないようraw化前後+Bun/Node差分常時検査。",
+      "next": "Semantic differential tests for all raw lane victory fixtures + bailout cases.",
+      "depends_on": [
+        "I-20260521-K9VA2S",
+        "I-20260521-Q8S6XT",
+        "I-20260521-G8N4RY"
+      ],
+      "blocked_by": [
+        "I-20260521-K9VA2S",
+        "I-20260521-Q8S6XT",
+        "I-20260521-G8N4RY"
+      ],
+      "blocks": [
+        "I-20260521-J8Q2RD"
+      ],
+      "ready": false,
+      "owner": "",
+      "updated": "2026-05-22T03:30:00+09:00"
+    },
+    {
+      "id": "I-20260521-Q8S6XT",
+      "path": "issues/I-20260521-Q8S6XT.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P0",
+      "labels": [
+        "goal:bun",
+        "type:perf",
+        "area:ci",
+        "area:numeric"
+      ],
+      "title": "numeric kernel Bun execute-only victory gate",
+      "summary": "数値fixture群Bun比0.80以下をCI gate、raw lane勝利固定。",
+      "next": "Add numeric Bun-victory CI report and threshold enforcement.",
+      "depends_on": [
+        "I-20260521-2JMV7P",
+        "I-20260521-6TXP3V",
+        "I-20260521-9QF7NJ"
+      ],
+      "blocked_by": [
+        "I-20260521-2JMV7P",
+        "I-20260521-6TXP3V",
+        "I-20260521-9QF7NJ"
+      ],
+      "blocks": [
+        "I-20260521-J8Q2RD",
+        "I-20260521-P5C7YA"
+      ],
+      "ready": false,
+      "owner": "",
+      "updated": "2026-05-22T03:30:00+09:00"
+    },
+    {
+      "id": "I-20260521-R4M8K2",
+      "path": "issues/I-20260521-R4M8K2.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P0",
+      "labels": [
+        "goal:bun",
+        "type:perf",
+        "area:benchmark",
+        "area:cli"
+      ],
+      "title": "Bun parity benchmark harness",
+      "summary": "Bun/Node/ts2wasm runners同一fixture・入力・出力検証で比較harness。",
+      "next": "Implement scripts/perf/bun_parity.py and record baseline.",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [
+        "I-20260521-6TXP3V",
+        "I-20260521-9QF7NJ",
+        "I-20260521-E6N8QZ"
+      ],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-22T03:30:00+09:00"
+    },
+    {
+      "id": "I-20260521-V7K2HP",
+      "path": "issues/I-20260521-V7K2HP.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P0",
+      "labels": [
+        "goal:bun",
+        "type:refactor",
+        "area:typedarray",
+        "area:ir"
+      ],
+      "title": "TypedArrayView ValueRep memory layout model",
+      "summary": "TypedArrayをgeneric object→elem kind/base/length raw view。",
+      "next": "Represent TA views in MIR with elem kind, byte offset, buffer, length proof.",
+      "depends_on": [
+        "I-20260521-3VBR92"
+      ],
+      "blocked_by": [
+        "I-20260521-3VBR92"
+      ],
+      "blocks": [
+        "I-20260521-A9R5QW"
+      ],
+      "ready": false,
+      "owner": "",
+      "updated": "2026-05-22T03:30:00+09:00"
+    },
+    {
+      "id": "I-20260521-X5H3DN",
+      "path": "issues/I-20260521-X5H3DN.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P0",
+      "labels": [
+        "goal:bun",
+        "type:refactor",
+        "area:backend",
+        "area:wasm"
+      ],
+      "title": "backend raw locals/temps allocation",
+      "summary": "ループ内値を再タグ化せずi32/f64 local保持できるbackend経路。",
+      "next": "Teach Wasm backend to allocate typed locals and temps for ValueRep lanes.",
+      "depends_on": [
+        "I-20260521-3VBR92"
+      ],
+      "blocked_by": [
+        "I-20260521-3VBR92"
+      ],
+      "blocks": [
+        "I-20260521-A9R5QW",
+        "I-20260521-C6Y2MN",
+        "I-20260521-K9VA2S",
+        "I-20260521-NP4T8Y"
+      ],
+      "ready": false,
+      "owner": "",
+      "updated": "2026-05-22T03:30:00+09:00"
+    },
+    {
+      "id": "I-20260521-Y6GQ3B",
+      "path": "issues/I-20260521-Y6GQ3B.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P0",
+      "labels": [
+        "goal:bun",
+        "type:perf",
+        "area:ir",
+        "area:numeric"
+      ],
+      "title": "for-loop induction variable range analysis -> raw i32",
+      "summary": "forカウンタ・添字・境界を証明、タグ付き値をループから排除。",
+      "next": "IV recognition, range proofs, loop-carried raw values.",
+      "depends_on": [
+        "I-20260521-NP4T8Y"
+      ],
+      "blocked_by": [
+        "I-20260521-NP4T8Y"
+      ],
+      "blocks": [
+        "I-20260521-2JMV7P",
+        "I-20260521-W3M6CZ"
+      ],
+      "ready": false,
+      "owner": "",
+      "updated": "2026-05-22T03:30:00+09:00"
+    },
+    {
+      "id": "I-20260523-N8EPC2",
+      "path": "issues/I-20260523-N8EPC2.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P0",
+      "labels": [
+        "area:backend-wasm",
+        "area:coverage",
+        "type:epic",
+        "feature:test262"
+      ],
+      "title": "Native LoweredProgram emitter test262 unsupported epic",
+      "summary": "Track 26551 test262 UnsupportedSyntax cases that now stop in the native LoweredProgram wasm emitter.",
+      "next": "Burn down the native emitter reason buckets through the linked backend-wasm implementation slices.",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-23T16:40:27+09:00"
+    },
+    {
+      "id": "I-20260523-N8EXPR",
+      "path": "issues/I-20260523-N8EXPR.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P0",
+      "labels": [
+        "area:backend-wasm",
+        "type:feature",
+        "feature:test262"
+      ],
+      "title": "Native emitter general expression support",
+      "summary": "Split and implement the native LoweredProgram expression catch-all covering 5216 test262 unsupported cases.",
+      "next": "Replace the generic expression catch-all with concrete native expression emitters or narrower diagno",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-23T16:40:27+09:00"
+    },
+    {
+      "id": "I-20260523-N8PGET",
+      "path": "issues/I-20260523-N8PGET.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P0",
+      "labels": [
+        "area:backend-wasm",
+        "type:feature",
+        "feature:test262"
+      ],
+      "title": "Native emitter property get support",
+      "summary": "Implement native LoweredProgram emission for property get forms covering 1657 test262 unsupported cases.",
+      "next": "Emit supported static, dynamic, and optional property reads directly as wasm bytes.",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-23T16:40:27+09:00"
+    },
+    {
+      "id": "I-20260523-N8PSET",
+      "path": "issues/I-20260523-N8PSET.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P0",
+      "labels": [
+        "area:backend-wasm",
+        "type:feature",
+        "feature:test262"
+      ],
+      "title": "Native emitter property set support",
+      "summary": "Implement native LoweredProgram emission for property set forms covering 14267 test262 unsupported cases.",
+      "next": "Add wasm-byte emission for supported property assignment shapes and keep unsupported shapes precisel",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-23T16:40:27+09:00"
+    },
+    {
+      "id": "I-20260523-N8UNRY",
+      "path": "issues/I-20260523-N8UNRY.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P0",
+      "labels": [
+        "area:backend-wasm",
+        "type:feature",
+        "feature:test262"
+      ],
+      "title": "Native emitter unary operator support",
+      "summary": "Implement native LoweredProgram emission for unary operators covering 5110 test262 unsupported cases.",
+      "next": "Map supported lowered unary operators to WasmModule instructions or existing runtime helpers.",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-23T16:40:27+09:00"
+    },
+    {
+      "id": "I-20260523-M4Q7RB",
+      "path": "issues/I-20260523-M4Q7RB.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P0",
+      "labels": [
+        "type:feature",
+        "area:ir",
+        "area:runtime",
+        "feature:test262"
+      ],
+      "title": "UnsupportedSyntax: retire non-native IR/runtime feature guards (11173 cases)",
+      "summary": "Full 2026-05-23 test262 coverage still has 11173 UnsupportedSyntax/feature-unsupported cases that are not native emitter",
+      "next": "Split the top non-native guard families into executable slices and retire the biggest bucket first, ",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-23T16:43:35+09:00"
+    },
+    {
+      "id": "I-20260517-3J9MWC",
+      "path": "issues/I-20260517-3J9MWC.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P1",
+      "labels": [
+        "area:frontend",
+        "type:feature"
+      ],
+      "title": "UnsupportedModule: implement module import/export coverage gaps (359 cases)",
+      "summary": "Full 2026-05-23 test262 coverage still reports 359 import/export failures around non-local specifiers, fixture resolutio",
+      "next": "Retire the `issue-232` module loader gaps by fixing non-local specifier rejection, local fixture res",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-23T16:43:35+09:00"
+    },
+    {
+      "id": "I-20260517-A7M789",
+      "path": "issues/I-20260517-A7M789.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P1",
+      "labels": [
+        "area:runtime",
+        "type:feature"
+      ],
+      "title": "UnresolvedFunction: resolve callable references in test262 full run (585 cases)",
+      "summary": "Full 2026-05-23 test262 coverage still reports 585 unresolved-function cases for builtins, harness helpers, and module-l",
+      "next": "Close the top callable-resolution families first: Object, eval, RegExp, verifyProperty, and __ts2was",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-23T16:43:35+09:00"
+    },
+    {
+      "id": "I-20260518-8KG9D3",
+      "path": "issues/I-20260518-8KG9D3.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P1",
+      "labels": [
+        "type:bug",
+        "area:runtime"
+      ],
+      "title": "Runtime: Promise built-in runtime failures (352 test262 fails)",
+      "summary": "352 test262 built-ins/Promise tests fail at runtime. Promise.prototype.then/catch/finally and Promise static methods nee",
+      "next": "Fix Promise constructor executor calling and input validation in static methods",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-18T23:58:59+09:00"
+    },
+    {
+      "id": "I-20260518-5WTEA5",
+      "path": "issues/I-20260518-5WTEA5.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P1",
+      "labels": [
+        "type:bug",
+        "area:runtime"
+      ],
+      "title": "Runtime: JSON built-in runtime failures (55 test262 fails)",
+      "summary": "55 test262 built-ins/JSON tests fail at runtime. JSON.parse/stringify and JSON static methods need WAT fixes.",
+      "next": "Triage JSON failure patterns and create node_diff fixtures",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-18T23:59:28+09:00"
+    },
+    {
+      "id": "I-20260518-N39XFG",
+      "path": "issues/I-20260518-N39XFG.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P1",
+      "labels": [
+        "type:bug",
+        "area:runtime"
+      ],
+      "title": "Runtime: Function built-in runtime failures (56 test262 fails)",
+      "summary": "56 test262 built-ins/Function tests fail at runtime. Function.prototype.call/bind/apply and constructor need WAT fixes.",
+      "next": "Triage Function failure patterns and create node_diff fixtures",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-18T23:59:28+09:00"
+    },
+    {
+      "id": "I-20260519-MPWCHA",
+      "path": "issues/I-20260519-MPWCHA.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P1",
+      "labels": [
+        "type:bug",
+        "area:runtime"
+      ],
+      "title": "Runtime: TypedArray constructors runtime failures (69 test262 fails)",
+      "summary": "69 test262 built-ins/TypedArrayConstructors tests fail at runtime. Int8Array/Uint8Array/etc constructors need WAT runtim",
+      "next": "Triage TypedArray failure patterns and create node_diff fixtures",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-19T00:20:54+09:00"
+    },
+    {
+      "id": "I-20260519-EVSXRY",
+      "path": "issues/I-20260519-EVSXRY.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P1",
+      "labels": [
+        "type:feature",
+        "area:frontend",
+        "area:ir",
+        "area:runtime"
+      ],
+      "title": "Feature: Private class fields and methods not supported (1449 test262 cases)",
+      "summary": "",
+      "next": "Start with parser: support PrivateIdentifier in property contexts, then IR lowering for private fiel",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-19T00:24:59+09:00"
+    },
+    {
+      "id": "I-20260519-VCSBRP",
+      "path": "issues/I-20260519-VCSBRP.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P1",
+      "labels": [
+        "type:feature",
+        "area:ir",
+        "area:runtime"
+      ],
+      "title": "Feature: dynamic/default/static import guards still block 448 test262 cases",
+      "summary": "The 2026-05-23 full run still reports 255 dynamic-import plus 98 default-import and 95 static-import guard failures outs",
+      "next": "Remove the remaining import guards by wiring module loading semantics through resolver, lowering, an",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-23T16:43:35+09:00"
+    },
+    {
+      "id": "I-20260519-NKAK6P",
+      "path": "issues/I-20260519-NKAK6P.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P1",
+      "labels": [
+        "type:feature",
+        "area:infra",
+        "suite:tsc",
+        "suite:tsgo"
+      ],
+      "title": "Feature: tsc/tsgo semantic coverage via TypeScript->JS transpile oracle",
+      "summary": "tsc/tsgo reference coverage runs --no-semantic (semantic_pass=0). Add TypeScript transpile oracle for Node output compar",
+      "next": "Run mise run reference-coverage -- tsc --sample 50 --semantic fast --no-dashboard-data to verify sem",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-19T18:30:01+09:00"
+    },
+    {
+      "id": "I-20260519-3GVV9T",
+      "path": "issues/I-20260519-3GVV9T.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P1",
+      "labels": [
+        "type:bug",
+        "area:runtime"
+      ],
+      "title": "Runtime: DataView/ArrayBuffer/SharedArrayBuffer runtime failures (292 combined)",
+      "summary": "292 test262 fails: DataView(156)+ArrayBuffer(95)+SharedArrayBuffer(41). Binary data access methods need WAT fixes.",
+      "next": "Triage binary data type failure patterns",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-19T21:34:27+09:00"
+    },
+    {
+      "id": "I-20260519-B3JKVF",
+      "path": "issues/I-20260519-B3JKVF.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P1",
+      "labels": [
+        "type:bug",
+        "area:runtime"
+      ],
+      "title": "Runtime: Set/Map/WeakMap/WeakSet runtime failures (328 combined)",
+      "summary": "328 test262 fails: Set(157)+Map(72)+WeakMap(50)+WeakSet(49). Collection prototype methods need WAT fixes.",
+      "next": "Triage collection failure patterns",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-19T21:34:27+09:00"
+    },
+    {
+      "id": "I-20260519-WQ55DC",
+      "path": "issues/I-20260519-WQ55DC.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P1",
+      "labels": [
+        "type:bug",
+        "area:runtime"
+      ],
+      "title": "Runtime: Object built-in runtime failures (1440 test262 fails)",
+      "summary": "1440 test262 built-ins/Object tests fail at runtime. Object.prototype/static methods need WAT fixes.",
+      "next": "Triage Object failure patterns and create node_diff fixtures",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-19T21:34:27+09:00"
+    },
+    {
+      "id": "I-20260519-XR7WBX",
+      "path": "issues/I-20260519-XR7WBX.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P1",
+      "labels": [
+        "type:bug",
+        "area:runtime"
+      ],
+      "title": "Runtime: String/RegExp/Promise built-in runtime failures (1015 combined)",
+      "summary": "1015 test262 fails: String(309)+RegExp(365)+Promise(341). Prototype methods need WAT runtime fixes.",
+      "next": "Triage String/RegExp/Promise failure patterns",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-19T21:34:27+09:00"
+    },
+    {
+      "id": "I-20260519-N58FRJ",
+      "path": "issues/I-20260519-N58FRJ.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P1",
+      "labels": [
+        "type:bug",
+        "area:runtime"
+      ],
+      "title": "Runtime: parseInt/Temporal runtime failures (284 combined)",
+      "summary": "284 test262 fails: Temporal(251)+parseInt(33). Temporal API and global parseInt need WAT fixes.",
+      "next": "Triage Temporal/parseInt failure patterns",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-19T21:35:14+09:00"
+    },
+    {
+      "id": "I-20260521-9PZ4FQ",
+      "path": "issues/I-20260521-9PZ4FQ.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P1",
+      "labels": [
+        "area:ci",
+        "type:perf",
+        "type:ux",
+        "feature:test262",
+        "feature:coverage"
+      ],
+      "title": "test262 sampled coverage を気軽に回せる速度と UX にする",
+      "summary": "Current --sample profile still selects 8.7K cases and takes 3m42s; add a predictable daily command/profile and remove sa",
+      "next": "Fix sampled-run evidence/seed handling, add a predictable small daily profile, then reduce sampled s",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-21T15:31:32+09:00"
+    },
+    {
+      "id": "I-20260521-2JMV7P",
+      "path": "issues/I-20260521-2JMV7P.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P1",
+      "labels": [
+        "goal:bun",
+        "type:perf",
+        "area:wasm",
+        "area:numeric"
+      ],
+      "title": "numeric comparison/branch/bitwise raw lowering",
+      "summary": "比較結果をBool箱詰めせず制御フローbitwiseをi32命令化。",
+      "next": "Lower proven comparisons, branches, bitwise without JsVal.",
+      "depends_on": [
+        "I-20260521-Y6GQ3B"
+      ],
+      "blocked_by": [
+        "I-20260521-Y6GQ3B"
+      ],
+      "blocks": [
+        "I-20260521-Q8S6XT"
+      ],
+      "ready": false,
+      "owner": "",
+      "updated": "2026-05-22T03:30:00+09:00"
+    },
+    {
+      "id": "I-20260521-C6Y2MN",
+      "path": "issues/I-20260521-C6Y2MN.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P1",
+      "labels": [
+        "goal:bun",
+        "type:perf",
+        "area:abi",
+        "area:functions"
+      ],
+      "title": "direct function call raw ABI specialization",
+      "summary": "単相direct callをraw引数raw戻り値で呼びcall境界boxing消去。",
+      "next": "Monomorphic direct calls to raw ABI clones.",
+      "depends_on": [
+        "I-20260521-MW8P6R",
+        "I-20260521-X5H3DN"
+      ],
+      "blocked_by": [
+        "I-20260521-MW8P6R",
+        "I-20260521-X5H3DN"
+      ],
+      "blocks": [
+        "I-20260521-Z4P8QA"
+      ],
+      "ready": false,
+      "owner": "",
+      "updated": "2026-05-22T03:30:00+09:00"
+    },
+    {
+      "id": "I-20260521-D5T9KV",
+      "path": "issues/I-20260521-D5T9KV.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P1",
+      "labels": [
+        "goal:bun",
+        "type:perf",
+        "area:typedarray",
+        "area:wasm"
+      ],
+      "title": "TA fill/copy/memset/memcpy SIMD candidate",
+      "summary": "fill/copyWithin/set→byte操作やSIMD候補へ、メモリ帯域勝利。",
+      "next": "Specialize bulk TA ops, prepare feature-gated SIMD paths.",
+      "depends_on": [
+        "I-20260521-W3M6CZ"
+      ],
+      "blocked_by": [
+        "I-20260521-W3M6CZ"
+      ],
+      "blocks": [
+        "I-20260521-G8N4RY"
+      ],
+      "ready": false,
+      "owner": "",
+      "updated": "2026-05-22T03:30:00+09:00"
+    },
+    {
+      "id": "I-20260521-E6N8QZ",
+      "path": "issues/I-20260521-E6N8QZ.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P1",
+      "labels": [
+        "goal:bun",
+        "type:perf",
+        "area:runner",
+        "area:wasi"
+      ],
+      "title": "Wasmtime AOT precompiled module cache runner",
+      "summary": "execute-only勝利のためWasm compile/startup分離、AOT artifact再利用。",
+      "next": "Precompiled Wasmtime runner + cache-aware benchmark mode.",
+      "depends_on": [
+        "I-20260521-R4M8K2",
+        "I-20260521-S9W4JX"
+      ],
+      "blocked_by": [
+        "I-20260521-R4M8K2",
+        "I-20260521-S9W4JX"
+      ],
+      "blocks": [
+        "I-20260521-J8Q2RD"
+      ],
+      "ready": false,
+      "owner": "",
+      "updated": "2026-05-22T03:30:00+09:00"
+    },
+    {
+      "id": "I-20260521-H7X5SW",
+      "path": "issues/I-20260521-H7X5SW.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P1",
+      "labels": [
+        "goal:bun",
+        "type:perf",
+        "area:object",
+        "area:ir"
+      ],
+      "title": "local object literal shape load/store specialization",
+      "summary": "閉じたobject literal property accessをshape+offset load/store化。",
+      "next": "Specialize local monomorphic object shapes with JS-compatible fallback.",
+      "depends_on": [
+        "I-20260521-3VBR92",
+        "I-20260521-K9VA2S"
+      ],
+      "blocked_by": [
+        "I-20260521-3VBR92",
+        "I-20260521-K9VA2S"
+      ],
+      "blocks": [
+        "I-20260521-T3R9VB"
+      ],
+      "ready": false,
+      "owner": "",
+      "updated": "2026-05-22T03:30:00+09:00"
+    },
+    {
+      "id": "I-20260521-S9W4JX",
+      "path": "issues/I-20260521-S9W4JX.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P1",
+      "labels": [
+        "goal:bun",
+        "type:perf",
+        "area:wasm",
+        "area:toolchain"
+      ],
+      "title": "Binaryen wasm-opt integration + WAT helper denylist gate",
+      "summary": "wasm-optで不要コード削除、hot path helper退行をCI抑止。",
+      "next": "Integrate wasm-opt pipeline, enforce denylist for victory fixtures.",
+      "depends_on": [
+        "I-20260521-NP4T8Y",
+        "I-20260521-A9R5QW"
+      ],
+      "blocked_by": [
+        "I-20260521-NP4T8Y",
+        "I-20260521-A9R5QW"
+      ],
+      "blocks": [
+        "I-20260521-E6N8QZ"
+      ],
+      "ready": false,
+      "owner": "",
+      "updated": "2026-05-22T03:30:00+09:00"
+    },
+    {
+      "id": "I-20260521-T3R9VB",
+      "path": "issues/I-20260521-T3R9VB.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P1",
+      "labels": [
+        "goal:bun",
+        "type:perf",
+        "area:object",
+        "area:ir"
+      ],
+      "title": "escape analysis scalar replacement",
+      "summary": "escapeしない小objectをlocal field群に分解、allocation+access消去。",
+      "next": "Replace non-escaping object allocations with raw scalar locals.",
+      "depends_on": [
+        "I-20260521-H7X5SW"
+      ],
+      "blocked_by": [
+        "I-20260521-H7X5SW"
+      ],
+      "blocks": [],
+      "ready": false,
+      "owner": "",
+      "updated": "2026-05-22T03:30:00+09:00"
+    },
+    {
+      "id": "I-20260521-W3M6CZ",
+      "path": "issues/I-20260521-W3M6CZ.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P1",
+      "labels": [
+        "goal:bun",
+        "type:perf",
+        "area:typedarray",
+        "area:ir"
+      ],
+      "title": "TA loop bounds check hoisting",
+      "summary": "ループ範囲証明でindex bounds checkを内側→外へ移しhot loop細く。",
+      "next": "Hoist TA bounds checks out of loops when IV ranges prove safety.",
+      "depends_on": [
+        "I-20260521-A9R5QW",
+        "I-20260521-Y6GQ3B"
+      ],
+      "blocked_by": [
+        "I-20260521-A9R5QW",
+        "I-20260521-Y6GQ3B"
+      ],
+      "blocks": [
+        "I-20260521-D5T9KV"
+      ],
+      "ready": false,
+      "owner": "",
+      "updated": "2026-05-22T03:30:00+09:00"
+    },
+    {
+      "id": "I-20260521-Z4P8QA",
+      "path": "issues/I-20260521-Z4P8QA.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P1",
+      "labels": [
+        "goal:bun",
+        "type:perf",
+        "area:functions",
+        "area:ir"
+      ],
+      "title": "raw ABI call-site optimization extension",
+      "summary": "raw clone同士のcallで余分なbridge wrapper回避、boxing最小化。",
+      "next": "Extend raw ABI call-site optimization beyond direct monomorphic calls.",
+      "depends_on": [
+        "I-20260521-C6Y2MN"
+      ],
+      "blocked_by": [
+        "I-20260521-C6Y2MN"
+      ],
+      "blocks": [],
+      "ready": false,
+      "owner": "",
+      "updated": "2026-05-22T03:30:00+09:00"
+    },
+    {
+      "id": "I-20260523-N8STMT",
+      "path": "issues/I-20260523-N8STMT.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P1",
+      "labels": [
+        "area:backend-wasm",
+        "type:feature",
+        "feature:test262"
+      ],
+      "title": "Native emitter statement support",
+      "summary": "Split and implement the native LoweredProgram statement catch-all covering 290 test262 unsupported cases.",
+      "next": "Add native statement emission for the common lowered statement variants used by harness and intl402 ",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-23T16:40:27+09:00"
+    },
+    {
+      "id": "I-20260523-Q7L4MD",
+      "path": "issues/I-20260523-Q7L4MD.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P1",
+      "labels": [
+        "type:feature",
+        "area:runtime",
+        "feature:test262",
+        "feature:builtin-api"
+      ],
+      "title": "UnsupportedBuiltin: implement remaining builtin-api surface (320 cases)",
+      "summary": "Full 2026-05-23 test262 coverage still reports 320 UnsupportedBuiltin/builtin-api cases, dominated by Intl family APIs a",
+      "next": "Split Intl and ShadowRealm into executable runtime slices, then retire Intl.Locale and ShadowRealm f",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-23T16:43:35+09:00"
+    },
+    {
+      "id": "I-20260523-R6X2KP",
+      "path": "issues/I-20260523-R6X2KP.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P1",
+      "labels": [
+        "type:bug",
+        "area:compiler",
+        "area:ir",
+        "feature:test262"
+      ],
+      "title": "InvariantViolation: eliminate compiler invariant failures in test262 full run (90 cases)",
+      "summary": "Full 2026-05-23 test262 coverage still surfaces 90 compiler invariant failures, mostly function-id/index mismatches rath",
+      "next": "Reproduce the top function-id/index mismatch clusters from the JSONL corpus, fix the IR/function-tab",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-23T16:43:35+09:00"
+    },
+    {
+      "id": "I-20260517-7ZVAAC",
+      "path": "issues/I-20260517-7ZVAAC.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P2",
+      "labels": [
+        "area:runtime,type:bug,feature:Array"
+      ],
+      "title": "RuntimeError: Array built-in test failures",
+      "summary": "Fix RuntimeError for Array built-ins (1407 cases)",
+      "next": "Investigate root cause of RuntimeError for this category",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-17T09:04:00+09:00"
+    },
+    {
+      "id": "I-20260517-ZFNKA9",
+      "path": "issues/I-20260517-ZFNKA9.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P2",
+      "labels": [
+        "area:runtime,type:bug,feature:String"
+      ],
+      "title": "RuntimeError: String built-in test failures",
+      "summary": "Fix RuntimeError for String built-ins (614 cases)",
+      "next": "Investigate root cause of RuntimeError for this category",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-17T09:04:00+09:00"
+    },
+    {
+      "id": "I-20260517-2D947T",
+      "path": "issues/I-20260517-2D947T.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P2",
+      "labels": [
+        "area:runtime,type:bug,feature:Proxy"
+      ],
+      "title": "RuntimeError: Proxy built-in test failures",
+      "summary": "Fix RuntimeError for Proxy built-ins (128 cases)",
+      "next": "Investigate root cause of RuntimeError for this category",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-17T09:04:01+09:00"
+    },
+    {
+      "id": "I-20260517-82TJGN",
+      "path": "issues/I-20260517-82TJGN.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P2",
+      "labels": [
+        "area:runtime,type:bug,feature:RegExp"
+      ],
+      "title": "RuntimeError: RegExp built-in test failures",
+      "summary": "Fix RuntimeError for RegExp built-ins (123 cases)",
+      "next": "Investigate root cause of RuntimeError for this category",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-17T09:04:01+09:00"
+    },
+    {
+      "id": "I-20260517-4J3QXX",
+      "path": "issues/I-20260517-4J3QXX.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P2",
+      "labels": [
+        "area:runtime,type:bug,feature:Set"
+      ],
+      "title": "RuntimeError: Set built-in test failures",
+      "summary": "Fix RuntimeError for Set built-ins (94 cases)",
+      "next": "Investigate root cause of RuntimeError for this category",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-17T09:04:02+09:00"
+    },
+    {
+      "id": "I-20260517-7WFHM5",
+      "path": "issues/I-20260517-7WFHM5.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P2",
+      "labels": [
+        "area:runtime,type:bug,feature:Function"
+      ],
+      "title": "RuntimeError: Function built-in test failures",
+      "summary": "Fix RuntimeError for Function built-ins (115 cases)",
+      "next": "Investigate root cause of RuntimeError for this category",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-17T09:04:02+09:00"
+    },
+    {
+      "id": "I-20260517-NA27FY",
+      "path": "issues/I-20260517-NA27FY.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P2",
+      "labels": [
+        "area:runtime,type:bug,feature:Promise"
+      ],
+      "title": "RuntimeError: Promise built-in test failures",
+      "summary": "Fix RuntimeError for Promise built-ins (80 cases)",
+      "next": "Investigate root cause of RuntimeError for this category",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-17T09:04:02+09:00"
+    },
+    {
+      "id": "I-20260517-95H9MV",
+      "path": "issues/I-20260517-95H9MV.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P2",
+      "labels": [
+        "area:runtime,type:bug,feature:Map"
+      ],
+      "title": "RuntimeError: Map built-in test failures",
+      "summary": "Fix RuntimeError for Map built-ins (23 cases)",
+      "next": "Investigate root cause of RuntimeError for this category",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-17T09:04:03+09:00"
+    },
+    {
+      "id": "I-20260517-CRHW69",
+      "path": "issues/I-20260517-CRHW69.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P2",
+      "labels": [
+        "area:runtime",
+        "type:feature"
+      ],
+      "title": "Blocked tests: unblock cross-realm/Atomics/SharedArrayBuffer/Intl (220 cases)",
+      "summary": "Unblock 220 test262 cases currently blocked by cross-realm, Atomics, SharedArrayBuffer, and Intl limitations",
+      "next": "Investigate Atomics and SharedArrayBuffer runtime feasibility",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-17T09:04:03+09:00"
+    },
+    {
+      "id": "I-20260517-88A8FY",
+      "path": "issues/I-20260517-88A8FY.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P2",
+      "labels": [
+        "area:runtime",
+        "coverage:test262",
+        "type:feature"
+      ],
+      "title": "RegExp pattern extensions — backreferences, character class ranges, quantifier patterns",
+      "summary": "Extend RegExp pattern support: backreferences, char class ranges, quantifier patterns. ~15 test262 cases blocked.",
+      "next": "Implement backreference \\1..\\9 pattern matching in RegExp runtime",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-17T12:00:00+09:00"
+    },
+    {
+      "id": "I-20260517-56MZXP",
+      "path": "issues/I-20260517-56MZXP.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P2",
+      "labels": [
+        "area:ir",
+        "coverage:test262",
+        "type:feature"
+      ],
+      "title": "Fix unknown receiver class for RegExp.prototype.compile",
+      "summary": "Fix resolver to handle untyped receivers for RegExp.compile calls. ~10 test262 cases blocked.",
+      "next": "Add RegExp class detection for compile method in class resolver",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-17T12:30:00+09:00"
+    },
+    {
+      "id": "I-20260517-CDBK29",
+      "path": "issues/I-20260517-CDBK29.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P2",
+      "labels": [
+        "area:ir",
+        "coverage:test262",
+        "type:feature"
+      ],
+      "title": "Fix unknown receiver class for compile/call/get methods",
+      "summary": "Fix resolver class detection for untyped receivers. ~17 test262 cases.",
+      "next": "Add fallback class resolution for untyped method call receivers",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-17T12:30:00+09:00"
+    },
+    {
+      "id": "I-20260517-XETGNC",
+      "path": "issues/I-20260517-XETGNC.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P2",
+      "labels": [
+        "area:runtime",
+        "coverage:test262",
+        "type:feature"
+      ],
+      "title": "instanceof RegExp prototype chain from extends",
+      "summary": "Fix instanceof for RegExp when used as superclass constructor. ~6 test262 cases.",
+      "next": "Add RegExp prototype chain setup for instanceof checks",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-17T12:30:00+09:00"
+    },
+    {
+      "id": "I-20260518-VJJTXE",
+      "path": "issues/I-20260518-VJJTXE.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P2",
+      "labels": [
+        "type:bug",
+        "area:runtime"
+      ],
+      "title": "Runtime: Intl402 internationalization runtime failures (51 test262 failures)",
+      "summary": "51 test262 intl402 tests fail: built-ins and staging tests for Intl API crash or produce mismatched output.",
+      "next": "Triage intl402 failures - some may need oracle skipping if Node does not support Intl in wasm",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-18T22:45:11+09:00"
+    },
+    {
+      "id": "I-20260518-A77KNR",
+      "path": "issues/I-20260518-A77KNR.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P2",
+      "labels": [
+        "type:bug",
+        "area:runtime"
+      ],
+      "title": "Runtime: Atomics built-in runtime failures (69 test262 fails)",
+      "summary": "69 test262 built-ins/Atomics tests fail at runtime. SharedArrayBuffer atomic operations not implemented in WAT.",
+      "next": "Triage Atomics failure patterns",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-18T23:59:11+09:00"
+    },
+    {
+      "id": "I-20260518-ASM949",
+      "path": "issues/I-20260518-ASM949.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P2",
+      "labels": [
+        "type:bug",
+        "area:runtime"
+      ],
+      "title": "Runtime: Proxy built-in runtime failures (83 test262 fails)",
+      "summary": "83 test262 built-ins/Proxy tests fail at runtime. Proxy constructor and handler traps need WAT runtime support.",
+      "next": "Triage Proxy failure patterns",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-18T23:59:11+09:00"
+    },
+    {
+      "id": "I-20260518-NTNJWZ",
+      "path": "issues/I-20260518-NTNJWZ.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P2",
+      "labels": [
+        "type:bug",
+        "area:runtime"
+      ],
+      "title": "Runtime: Reflect built-in runtime failures (65 test262 fails)",
+      "summary": "65 test262 built-ins/Reflect tests fail at runtime. Reflect API mirroring Proxy traps needs WASM runtime support.",
+      "next": "Triage Reflect failure patterns",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-18T23:59:28+09:00"
+    },
+    {
+      "id": "I-20260519-92TCBW",
+      "path": "issues/I-20260519-92TCBW.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P2",
+      "labels": [
+        "type:bug",
+        "area:runtime"
+      ],
+      "title": "Runtime: Error built-in runtime failures (18 test262 fails)",
+      "summary": "18 test262 built-ins/Error tests fail at runtime. Error constructor and prototype methods need WAT fixes.",
+      "next": "Triage Error failure patterns",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-19T00:20:54+09:00"
+    },
+    {
+      "id": "I-20260519-DZ9S2S",
+      "path": "issues/I-20260519-DZ9S2S.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P2",
+      "labels": [
+        "type:bug",
+        "area:runtime"
+      ],
+      "title": "Runtime: Boolean built-in runtime failures (18 test262 fails)",
+      "summary": "18 test262 built-ins/Boolean tests fail at runtime. Boolean constructor and prototype methods need WAT fixes.",
+      "next": "Triage Boolean failure patterns",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-19T00:20:54+09:00"
+    },
+    {
+      "id": "I-20260519-FNZXSD",
+      "path": "issues/I-20260519-FNZXSD.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P2",
+      "labels": [
+        "type:bug",
+        "area:runtime"
+      ],
+      "title": "Runtime: BigInt built-in runtime failures (25 test262 fails)",
+      "summary": "25 test262 built-ins/BigInt tests fail at runtime. BigInt constructor and prototype methods need WAT support.",
+      "next": "Triage BigInt failure patterns",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-19T00:20:54+09:00"
+    },
+    {
+      "id": "I-20260519-JRHVJM",
+      "path": "issues/I-20260519-JRHVJM.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P2",
+      "labels": [
+        "type:bug",
+        "area:runtime"
+      ],
+      "title": "Runtime: parseInt/parseFloat runtime failures (47 combined fails)",
+      "summary": "47 test262 built-ins/parseInt(33)+parseFloat(14) tests fail at runtime. Global number parsing functions need WAT fixes.",
+      "next": "Triage parseInt/parseFloat failure patterns",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-19T00:20:54+09:00"
+    },
+    {
+      "id": "I-20260519-K59K2Q",
+      "path": "issues/I-20260519-K59K2Q.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P2",
+      "labels": [
+        "type:bug",
+        "area:runtime"
+      ],
+      "title": "Runtime: Iterator built-in runtime failures (24 test262 fails)",
+      "summary": "24 test262 built-ins/Iterator tests fail at runtime. Iterator constructor and prototype helpers need WAT support.",
+      "next": "Triage Iterator failure patterns",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-19T00:20:54+09:00"
+    },
+    {
+      "id": "I-20260519-NCHGK7",
+      "path": "issues/I-20260519-NCHGK7.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P2",
+      "labels": [
+        "type:bug",
+        "area:runtime"
+      ],
+      "title": "Runtime: WeakMap/WeakSet built-in runtime failures (55 combined fails)",
+      "summary": "55 test262 built-ins/WeakMap(35)+WeakSet(20) tests fail at runtime. Weak collection prototype methods need WAT support.",
+      "next": "Triage WeakMap/WeakSet failure patterns",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-19T00:20:54+09:00"
+    },
+    {
+      "id": "I-20260519-TSEDM7",
+      "path": "issues/I-20260519-TSEDM7.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P2",
+      "labels": [
+        "type:bug",
+        "area:runtime"
+      ],
+      "title": "Runtime: SharedArrayBuffer built-in runtime failures (41 test262 fails)",
+      "summary": "41 test262 built-ins/SharedArrayBuffer tests fail at runtime. SharedArrayBuffer constructor and prototype need WAT suppo",
+      "next": "Triage SharedArrayBuffer failure patterns",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-19T00:20:54+09:00"
+    },
+    {
+      "id": "I-20260519-W8GWQ7",
+      "path": "issues/I-20260519-W8GWQ7.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P2",
+      "labels": [
+        "type:feature",
+        "area:ir",
+        "area:runtime"
+      ],
+      "title": "Feature: yield* delegation not implemented (101 test262 cases)",
+      "summary": "101 test262 yield* delegation cases are parsed but not lowered. Need IR-level yield* delegation and generator delegation",
+      "next": "Implement IR lowering for yield* delegation and WAT generator delegation",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-19T00:24:59+09:00"
+    },
+    {
+      "id": "I-20260519-ZHKV5M",
+      "path": "issues/I-20260519-ZHKV5M.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P2",
+      "labels": [
+        "type:feature",
+        "area:frontend",
+        "area:runtime"
+      ],
+      "title": "Feature: RegExp flag v (unicode sets mode) not supported (141 test262 cases)",
+      "summary": "",
+      "next": "Add RegExp flag v to lexer/parser and implement character class set operations in WAT runtime",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-19T00:24:59+09:00"
+    },
+    {
+      "id": "I-20260519-T4ZRSQ",
+      "path": "issues/I-20260519-T4ZRSQ.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P2",
+      "labels": [
+        "type:feature",
+        "area:ir"
+      ],
+      "title": "Feature: Object rest binding in destructuring not supported (112 test262 cases)",
+      "summary": "",
+      "next": "Implement IR lowering for object rest binding patterns",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-19T00:25:00+09:00"
+    },
+    {
+      "id": "I-20260519-5MBB7M",
+      "path": "issues/I-20260519-5MBB7M.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P2",
+      "labels": [
+        "type:feature",
+        "area:ir",
+        "suite:tsc"
+      ],
+      "title": "tsc: arguments-object and destructuring unsupported (16 cases: arguments-object 9, destructuring 7)",
+      "summary": "16 tsc cases unsupported for arguments-object(9) and destructuring(7) in TypeScript-specific patterns.",
+      "next": "Triage arguments-object/destructuring failures in tsc fixtures",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-19T16:15:49+09:00"
+    },
+    {
+      "id": "I-20260519-FYA22H",
+      "path": "issues/I-20260519-FYA22H.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P2",
+      "labels": [
+        "type:feature",
+        "area:frontend",
+        "suite:tsc"
+      ],
+      "title": "tsc: TypeScript type system features unsupported (50 cases: type-system 26, type-alias 13, type-annotation 11)",
+      "summary": "50 tsc cases unsupported for TypeScript type system: type-system(26), type-alias(13), type-annotation(11). Parser needs ",
+      "next": "Analyze tsc type system failures and prioritize parser support",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-19T16:15:49+09:00"
+    },
+    {
+      "id": "I-20260519-H83TEK",
+      "path": "issues/I-20260519-H83TEK.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P2",
+      "labels": [
+        "type:feature",
+        "area:runtime",
+        "suite:tsc"
+      ],
+      "title": "tsc: UnsupportedRuntimeSubset failures (17 cases)",
+      "summary": "17 tsc cases fail due to UnsupportedRuntimeSubset. Runtime subset limitations prevent tsc fixture execution.",
+      "next": "Triage runtime-subset failures and identify which runtime features need expansion",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-19T16:15:49+09:00"
+    },
+    {
+      "id": "I-20260519-HXD5GB",
+      "path": "issues/I-20260519-HXD5GB.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P2",
+      "labels": [
+        "type:feature",
+        "area:resolver",
+        "suite:tsc"
+      ],
+      "title": "tsc: Rust/JS interop scope analysis unsupported (13 cases)",
+      "summary": "13 tsc cases unsupported in scope analysis. Cross-module/function scope resolution failures in the resolver layer.",
+      "next": "Triage tsc scope analysis failures and identify root cause",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-19T16:15:49+09:00"
+    },
+    {
+      "id": "I-20260519-V2ZNFA",
+      "path": "issues/I-20260519-V2ZNFA.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P2",
+      "labels": [
+        "type:feature",
+        "area:frontend",
+        "suite:tsc",
+        "suite:tsgo"
+      ],
+      "title": "tsc/tsgo: TypeScript enum and ambient declaration unsupported (23 cases: enum 16, ambient 4, declaration-emit 3)",
+      "summary": "23 tsc+tsgo cases unsupported for TypeScript enum(16), ambient declaration(4), declaration-emit(3). Need frontend/emit s",
+      "next": "Triage enum/ambient/declaration-emit failures and prioritize",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-19T16:15:49+09:00"
+    },
+    {
+      "id": "I-20260519-7RVW24",
+      "path": "issues/I-20260519-7RVW24.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P2",
+      "labels": [
+        "type:bug",
+        "area:runtime"
+      ],
+      "title": "Runtime: TypedArrayConstructors/Atomics runtime failures (104 combined)",
+      "summary": "104 test262 fails: TypedArrayConstructors(67)+Atomics(37). TypedArray and Atomics operations need WAT fixes.",
+      "next": "Triage TypedArray/Atomics failure patterns",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-19T21:35:14+09:00"
+    },
+    {
+      "id": "I-20260519-AG6P2B",
+      "path": "issues/I-20260519-AG6P2B.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P2",
+      "labels": [
+        "type:bug",
+        "area:runtime"
+      ],
+      "title": "Runtime: Iterator built-in runtime failures (23 test262 fails)",
+      "summary": "23 test262 built-ins/Iterator tests fail at runtime. Iterator helpers prototype methods need WAT support.",
+      "next": "Triage Iterator failure patterns",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-19T21:35:14+09:00"
+    },
+    {
+      "id": "I-20260519-JPA5GF",
+      "path": "issues/I-20260519-JPA5GF.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P2",
+      "labels": [
+        "type:bug",
+        "area:runtime"
+      ],
+      "title": "Runtime: JSON/NativeErrors/Function/Symbol runtime failures (185 combined)",
+      "summary": "185 test262 fails: JSON(55)+NativeErrors(55)+Function(36)+Symbol(39). Various built-in methods need WAT fixes.",
+      "next": "Triage JSON/NativeErrors/Function/Symbol patterns",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-19T21:35:14+09:00"
+    },
+    {
+      "id": "I-20260519-VYQT8Y",
+      "path": "issues/I-20260519-VYQT8Y.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P2",
+      "labels": [
+        "type:bug",
+        "area:runtime"
+      ],
+      "title": "Runtime: Proxy/Reflect runtime failures (147 combined)",
+      "summary": "147 test262 fails: Proxy(83)+Reflect(64). Proxy traps and Reflect API need WAT runtime support.",
+      "next": "Triage Proxy/Reflect failure patterns",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-19T21:35:14+09:00"
+    },
+    {
+      "id": "I-20260520-EA5MRA",
+      "path": "issues/I-20260520-EA5MRA.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P2",
+      "labels": [
+        "area:infra"
+      ],
+      "title": "Eliminate all architecture check violations without allowlists",
+      "summary": "architecture check: fix remaining source violations (function/file length, public API, match arms, push_str, span:None)",
+      "next": "mise run check architecture で ERROR/WARN ゼロを確認",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-20T18:35:55+09:00"
+    },
+    {
+      "id": "I-20260521-XVFTS2",
+      "path": "issues/I-20260521-XVFTS2.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P2",
+      "labels": [
+        "type:refactor",
+        "area:backend-wasm"
+      ],
+      "title": "Refactor backend-wasm flat runtime files into hierarchical modules",
+      "summary": "Move flat runtime_*.rs files such as runtime_async.rs toward the runtime/<domain>/ module layout already used elsewhere ",
+      "next": "Define the first migration slice and convert one or more flat runtime files behind stable module re-",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-21T07:52:12+09:00"
+    },
+    {
+      "id": "I-20260521-F2Z7KP",
+      "path": "issues/I-20260521-F2Z7KP.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P2",
+      "labels": [
+        "goal:bun",
+        "type:perf",
+        "area:pgo",
+        "area:compiler"
+      ],
+      "title": "PGO profile -> monomorphic raw clones",
+      "summary": "実行profileからcall target/shape/range取得、guard付きAOT clone生成。",
+      "next": "Optional profile-guided raw specialization with deterministic guarded clones.",
+      "depends_on": [
+        "I-20260521-5ZS8WM",
+        "I-20260521-K9VA2S"
+      ],
+      "blocked_by": [
+        "I-20260521-5ZS8WM",
+        "I-20260521-K9VA2S"
+      ],
+      "blocks": [
+        "I-20260521-J8Q2RD"
+      ],
+      "ready": false,
+      "owner": "",
+      "updated": "2026-05-22T03:30:00+09:00"
+    },
+    {
+      "id": "I-20260523-N8TAY2",
+      "path": "issues/I-20260523-N8TAY2.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P2",
+      "labels": [
+        "area:backend-wasm",
+        "type:feature",
+        "feature:test262"
+      ],
+      "title": "Native emitter tail unsupported buckets",
+      "summary": "Clear small native LoweredProgram emitter buckets for binary operators and builtin calls covering 11 cases.",
+      "next": "Implement or reclassify the small native emitter tail buckets so the epic can close cleanly.",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-23T16:40:27+09:00"
+    },
+    {
+      "id": "I-20260519-NWFR2C",
+      "path": "issues/I-20260519-NWFR2C.md",
+      "legacy_id": null,
+      "status": "open",
+      "priority": "P3",
+      "labels": [
+        "type:feature",
+        "area:frontend",
+        "suite:tsc"
+      ],
+      "title": "tsc: AMD module system unsupported (7 cases)",
+      "summary": "7 tsc cases using AMD module system (module-system-amd) are unsupported. TypeScript AMD module syntax not implemented.",
+      "next": "Triage AMD module system failures",
+      "depends_on": [],
+      "blocked_by": [],
+      "blocks": [],
+      "ready": true,
+      "owner": "",
+      "updated": "2026-05-19T16:15:49+09:00"
+    }
+  ],
+  "omitted": {
+    "done": 404
+  }
+}
