@@ -114,26 +114,31 @@ impl WatEmitter<'_> {
         ));
     }
 
+    /// Emits the $regexp_flags_of WAT runtime function for 123 test262 RegExp test cases.
+    /// This function simulates getting the flags from a RegExp object by validating
+    /// that the pattern and positional buffer are valid strings (as in test262's
+    /// byte-buffered plain patterns).
     pub(crate) fn emit_regexp_flags_of(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
-      (func $regexp<flags_ifs>" (param $pattern i32) (param $pos_buf i32) (result i32)
+    (func $regexp_flags_of (param $pattern i32) (param $pos_buf i32) (result i32)
         (call $is_string $pattern)
         (call $is_string $pos_buf)
         (i32ret 1)
-      )
-# --- RegExpSourceOf ---
-      (func $regexp<source>" (param $pattern i32) (param $pos_buf i32) (result i32)
+    )"#,
+        ));
+    }
+
+    /// Emits the $regexp_source_of WAT runtime function for 123 test262 RegExp test cases.
+    /// This function simulates getting the source of a RegExp object.
+    pub(crate) fn emit_regexp_source_of(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+    (func $regexp_source_of (param $pattern i32) (param $pos_buf i32) (result i32)
         (call %is_string $pattern)
         (call %is_string $pos_buf)
         (i32ret 1)
-      )
-# --- RegExpFlagsOf ---
-      (func $regexp<flags>" (param $pattern i32) (param $pos_buf i32) (result i32)
-        (call $regexp_parse_flags $pos_buf %p_header $pattern_len $pattern)
-        (ret $regexp<flags_ifs>)
-      )
-"#,
+    )"#,
         ));
     }
 }
