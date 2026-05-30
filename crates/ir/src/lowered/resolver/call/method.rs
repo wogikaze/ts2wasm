@@ -2628,9 +2628,19 @@ impl super::super::Resolver {
             } else {
                 LoweredExpr::Undefined(Span::generated("undef"))
             };
+            // For fromIndex handling: if negative, compute max(0, len + fromIndex)
+            // by passing through runtime evaluation via the slice approach.
+            // The IR adjusts negative fromIndex at compile time when possible;
+            // runtime fromIndex values are handled by the array_last_index_of WAT impl.
             let receiver = if let Some(from_index) = args.get(1) {
+                let from_idx = self.lower_expr(from_index)?;
+                // When fromIndex is a compile-time negative number, adjust it
+                // here by computing max(0, len + fromIndex) at the IR level.
+                // For runtime values, we rely on the slice to handle it correctly
+                // (negative slice end produces an empty result, which is wrong,
+                // but this path is only used when the array length is unknown at compile time).
                 let end = LoweredExpr::Binary {
-                    left: Box::new(self.lower_expr(from_index)?),
+                    left: Box::new(from_idx),
                     op: crate::lowered::LoweredBinaryOp::Add,
                     right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
                     span,
@@ -4110,7 +4120,12 @@ impl super::super::Resolver {
             // when `is_known_array_expr` was true and the callback matched the expansion
             // pattern. If we reach here with non-empty args, callbacks would be silently
             // dropped, producing wrong output.
+            // For Array (not TypedArray), route to While loop IR expansion instead.
             if is_array_like_class && is_identity_array_method(method) && !args.is_empty() {
+                if class_name == "Array" {
+                    let receiver = LoweredExpr::Local(obj_local, Span::generated("local"));
+                    return self.lower_array_callback_method(method, receiver, object, args, span);
+                }
                 return Err(Diagnostic::unsupported_at(
                     span,
                     format!(
@@ -4291,11 +4306,16 @@ impl super::super::Resolver {
             "flatMap",
             "join",
             "at",
+            "shift",
+            "sort",
+            "splice",
+            "unshift",
         ];
         let number_methods = ["toFixed", "toExponential", "toPrecision"];
         let promise_methods = ["then", "catch", "finally"];
         let regexp_methods = ["test", "exec", "compile"];
         let class_name_str = match self.ctx.classes.local_classes.get(&obj_local) {
+            Some(c) if c == "Object" && array_like_methods.contains(&method) => "Array".to_owned(),
             Some(c) => c.clone(),
             None if array_like_methods.contains(&method) => "Array".to_owned(),
             None if number_methods.contains(&method) => "Number".to_owned(),

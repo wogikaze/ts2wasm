@@ -199,10 +199,13 @@ impl WatEmitter<'_> {
     (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {neg_one_tagged}))))
     (local.set $obj (i32.and (local.get $arr) (i32.const {heap_mask})))
     (local.set $len (i32.load (local.get $obj)))
-    ;; Clamp fromIndex: untag number, if < 0 use 0, if >= len return -1
+    ;; Clamp fromIndex: untag number, if < 0 compute max(len + k, 0), if >= len return -1
     (local.set $i (i32.shr_s (local.get $from_idx) (i32.const {number_shift})))
     (if (i32.lt_s (local.get $i) (i32.const {zero}))
-      (then (local.set $i (i32.const {zero}))))
+      (then
+        (local.set $i (i32.add (local.get $len) (local.get $i)))
+        (if (i32.lt_s (local.get $i) (i32.const {zero}))
+          (then (local.set $i (i32.const {zero}))))))
     (if (i32.ge_u (local.get $i) (local.get $len))
       (then (return (i32.const {neg_one_tagged}))))
     (block $done
@@ -252,10 +255,13 @@ impl WatEmitter<'_> {
     (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {false}))))
     (local.set $obj (i32.and (local.get $arr) (i32.const {heap_mask})))
     (local.set $len (i32.load (local.get $obj)))
-    ;; Clamp fromIndex: untag number, if < 0 use 0, if >= len return false
+    ;; Clamp fromIndex: untag number, if < 0 compute max(len + k, 0), if >= len return false
     (local.set $i (i32.shr_s (local.get $from_idx) (i32.const {number_shift})))
     (if (i32.lt_s (local.get $i) (i32.const {zero}))
-      (then (local.set $i (i32.const {zero}))))
+      (then
+        (local.set $i (i32.add (local.get $len) (local.get $i)))
+        (if (i32.lt_s (local.get $i) (i32.const {zero}))
+          (then (local.set $i (i32.const {zero}))))))
     (if (i32.ge_u (local.get $i) (local.get $len))
       (then (return (i32.const {false}))))
     (block $done

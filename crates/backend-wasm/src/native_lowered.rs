@@ -21888,9 +21888,12 @@ fn static_array_search_value(
     functions: &[LoweredFunction],
 ) -> Option<StaticValue> {
     let array = static_array_from_expr_with_functions(&args[0], locals, functions)?;
-    let from_index = static_js_numeric_value_with_functions(&args[2], locals, functions)?
-        .trunc()
-        .max(0.0) as usize;
+    let from_index = static_js_numeric_value_with_functions(&args[2], locals, functions)?.trunc();
+    let from_index = if from_index < 0.0 {
+        (array.len() as f64 + from_index).max(0.0) as usize
+    } else {
+        from_index as usize
+    };
     let index = array
         .iter()
         .enumerate()
