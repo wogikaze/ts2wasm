@@ -942,12 +942,17 @@ def compile_and_run_test(test_file, tmp_dir):
     except Exception as exc:
         return "blocked", "HarnessError", "test262-harness", str(exc), result_actual, source_code, result_error_line, result_stderr_full
 
-    # Compile with ts2wasm
+    # Compile with ts2wasm.  Pass the test262 root explicitly so the Rust
+    # test262 preprocessor (process_test262_includes) can resolve harness
+    # includes even when the source file lives in a tmp directory.
+    build_env = os.environ.copy()
+    build_env.setdefault("TS2WASM_TEST262_ROOT", str(TEST262_ROOT))
     result = subprocess.run(
         [str(TS2WASM_BINARY), "build", str(tmp_source), "-o", str(tmp_wasm)],
         capture_output=True,
         text=True,
-        cwd=REPO_ROOT
+        cwd=REPO_ROOT,
+        env=build_env,
     )
 
     if result.returncode != 0:

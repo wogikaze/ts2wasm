@@ -1596,6 +1596,13 @@ def main():
         os.environ.setdefault("TS2WASM_TEST262_NODE_ORACLE", "always")
         os.environ.setdefault("TS2WASM_DISABLE_TEST262_PREPROCESSOR_STUBS", "1")
 
+    # Make the test262 root discoverable by the Rust test262 preprocessor even
+    # when source files are written to temp directories (both server and
+    # legacy paths).  The env-var check in resolve_harness_directory_with_env
+    # skips the directory-walk and uses this value directly.
+    if suite == "test262":
+        os.environ.setdefault("TS2WASM_TEST262_ROOT", str(_ensure_test262_runner().TEST262_ROOT))
+
     suite_config, files = resolve_suite_paths(suite, path_filters)
     if files is None:
         sys.exit(1)
@@ -2747,6 +2754,9 @@ def main():
             env = os.environ.copy()
             if source_profile:
                 env["TS2WASM_SOURCE_PROFILE"] = "1"
+            # Pass the test262 root explicitly so the Rust test262 preprocessor
+            # can resolve harness includes when source files live in tmp dirs.
+            env.setdefault("TS2WASM_TEST262_ROOT", str(_ensure_test262_runner().TEST262_ROOT))
             return subprocess.Popen(
                 [str(ts2wasm_binary()), "server"],
                 stdin=subprocess.PIPE,
@@ -2886,6 +2896,8 @@ def main():
                 build_input = thread_tmp / "in.js"
                 build_input.write_text(item["build_source"], encoding="utf-8")
                 out_wasm = thread_tmp / "out.wasm"
+                build_env = os.environ.copy()
+                build_env.setdefault("TS2WASM_TEST262_ROOT", str(_ensure_test262_runner().TEST262_ROOT))
                 build_result = subprocess.run(
                     [
                         "timeout",
@@ -2899,6 +2911,7 @@ def main():
                     capture_output=True,
                     text=True,
                     cwd=REPO_ROOT,
+                    env=build_env,
                 )
                 return classify_legacy_compile_result(item, build_result)
             finally:
@@ -3025,7 +3038,11 @@ def main():
                                 "emit": emit_mode,
                                 "jobs": jobs,
                                 "items": [
-                                    {"id": item["id"], "source": item["build_source"]}
+                                    {
+                                        "id": item["id"],
+                                        "source": item["build_source"],
+                                        "source_path": str(item["file_path"]),
+                                    }
                                     for item in batch
                                 ],
                             }
