@@ -435,6 +435,10 @@ impl Parser {
         if self.consume(TokenKind::LeftParen) {
             if !self.consume(TokenKind::RightParen) {
                 loop {
+                    // Trailing comma: `(a,) =>` — check before parse_param
+                    if self.consume(TokenKind::RightParen) {
+                        break;
+                    }
                     let param = self.parse_param(false, false)?;
                     let is_rest = param.is_rest;
                     let param_name = if let Some(default) = param.default {
@@ -519,6 +523,10 @@ impl Parser {
         self.expect(TokenKind::LeftParen)?;
         if !self.consume(TokenKind::RightParen) {
             loop {
+                // Trailing comma in arrow params: check before parse_param
+                if self.consume(TokenKind::RightParen) {
+                    break;
+                }
                 // Parameter property modifiers (public/private/protected/readonly)
                 // are only valid in constructor parameters, not arrow functions.
                 // Skip them as erased TypeScript syntax and continue probing
@@ -605,6 +613,10 @@ impl Parser {
         self.expect(TokenKind::LeftParen)?;
         if !self.consume(TokenKind::RightParen) {
             loop {
+                // Trailing comma in arrow params: check before parse_param
+                if self.consume(TokenKind::RightParen) {
+                    break;
+                }
                 let param = self.parse_param(false, false)?;
                 let is_rest = param.is_rest;
                 let param_name = if let Some(default) = param.default {
