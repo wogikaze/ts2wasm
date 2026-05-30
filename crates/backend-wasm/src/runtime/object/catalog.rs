@@ -36,6 +36,7 @@ pub const OBJECT_FUNCTIONS: &[RuntimeFn] = &[
     RuntimeFn::ObjectGetOwnPropertyDescriptors,
     RuntimeFn::ObjectAssign,
     RuntimeFn::ObjectCreate,
+    RuntimeFn::ObjectToObject,
     RuntimeFn::GlobalThis,
     RuntimeFn::ObjectIs,
     RuntimeFn::PropertyIsEnumerable,

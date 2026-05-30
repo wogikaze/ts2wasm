@@ -981,6 +981,32 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(crate) fn emit_object_to_object(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $object_to_object (param $value i32) (result i32)
+    (local $obj i32)
+    ;; If the value is already a heap object, return its handle.
+    ;; Otherwise, create a new empty object.
+    (if (i32.eq (i32.and (local.get $value) (i32.const {tag_mask})) (i32.const {object_tag}))
+      (then
+        (return (local.get $value))))
+    ;; Create empty object with null prototype
+    (local.set $obj (call $alloc_heap (i32.const {obj_create_size})))
+    (i32.store (local.get $obj) (i32.const {zero}))
+    (i32.store (i32.add (local.get $obj) (i32.const {obj_flags})) (i32.const {zero}))
+    (i32.store (i32.add (local.get $obj) (i32.const {obj_proto})) (i32.const {zero}))
+    (i32.or (local.get $obj) (i32.const {object_tag})))
+"#,
+            obj_create_size = Layout::OBJECT_HEADER_SIZE + 8 * Layout::OBJECT_ENTRY_SIZE,
+            obj_flags = Layout::OBJECT_FLAGS_OFFSET,
+            obj_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
+            zero = RuntimeConst::ZERO,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+        ));
+    }
+
     pub(crate) fn emit_object_prototype(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"

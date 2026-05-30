@@ -239,6 +239,34 @@ impl super::super::Resolver {
                 span: Span::generated("runtime_call"),
             });
         }
+        if class_name == "Object" {
+            // new Object() / new Object(null) / new Object(undefined) → {}
+            // new Object(value) → ToObject(value)
+            return match args.first() {
+                None => Ok(LoweredExpr::ObjectNew {
+                    props: vec![],
+                    non_enumerable: 0,
+                    span: Span::generated("obj"),
+                }),
+                Some(ResolvedExpr::Undefined | ResolvedExpr::Null) => Ok(LoweredExpr::ObjectNew {
+                    props: vec![],
+                    non_enumerable: 0,
+                    span: Span::generated("obj"),
+                }),
+                Some(ResolvedExpr::Ident(n)) if n == "undefined" || n == "null" => {
+                    Ok(LoweredExpr::ObjectNew {
+                        props: vec![],
+                        non_enumerable: 0,
+                        span: Span::generated("obj"),
+                    })
+                }
+                Some(arg) => Ok(LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::ObjectToObject,
+                    args: vec![self.lower_expr(arg)?],
+                    span: Span::generated("runtime_call"),
+                }),
+            };
+        }
         if class_name == "Map"
             || class_name == "Set"
             || class_name == "WeakMap"

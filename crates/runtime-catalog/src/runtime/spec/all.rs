@@ -2441,6 +2441,14 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::ObjectToObject => RuntimeSpec {
+                symbol: "$object_to_object",
+                deps: OBJECT_TO_OBJECT_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::ObjectPrototype => RuntimeSpec {
                 symbol: "$object_prototype",
                 deps: OBJECT_PROTOTYPE_OBJECT_DEPS,

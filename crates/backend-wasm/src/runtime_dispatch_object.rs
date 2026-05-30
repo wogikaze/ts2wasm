@@ -39,6 +39,7 @@ impl WatEmitter<'_> {
             }
             RuntimeFn::ObjectAssign => self.emit_object_assign(wat),
             RuntimeFn::ObjectCreate => self.emit_object_create(wat),
+            RuntimeFn::ObjectToObject => self.emit_object_to_object(wat),
             RuntimeFn::ObjectPrototype => self.emit_object_prototype(wat),
             RuntimeFn::GlobalThis => self.emit_global_this(wat),
             RuntimeFn::ObjectIs => self.emit_object_is(wat),

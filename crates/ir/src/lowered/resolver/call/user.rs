@@ -529,6 +529,36 @@ impl super::super::Resolver {
             });
         }
 
+        // Object() as function call: ToObject(value).
+        // Object() / Object(null) / Object(undefined) → new empty object.
+        // Object(value) with non-null/undefined arg → ToObject(value).
+        if func_name == "Object" {
+            return match args.first() {
+                None => Ok(LoweredExpr::ObjectNew {
+                    props: vec![],
+                    non_enumerable: 0,
+                    span: Span::generated("obj"),
+                }),
+                Some(ResolvedExpr::Undefined | ResolvedExpr::Null) => Ok(LoweredExpr::ObjectNew {
+                    props: vec![],
+                    non_enumerable: 0,
+                    span: Span::generated("obj"),
+                }),
+                Some(ResolvedExpr::Ident(n)) if n == "undefined" || n == "null" => {
+                    Ok(LoweredExpr::ObjectNew {
+                        props: vec![],
+                        non_enumerable: 0,
+                        span: Span::generated("obj"),
+                    })
+                }
+                Some(arg) => Ok(LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::ObjectToObject,
+                    args: vec![self.lower_expr(arg)?],
+                    span: Span::generated("runtime_call"),
+                }),
+            };
+        }
+
         // Global setTimeout(): DOM timer host APIs are outside
         // the WASM subset. Return Undefined to advance past the
         // UnresolvedFunction blocker.

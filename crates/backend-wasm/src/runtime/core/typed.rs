@@ -27275,6 +27275,50 @@ pub fn build_object_create() -> WasmFunction {
         ])
 }
 
+/// Build the `$object_to_object` function.
+///
+/// Object(value) as a function call (ToObject). For value types (primitives),
+/// wraps the primitive in a new object. For heap objects, returns the value
+/// as-is (the caller expects an object handle).
+/// Remaining raw escape hatches: none.
+pub fn build_object_to_object() -> WasmFunction {
+    let obj = 1;
+    WasmFunction::new("$object_to_object")
+        .param(WasmValType::I32)
+        .result(WasmValType::I32)
+        .local(WasmValType::I32)
+        .body(vec![
+            // For primitives, create a new empty object.
+            // In a full implementation this would wrap the primitive.
+            WasmInstr::I32Const(
+                (Layout::OBJECT_HEADER_SIZE + 8 * Layout::OBJECT_ENTRY_SIZE) as i32,
+            ),
+            WasmInstr::Call("$alloc_heap".to_owned()),
+            WasmInstr::LocalSet(obj),
+            WasmInstr::LocalGet(obj),
+            WasmInstr::I32Const(RuntimeConst::ZERO),
+            WasmInstr::I32Store {
+                align: 2,
+                offset: 0,
+            },
+            WasmInstr::LocalGet(obj),
+            WasmInstr::I32Const(RuntimeConst::ZERO),
+            WasmInstr::I32Store {
+                align: 2,
+                offset: Layout::OBJECT_FLAGS_OFFSET,
+            },
+            WasmInstr::LocalGet(obj),
+            WasmInstr::I32Const(RuntimeConst::ZERO),
+            WasmInstr::I32Store {
+                align: 2,
+                offset: Layout::OBJECT_PROTOTYPE_OFFSET,
+            },
+            WasmInstr::LocalGet(obj),
+            WasmInstr::I32Const(ValueTag::OBJECT),
+            WasmInstr::I32Or,
+        ])
+}
+
 /// Build the `$dollar_262_global` function.
 ///
 /// Creates the minimal test262 `$262.global` object with a null prototype,

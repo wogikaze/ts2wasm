@@ -1149,6 +1149,7 @@ pub(crate) fn native_runtime_function_available(runtime_fn: RuntimeFn) -> bool {
             | RuntimeFn::ObjectPrototype
             | RuntimeFn::GlobalThis
             | RuntimeFn::ObjectCreate
+            | RuntimeFn::ObjectToObject
             | RuntimeFn::ObjectDefineProperties
             | RuntimeFn::ObjectDefineProperty
             | RuntimeFn::ObjectIs
@@ -1696,6 +1697,7 @@ fn build_native_runtime_function(
         RuntimeFn::ObjectPrototype => Some(typed::build_object_prototype()),
         RuntimeFn::GlobalThis => Some(typed::build_global_this()),
         RuntimeFn::ObjectCreate => Some(typed::build_object_create()),
+        RuntimeFn::ObjectToObject => Some(typed::build_object_to_object()),
         RuntimeFn::ObjectIs => Some(typed::build_object_is()),
         RuntimeFn::IsPrototypeOf => Some(typed::build_is_prototype_of()),
         RuntimeFn::PropertyIsEnumerable => Some(typed::build_property_is_enumerable()),

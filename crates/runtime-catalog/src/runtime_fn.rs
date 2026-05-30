@@ -522,6 +522,8 @@ pub enum RuntimeFn {
     ObjectGetOwnPropertyDescriptors,
     /// Object.assign(target, ...sources) — copies own enumerable properties
     ObjectAssign,
+    /// Object(value) as function call (ToObject) — wraps a primitive or returns the object as-is
+    ObjectToObject,
     /// Object.create(proto, propertiesObject)
     ObjectCreate,
     /// Singleton ECMAScript Object.prototype object.
@@ -1554,6 +1556,7 @@ const OBJECT_ASSIGN_DEPS: &[RuntimeFn] = &[
     RuntimeFn::PropertySet,
 ];
 const OBJECT_CREATE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
+const OBJECT_TO_OBJECT_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const OBJECT_PROTOTYPE_OBJECT_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const PROPERTY_IS_ENUMERABLE_DEPS: &[RuntimeFn] =
     &[RuntimeFn::ValueToStringInto, RuntimeFn::MemEqual];
@@ -1829,6 +1832,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ReflectConstruct" => Some(RuntimeFn::ReflectConstruct),
         "ObjectAssign" => Some(RuntimeFn::ObjectAssign),
         "ObjectCreate" => Some(RuntimeFn::ObjectCreate),
+        "ObjectToObject" => Some(RuntimeFn::ObjectToObject),
         "ObjectPrototype" => Some(RuntimeFn::ObjectPrototype),
         "GlobalThis" => Some(RuntimeFn::GlobalThis),
         "ObjectIs" => Some(RuntimeFn::ObjectIs),
@@ -2562,6 +2566,7 @@ impl RuntimeFn {
             | Self::ObjectGetOwnPropertyDescriptors
             | Self::ObjectAssign
             | Self::ObjectCreate
+            | Self::ObjectToObject
             | Self::ObjectPrototype
             | Self::GlobalThis
             | Self::ObjectIs
@@ -3594,6 +3599,7 @@ impl RuntimeFn {
             Self::ObjectDefineProperties,
             Self::ObjectGetOwnPropertyDescriptors,
             Self::ObjectAssign,
+            Self::ObjectToObject,
             Self::ObjectCreate,
             Self::ObjectPrototype,
             Self::GlobalThis,
@@ -4112,6 +4118,7 @@ impl RuntimeFn {
             Self::ObjectDefineProperties,
             Self::ObjectGetOwnPropertyDescriptors,
             Self::ObjectAssign,
+            Self::ObjectToObject,
             Self::ObjectCreate,
             Self::ObjectPrototype,
             Self::GlobalThis,

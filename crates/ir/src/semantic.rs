@@ -1234,6 +1234,11 @@ impl<'a> HirLowerer<'a> {
                     // Return a no-op HIR expr to pass the validator.
                     Ok(HirExpr::ConstUndefined)
                 }
+                ResolvedExpr::Ident(name) if name == "Object" => {
+                    // Object() is handled by the lowered resolver (user.rs).
+                    // Return a no-op HIR expr to pass the validator.
+                    Ok(HirExpr::ConstUndefined)
+                }
                 ResolvedExpr::Ident(name) if name == INTRINSIC_FUNCTION_CONSTRUCTOR_CALL => {
                     Ok(HirExpr::ConstUndefined)
                 }

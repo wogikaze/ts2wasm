@@ -325,6 +325,7 @@ match self {
             Self::ObjectAssign => "object_assign",
             Self::RestObject => "rest_object",
             Self::ObjectCreate => "object_create",
+            Self::ObjectToObject => "object_to_object",
             Self::ObjectPrototype => "object_prototype",
             Self::GlobalThis => "global_this",
             Self::ObjectIs => "object_is",
