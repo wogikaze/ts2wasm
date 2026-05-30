@@ -1675,9 +1675,9 @@ impl WatEmitter<'_> {
                 writer.drop(indent);
                 writer.i32_const(indent, 0);
             }
-            LoweredUnaryOp::BitwiseNot => unreachable!(
-                "BitwiseNot must be handled by native lowering, not WAT emitter"
-            ),
+            LoweredUnaryOp::BitwiseNot => {
+                unreachable!("BitwiseNot must be handled by native lowering, not WAT emitter")
+            }
         }
     }
 
@@ -1885,11 +1885,11 @@ impl WatEmitter<'_> {
                     LoweredBinaryOp::NullishCoalesce => {
                         unreachable!("nullish coalescing is emitted as a short-circuit expression")
                     }
-                    LoweredBinaryOp::Shl
-                    | LoweredBinaryOp::Shr
-                    | LoweredBinaryOp::ShrU => unreachable!(
-                        "Shl/Shr/ShrU must be handled by native lowering, not WAT emitter"
-                    ),
+                    LoweredBinaryOp::Shl | LoweredBinaryOp::Shr | LoweredBinaryOp::ShrU => {
+                        unreachable!(
+                            "Shl/Shr/ShrU must be handled by native lowering, not WAT emitter"
+                        )
+                    }
                 };
                 if expr_may_collect(right) && !expr_uses_caller_backend_tmp(right) {
                     let lhs_tmp = frame.switch_value_tmp();
