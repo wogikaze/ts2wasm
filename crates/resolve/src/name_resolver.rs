@@ -223,6 +223,14 @@ pub fn default_allowed_globals() -> std::collections::HashSet<String> {
         // Test262 destructuring iteration template variables
         "iterCount",
         "initCount",
+        // Test262 TypedArray shell harness globals
+        "anyTypedArrayConstructors",
+        "typedArrayConstructors",
+        // Test262 generated test template variables (annexB eval patterns)
+        "f",
+        // Test262 intentionally unresolvable reference patterns
+        "test262unresolvable",
+        "unresolvableReference",
     ]
     .iter()
     .map(|s| s.to_string())

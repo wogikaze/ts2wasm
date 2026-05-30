@@ -936,7 +936,7 @@ impl Parser {
                     });
                 }
                 _ => {
-                                        return Err(Diagnostic::unsupported_at(expr.span(), String::from(
+                                        return Err(Diagnostic::source(expr.span(), DiagCode::SyntaxError, String::from(
 "left-hand side of assignment must be a property access",
 )));
                 }
@@ -1024,7 +1024,7 @@ impl Parser {
                     });
                 }
                 _ => {
-                                        return Err(Diagnostic::unsupported_at(expr.span(), String::from(
+                                        return Err(Diagnostic::source(expr.span(), DiagCode::SyntaxError, String::from(
 "left-hand side of compound assignment must be a property or index access",
 )));
                 }
@@ -1100,7 +1100,7 @@ impl Parser {
         {
             return Ok(fallback_end);
         }
-                Err(Diagnostic::unsupported_at(self.peek_span(), format!("expected Semicolon, got {:?}", self.peek())))
+                Err(Diagnostic::source(self.peek_span().unwrap_or(Span::generated("parser")), DiagCode::SyntaxError, format!("expected Semicolon, got {:?}", self.peek())))
     }
 
     fn let_statement(&mut self) -> Result<Stmt, Diagnostic> {

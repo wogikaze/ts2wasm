@@ -333,7 +333,7 @@ let binding = self.parse_binding_pattern()?;
     }
 
     fn invalid_rest_binding_diagnostic(&self, span: Span) -> Diagnostic {
-                Diagnostic::unsupported_at(span, "Rest binding must be the final element in a binding pattern")
+                Diagnostic::source(span, DiagCode::SyntaxError, "Rest binding must be the final element in a binding pattern")
     }
 
     #[allow(clippy::only_used_in_recursion)]

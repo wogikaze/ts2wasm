@@ -203,11 +203,65 @@ impl super::super::Resolver {
                     ),
                 ));
             }
+            ResolvedExpr::PropertyAccess { object, key, .. } => {
+                // PropertyAccess callee like (obj.method)() or
+                // Array.prototype.at.call(ta, index):
+                // lower the receiver, look up the property dynamically,
+                // call the result via HeapClosureCall.
+                let receiver_temp = self.alloc_temp();
+                let method_temp = self.alloc_temp();
+                let lowered_args = self.lower_call_args(args)?;
+                let receiver = LoweredExpr::Local(receiver_temp, Span::generated("local"));
+                let method = LoweredExpr::Local(method_temp, Span::generated("local"));
+                let mut all_args = vec![method];
+                all_args.extend(lowered_args);
+                return Ok(LoweredExpr::Block {
+                    stmts: vec![
+                        LoweredStmt::Let(
+                            receiver_temp,
+                            self.lower_expr(object)?,
+                            Span::generated("let_stmt"),
+                        ),
+                        LoweredStmt::Let(
+                            method_temp,
+                            object_kernel::ordinary_get_dynamic(
+                                receiver,
+                                LoweredExpr::String(key.clone(), Span::generated("key")),
+                                span,
+                            ),
+                            Span::generated("let_stmt"),
+                        ),
+                    ],
+                    result: Box::new(LoweredExpr::RuntimeCall {
+                        intrinsic: RuntimeFn::HeapClosureCall,
+                        args: all_args,
+                        span: Span::generated("runtime_call"),
+                    }),
+                    span: Span::generated("block"),
+                });
+            }
             _ => {
-                return Err(Diagnostic::unsupported_at(
-                    span,
-                    "only identifier calls are supported in expression context".to_owned(),
-                ));
+                // Generic non-identifier callee (Sequence, Ternary, etc.):
+                // lower the callee expression and call it dynamically
+                // via HeapClosureCall.
+                let callee_temp = self.alloc_temp();
+                let callee_value = LoweredExpr::Local(callee_temp, Span::generated("local"));
+                let lowered_args = self.lower_call_args(args)?;
+                let mut all_args = vec![callee_value];
+                all_args.extend(lowered_args);
+                return Ok(LoweredExpr::Block {
+                    stmts: vec![LoweredStmt::Let(
+                        callee_temp,
+                        self.lower_expr(callee)?,
+                        Span::generated("let_stmt"),
+                    )],
+                    result: Box::new(LoweredExpr::RuntimeCall {
+                        intrinsic: RuntimeFn::HeapClosureCall,
+                        args: all_args,
+                        span: Span::generated("runtime_call"),
+                    }),
+                    span: Span::generated("block"),
+                });
             }
         };
 

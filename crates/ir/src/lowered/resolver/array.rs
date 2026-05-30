@@ -237,7 +237,15 @@ impl super::Resolver {
                             span: Span::generated("runtime_call"),
                         });
                     }
-                    return Err(unsupported_array_map_diagnostic(Some(span)));
+                    // Fallback: route to While loop IR expansion (handles general callbacks)
+                    let lowered_receiver = self.lower_expr(receiver)?;
+                    return self.lower_array_callback_method(
+                        "map",
+                        lowered_receiver,
+                        receiver,
+                        map_args,
+                        span,
+                    );
                 };
                 let elements = elements
                     .into_iter()
@@ -257,7 +265,17 @@ impl super::Resolver {
 
                 span: Span::generated("runtime_call"),
             }),
-            _ => Err(unsupported_array_map_diagnostic(Some(span))),
+            _ => {
+                // Fallback: route to While loop IR expansion (handles general callbacks)
+                let lowered_receiver = self.lower_expr(receiver)?;
+                return self.lower_array_callback_method(
+                    "map",
+                    lowered_receiver,
+                    receiver,
+                    map_args,
+                    span,
+                );
+            }
         }
     }
 
@@ -1012,14 +1030,12 @@ impl super::Resolver {
         };
 
         // Determine the init expression for reduce (if applicable)
+        // When no initial value is provided, pass None — the reduce-callback IR
+        // generator will use the first (or last for reduceRight) element instead.
         let init_expr = if method == "reduce" || method == "reduceRight" {
-            let Some(init_arg) = args.get(1) else {
-                return Err(Diagnostic::unsupported_at(
-                    Span::generated("issue-270"),
-                    "issue-270: Array.prototype.reduce/ReduceRight requires an initial value argument in this slice",
-                ));
-            };
-            Some(self.lower_expr(init_arg)?)
+            args.get(1)
+                .map(|init_arg| self.lower_expr(init_arg))
+                .transpose()?
         } else {
             None
         };
@@ -1509,6 +1525,7 @@ impl super::Resolver {
             Span::generated("Let"),
         ));
 
+        let reduce_no_init = (method == "reduce" || method == "reduceRight") && init_expr.is_none();
         let (init_stmts, while_body, result_expr) = match method {
             "forEach" => self.lower_array_foreach_callback(
                 receiver_local,
@@ -1587,25 +1604,38 @@ impl super::Resolver {
         stmts.extend(init_stmts);
 
         // Add initial Let(i, ...) based on iteration direction
-        if method == "findLast" || method == "findLastIndex" || method == "reduceRight" {
-            stmts.push(LoweredStmt::Let(
-                i,
+        // When reduce is called without initial value, start at index 1
+        // (arr[0] is used as the initial accumulator).
+        // For reduceRight without initial value, start at len-2
+        // (arr[len-1] is used as the initial accumulator).
+        let start_idx: LoweredExpr = if reduce_no_init {
+            if method == "reduceRight" {
                 LoweredExpr::Binary {
-                    left: Box::new(LoweredExpr::Local(len_local, Span::generated("local"))),
+                    left: Box::new(LoweredExpr::Binary {
+                        left: Box::new(LoweredExpr::Local(len_local, Span::generated("local"))),
+                        op: LoweredBinaryOp::Subtract,
+                        right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
+                        span: Span::generated("binary"),
+                    }),
                     op: LoweredBinaryOp::Subtract,
                     right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
-
                     span: Span::generated("binary"),
-                },
-                Span::generated("Let"),
-            ));
+                }
+            } else {
+                LoweredExpr::Number(1, Span::generated("num"))
+            }
+        } else if method == "findLast" || method == "findLastIndex" || method == "reduceRight" {
+            LoweredExpr::Binary {
+                left: Box::new(LoweredExpr::Local(len_local, Span::generated("local"))),
+                op: LoweredBinaryOp::Subtract,
+                right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
+
+                span: Span::generated("binary"),
+            }
         } else {
-            stmts.push(LoweredStmt::Let(
-                i,
-                LoweredExpr::Number(0, Span::generated("num")),
-                Span::generated("Let"),
-            ));
-        }
+            LoweredExpr::Number(0, Span::generated("num"))
+        };
+        stmts.push(LoweredStmt::Let(i, start_idx, Span::generated("Let")));
 
         // Determine the While condition based on method
         let condition = match method {
@@ -2398,13 +2428,31 @@ impl super::Resolver {
         let arr_ref =
             || -> LoweredExpr { LoweredExpr::Local(receiver_local, Span::generated("local")) };
 
-        let Some(init_expr) = init_expr else {
-            return Err(Diagnostic::unsupported_at(
-                Span::generated("issue-270"),
-                "issue-270: reduce callback requires an initial value in this slice",
-            ));
-        };
         let acc = self.alloc_temp();
+        let init_expr = init_expr.unwrap_or_else(|| {
+            // No explicit initial value: use arr[0] (reduce) or arr[len-1] (reduceRight).
+            if method == "reduceRight" {
+                LoweredExpr::ArrayGet {
+                    arr: Box::new(arr_ref()),
+                    index: Box::new(LoweredExpr::Binary {
+                        left: Box::new(LoweredExpr::GetLength(
+                            Box::new(arr_ref()),
+                            Span::generated("get_length"),
+                        )),
+                        op: LoweredBinaryOp::Subtract,
+                        right: Box::new(LoweredExpr::Number(1, Span::generated("num"))),
+                        span: Span::generated("binary"),
+                    }),
+                    span: Span::generated("array_get"),
+                }
+            } else {
+                LoweredExpr::ArrayGet {
+                    arr: Box::new(arr_ref()),
+                    index: Box::new(LoweredExpr::Number(0, Span::generated("num"))),
+                    span: Span::generated("array_get"),
+                }
+            }
+        });
         init_stmts.push(LoweredStmt::Let(
             acc,
             init_expr,

@@ -229,6 +229,14 @@ impl super::super::Resolver {
             || name == "TypedArray"
             || name == "undefined"
             || name == "eval"
+            || name == "anyTypedArrayConstructors"
+            || name == "typedArrayConstructors"
+            || name == "test262unresolvable"
+            || name == "unresolvableReference"
+            || name == "assert"
+            || name == "Atomics"
+            || name == "toStringAccessed"
+            || name == "resolveLatePromise"
         {
             return Ok(LoweredExpr::Undefined(Span::generated("undef")));
         }

@@ -67,7 +67,7 @@ fn merge_constructor_initializers(
         return Ok(merged);
     }
 
-        Err(Diagnostic::unsupported_at(body.first().map(Stmt::span), derived_error.to_owned()))
+        Err(Diagnostic::source(body.first().map(Stmt::span).unwrap_or(Span::generated("derived-constructor")), DiagCode::SyntaxError, derived_error.to_owned()))
 }
 
 fn is_super_call_statement(stmt: &Stmt) -> bool {

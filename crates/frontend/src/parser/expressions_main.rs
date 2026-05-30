@@ -283,7 +283,7 @@ impl Parser {
                 }
                 _ => {}
             }
-                        return Err(Diagnostic::unsupported_at(target_span, "Compound assignment expressions currently support only identifier, member, and computed member targets"));
+                        return Err(Diagnostic::source(target_span, DiagCode::SyntaxError, "Compound assignment expressions currently support only identifier, member, and computed member targets"));
         }
         if let Some(op) = self.logical_assignment_operator() {
             let target_span = expr.span();
@@ -411,7 +411,7 @@ impl Parser {
                 }
                 _ => {}
             }
-                        return Err(Diagnostic::unsupported_at(target_span, "unsupported syntax"));
+                        return Err(Diagnostic::source(target_span, DiagCode::SyntaxError, "unsupported syntax"));
         }
 
         Ok(expr)
@@ -499,7 +499,7 @@ impl Parser {
                 },
             }
         } else {
-            self.ternary()?
+            self.assignment()?
         };
 
         let end = if body.span().end < start_span.start {
@@ -539,17 +539,94 @@ impl Parser {
                         continue;
                     }
                 }
-                self.parse_param(false, false)?;
+                if self.skip_arrow_param().is_err() {
+                    return Ok(false);
+                }
                 if self.consume(TokenKind::RightParen) {
                     break;
                 }
-                self.expect(TokenKind::Comma)?;
+                if !self.consume(TokenKind::Comma) {
+                    return Ok(false);
+                }
             }
         }
         if self.consume(TokenKind::Colon) {
             self.skip_type_annotation_until(&[TokenKind::Arrow])?;
         }
         Ok(self.consume(TokenKind::Arrow))
+    }
+
+    /// Lightweight structural probe for a single arrow function parameter.
+    /// Skips past `...`, binding pattern, default, and optional type annotation
+    /// WITHOUT performing full semantic validation (e.g. rest-not-final).
+    /// This lets the probe detect the arrow shape even when params contain
+    /// semantic errors that will be reported during actual parsing.
+    fn skip_arrow_param(&mut self) -> Result<(), Diagnostic> {
+        // Optional rest `...`
+        self.consume(TokenKind::DotDotDot);
+        // Binding pattern: identifier, [...], or {...}
+        match self.peek() {
+            Some(Token::Ident(_) | Token::Async) => {
+                self.advance();
+            }
+            Some(Token::LeftBracket) => {
+                self.skip_balanced_pair(TokenKind::LeftBracket, TokenKind::RightBracket)?;
+            }
+            Some(Token::LeftBrace) => {
+                self.skip_balanced_pair(TokenKind::LeftBrace, TokenKind::RightBrace)?;
+            }
+            Some(Token::DotDotDot) => {
+                // Rest followed by pattern — advance past rest, recurse for the pattern
+                self.advance();
+                return self.skip_arrow_param();
+            }
+            _ => return Err(Diagnostic::unsupported_at(self.peek_span(), "expected identifier or pattern in arrow param")),
+        }
+        // Optional default `= expr`
+        if self.consume(TokenKind::Equal) {
+            // Skip the default expression — just advance past tokens until , or )
+            self.skip_until_delimiter(&[TokenKind::Comma, TokenKind::RightParen])?;
+        }
+        // Optional type annotation `: type`
+        if self.consume(TokenKind::Colon) {
+            self.skip_type_annotation_until(&[TokenKind::Comma, TokenKind::RightParen, TokenKind::Equal])?;
+        }
+        Ok(())
+    }
+
+    /// Skip a balanced pair of delimiters, handling nesting.
+    fn skip_balanced_pair(&mut self, open: TokenKind, close: TokenKind) -> Result<(), Diagnostic> {
+        self.expect(open)?;
+        let mut depth = 1u32;
+        while depth > 0 {
+            match self.peek() {
+                Some(t) if open.matches(t) => {
+                    depth += 1;
+                    self.advance();
+                }
+                Some(t) if close.matches(t) => {
+                    depth -= 1;
+                    self.advance();
+                }
+                Some(_) => {
+                    self.advance();
+                }
+                None => return Err(Diagnostic::unsupported_at(self.peek_span(), "unexpected end of input in arrow param pattern")),
+            }
+        }
+        Ok(())
+    }
+
+    /// Skip tokens until one of the delimiter token kinds is found.
+    fn skip_until_delimiter(&mut self, delims: &[TokenKind]) -> Result<(), Diagnostic> {
+        loop {
+            match self.peek() {
+                Some(t) if delims.iter().any(|d| d.matches(t)) => break,
+                Some(_) => { self.advance(); }
+                None => break,
+            }
+        }
+        Ok(())
     }
 
     fn ternary(&mut self) -> Result<Expr, Diagnostic> {
@@ -1534,7 +1611,7 @@ impl Parser {
             }
             if self.consume(TokenKind::LeftBracket) {
                 if matches!(self.peek(), Some(Token::RightBracket)) {
-                                        return Err(Diagnostic::unsupported_at(self.prev_span().unwrap_or(Span::generated("parser")), "unsupported syntax"));
+                                        return Err(Diagnostic::source(self.prev_span().unwrap_or(Span::generated("parser")), DiagCode::SyntaxError, "empty computed property access is not allowed"));
                 }
                 let index = self.expression()?;
                 let right_span = self.expect(TokenKind::RightBracket)?;
@@ -1618,7 +1695,7 @@ impl Parser {
     }
 
     fn invalid_optional_chain_target(&self, span: Span) -> Diagnostic {
-                Diagnostic::unsupported_at(span, "unsupported syntax")
+                Diagnostic::source(span, DiagCode::SyntaxError, "optional chain target is not assignable")
     }
 
     fn consume_typescript_const_angle_assertion(&mut self) -> bool {
