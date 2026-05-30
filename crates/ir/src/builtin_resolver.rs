@@ -2606,37 +2606,32 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             op,
             expr,
             ..
-        } => {
-            if is_private_member_key(property) {
-                return Err(Diagnostic::unsupported_at(span_of_expr(expr), "issue-255: private field logical assignment is not supported in this private field runtime slice".to_owned()));
-            }
-            match (object_expr.as_ref(), computed_key.as_ref()) {
-                (Some(object_expr), Some(key)) => Ok(ResolvedExpr::LogicalComputedMemberAssign {
-                    object: Box::new(resolve_expr(object_expr)?),
-                    key: Box::new(resolve_expr(key)?),
-                    op: *op,
-                    expr: Box::new(resolve_expr(expr)?),
-                }),
-                (Some(object_expr), None) => Ok(ResolvedExpr::LogicalMemberAssign {
-                    object: Box::new(resolve_expr(object_expr)?),
-                    key: property.clone(),
-                    op: *op,
-                    expr: Box::new(resolve_expr(expr)?),
-                }),
-                (None, Some(key)) => Ok(ResolvedExpr::LogicalComputedPropertyAssign {
-                    object: object.clone(),
-                    key: Box::new(resolve_expr(key)?),
-                    op: *op,
-                    expr: Box::new(resolve_expr(expr)?),
-                }),
-                (None, None) => Ok(ResolvedExpr::LogicalPropertyAssign {
-                    object: object.clone(),
-                    key: property.clone(),
-                    op: *op,
-                    expr: Box::new(resolve_expr(expr)?),
-                }),
-            }
-        }
+        } => match (object_expr.as_ref(), computed_key.as_ref()) {
+            (Some(object_expr), Some(key)) => Ok(ResolvedExpr::LogicalComputedMemberAssign {
+                object: Box::new(resolve_expr(object_expr)?),
+                key: Box::new(resolve_expr(key)?),
+                op: *op,
+                expr: Box::new(resolve_expr(expr)?),
+            }),
+            (Some(object_expr), None) => Ok(ResolvedExpr::LogicalMemberAssign {
+                object: Box::new(resolve_expr(object_expr)?),
+                key: property.clone(),
+                op: *op,
+                expr: Box::new(resolve_expr(expr)?),
+            }),
+            (None, Some(key)) => Ok(ResolvedExpr::LogicalComputedPropertyAssign {
+                object: object.clone(),
+                key: Box::new(resolve_expr(key)?),
+                op: *op,
+                expr: Box::new(resolve_expr(expr)?),
+            }),
+            (None, None) => Ok(ResolvedExpr::LogicalPropertyAssign {
+                object: object.clone(),
+                key: property.clone(),
+                op: *op,
+                expr: Box::new(resolve_expr(expr)?),
+            }),
+        },
         Expr::Member {
             object,
             property,

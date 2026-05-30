@@ -92,6 +92,9 @@ impl super::super::Resolver {
         op: &LogicalAssignOp,
         expr: &ResolvedExpr,
     ) -> Result<LoweredExpr, Diagnostic> {
+        if key.starts_with('#') {
+            return self.lower_private_field_logical_assign(object, key, *op, expr);
+        }
         if is_private_field_storage_key(key) {
             return Err(private_storage_observable_access_diagnostic(None));
         }
@@ -597,6 +600,108 @@ impl super::super::Resolver {
                 self.lower_expr(value)?,
             ],
             span: Span::generated("runtime_call"),
+        })
+    }
+
+    /// Desugar `obj.#key ??=/||=/&&= value` into a block that:
+    /// 1. Evaluates the RHS into a temp
+    /// 2. Reads the current private field value via `PrivateFieldGet`
+    /// 3. Defaults the result to the current value
+    /// 4. If the logical condition is met, writes the new value via `PrivateFieldSet`
+    ///    and updates the result temp
+    /// 5. Returns the result temp
+    fn lower_private_field_logical_assign(
+        &mut self,
+        object: &str,
+        key: &str,
+        op: LogicalAssignOp,
+        expr: &ResolvedExpr,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        let span = Span::generated("private_field_logical_assign");
+        let tmp_rhs = self.alloc_temp();
+        let tmp_current = self.alloc_temp();
+        let tmp_result = self.alloc_temp();
+        let obj_local = self.resolve_local(object)?;
+
+        let object_expr = ResolvedExpr::Ident(object.to_owned());
+        let (brand, slot) = self.private_field_brand_and_slot(&object_expr, key, span)?;
+
+        let get_current = LoweredExpr::RuntimeCall {
+            intrinsic: RuntimeFn::PrivateFieldGet,
+            args: vec![
+                LoweredExpr::Local(obj_local, Span::generated("local")),
+                LoweredExpr::Number(brand as i32, Span::generated("num")),
+                LoweredExpr::Number(slot as i32, Span::generated("num")),
+            ],
+            span,
+        };
+
+        let set_new = LoweredExpr::RuntimeCall {
+            intrinsic: RuntimeFn::PrivateFieldSet,
+            args: vec![
+                LoweredExpr::Local(obj_local, Span::generated("local")),
+                LoweredExpr::Number(brand as i32, Span::generated("num")),
+                LoweredExpr::Number(slot as i32, Span::generated("num")),
+                LoweredExpr::Local(tmp_rhs, Span::generated("local")),
+            ],
+            span,
+        };
+
+        // The Stmt::If emitter calls TruthyBool on the condition expression,
+        // so we construct the condition to evaluate to a tagged boolean
+        // (or any tagged value whose truthiness matches the intended branch).
+        let condition = match op {
+            // ??= : execute then_body when current is null or undefined.
+            // JS `null == null` and `undefined == null` both produce tagged true.
+            // TruthyBool(tagged true) = 1 → then_body runs.
+            LogicalAssignOp::Nullish => LoweredExpr::Binary {
+                op: LoweredBinaryOp::EqualEqual,
+                left: Box::new(LoweredExpr::Local(tmp_current, Span::generated("local"))),
+                right: Box::new(LoweredExpr::Null(Span::generated("null"))),
+                span,
+            },
+            // ||= : execute then_body when current is falsy.
+            // `!falsy` = tagged true → TruthyBool = 1 → then_body runs.
+            LogicalAssignOp::Or => LoweredExpr::Unary {
+                op: LoweredUnaryOp::Not,
+                expr: Box::new(LoweredExpr::Local(tmp_current, Span::generated("local"))),
+                span,
+            },
+            // &&= : execute then_body when current is truthy.
+            // TruthyBool(truthy) = 1 → then_body runs.
+            LogicalAssignOp::And => LoweredExpr::Local(tmp_current, Span::generated("local")),
+        };
+
+        crate::lowered::resolver::expr::facts::invalidate_static_object_literal_local(
+            &mut self.ctx,
+            obj_local,
+        );
+
+        Ok(LoweredExpr::Block {
+            stmts: vec![
+                LoweredStmt::Let(tmp_rhs, self.lower_expr(expr)?, Span::generated("let_stmt")),
+                LoweredStmt::Let(tmp_current, get_current, Span::generated("let_stmt")),
+                LoweredStmt::Let(
+                    tmp_result,
+                    LoweredExpr::Local(tmp_current, Span::generated("local")),
+                    Span::generated("let_stmt"),
+                ),
+                LoweredStmt::If {
+                    condition,
+                    then_body: vec![
+                        LoweredStmt::Expr(set_new, Span::generated("expr_stmt")),
+                        LoweredStmt::Assign(
+                            tmp_result,
+                            LoweredExpr::Local(tmp_rhs, Span::generated("local")),
+                            Span::generated("assign"),
+                        ),
+                    ],
+                    else_body: vec![],
+                    span,
+                },
+            ],
+            result: Box::new(LoweredExpr::Local(tmp_result, Span::generated("local"))),
+            span,
         })
     }
 
