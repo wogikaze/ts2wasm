@@ -1836,6 +1836,14 @@ impl NameResolver {
                 // Skip bodyless overload signatures when pre-declaring
                 if !overload_signature {
                     self.declare_variable(name, Some(*span), false)?;
+                    // Annex B §B.3.3: In non-strict mode, function declarations in
+                    // blocks are hoisted to the enclosing function/global scope.
+                    if !self.strict_context && self.scopes.len() >= 2 {
+                        let parent_idx = self.scopes.len() - 2;
+                        if let Some(parent) = self.scopes.get_mut(parent_idx) {
+                            parent.entry(name.clone()).or_insert(Some(*span));
+                        }
+                    }
                 }
             }
             if let Stmt::ClassDecl { name, span, .. } = unwrapped_stmt(stmt) {
