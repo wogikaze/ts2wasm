@@ -675,6 +675,44 @@ pub(crate) fn collection_method_runtime_fn_arg(method: &str) -> Option<RuntimeFn
         "values" => Some(RuntimeFn::ArrayValues),
         "keys" => Some(RuntimeFn::ArrayKeys),
         "entries" => Some(RuntimeFn::ArrayEntries),
+        // String-only prototype methods — safe to dispatch by method name because the
+        // runtime function checks the receiver tag and throws TypeError for non-strings.
+        // NOTE: Methods shared with Array (slice, indexOf, includes, lastIndexOf, at, concat)
+        // are NOT added here — they are handled by the Array variants above.
+        "replace" => Some(RuntimeFn::StringReplace),
+        "replaceAll" => Some(RuntimeFn::StringReplaceAll),
+        "split" => Some(RuntimeFn::StringSplit),
+        "match" => Some(RuntimeFn::StringMatch),
+        "matchAll" => Some(RuntimeFn::StringMatchAll),
+        "search" => Some(RuntimeFn::StringSearch),
+        "charAt" => Some(RuntimeFn::StringCharAt),
+        "charCodeAt" => Some(RuntimeFn::StringCharCodeAt),
+        "codePointAt" => Some(RuntimeFn::StringCodePointAt),
+        "substring" => Some(RuntimeFn::StringSubstring),
+        "substr" => Some(RuntimeFn::StringSubstr),
+        "padStart" => Some(RuntimeFn::StringPadStart),
+        "padEnd" => Some(RuntimeFn::StringPadEnd),
+        "repeat" => Some(RuntimeFn::StringRepeat),
+        "trim" => Some(RuntimeFn::StringTrim),
+        "trimStart" => Some(RuntimeFn::StringTrimStart),
+        "trimEnd" => Some(RuntimeFn::StringTrimEnd),
+        "toUpperCase" => Some(RuntimeFn::StringToUpperCase),
+        "toLowerCase" => Some(RuntimeFn::StringToLowerCase),
+        "startsWith" => Some(RuntimeFn::StringStartsWith),
+        "endsWith" => Some(RuntimeFn::StringEndsWith),
+        "localeCompare" => Some(RuntimeFn::StringLocaleCompare),
+        "normalize" => Some(RuntimeFn::StringNormalize),
+        "isWellFormed" => Some(RuntimeFn::StringIsWellFormed),
+        "toWellFormed" => Some(RuntimeFn::StringToWellFormed),
+        // Number-only prototype methods
+        "toFixed" => Some(RuntimeFn::NumberToFixed),
+        "toExponential" => Some(RuntimeFn::NumberToExponential),
+        "toPrecision" => Some(RuntimeFn::NumberToPrecision),
+        // Object prototype methods (shared by most objects)
+        "hasOwnProperty" => Some(RuntimeFn::ObjectHasOwnProperty),
+        "propertyIsEnumerable" => Some(RuntimeFn::PropertyIsEnumerable),
+        "isPrototypeOf" => Some(RuntimeFn::IsPrototypeOf),
+        "valueOf" => Some(RuntimeFn::ValueOf),
         _ => None,
     }
 }
