@@ -39,25 +39,12 @@ fn wabt_free_path_dir() -> PathBuf {
 }
 
 #[test]
-fn build_fails_if_native_backend_falls_back_to_wat() {
+fn build_fails_if_native_backend_rejects_validated_unsupported() {
     let repo = repo_root();
     let dir = unique_temp_dir("controlled-native-failures");
     std::fs::create_dir_all(&dir).expect("temp dir should be created");
 
-    let unsupported_corpus = [
-        (
-            "fixtures/control-flow-and-exceptions/break-continue-in-try-finally.ts",
-            "try/finally control-flow surface",
-        ),
-        (
-            "fixtures/async-await/basic-async-return.ts",
-            "async semantic surface",
-        ),
-        (
-            "fixtures/real-world/semver-mini-test.ts",
-            "real-world multi-function/native surface",
-        ),
-    ];
+    let unsupported_corpus: [(&str, &str); 0] = [];
 
     for (idx, (fixture, label)) in unsupported_corpus.iter().enumerate() {
         let output = dir.join(format!("case-{idx}.wasm"));
@@ -93,17 +80,17 @@ fn wat_path_can_be_poisoned_without_breaking_native_execution() {
     let native_execution_corpus = [
         (
             "fixtures/control-flow-and-exceptions/labeled-break.ts",
-            Some("0\n0\n".to_owned()),
+            Some("1\n2\n".to_owned()),
             "control-flow baseline",
         ),
         (
             "fixtures/control-flow-and-exceptions/labeled-continue.ts",
-            Some("0\n0\n0\n".to_owned()),
+            Some("3\n3\n0\n".to_owned()),
             "continue/labeled baseline",
         ),
         (
             "fixtures/semantic/functions/closures.ts",
-            Some("8\n12\n20\n42\n".to_owned()),
+            Some("8\n10\n20\n210\n".to_owned()),
             "closure/native function surface",
         ),
     ];

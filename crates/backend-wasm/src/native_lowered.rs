@@ -4434,6 +4434,10 @@ impl<'a> NativeLoweredEmitter<'a> {
                 out.push(WasmInstr::I32Const(STATIC_REF_TOKEN));
                 Ok(())
             }
+            LoweredExpr::This(_) => {
+                out.push(WasmInstr::Call(RuntimeFn::GlobalThis.symbol().to_owned()));
+                Ok(())
+            }
             _ => Err(unsupported(native_expr_unsupported_reason(expr))),
         }
     }
@@ -35116,7 +35120,6 @@ fn native_raw_number_operand(expr: &LoweredExpr, functions: &[LoweredFunction]) 
 
 fn native_expr_unsupported_reason(expr: &LoweredExpr) -> &'static str {
     match expr {
-        LoweredExpr::This(_) => "native LoweredProgram emitter does not support this binding",
         LoweredExpr::ArrowFn {
             representation: ClosureRepresentation::HeapObject,
             ..
@@ -35172,6 +35175,7 @@ fn native_expr_unsupported_reason(expr: &LoweredExpr) -> &'static str {
         | LoweredExpr::Block { .. } => {
             "native LoweredProgram emitter does not support this expression variant"
         }
+        LoweredExpr::This(_) => "native LoweredProgram emitter does not support this binding",
     }
 }
 
