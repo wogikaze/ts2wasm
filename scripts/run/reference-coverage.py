@@ -940,6 +940,12 @@ def feature_label(diag_code, err_file, file_path, phase=None):
         return "parser-syntax"
     elif diag_code == "UnsupportedRuntimeSubset":
         return "runtime-subset"
+    elif diag_code == "DuplicateLabel":
+        return "duplicate-label"
+    elif diag_code == "UnresolvedLabel":
+        return "unresolved-label"
+    elif diag_code == "ClassSideEffect":
+        return "class-side-effect"
     
     # Phase-aware classification for UnsupportedSyntax
     # Parser-phase diagnostics (lexer, parser, ast-validator) are true parser gaps
