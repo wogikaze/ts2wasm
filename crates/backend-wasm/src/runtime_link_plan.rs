@@ -256,6 +256,9 @@ fn collect_required_runtime_expr(plan: &mut RuntimeLinkPlan, expr: &LoweredExpr)
                 LoweredUnaryOp::Void => {
                     // Void evaluates inner expr for side effects, no runtime function needed
                 }
+                LoweredUnaryOp::BitwiseNot => {
+                    // Handled by native binary path, no WAT runtime needed
+                }
             }
         }
         LoweredExpr::Assign { expr, .. } => {
@@ -422,6 +425,9 @@ fn collect_required_runtime_expr(plan: &mut RuntimeLinkPlan, expr: &LoweredExpr)
                     plan.add_required_runtime(RuntimeFn::TruthyBool)
                 }
                 LoweredBinaryOp::NullishCoalesce => {}
+                LoweredBinaryOp::Shl | LoweredBinaryOp::Shr | LoweredBinaryOp::ShrU => {
+                    // Handled by native binary path, no WAT runtime needed
+                }
             }
         }
         LoweredExpr::Call { kind, args, .. } => {

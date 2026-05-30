@@ -71,7 +71,10 @@ impl MirExpr {
                 | LoweredBinaryOp::Modulo
                 | LoweredBinaryOp::BitwiseAnd
                 | LoweredBinaryOp::BitwiseXor
-                | LoweredBinaryOp::BitwiseOr => {
+                | LoweredBinaryOp::BitwiseOr
+                | LoweredBinaryOp::Shl
+                | LoweredBinaryOp::Shr
+                | LoweredBinaryOp::ShrU => {
                     if left.inferred_type() == super::InferredType::Number
                         && right.inferred_type() == super::InferredType::Number
                     {

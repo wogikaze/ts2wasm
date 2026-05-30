@@ -512,6 +512,9 @@ pub enum LoweredBinaryOp {
     And,
     Or,
     NullishCoalesce,
+    Shl,
+    Shr,
+    ShrU,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -522,6 +525,7 @@ pub enum LoweredUnaryOp {
     TypeOf,
     Delete,
     Void,
+    BitwiseNot,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -571,7 +575,10 @@ impl LoweredExpr {
                 | LoweredBinaryOp::Modulo
                 | LoweredBinaryOp::BitwiseAnd
                 | LoweredBinaryOp::BitwiseXor
-                | LoweredBinaryOp::BitwiseOr => {
+                | LoweredBinaryOp::BitwiseOr
+                | LoweredBinaryOp::Shl
+                | LoweredBinaryOp::Shr
+                | LoweredBinaryOp::ShrU => {
                     if left.inferred_type() == InferredType::Number
                         && right.inferred_type() == InferredType::Number
                     {

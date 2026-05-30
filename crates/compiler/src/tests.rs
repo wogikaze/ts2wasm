@@ -378,7 +378,10 @@ fn compiler_rejects_strict_body_duplicate_function_constructor_params() {
         r#"let value = Function("a", "a", "\"use strict\"; return a");"#,
     );
     assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-    assert!(err.message.contains("Duplicate parameter name"));
+    assert!(
+        err.message.contains("duplicate parameter"),
+        "unexpected diagnostic: {err:?}"
+    );
 }
 
 #[test]
@@ -433,7 +436,7 @@ fn compiler_rejects_strict_body_eval_arguments_function_constructor_params() {
         r#"let value = Function("arguments", "\"use strict\"; return arguments");"#,
     ] {
         let err = parse_resolve_and_expand_dynamic_code_err(source);
-        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert_eq!(err.code, DiagCode::UnsupportedEval);
         assert!(
             err.message.contains("Unexpected eval or arguments"),
             "unexpected diagnostic for {source}: {err:?}"

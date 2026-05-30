@@ -448,7 +448,7 @@ fn binary_op_range(op: LoweredBinaryOp, left: ValueRange, right: ValueRange) -> 
 
         // Bitwise ops produce i32 results — conservative for now.
         LoweredBinaryOp::BitwiseAnd => Some(ValueRange::everything()),
-        LoweredBinaryOp::BitwiseXor | LoweredBinaryOp::BitwiseOr => Some(ValueRange::everything()),
+        LoweredBinaryOp::BitwiseXor | LoweredBinaryOp::BitwiseOr | LoweredBinaryOp::Shl | LoweredBinaryOp::Shr | LoweredBinaryOp::ShrU => Some(ValueRange::everything()),
 
         // Division/power/modulo: conservative.
         LoweredBinaryOp::Divide | LoweredBinaryOp::Power | LoweredBinaryOp::Modulo => {
