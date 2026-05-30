@@ -120,14 +120,10 @@ impl super::Resolver {
                         continue;
                     }
 
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message:
-                            "issue-274: array literal spread is only supported for literal arrays, known dense array locals, and known Set locals in this milestone"
-                                .to_owned(),
-                        span: Some(Span::generated("issue-274")),
-
-                        phase: None,});
+                    return Err(Diagnostic::unsupported_at(
+                        Span::generated("issue-274"),
+                        "unsupported syntax",
+                    ));
                 }
                 ResolvedArrayElement::Present(expr) => pending_dense.push(self.lower_expr(expr)?),
                 ResolvedArrayElement::Hole => {
@@ -305,16 +301,13 @@ impl super::Resolver {
             [source, map_fn] => (source, Some(map_fn), None),
             [source, map_fn, this_arg] => (source, Some(map_fn), Some(this_arg)),
             _ => {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!(
+                return Err(Diagnostic::unsupported_at(
+                    span,
+                    format!(
                         "issue-313: Array.from currently supports at most 3 arguments, got {}",
                         args.len()
                     ),
-                    span: Some(span),
-
-                    phase: None,
-                });
+                ));
             }
         };
 
@@ -341,15 +334,7 @@ impl super::Resolver {
                     });
                 }
             }
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message:
-                    "issue-313: Array.from with a general mapFn callback is not supported in this milestone for runtime-known sources"
-                        .to_owned(),
-                span: Some(span),
-
-                phase: None,
-            });
+            return Err(Diagnostic::unsupported_at(span, "unsupported syntax"));
         }
 
         // No mapFn, single source: copy elements (existing behavior)
@@ -592,15 +577,9 @@ impl super::Resolver {
             .iter()
             .any(|capture| !self.ctx.facts.env_cell_names.contains(capture))
         {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
-                    "issue-062e: nested function `{name}` mutates a captured outer local; mutable closure environments require heap environment support"
-                ),
-                span: None,
-
-                phase: None,
-            });
+            return Err(Diagnostic::unsupported(format!(
+                "issue-062e: nested function `{name}` mutates a captured outer local; mutable closure environments require heap environment support"
+            )));
         }
         let captures = capture_names
             .iter()
@@ -737,14 +716,7 @@ impl super::Resolver {
                     {
                         return Err(crate::lowered::resolver::expr::facts::unsupported_symbol_iterator_spread_diagnostic());
                     } else {
-                        return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message:
-                                "issue-274: array literal spread is only supported for literal arrays, known static array locals, and ASCII literal-derived strings in this milestone"
-                                    .to_owned(),
-                            span: Some(Span::generated("issue-274")),
-
-                            phase: None,});
+                                                return Err(Diagnostic::unsupported_at(Span::generated("issue-274"), "unsupported syntax"));
                     }
                 }
                 ResolvedArrayElement::Present(expr) => lowered.push(self.lower_expr(expr)?),
@@ -962,14 +934,7 @@ impl super::Resolver {
                 ..
             } => {
                 if params.len() > 4 {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message:
-                            "issue-270: array method callbacks with more than 4 parameters are not supported"
-                                .to_owned(),
-                        span: Some(span),
-
-                        phase: None,});
+                    return Err(Diagnostic::unsupported_at(span, "unsupported syntax"));
                 }
                 let LoweredExpr::ArrowFn {
                     func_id, captures, ..
@@ -987,14 +952,7 @@ impl super::Resolver {
                 ..
             } => {
                 if params.len() > 4 {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message:
-                            "issue-270: array method callbacks with more than 4 parameters are not supported"
-                                .to_owned(),
-                        span: Some(span),
-
-                        phase: None,});
+                    return Err(Diagnostic::unsupported_at(span, "unsupported syntax"));
                 }
                 let LoweredExpr::ArrowFn {
                     func_id, captures, ..
@@ -1019,13 +977,13 @@ impl super::Resolver {
                     .function_ids
                     .get(name.as_str())
                     .copied()
-                    .ok_or_else(|| Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: format!(
-                            "issue-270: function `{name}` is not a known function reference"
-                        ),
-                        span: Some(span),
-                        phase: None,
+                    .ok_or_else(|| {
+                        Diagnostic::unsupported_at(
+                            span,
+                            format!(
+                                "issue-270: function `{name}` is not a known function reference"
+                            ),
+                        )
                     })?;
                 let param_count = self
                     .ctx
@@ -1037,28 +995,17 @@ impl super::Resolver {
                 (func_id, vec![], param_count)
             }
             _ => {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message:
-                        "issue-270: non-arrow-function callbacks are not yet supported for array methods in this slice"
-                            .to_owned(),
-                    span: Some(span),
-
-                    phase: None,});
+                return Err(Diagnostic::unsupported_at(span, "unsupported syntax"));
             }
         };
 
         // Determine the init expression for reduce (if applicable)
         let init_expr = if method == "reduce" || method == "reduceRight" {
             let Some(init_arg) = args.get(1) else {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message:
-                        "issue-270: Array.prototype.reduce without initialValue is not yet supported"
-                            .to_owned(),
-                    span: Some(Span::generated("issue-270")),
-
-                    phase: None,});
+                return Err(Diagnostic::unsupported_at(
+                    Span::generated("issue-270"),
+                    "unsupported syntax",
+                ));
             };
             Some(self.lower_expr(init_arg)?)
         } else {
@@ -1148,14 +1095,7 @@ impl super::Resolver {
             });
         };
         if !crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, items) {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message:
-                    "issue-5004: Object.groupBy currently supports statically known array inputs"
-                        .to_owned(),
-                span: Some(span),
-                phase: None,
-            });
+            return Err(Diagnostic::unsupported_at(span, "unsupported syntax"));
         }
         let ResolvedExpr::ArrowFn {
             params,
@@ -1164,21 +1104,16 @@ impl super::Resolver {
             ..
         } = callback
         else {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "issue-5004: Object.groupBy currently supports arrow callbacks".to_owned(),
-                span: Some(span),
-                phase: None,
-            });
+            return Err(Diagnostic::unsupported_at(
+                span,
+                "issue-5004: Object.groupBy currently supports arrow callbacks".to_owned(),
+            ));
         };
         if params.len() > 3 {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "issue-5004: Object.groupBy callbacks support up to 3 parameters"
-                    .to_owned(),
-                span: Some(span),
-                phase: None,
-            });
+            return Err(Diagnostic::unsupported_at(
+                span,
+                "issue-5004: Object.groupBy callbacks support up to 3 parameters",
+            ));
         }
         let LoweredExpr::ArrowFn {
             func_id, captures, ..
@@ -1350,13 +1285,10 @@ impl super::Resolver {
             });
         };
         if !crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, items) {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "issue-469: Map.groupBy currently supports statically known array inputs"
-                    .to_owned(),
-                span: Some(span),
-                phase: None,
-            });
+            return Err(Diagnostic::unsupported_at(
+                span,
+                "issue-469: Map.groupBy currently supports statically known array inputs",
+            ));
         }
         let ResolvedExpr::ArrowFn {
             params,
@@ -1365,20 +1297,16 @@ impl super::Resolver {
             ..
         } = callback
         else {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "issue-469: Map.groupBy currently supports arrow callbacks".to_owned(),
-                span: Some(span),
-                phase: None,
-            });
+            return Err(Diagnostic::unsupported_at(
+                span,
+                "issue-469: Map.groupBy currently supports arrow callbacks".to_owned(),
+            ));
         };
         if params.len() > 3 {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "issue-469: Map.groupBy callbacks support up to 3 parameters".to_owned(),
-                span: Some(span),
-                phase: None,
-            });
+            return Err(Diagnostic::unsupported_at(
+                span,
+                "issue-469: Map.groupBy callbacks support up to 3 parameters".to_owned(),
+            ));
         }
         let LoweredExpr::ArrowFn {
             func_id, captures, ..
@@ -1635,16 +1563,10 @@ impl super::Resolver {
                 self.lower_array_map_callback(receiver_local, i, func_id, &captures, param_count)?
             }
             _ => {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!(
-                        "issue-270: array method `{}` is not supported for user callbacks",
-                        method
-                    ),
-                    span: None,
-
-                    phase: None,
-                });
+                return Err(Diagnostic::unsupported(format!(
+                    "issue-270: array method `{}` is not supported for user callbacks",
+                    method
+                )));
             }
         };
         stmts.extend(init_stmts);
@@ -2462,15 +2384,10 @@ impl super::Resolver {
             || -> LoweredExpr { LoweredExpr::Local(receiver_local, Span::generated("local")) };
 
         let Some(init_expr) = init_expr else {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message:
-                    "issue-270: Array.prototype.reduce without initialValue is not yet supported"
-                        .to_owned(),
-                span: Some(Span::generated("issue-270")),
-
-                phase: None,
-            });
+            return Err(Diagnostic::unsupported_at(
+                Span::generated("issue-270"),
+                "unsupported syntax",
+            ));
         };
         let acc = self.alloc_temp();
         init_stmts.push(LoweredStmt::Let(

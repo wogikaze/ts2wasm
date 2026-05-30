@@ -99,29 +99,22 @@ impl super::super::Resolver {
                     .ctx
                     .strict_mode_check(crate::lowered::ctx::StrictModeCheck::StrictDelete) =>
             {
-                Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!(
-                        "issue-450: {:?} strict mode forbids deleting identifier `{name}`",
-                        crate::lowered::ctx::StrictModeCheck::StrictDelete
-                    ),
-                    span: None,
-                    phase: None,
-                })
+                Err(Diagnostic::unsupported(format!(
+                    "issue-450: {:?} strict mode forbids deleting identifier `{name}`",
+                    crate::lowered::ctx::StrictModeCheck::StrictDelete
+                )))
             }
             ResolvedExpr::PropertyAccess { object, key, span } => {
                 if is_private_field_storage_key(key) {
                     return Err(private_storage_observable_access_diagnostic(Some(*span)));
                 }
                 if key.starts_with('#') {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: format!(
+                    return Err(Diagnostic::unsupported_at(
+                        *span,
+                        format!(
                             "issue-255: private member `{key}` cannot be deleted in this private class runtime slice"
                         ),
-                        span: Some(*span),
-                        phase: None,
-                    });
+                    ));
                 }
                 if let Some(proxy) =
                     crate::lowered::resolver::expr::facts::resolved_expr_proxy_binding(

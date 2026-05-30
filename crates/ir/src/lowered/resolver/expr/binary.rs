@@ -366,14 +366,7 @@ impl super::super::Resolver {
                 || (crate::lowered::resolver::expr::facts::resolved_expr_is_bigint_div_rem_operand(&self.ctx, left)
                     && crate::lowered::resolver::expr::facts::resolved_expr_is_control_flow_mixed_bigint(&self.ctx, right)))
         {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message:
-                    "issue-370: mixed Number/BigInt arithmetic TypeError parity is not implemented in the control-flow BigInt div/rem slice"
-                        .to_owned(),
-                span: Some(Span::generated("issue-370")),
-                phase: None,
-            });
+                        return Err(Diagnostic::unsupported_at(Span::generated("issue-370"), "unsupported syntax"));
         }
         if matches!(
             op,

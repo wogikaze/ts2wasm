@@ -1185,19 +1185,16 @@ impl<'a> Lexer<'a> {
                 }
                 // Detect TypeScript triple-slash directives: /// <reference ...
                 if comment_content.starts_with("/ <reference") {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: "TypeScript triple-slash directives are not supported".to_string(),
-                        span: Some(Span {
+                    return Err(Diagnostic::unsupported_at(
+                        Span {
                             start: self
                                 .cursor
                                 .wrapping_sub(comment_content.len())
                                 .wrapping_sub(2),
                             end: self.cursor,
-                        }),
-
-                        phase: None,
-                    });
+                        },
+                        "TypeScript triple-slash directives are not supported".to_string(),
+                    ));
                 }
                 Ok(true)
             }

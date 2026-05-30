@@ -99,12 +99,10 @@ fn validate_class_body(statements: &[Stmt]) -> Result<(), Diagnostic> {
         match stmt {
             Stmt::Function { body, .. } => validate_block(body)?,
             _ => {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "class body currently supports methods only".to_owned(),
-                    span: Some(stmt.span()),
-                    phase: None,
-                });
+                return Err(Diagnostic::unsupported_at(
+                    stmt.span(),
+                    "class body currently supports methods only".to_owned(),
+                ));
             }
         }
     }
@@ -365,12 +363,10 @@ fn namespace_declaration_has_body(tokens: &[SpannedToken], mut index: usize) -> 
 }
 
 pub(crate) fn namespace_only_section_diagnostic(specifier: &str, span: Span) -> Diagnostic {
-    Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message: format!(
+    Diagnostic::unsupported_at(
+        span,
+        format!(
             "multi-section section `{specifier}` contains namespace-only declarations; namespace lowering is not implemented"
         ),
-        span: Some(span),
-        phase: None,
-    }
+    )
 }

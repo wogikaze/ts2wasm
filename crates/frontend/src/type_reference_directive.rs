@@ -24,18 +24,15 @@ pub fn validate_type_reference_directives(source: &str) -> Result<(), Diagnostic
                 .find(package_name)
                 .map(|start| line_start + start)
                 .unwrap_or(line_start);
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
-                    "Triple-slash reference types directive for `{package_name}` requires type package resolution, which is not supported in this milestone"
-                ),
-                span: Some(Span {
+            return Err(Diagnostic::unsupported_at(
+                Span {
                     start: package_start,
                     end: package_start + package_name.len(),
-                }),
-
-                phase: None,
-            });
+                },
+                format!(
+                    "Triple-slash reference types directive for `{package_name}` requires type package resolution, which is not supported in this milestone"
+                ),
+            ));
         }
 
         previous_line_ts_ignore = is_ts_ignore_line(trimmed);

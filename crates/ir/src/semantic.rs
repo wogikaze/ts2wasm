@@ -1427,13 +1427,7 @@ impl<'a> HirLowerer<'a> {
 }
 
 fn unsupported(message: &str) -> Diagnostic {
-    Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message: message.to_owned(),
-        span: Some(Span::generated("unsupported")),
-
-        phase: None,
-    }
+    Diagnostic::unsupported_at(Span::generated("unsupported"), message.to_owned())
 }
 
 #[cfg(test)]

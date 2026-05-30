@@ -5511,13 +5511,10 @@ pub(super) fn lower_binary_op(op: BinaryOp) -> Result<LoweredBinaryOp, Diagnosti
         | BinaryOp::UnsignedRightShift
         | BinaryOp::In
         | BinaryOp::InstanceOf
-        | BinaryOp::Pipeline => Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: format!("binary operator {:?} not yet supported", op),
-            span: None,
-
-            phase: None,
-        }),
+        | BinaryOp::Pipeline => Err(Diagnostic::unsupported(format!(
+            "binary operator {:?} not yet supported",
+            op
+        ))),
     }
 }
 
@@ -5537,21 +5534,15 @@ pub(super) fn lower_unary_op(op: UnaryOp) -> Result<LoweredUnaryOp, Diagnostic> 
         UnaryOp::TypeOf => Ok(LoweredUnaryOp::TypeOf),
         UnaryOp::Delete => Ok(LoweredUnaryOp::Delete),
         UnaryOp::Increment | UnaryOp::Decrement | UnaryOp::PreIncrement | UnaryOp::PreDecrement => {
-            Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!("issue-268: unary operator {:?} not yet supported", op),
-                span: None,
-
-                phase: None,
-            })
+            Err(Diagnostic::unsupported(format!(
+                "issue-268: unary operator {:?} not yet supported",
+                op
+            )))
         }
-        UnaryOp::BitwiseNot => Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: format!("unary operator {:?} not yet supported", op),
-            span: None,
-
-            phase: None,
-        }),
+        UnaryOp::BitwiseNot => Err(Diagnostic::unsupported(format!(
+            "unary operator {:?} not yet supported",
+            op
+        ))),
         UnaryOp::Void => Ok(LoweredUnaryOp::Void),
     }
 }

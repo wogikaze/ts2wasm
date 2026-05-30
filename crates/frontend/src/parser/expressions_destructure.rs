@@ -142,12 +142,7 @@ impl Parser {
 
         while !matches!(self.peek(), Some(Token::RightBracket)) {
             if self.is_at_end() {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "Unterminated array assignment pattern".to_owned(),
-                    span: Some(start),
-
-                    phase: None,});
+                                return Err(Diagnostic::unsupported_at(start, "Unterminated array assignment pattern".to_owned()));
             }
 
             if self.consume(TokenKind::Comma) {
@@ -201,12 +196,7 @@ impl Parser {
 
         while !matches!(self.peek(), Some(Token::RightBrace)) {
             if self.is_at_end() {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "Unterminated object assignment pattern".to_owned(),
-                    span: Some(start),
-
-                    phase: None,});
+                                return Err(Diagnostic::unsupported_at(start, "Unterminated object assignment pattern".to_owned()));
             }
 
             if let Some(rest_span) = self.consume_span(TokenKind::DotDotDot) {
@@ -225,13 +215,7 @@ impl Parser {
             } else if shorthand_allowed {
                 key
             } else {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "Literal object assignment keys require a target after `:`"
-                        .to_owned(),
-                    span: self.peek_span(),
-
-                    phase: None,});
+                                return Err(Diagnostic::unsupported_at(self.peek_span(), "Literal object assignment keys require a target after `:`"));
             };
 
             if self.consume(TokenKind::Equal) {
@@ -272,12 +256,7 @@ impl Parser {
             }
             Some(Token::LeftBracket) => self.parse_array_assignment_pattern(),
             Some(Token::LeftBrace) => self.parse_object_assignment_pattern(),
-            other => Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!("Expected assignment target or pattern, got {other:?}"),
-                span: self.peek_span(),
-
-                phase: None,}),
+                        other => Err(Diagnostic::unsupported_at(self.peek_span(), format!("Expected assignment target or pattern, got {other:?}"))),
         }
     }
 
@@ -298,25 +277,12 @@ impl Parser {
                     span,
                 ))
             }
-            _ => Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "Invalid destructuring assignment target".to_owned(),
-                span: Some(span),
-
-                phase: None,}),
+                        _ => Err(Diagnostic::unsupported_at(span, "Invalid destructuring assignment target".to_owned())),
         }
     }
 
     fn invalid_rest_assignment_diagnostic(&self, span: Span) -> Diagnostic {
-        Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message:
-                "Rest assignment target must be the final element in an assignment pattern"
-                    .to_owned(),
-            span: Some(span),
-
-
-            phase: None,}
+                Diagnostic::unsupported_at(span, "unsupported syntax")
     }
 
 }

@@ -156,28 +156,22 @@ impl super::super::Resolver {
         let func_name = match callee {
             ResolvedExpr::Ident(name) => name,
             expr @ (ResolvedExpr::Call { .. } | ResolvedExpr::New { .. }) => {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!(
+                return Err(Diagnostic::unsupported_at(
+                    span,
+                    format!(
                         "nested call expression is not supported; {} has no call signatures",
                         match expr {
                             ResolvedExpr::Call { .. } => "the return value of the outer call",
                             _ => "the constructed instance",
                         }
                     ),
-                    span: Some(span),
-
-                    phase: None,
-                });
+                ));
             }
             _ => {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "only identifier calls are supported in expression context".to_owned(),
-                    span: Some(span),
-
-                    phase: None,
-                });
+                return Err(Diagnostic::unsupported_at(
+                    span,
+                    "only identifier calls are supported in expression context".to_owned(),
+                ));
             }
         };
 
@@ -348,38 +342,28 @@ impl super::super::Resolver {
 
         if func_name == "super" {
             if !self.ctx.classes.in_constructor {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "super(...) is only supported in constructors".to_owned(),
-                    span: Some(Span::generated("super-spread")),
-
-                    phase: None,
-                });
+                return Err(Diagnostic::unsupported_at(
+                    Span::generated("super-spread"),
+                    "super(...) is only supported in constructors".to_owned(),
+                ));
             }
-            let class_name = self
-                .ctx
-                .classes
-                .current_class
-                .as_ref()
-                .ok_or_else(|| Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "super(...) requires class context".to_owned(),
-                    span: Some(Span::generated("super-spread")),
-
-                    phase: None,
-                })?;
+            let class_name = self.ctx.classes.current_class.as_ref().ok_or_else(|| {
+                Diagnostic::unsupported_at(
+                    Span::generated("super-spread"),
+                    "super(...) requires class context".to_owned(),
+                )
+            })?;
             let parent_name = self
                 .ctx
                 .classes
                 .class_parents
                 .get(class_name)
                 .and_then(|p| p.clone())
-                .ok_or_else(|| Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "super(...) used in class without extends".to_owned(),
-                    span: Some(Span::generated("super-spread")),
-
-                    phase: None,
+                .ok_or_else(|| {
+                    Diagnostic::unsupported_at(
+                        Span::generated("super-spread"),
+                        "super(...) used in class without extends".to_owned(),
+                    )
                 })?;
             // SuperCallThis: derived constructors pass the active this local into
             // the parent constructor before forwarding explicit super(...) args.
@@ -479,15 +463,12 @@ impl super::super::Resolver {
             && self.ctx.facts.nullish_locals.contains(&local_id)
             && !self.ctx.facts.env_cell_locals.contains(&local_id)
         {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
+            return Err(Diagnostic::unsupported_at(
+                span,
+                format!(
                     "issue-5195: callable interface-typed local `{func_name}` is not callable — the variable is never assigned"
                 ),
-                span: Some(span),
-
-                phase: None,
-            });
+            ));
         }
 
         if let Ok(local_id) = self.resolve_local(func_name)
@@ -579,15 +560,12 @@ impl super::super::Resolver {
                     .class_constructor_ids
                     .contains_key(func_name.as_str()) =>
             {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!(
+                return Err(Diagnostic::unsupported_at(
+                    span,
+                    format!(
                         "issue-5197: class `{func_name}` cannot be called without `new` — constructors are not callable"
                     ),
-                    span: Some(span),
-
-                    phase: None,
-                });
+                ));
             }
             Err(_) => {
                 return Err(Diagnostic {
@@ -709,15 +687,12 @@ impl super::super::Resolver {
             .cloned()
             .unwrap_or_default();
         if signature.needs_receiver && !signature.is_strict {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
+            return Err(Diagnostic::unsupported_at(
+                span,
+                format!(
                     "issue-062d: direct call `{func_name}(...)` cannot bind a supported receiver for `this`; call through a supported receiver object"
                 ),
-                span: Some(span),
-
-                phase: None,
-            });
+            ));
         }
         let lowered_args = self.lower_function_call_args(
             func_id,
@@ -741,14 +716,7 @@ impl super::super::Resolver {
         span: Span,
     ) -> Result<LoweredExpr, Diagnostic> {
         let ResolvedExpr::Ident(func_name) = object else {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message:
-                    "issue-458: Function.prototype.bind direct calls require an identifier function"
-                        .to_owned(),
-                span: Some(span),
-                phase: None,
-            });
+            return Err(Diagnostic::unsupported_at(span, "unsupported syntax"));
         };
         let func_id = self.resolve_func(func_name)?;
         let receiver = match bind_args.first() {
@@ -840,22 +808,12 @@ impl super::super::Resolver {
             });
         }
         if params.iter().any(|param| param.is_rest) {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "issue-274: direct function-expression spread calls do not support rest parameters in this slice".to_owned(),
-                span: Some(span),
-
-                phase: None,});
+            return Err(Diagnostic::unsupported_at(span, "issue-274: direct function-expression spread calls do not support rest parameters in this slice".to_owned()));
         }
         // Only reject this/arguments for spread calls, not all function-expr calls
         let has_spread_args = args.iter().any(|a| matches!(a, ResolvedExpr::Spread(_)));
         if has_spread_args && (block_contains_this(body) || block_contains_arguments(body)) {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "issue-274: direct function-expression spread calls with `this` or `arguments` require broader call-expression runtime support".to_owned(),
-                span: Some(span),
-
-                phase: None,});
+            return Err(Diagnostic::unsupported_at(span, "issue-274: direct function-expression spread calls with `this` or `arguments` require broader call-expression runtime support".to_owned()));
         }
 
         let lowered = self.lower_named_function_expr(
@@ -1448,15 +1406,12 @@ impl super::super::Resolver {
                 if let Some(length) = signature.metadata_length {
                     Ok(LoweredExpr::Number(length as i32, Span::generated("num")))
                 } else {
-                    Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: format!(
+                    Err(Diagnostic::unsupported_at(
+                        span,
+                        format!(
                             "issue-062f: function `{name}` length metadata is only supported for fixed-arity function declarations"
                         ),
-                        span: Some(span),
-
-                        phase: None,
-                    })
+                    ))
                 }
             }
             "prototype" => Ok(LoweredExpr::ObjectNew {
@@ -1464,15 +1419,10 @@ impl super::super::Resolver {
                 non_enumerable: 0,
                 span: Span::generated("function_prototype_object"),
             }),
-            _ => Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
-                    "issue-062f: function `{name}` metadata property `{key}` is not supported"
-                ),
-                span: Some(span),
-
-                phase: None,
-            }),
+            _ => Err(Diagnostic::unsupported_at(
+                span,
+                format!("issue-062f: function `{name}` metadata property `{key}` is not supported"),
+            )),
         }
     }
 }
@@ -1582,12 +1532,7 @@ fn function_apply_explicit_args(
         Some(ResolvedExpr::Ident(name)) => Ok(vec![ResolvedExpr::Spread(Box::new(
             ResolvedExpr::Ident(name.clone()),
         ))]),
-        Some(_) => Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: "issue-458: Function.prototype.apply bound values currently support array literals, dense array locals, null, or undefined argArray".to_owned(),
-            span: Some(span),
-            phase: None,
-        }),
+                Some(_) => Err(Diagnostic::unsupported_at(span, "issue-458: Function.prototype.apply bound values currently support array literals, dense array locals, null, or undefined argArray".to_owned())),
     }
 }
 

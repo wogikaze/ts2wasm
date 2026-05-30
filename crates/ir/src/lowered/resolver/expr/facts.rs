@@ -455,14 +455,7 @@ pub(crate) fn unsupported_generator_spread_diagnostic() -> Diagnostic {
 }
 
 pub(crate) fn unsupported_symbol_iterator_spread_diagnostic() -> Diagnostic {
-    Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message:
-            "issue-353: custom iterable spread via Symbol.iterator requires iterator protocol runtime support in this milestone"
-                .to_owned(),
-        span: Some(Span::generated("issue-353")),
-        phase: None,
-    }
+    Diagnostic::unsupported_at(Span::generated("issue-353"), "unsupported syntax")
 }
 
 pub(crate) fn update_static_object_literal_local_on_let(

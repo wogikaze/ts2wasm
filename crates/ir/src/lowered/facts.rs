@@ -387,15 +387,14 @@ impl StaticFacts {
 
     /// Record that a local's return type is the unconstrained `any` type.
     pub fn record_any_return_type(&mut self, local_id: LocalId) {
-        self.any_return_type_locals.insert(
-            local_id,
-            InferredType::Any,
-        );
+        self.any_return_type_locals
+            .insert(local_id, InferredType::Any);
     }
 
     /// Check if a local's inferred return type is the unconstrained `any` type.
     pub fn is_any_return_type(&self, local_id: LocalId) -> bool {
-        self.any_return_type_locals.get(&local_id)
+        self.any_return_type_locals
+            .get(&local_id)
             .map(|t| matches!(t, InferredType::Any))
             .unwrap_or(false)
     }

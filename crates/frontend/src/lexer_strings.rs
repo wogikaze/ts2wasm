@@ -256,12 +256,7 @@ impl<'a> Lexer<'a> {
 
     fn string(&mut self) -> Result<SpannedToken, Diagnostic> {
         let start = self.cursor;
-        let quote = self.advance_char().ok_or(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: "expected string delimiter".to_owned(),
-            span: Some(Span { start, end: self.cursor }),
-
-            phase: None,})?;
+                let quote = self.advance_char().ok_or(Diagnostic::unsupported_at(Span { start, end: self.cursor }, "expected string delimiter".to_owned()))?;
         let mut value = String::new();
         let mut escaped = false;
 
@@ -290,29 +285,19 @@ impl<'a> Lexer<'a> {
                     'u' => self.unicode_escape_value(start)?,
                     '0'..='7' => self.legacy_octal_escape_value(ch, start)?,
                     '8' | '9' if self.strict_mode => {
-                        return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message: format!(
-                                "Legacy decimal escape \\{ch} is not allowed in strict mode"
-                            ),
-                            span: Some(Span {
-                                start: self.cursor.saturating_sub(2),
-                                end: self.cursor,
-                            }),
-
-                            phase: None,});
+                                                return Err(Diagnostic::unsupported_at(Span {
+start: self.cursor.saturating_sub(2),
+end: self.cursor,
+}, format!(
+"Legacy decimal escape \\{ch} is not allowed in strict mode"
+)));
                     }
                     '8' | '9' => ch,
                     other => {
-                        return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message: format!("unsupported escape sequence: \\{other}"),
-                            span: Some(Span {
-                                start: self.cursor.saturating_sub(2),
-                                end: self.cursor,
-                            }),
-
-                            phase: None,});
+                                                return Err(Diagnostic::unsupported_at(Span {
+start: self.cursor.saturating_sub(2),
+end: self.cursor,
+}, format!("unsupported escape sequence: \\{other}")));
                     }
                 });
                 escaped = false;
@@ -333,28 +318,18 @@ impl<'a> Lexer<'a> {
                 });
             }
             if ch == '\n' || ch == '\r' {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "raw newline in string literal is not allowed".to_owned(),
-                    span: Some(Span {
-                        start: self.cursor.saturating_sub(1),
-                        end: self.cursor,
-                    }),
-
-                    phase: None,});
+                                return Err(Diagnostic::unsupported_at(Span {
+start: self.cursor.saturating_sub(1),
+end: self.cursor,
+}, "raw newline in string literal is not allowed".to_owned()));
             }
             value.push(ch);
         }
 
-        Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: "unterminated string literal".to_owned(),
-            span: Some(Span {
-                start,
-                end: self.cursor,
-            }),
-
-            phase: None,})
+                Err(Diagnostic::unsupported_at(Span {
+start,
+end: self.cursor,
+}, "unterminated string literal".to_owned()))
     }
 
     fn legacy_octal_escape_value(
@@ -389,24 +364,14 @@ impl<'a> Lexer<'a> {
             self.advance_char();
         }
 
-        let value = u32::from_str_radix(&digits, 8).map_err(|error| Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: format!("Invalid legacy octal escape sequence: {error}"),
-            span: Some(Span {
-                start: string_start,
-                end: self.cursor,
-            }),
-
-            phase: None,})?;
-        char::from_u32(value).ok_or(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: "Invalid legacy octal escape scalar value".to_owned(),
-            span: Some(Span {
-                start: escape_start,
-                end: self.cursor,
-            }),
-
-            phase: None,})
+                let value = u32::from_str_radix(&digits, 8).map_err(|error| Diagnostic::unsupported_at(Span {
+start: string_start,
+end: self.cursor,
+}, format!("Invalid legacy octal escape sequence: {error}")))?;
+                char::from_u32(value).ok_or(Diagnostic::unsupported_at(Span {
+start: escape_start,
+end: self.cursor,
+}, "Invalid legacy octal escape scalar value".to_owned()))
     }
 
     fn hex_escape_value(
@@ -419,26 +384,16 @@ impl<'a> Lexer<'a> {
         let mut value = 0u32;
         for _ in 0..digit_count {
             let Some(ch) = self.advance_char() else {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!("unterminated {label} escape sequence"),
-                    span: Some(Span {
-                        start: string_start,
-                        end: self.cursor,
-                    }),
-
-                    phase: None,});
+                                return Err(Diagnostic::unsupported_at(Span {
+start: string_start,
+end: self.cursor,
+}, format!("unterminated {label} escape sequence")));
             };
             let Some(digit) = ch.to_digit(16) else {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!("invalid {label} escape sequence"),
-                    span: Some(Span {
-                        start: escape_start,
-                        end: self.cursor,
-                    }),
-
-                    phase: None,});
+                                return Err(Diagnostic::unsupported_at(Span {
+start: escape_start,
+end: self.cursor,
+}, format!("invalid {label} escape sequence")));
             };
             value = (value << 4) | digit;
         }
@@ -446,15 +401,10 @@ impl<'a> Lexer<'a> {
         if (0xD800..=0xDFFF).contains(&value) {
             return Ok('\u{FFFD}');
         }
-        char::from_u32(value).ok_or(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: format!("invalid {label} escape scalar value"),
-            span: Some(Span {
-                start: escape_start,
-                end: self.cursor,
-            }),
-
-            phase: None,})
+                char::from_u32(value).ok_or(Diagnostic::unsupported_at(Span {
+start: escape_start,
+end: self.cursor,
+}, format!("invalid {label} escape scalar value")))
     }
 
     fn unicode_escape_value(&mut self, string_start: usize) -> Result<char, Diagnostic> {
@@ -472,53 +422,33 @@ impl<'a> Lexer<'a> {
 
         loop {
             let Some(ch) = self.advance_char() else {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "unterminated unicode escape sequence".to_owned(),
-                    span: Some(Span {
-                        start: string_start,
-                        end: self.cursor,
-                    }),
-
-                    phase: None,});
+                                return Err(Diagnostic::unsupported_at(Span {
+start: string_start,
+end: self.cursor,
+}, "unterminated unicode escape sequence".to_owned()));
             };
             if ch == '}' {
                 if digit_count == 0 {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: "invalid unicode escape sequence".to_owned(),
-                        span: Some(Span {
-                            start: escape_start,
-                            end: self.cursor,
-                        }),
-
-                        phase: None,});
+                                        return Err(Diagnostic::unsupported_at(Span {
+start: escape_start,
+end: self.cursor,
+}, "invalid unicode escape sequence".to_owned()));
                 }
                 break;
             }
             let Some(digit) = ch.to_digit(16) else {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "invalid unicode escape sequence".to_owned(),
-                    span: Some(Span {
-                        start: escape_start,
-                        end: self.cursor,
-                    }),
-
-                    phase: None,});
+                                return Err(Diagnostic::unsupported_at(Span {
+start: escape_start,
+end: self.cursor,
+}, "invalid unicode escape sequence".to_owned()));
             };
             digit_count += 1;
             value = value.saturating_mul(16).saturating_add(digit);
         }
 
-        char::from_u32(value).ok_or(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: "invalid unicode escape scalar value".to_owned(),
-            span: Some(Span {
-                start: escape_start,
-                end: self.cursor,
-            }),
-
-            phase: None,})
+                char::from_u32(value).ok_or(Diagnostic::unsupported_at(Span {
+start: escape_start,
+end: self.cursor,
+}, "invalid unicode escape scalar value".to_owned()))
     }
 }

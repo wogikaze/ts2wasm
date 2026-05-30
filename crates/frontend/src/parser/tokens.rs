@@ -388,15 +388,10 @@ impl Parser {
             let _bigint_span = self.peek_span();
             self.advance();
             let end = self.expect(TokenKind::RightBracket)?;
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "A computed property name must be of type 'string', 'number', 'symbol', or 'any', got 'bigint'".to_string(),
-                span: Some(Span {
-                    start: start.start,
-                    end: end.end,
-                }),
-
-                phase: None,});
+                        return Err(Diagnostic::unsupported_at(Span {
+start: start.start,
+end: end.end,
+}, "A computed property name must be of type 'string', 'number', 'symbol', or 'any', got 'bigint'".to_string()));
         }
         // Handle string literal computed keys: ["key"]. If another token follows
         // before the closing bracket, parse the whole computed-key expression.
@@ -556,12 +551,7 @@ impl Parser {
         {
             Ok(())
         } else {
-            Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "unterminated TypeScript type annotation".to_owned(),
-                span: self.prev_span(),
-
-                phase: None,})
+                        Err(Diagnostic::unsupported_at(self.prev_span(), "unterminated TypeScript type annotation".to_owned()))
         }
     }
 
@@ -637,12 +627,7 @@ impl Parser {
         {
             Ok(())
         } else {
-            Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "unterminated TypeScript type annotation".to_owned(),
-                span: self.prev_span(),
-
-                phase: None,})
+                        Err(Diagnostic::unsupported_at(self.prev_span(), "unterminated TypeScript type annotation".to_owned()))
         }
     }
 
@@ -662,12 +647,7 @@ impl Parser {
                 _ => {}
             }
         }
-        Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: "unterminated TypeScript index signature".to_owned(),
-            span: self.prev_span(),
-
-            phase: None,})
+                Err(Diagnostic::unsupported_at(self.prev_span(), "unterminated TypeScript index signature".to_owned()))
     }
 
     fn consume(&mut self, kind: TokenKind) -> bool {

@@ -31,15 +31,12 @@ pub(super) fn resolve_private_elements(
             } => {
                 if *is_static {
                     if !seen.insert(name.clone()) {
-                        return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message: format!(
+                        return Err(Diagnostic::unsupported_at(
+                            *span,
+                            format!(
                                 "issue-255: duplicate private field `#{name}` in class `{class_name}`"
                             ),
-                            span: Some(*span),
-
-                            phase: None,
-                        });
+                        ));
                     }
                     static_fields.push((
                         name.clone(),
@@ -53,15 +50,12 @@ pub(super) fn resolve_private_elements(
                     continue;
                 }
                 if !seen.insert(name.clone()) {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: format!(
+                    return Err(Diagnostic::unsupported_at(
+                        *span,
+                        format!(
                             "issue-255: duplicate private field `#{name}` in class `{class_name}`"
                         ),
-                        span: Some(*span),
-
-                        phase: None,
-                    });
+                    ));
                 }
                 fields.push(name.clone());
                 initializers.push(ResolvedStmt::Expr(ResolvedExpr::PropertyAssign {
@@ -86,15 +80,12 @@ pub(super) fn resolve_private_elements(
                 ..
             } => {
                 if !seen.insert(name.clone()) {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: format!(
+                    return Err(Diagnostic::unsupported_at(
+                        *span,
+                        format!(
                             "issue-255: duplicate private element `#{name}` in class `{class_name}`"
                         ),
-                        span: Some(*span),
-
-                        phase: None,
-                    });
+                    ));
                 }
                 methods.push(ClassMethod {
                     name: if *is_static {
@@ -129,15 +120,12 @@ pub(super) fn resolve_private_elements(
                 ..
             } => {
                 if !seen.insert(name.clone()) {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: format!(
+                    return Err(Diagnostic::unsupported_at(
+                        *span,
+                        format!(
                             "issue-255: duplicate private element `#{name}` in class `{class_name}`"
                         ),
-                        span: Some(*span),
-
-                        phase: None,
-                    });
+                    ));
                 }
                 methods.push(ClassMethod {
                     name: if *is_static {
@@ -169,15 +157,12 @@ pub(super) fn resolve_private_elements(
                     ));
                 }
                 if !seen.insert(name.clone()) {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: format!(
+                    return Err(Diagnostic::unsupported_at(
+                        *span,
+                        format!(
                             "issue-255: duplicate private element `#{name}` in class `{class_name}`"
                         ),
-                        span: Some(*span),
-
-                        phase: None,
-                    });
+                    ));
                 }
                 let mut resolved_body = body
                     .iter()
@@ -255,13 +240,7 @@ fn is_direct_super_call_stmt(stmt: &ResolvedStmt) -> bool {
 }
 
 pub(super) fn unsupported_private_element(detail: &str, span: Span) -> Diagnostic {
-    Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message: format!("issue-255: {detail}"),
-        span: Some(span),
-
-        phase: None,
-    }
+    Diagnostic::unsupported_at(span, format!("issue-255: {detail}"))
 }
 
 pub(super) fn is_private_member_key(key: &str) -> bool {
@@ -638,11 +617,5 @@ pub(super) fn validate_static_block_exprs(exprs: &[Expr]) -> Result<(), Diagnost
 }
 
 pub(super) fn static_block_unsupported(detail: &str, span: Span) -> Diagnostic {
-    Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message: format!("issue-254: {detail}"),
-        span: Some(span),
-
-        phase: None,
-    }
+    Diagnostic::unsupported_at(span, format!("issue-254: {detail}"))
 }

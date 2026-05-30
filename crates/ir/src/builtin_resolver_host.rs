@@ -216,14 +216,10 @@ pub(super) fn resolve_builtin_call(
     } = object.as_ref()
     {
         if object_name == "BigInt" && matches!(property.as_str(), "asIntN" | "asUintN") {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message:
-                    "issue-280: BigInt.asIntN/asUintN require literal bit width and BigInt value inputs in this builtin slice"
-                        .to_owned(),
-                span: span_of_expr(callee),
-
-                phase: None,});
+            return Err(Diagnostic::unsupported_at(
+                span_of_expr(callee),
+                "unsupported syntax",
+            ));
         }
         if object_name == "console" {
             return if is_supported_console_method(property) {
@@ -233,13 +229,10 @@ pub(super) fn resolve_builtin_call(
                     _ => BuiltinId::ConsoleLog,
                 }))
             } else {
-                Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!("console.{} is not supported in this milestone", property),
-                    span: span_of_expr(callee),
-
-                    phase: None,
-                })
+                Err(Diagnostic::unsupported_at(
+                    span_of_expr(callee),
+                    format!("console.{} is not supported in this milestone", property),
+                ))
             };
         }
         if object_name == "Math" && property == "pow" {
@@ -249,13 +242,10 @@ pub(super) fn resolve_builtin_call(
             return if property == "exit" {
                 Ok(Some(BuiltinId::ProcessExit))
             } else {
-                Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!("process.{} is not supported in this milestone", property),
-                    span: span_of_expr(callee),
-
-                    phase: None,
-                })
+                Err(Diagnostic::unsupported_at(
+                    span_of_expr(callee),
+                    format!("process.{} is not supported in this milestone", property),
+                ))
             };
         }
     }
@@ -342,14 +332,10 @@ pub(super) fn resolve_bun_file_text_builtin(
     }
     match file_args.as_slice() {
         [Expr::String { value, .. }] if value == "/dev/stdin" => Ok(Some(BuiltinId::ReadStdinUtf8)),
-        [arg] => Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: "Bun.file(...).text() currently supports only \"/dev/stdin\" stdin lowering"
-                .to_owned(),
-            span: span_of_expr(arg),
-
-            phase: None,
-        }),
+        [arg] => Err(Diagnostic::unsupported_at(
+            span_of_expr(arg),
+            "Bun.file(...).text() currently supports only \"/dev/stdin\" stdin lowering",
+        )),
         _ => Err(Diagnostic {
             code: DiagCode::ArityMismatch,
             message: format!(
@@ -410,16 +396,13 @@ pub(super) fn resolve_require_module_builtin(
         | ("path", unsupported)
         | ("crypto", unsupported)
         | ("util", unsupported) => {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
+            return Err(Diagnostic::unsupported_at(
+                span_of_expr(object),
+                format!(
                     "require(\"{}\").{} is not supported in this milestone",
                     module_name, unsupported
                 ),
-                span: span_of_expr(object),
-
-                phase: None,
-            });
+            ));
         }
         _ => return Ok(None),
     };
@@ -689,12 +672,10 @@ pub(super) fn resolve_console_call_expr(
             }
         }
         "clear" => Ok(Some(ResolvedExpr::Undefined)),
-        unsupported => Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: format!("console.{unsupported} is not supported in this milestone"),
-            span: span_of_expr(callee),
-            phase: None,
-        }),
+        unsupported => Err(Diagnostic::unsupported_at(
+            span_of_expr(callee),
+            format!("console.{unsupported} is not supported in this milestone"),
+        )),
     }
 }
 
@@ -720,28 +701,19 @@ pub(super) fn validate_read_stdin_utf8_args(
     match fd_expr {
         Expr::Number { value: 0, .. } => {}
         _ => {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message:
-                    "require(\"fs\").readFileSync currently supports only fd 0 as first argument"
-                        .to_owned(),
-                span: span_of_expr(fd_expr),
-
-                phase: None,
-            });
+            return Err(Diagnostic::unsupported_at(
+                span_of_expr(fd_expr),
+                "unsupported syntax",
+            ));
         }
     }
 
     match encoding_expr {
         Expr::String { value, .. } if value == "utf8" => Ok(()),
-        _ => Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: "require(\"fs\").readFileSync currently supports only \"utf8\" encoding"
-                .to_owned(),
-            span: span_of_expr(encoding_expr),
-
-            phase: None,
-        }),
+        _ => Err(Diagnostic::unsupported_at(
+            span_of_expr(encoding_expr),
+            "require(\"fs\").readFileSync currently supports only \"utf8\" encoding",
+        )),
     }
 }
 

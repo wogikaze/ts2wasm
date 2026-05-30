@@ -242,15 +242,18 @@ fn eval_binary_i32(op: LoweredBinaryOp, l: i32, r: i32) -> Result<i32, Diagnosti
                 r
             }
         }
+        LoweredBinaryOp::Shl => (l as u32).wrapping_shl(r as u32) as i32,
+        LoweredBinaryOp::Shr => l.wrapping_shr(r as u32),
+        LoweredBinaryOp::ShrU => (l as u32).wrapping_shr(r as u32) as i32,
     })
 }
 
 fn unsupported(detail: &str) -> Diagnostic {
+    let message = format!("direct wasm binary MVP: {detail}");
     Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message: format!("direct wasm binary MVP: {detail}"),
+        code: ts2wasm_diagnostic::resolve_diag_code(&message),
+        message,
         span: None,
-
         phase: None,
     }
 }

@@ -689,12 +689,10 @@ impl super::super::Resolver {
             .iter()
             .find(|function| function.id == binding.func_id && function.is_generator)
             .cloned()
-            .ok_or_else(|| Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "generator method iterator binding points at an unknown function"
-                    .to_owned(),
-                span: None,
-                phase: None,
+            .ok_or_else(|| {
+                Diagnostic::unsupported(
+                    "generator method iterator binding points at an unknown function",
+                )
             })?;
         let result_local = self.alloc_temp();
         let snapshot_local = self.alloc_temp();
@@ -830,12 +828,7 @@ impl super::super::Resolver {
                             )))]
                         }
                         Some(_) => {
-                            return Err(Diagnostic {
-                                code: DiagCode::UnsupportedSyntax,
-                                message: "issue-458: Function.prototype.apply currently supports array literals, dense array locals, null, or undefined argArray".to_owned(),
-                                span: Some(span),
-                                phase: None,
-                            });
+                            return Err(Diagnostic::unsupported_at(span, "issue-458: Function.prototype.apply currently supports array literals, dense array locals, null, or undefined argArray".to_owned()));
                         }
                     }
                 };
@@ -882,20 +875,10 @@ impl super::super::Resolver {
                     }
                 }
                 Some(ResolvedExpr::Ident(_name)) => {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: "issue-458: Function.prototype.apply on a runtime function value currently supports array literals, null, or undefined argArray (ident references not yet supported)".to_owned(),
-                        span: Some(span),
-                        phase: None,
-                    });
+                    return Err(Diagnostic::unsupported_at(span, "issue-458: Function.prototype.apply on a runtime function value currently supports array literals, null, or undefined argArray (ident references not yet supported)".to_owned()));
                 }
                 Some(_) => {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: "issue-458: Function.prototype.apply on a runtime function value currently supports array literals, null, or undefined argArray".to_owned(),
-                        span: Some(span),
-                        phase: None,
-                    });
+                    return Err(Diagnostic::unsupported_at(span, "issue-458: Function.prototype.apply on a runtime function value currently supports array literals, null, or undefined argArray".to_owned()));
                 }
             }
         }
@@ -991,39 +974,25 @@ impl super::super::Resolver {
                         span: Span::generated("call"),
                     }));
                 }
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!(
+                return Err(Diagnostic::unsupported_at(
+                    span,
+                    format!(
                         "issue-255: static private method `{method}` calls are currently supported only as `this.{method}(...)` inside static methods or `Class.{method}(...)` inside the declaring class"
                     ),
-                    span: Some(span),
-
-                    phase: None,
-                });
+                ));
             }
-            let method_id = self
-                .current_private_method_id(method)
-                .ok_or_else(|| Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!(
-                        "issue-255: private method `{method}` is not declared in this class"
-                    ),
-                    span: Some(span),
-
-                    phase: None,
-                })?;
+            let method_id = self.current_private_method_id(method).ok_or_else(|| {
+                Diagnostic::unsupported_at(
+                    span,
+                    format!("issue-255: private method `{method}` is not declared in this class"),
+                )
+            })?;
             let receiver = if matches!(object, ResolvedExpr::This { .. }) {
                 LoweredExpr::Local(self.resolve_local("this")?, Span::generated("local"))
             } else {
-                let class_name = self.ctx.classes.current_class.clone().ok_or_else(|| Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!(
-                        "issue-255: private method `{method}` call requires declaring class context"
-                    ),
-                    span: Some(span),
-
-                    phase: None,
-                })?;
+                let class_name = self.ctx.classes.current_class.clone().ok_or_else(|| Diagnostic::unsupported_at(span, format!(
+"issue-255: private method `{method}` call requires declaring class context"
+)))?;
                 let brand = self.private_brand_for_class(&class_name, Some(span))?;
                 LoweredExpr::RuntimeCall {
                     intrinsic: RuntimeFn::PrivateBrandCheck,
@@ -1245,12 +1214,10 @@ impl super::super::Resolver {
                 },
             };
             if args.len() > 1 {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "TypedArray.from with mapFn/thisArg is not supported".to_owned(),
-                    span: Some(Span::generated("typed_array_from")),
-                    phase: None,
-                });
+                return Err(Diagnostic::unsupported_at(
+                    Span::generated("typed_array_from"),
+                    "TypedArray.from with mapFn/thisArg is not supported".to_owned(),
+                ));
             }
             return Ok(Some(LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::TypedArrayFromArray,
@@ -2483,13 +2450,10 @@ impl super::super::Resolver {
                     span: Span::generated("runtime_call"),
                 }));
             }
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!("String.prototype.{method} is not supported in this milestone"),
-                span: Some(span),
-
-                phase: None,
-            });
+            return Err(Diagnostic::unsupported_at(
+                span,
+                format!("String.prototype.{method} is not supported in this milestone"),
+            ));
         }
         Ok(None)
     }
@@ -2524,15 +2488,12 @@ impl super::super::Resolver {
                 return self.emit_normalize_runtime_call(object, args, span);
             };
             if !matches!(form_value.as_str(), "NFC" | "NFD" | "NFKC" | "NFKD") {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!(
+                return Err(Diagnostic::unsupported_at(
+                    span,
+                    format!(
                         "issue-460: String.prototype.normalize form `{form_value}` is not supported in this milestone"
                     ),
-                    span: Some(span),
-
-                    phase: None,
-                });
+                ));
             }
         }
         let Some(value) =
@@ -2885,20 +2846,10 @@ impl super::super::Resolver {
                     Some(ResolvedExpr::Ident(name))
                         if self.ctx.symbols.function_ids.contains_key(name) =>
                     {
-                        return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message: "issue-432: JSON.parse reviver callbacks with rest parameters or `arguments` are not supported yet".to_owned(),
-                            span: Some(span),
-                            phase: None,
-                        });
+                                                return Err(Diagnostic::unsupported_at(span, "issue-432: JSON.parse reviver callbacks with rest parameters or `arguments` are not supported yet".to_owned()));
                     }
                     Some(_) => {
-                        return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message: "issue-432: JSON.parse reviver currently supports named function declarations, null, or undefined".to_owned(),
-                            span: Some(span),
-                            phase: None,
-                        });
+                                                return Err(Diagnostic::unsupported_at(span, "issue-432: JSON.parse reviver currently supports named function declarations, null, or undefined".to_owned()));
                     }
                 });
                 return Ok(Some(LoweredExpr::RuntimeCall {
@@ -2919,13 +2870,7 @@ impl super::super::Resolver {
                 && args.len() != 1
             {
                 if !matches!(object, ResolvedExpr::Ident(_)) {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: "issue-271: multi-argument Array.prototype.push is currently supported only for identifier array receivers".to_owned(),
-                        span: Some(span),
-
-                        phase: None,
-                    });
+                    return Err(Diagnostic::unsupported_at(span, "issue-271: multi-argument Array.prototype.push is currently supported only for identifier array receivers".to_owned()));
                 }
                 let mut lowered_args = vec![self.lower_expr(object)?];
                 lowered_args.extend(
@@ -3138,13 +3083,10 @@ impl super::super::Resolver {
     ) -> Result<Option<LoweredExpr>, Diagnostic> {
         if matches!(object, ResolvedExpr::Ident(name) if name == "Proxy") && method == "revocable" {
             let [target, _handler] = args else {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "issue-438: Proxy.revocable requires target and handler arguments"
-                        .to_owned(),
-                    span: Some(span),
-                    phase: None,
-                });
+                return Err(Diagnostic::unsupported_at(
+                    span,
+                    "issue-438: Proxy.revocable requires target and handler arguments",
+                ));
             };
             return Ok(Some(LoweredExpr::ObjectNew {
                 props: vec![
@@ -3554,26 +3496,19 @@ impl super::super::Resolver {
         }
 
         if matches!(object, ResolvedExpr::This { .. }) {
-            let class_name = self
-                .ctx
-                .classes
-                .current_class
-                .as_ref()
-                .ok_or_else(|| Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "this.method(...) requires class context".to_owned(),
-                    span: Some(span),
-
-                    phase: None,
-                })?;
+            let class_name = self.ctx.classes.current_class.as_ref().ok_or_else(|| {
+                Diagnostic::unsupported_at(
+                    span,
+                    "this.method(...) requires class context".to_owned(),
+                )
+            })?;
             let method_id = self
                 .resolve_class_method(class_name, method)
-                .ok_or_else(|| Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!("method `{}.{}` not found", class_name, method),
-                    span: Some(span),
-
-                    phase: None,
+                .ok_or_else(|| {
+                    Diagnostic::unsupported_at(
+                        span,
+                        format!("method `{}.{}` not found", class_name, method),
+                    )
                 })?;
 
             let mut lowered_args = vec![LoweredExpr::Local(
@@ -3719,16 +3654,13 @@ impl super::super::Resolver {
                     span: Span::generated("runtime_call"),
                 }));
             }
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
+            return Err(Diagnostic::unsupported_at(
+                span,
+                format!(
                     "issue-211: method `{}` on `this.{}` requires an identifier receiver",
                     method, key
                 ),
-                span: Some(span),
-
-                phase: None,
-            });
+            ));
         }
 
         // Non-identifier receiver
@@ -3814,15 +3746,10 @@ impl super::super::Resolver {
                     }));
                 }
             }
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
-                    "issue-211: {class_name}.prototype.{proto_method}.call is not supported"
-                ),
-                span: Some(span),
-
-                phase: None,
-            });
+            return Err(Diagnostic::unsupported_at(
+                span,
+                format!("issue-211: {class_name}.prototype.{proto_method}.call is not supported"),
+            ));
         }
 
         // Symbol non-ident receiver (e.g. Symbol("desc").toString()) - route to SymbolToString
@@ -4028,12 +3955,7 @@ impl super::super::Resolver {
                         }
                     }
                     Some(_) => {
-                        return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message: "issue-458: Function.prototype.apply currently supports array literals, null, or undefined argArray for non-Ident receivers".to_owned(),
-                            span: Some(span),
-                            phase: None,
-                        });
+                        return Err(Diagnostic::unsupported_at(span, "issue-458: Function.prototype.apply currently supports array literals, null, or undefined argArray for non-Ident receivers".to_owned()));
                     }
                 }
             }
@@ -4189,14 +4111,12 @@ impl super::super::Resolver {
             // pattern. If we reach here with non-empty args, callbacks would be silently
             // dropped, producing wrong output.
             if is_array_like_class && is_identity_array_method(method) && !args.is_empty() {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!(
+                return Err(Diagnostic::unsupported_at(
+                    span,
+                    format!(
                         "issue-270: {class_name}.prototype.{method} callback requires a known function reference"
                     ),
-                    span: Some(span),
-                    phase: None,
-                });
+                ));
             }
             if class_name == "Array"
                 && method == "push"
@@ -4264,12 +4184,11 @@ impl super::super::Resolver {
         // super.method
         if receiver_name == "super" {
             if self.ctx.classes.current_class.is_none() {
-                let this_local = self.resolve_local("this").map_err(|_| Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "super.method(...) requires class context or object method receiver"
-                        .to_owned(),
-                    span: Some(span),
-                    phase: None,
+                let this_local = self.resolve_local("this").map_err(|_| {
+                    Diagnostic::unsupported_at(
+                        span,
+                        "super.method(...) requires class context or object method receiver",
+                    )
                 })?;
                 let this_expr = LoweredExpr::Local(this_local, Span::generated("local"));
                 let callee = object_kernel::ordinary_get(
@@ -4292,30 +4211,23 @@ impl super::super::Resolver {
                     span: Span::generated("runtime_call"),
                 });
             }
-            let class_name = self
-                .ctx
-                .classes
-                .current_class
-                .as_ref()
-                .ok_or_else(|| Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "super.method(...) requires class context".to_owned(),
-                    span: Some(span),
-
-                    phase: None,
-                })?;
+            let class_name = self.ctx.classes.current_class.as_ref().ok_or_else(|| {
+                Diagnostic::unsupported_at(
+                    span,
+                    "super.method(...) requires class context".to_owned(),
+                )
+            })?;
             let parent_name = self
                 .ctx
                 .classes
                 .class_parents
                 .get(class_name)
                 .and_then(|p| p.clone())
-                .ok_or_else(|| Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "super.method(...) used in class without extends".to_owned(),
-                    span: Some(span),
-
-                    phase: None,
+                .ok_or_else(|| {
+                    Diagnostic::unsupported_at(
+                        span,
+                        "super.method(...) used in class without extends".to_owned(),
+                    )
                 })?;
             let mut lowered_args = Vec::new();
             let method_id = if let Ok(this_local) = self.resolve_local("this") {
@@ -4324,12 +4236,11 @@ impl super::super::Resolver {
             } else {
                 self.resolve_static_class_method(&parent_name, method)
             }
-            .ok_or_else(|| Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!("super method `{}.{}` not found", parent_name, method),
-                span: Some(span),
-
-                phase: None,
+            .ok_or_else(|| {
+                Diagnostic::unsupported_at(
+                    span,
+                    format!("super method `{}.{}` not found", parent_name, method),
+                )
             })?;
             lowered_args.extend(
                 args.iter()
@@ -4535,11 +4446,11 @@ impl super::super::Resolver {
                         &ResolvedExpr::Ident(receiver_name.to_string()),
                         method,
                     )
-                    .ok_or_else(|| Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: format!("method `{}` not found for untyped receiver", method),
-                        span: Some(span),
-                        phase: None,
+                    .ok_or_else(|| {
+                        Diagnostic::unsupported_at(
+                            span,
+                            format!("method `{}` not found for untyped receiver", method),
+                        )
                     })?;
                     let mut lowered_args =
                         vec![LoweredExpr::Local(obj_local, Span::generated("local"))];
@@ -4856,12 +4767,11 @@ impl super::super::Resolver {
 
         let method_id = self
             .resolve_class_method(class_name, method)
-            .ok_or_else(|| Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!("method `{}.{}` not found", class_name, method),
-                span: Some(span),
-
-                phase: None,
+            .ok_or_else(|| {
+                Diagnostic::unsupported_at(
+                    span,
+                    format!("method `{}.{}` not found", class_name, method),
+                )
             })?;
 
         let receiver = LoweredExpr::Local(obj_local, Span::generated("local"));
@@ -5241,11 +5151,10 @@ impl super::super::Resolver {
                     return Ok(string_lit(static_val));
                 }
                 // Dynamic arg: emit RuntimeCall to host shim
-                let lowered_arg = self.lower_expr(args.first().ok_or_else(|| Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "Intl.NumberFormat.format requires an argument".to_owned(),
-                    span: None,
-                    phase: None,
+                let lowered_arg = self.lower_expr(args.first().ok_or_else(|| {
+                    Diagnostic::unsupported(
+                        "Intl.NumberFormat.format requires an argument".to_owned(),
+                    )
                 })?)?;
                 let options_json = serialize_intl_options(options);
                 Ok(LoweredExpr::RuntimeCall {
@@ -5262,11 +5171,10 @@ impl super::super::Resolver {
                     });
                 }
                 // Dynamic arg: emit RuntimeCall to host shim
-                let lowered_arg = self.lower_expr(args.first().ok_or_else(|| Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "Intl.NumberFormat.formatToParts requires an argument".to_owned(),
-                    span: None,
-                    phase: None,
+                let lowered_arg = self.lower_expr(args.first().ok_or_else(|| {
+                    Diagnostic::unsupported(
+                        "Intl.NumberFormat.formatToParts requires an argument".to_owned(),
+                    )
                 })?)?;
                 let options_json = serialize_intl_options(options);
                 // At runtime formatToParts returns a JSON string that the caller must parse
@@ -5295,12 +5203,9 @@ impl super::super::Resolver {
                 non_enumerable: 0,
                 span: Span::generated("object_new"),
             }),
-            _ => Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!("Intl.NumberFormat.prototype.{method} is not supported"),
-                span: None,
-                phase: None,
-            }),
+            _ => Err(Diagnostic::unsupported(format!(
+                "Intl.NumberFormat.prototype.{method} is not supported"
+            ))),
         }
     }
 
@@ -5403,11 +5308,10 @@ impl super::super::Resolver {
                     return Ok(string_lit(format_intl_datetime_arg(args.first(), options)));
                 }
                 // Dynamic arg: emit RuntimeCall to host shim
-                let lowered_arg = self.lower_expr(args.first().ok_or_else(|| Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "Intl.DateTimeFormat.format requires an argument".to_owned(),
-                    span: None,
-                    phase: None,
+                let lowered_arg = self.lower_expr(args.first().ok_or_else(|| {
+                    Diagnostic::unsupported(
+                        "Intl.DateTimeFormat.format requires an argument".to_owned(),
+                    )
                 })?)?;
                 let options_json = serialize_intl_date_time_options(options);
                 Ok(LoweredExpr::RuntimeCall {
@@ -5461,12 +5365,9 @@ impl super::super::Resolver {
                 non_enumerable: 0,
                 span: Span::generated("object_new"),
             }),
-            _ => Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!("Intl.DateTimeFormat.prototype.{method} is not supported"),
-                span: None,
-                phase: None,
-            }),
+            _ => Err(Diagnostic::unsupported(format!(
+                "Intl.DateTimeFormat.prototype.{method} is not supported"
+            ))),
         }
     }
 
@@ -5482,12 +5383,9 @@ impl super::super::Resolver {
                 span: Span::generated("array_new"),
             }),
             "resolvedOptions" => Ok(intl_duration_format_options_object()),
-            _ => Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!("Intl.DurationFormat.prototype.{method} is not supported"),
-                span: None,
-                phase: None,
-            }),
+            _ => Err(Diagnostic::unsupported(format!(
+                "Intl.DurationFormat.prototype.{method} is not supported"
+            ))),
         }
     }
 
@@ -5503,12 +5401,9 @@ impl super::super::Resolver {
                 span: Span::generated("array_new"),
             }),
             "resolvedOptions" => Ok(intl_list_format_options_object()),
-            _ => Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!("Intl.ListFormat.prototype.{method} is not supported"),
-                span: None,
-                phase: None,
-            }),
+            _ => Err(Diagnostic::unsupported(format!(
+                "Intl.ListFormat.prototype.{method} is not supported"
+            ))),
         }
     }
 

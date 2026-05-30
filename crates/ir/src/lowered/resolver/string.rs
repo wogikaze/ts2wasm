@@ -9,14 +9,10 @@ use ts2wasm_syntax::{BinaryOp, UnaryOp};
 
 pub(super) fn lower_ascii_string_spread_chars(value: &str) -> Result<Vec<LoweredExpr>, Diagnostic> {
     if !value.is_ascii() {
-        return Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message:
-                "issue-274: string spread is currently limited to ASCII literal-derived strings"
-                    .to_owned(),
-            span: Some(Span::generated("issue-274")),
-            phase: None,
-        });
+        return Err(Diagnostic::unsupported_at(
+            Span::generated("issue-274"),
+            "unsupported syntax",
+        ));
     }
     Ok(value
         .chars()

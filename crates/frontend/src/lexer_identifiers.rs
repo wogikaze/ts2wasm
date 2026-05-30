@@ -7,15 +7,10 @@ impl<'a> Lexer<'a> {
         if self.peek_char() == Some('\\') {
             let ch = self.unicode_identifier_escape(start)?;
             if !is_identifier_start_escape_char(ch) {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!("invalid unicode identifier start escape: {ch:?}"),
-                    span: Some(Span {
-                        start,
-                        end: self.cursor,
-                    }),
-
-                    phase: None,});
+                                return Err(Diagnostic::unsupported_at(Span {
+start,
+end: self.cursor,
+}, format!("invalid unicode identifier start escape: {ch:?}")));
             }
             ident.push(ch);
             escaped = true;
@@ -35,15 +30,10 @@ impl<'a> Lexer<'a> {
                     let escape_start = self.cursor;
                     let ch = self.unicode_identifier_escape(start)?;
                     if !is_identifier_part_escape_char(ch) {
-                        return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message: format!("invalid unicode identifier part escape: {ch:?}"),
-                            span: Some(Span {
-                                start: escape_start,
-                                end: self.cursor,
-                            }),
-
-                            phase: None,});
+                                                return Err(Diagnostic::unsupported_at(Span {
+start: escape_start,
+end: self.cursor,
+}, format!("invalid unicode identifier part escape: {ch:?}")));
                     }
                     ident.push(ch);
                     escaped = true;
@@ -123,15 +113,10 @@ impl<'a> Lexer<'a> {
         let escape_start = self.cursor;
         self.advance_char();
         if self.advance_char() != Some('u') {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "invalid unicode identifier escape sequence".to_owned(),
-                span: Some(Span {
-                    start: escape_start,
-                    end: self.cursor,
-                }),
-
-                phase: None,});
+                        return Err(Diagnostic::unsupported_at(Span {
+start: escape_start,
+end: self.cursor,
+}, "invalid unicode identifier escape sequence".to_owned()));
         }
 
         if self.peek_char() == Some('{') {
@@ -140,105 +125,65 @@ impl<'a> Lexer<'a> {
             let mut digit_count = 0usize;
             loop {
                 let Some(ch) = self.advance_char() else {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: "unterminated unicode identifier escape sequence".to_owned(),
-                        span: Some(Span {
-                            start: identifier_start,
-                            end: self.cursor,
-                        }),
-
-                        phase: None,});
+                                        return Err(Diagnostic::unsupported_at(Span {
+start: identifier_start,
+end: self.cursor,
+}, "unterminated unicode identifier escape sequence".to_owned()));
                 };
                 if ch == '}' {
                     if digit_count == 0 {
-                        return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message: "invalid unicode identifier escape sequence".to_owned(),
-                            span: Some(Span {
-                                start: escape_start,
-                                end: self.cursor,
-                            }),
-
-                            phase: None,});
+                                                return Err(Diagnostic::unsupported_at(Span {
+start: escape_start,
+end: self.cursor,
+}, "invalid unicode identifier escape sequence".to_owned()));
                     }
                     break;
                 }
                 let Some(digit) = ch.to_digit(16) else {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: "invalid unicode identifier escape sequence".to_owned(),
-                        span: Some(Span {
-                            start: escape_start,
-                            end: self.cursor,
-                        }),
-
-                        phase: None,});
+                                        return Err(Diagnostic::unsupported_at(Span {
+start: escape_start,
+end: self.cursor,
+}, "invalid unicode identifier escape sequence".to_owned()));
                 };
                 digit_count += 1;
                 value = value.saturating_mul(16).saturating_add(digit);
             }
-            return char::from_u32(value).ok_or(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "invalid unicode identifier escape scalar value".to_owned(),
-                span: Some(Span {
-                    start: escape_start,
-                    end: self.cursor,
-                }),
-
-                phase: None,});
+                        return char::from_u32(value).ok_or(Diagnostic::unsupported_at(Span {
+start: escape_start,
+end: self.cursor,
+}, "invalid unicode identifier escape scalar value".to_owned()));
         }
 
         let mut value = 0u32;
         for _ in 0..4 {
             let Some(ch) = self.advance_char() else {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "unterminated unicode identifier escape sequence".to_owned(),
-                    span: Some(Span {
-                        start: identifier_start,
-                        end: self.cursor,
-                    }),
-
-                    phase: None,});
+                                return Err(Diagnostic::unsupported_at(Span {
+start: identifier_start,
+end: self.cursor,
+}, "unterminated unicode identifier escape sequence".to_owned()));
             };
             let Some(digit) = ch.to_digit(16) else {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "invalid unicode identifier escape sequence".to_owned(),
-                    span: Some(Span {
-                        start: escape_start,
-                        end: self.cursor,
-                    }),
-
-                    phase: None,});
+                                return Err(Diagnostic::unsupported_at(Span {
+start: escape_start,
+end: self.cursor,
+}, "invalid unicode identifier escape sequence".to_owned()));
             };
             value = (value << 4) | digit;
         }
 
-        char::from_u32(value).ok_or(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: "invalid unicode identifier escape scalar value".to_owned(),
-            span: Some(Span {
-                start: escape_start,
-                end: self.cursor,
-            }),
-
-            phase: None,})
+                char::from_u32(value).ok_or(Diagnostic::unsupported_at(Span {
+start: escape_start,
+end: self.cursor,
+}, "invalid unicode identifier escape scalar value".to_owned()))
     }
 
     fn private_identifier(&mut self, start: usize) -> Result<SpannedToken, Diagnostic> {
         self.advance_char();
         if !matches!(self.peek_char(), Some('a'..='z' | 'A'..='Z' | '_' | '$')) {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "Invalid private identifier".to_owned(),
-                span: Some(Span {
-                    start,
-                    end: self.cursor,
-                }),
-
-                phase: None,});
+                        return Err(Diagnostic::unsupported_at(Span {
+start,
+end: self.cursor,
+}, "Invalid private identifier".to_owned()));
         }
 
         let name_start = self.cursor;

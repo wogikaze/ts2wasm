@@ -967,12 +967,11 @@ impl super::super::Resolver {
         span: Span,
     ) -> Result<LoweredExpr, Diagnostic> {
         let Some(class_name) = self.ctx.classes.current_class.as_ref() else {
-            let this_local = self.resolve_local("this").map_err(|_| Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "super property access requires class context or object method receiver"
-                    .to_owned(),
-                span: Some(span),
-                phase: None,
+            let this_local = self.resolve_local("this").map_err(|_| {
+                Diagnostic::unsupported_at(
+                    span,
+                    "super property access requires class context or object method receiver",
+                )
             })?;
             // SuperPropertyObject: object literal methods resolve super.prop via
             // Object.getPrototypeOf(this).prop when statically dispatched.
@@ -991,11 +990,11 @@ impl super::super::Resolver {
             .class_parents
             .get(class_name)
             .and_then(|p| p.clone())
-            .ok_or_else(|| Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "super property access used in class without extends".to_owned(),
-                span: Some(span),
-                phase: None,
+            .ok_or_else(|| {
+                Diagnostic::unsupported_at(
+                    span,
+                    "super property access used in class without extends".to_owned(),
+                )
             })?;
         if let Some(method_id) = self.resolve_class_method(&parent_name, key) {
             return self.lower_direct_function_token(method_id);
@@ -1014,12 +1013,11 @@ impl super::super::Resolver {
         index: &ResolvedExpr,
     ) -> Result<LoweredExpr, Diagnostic> {
         let Some(class_name) = self.ctx.classes.current_class.as_ref() else {
-            let this_local = self.resolve_local("this").map_err(|_| Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "super computed access requires class context or object method receiver"
-                    .to_owned(),
-                span: Some(Span::generated("super-computed")),
-                phase: None,
+            let this_local = self.resolve_local("this").map_err(|_| {
+                Diagnostic::unsupported_at(
+                    Span::generated("super-computed"),
+                    "super computed access requires class context or object method receiver",
+                )
             })?;
             return Ok(object_kernel::ordinary_get_dynamic(
                 object_kernel::ordinary_get_prototype_of(
@@ -1036,11 +1034,11 @@ impl super::super::Resolver {
             .class_parents
             .get(class_name)
             .and_then(|p| p.clone())
-            .ok_or_else(|| Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "super computed access used in class without extends".to_owned(),
-                span: Some(Span::generated("super-computed")),
-                phase: None,
+            .ok_or_else(|| {
+                Diagnostic::unsupported_at(
+                    Span::generated("super-computed"),
+                    "super computed access used in class without extends".to_owned(),
+                )
             })?;
         if let Some(ObjectAccessorKey::Property(key)) =
             super::super::string::resolved_expr_static_accessor_key(&self.ctx, index)
@@ -1315,28 +1313,21 @@ impl super::super::Resolver {
     ) -> Result<LoweredExpr, Diagnostic> {
         if let Some(local_name) = self.current_static_private_field_local_name(key) {
             if self.is_same_class_static_private_receiver(object) {
-                let local = self.resolve_local(&local_name).map_err(|_| Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!(
-                        "issue-352: static private field `{key}` cannot be accessed before its declaration in class static initialization order"
-                    ),
-                    span: Some(span),
-                    phase: None,
-                })?;
+                let local = self.resolve_local(&local_name).map_err(|_| Diagnostic::unsupported_at(span, format!(
+"issue-352: static private field `{key}` cannot be accessed before its declaration in class static initialization order"
+)))?;
                 return Ok(if self.ctx.facts.env_cell_locals.contains(&local) {
                     LoweredExpr::EnvCellGet(local, Span::generated("env_cell_get"))
                 } else {
                     LoweredExpr::Local(local, Span::generated("local"))
                 });
             }
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
+            return Err(Diagnostic::unsupported_at(
+                span,
+                format!(
                     "issue-255: static private field `{key}` access is currently supported only as `this.{key}` inside static methods or `Class.{key}` inside the declaring class"
                 ),
-                span: Some(span),
-                phase: None,
-            });
+            ));
         }
         if let Some(getter_id) = self.current_static_private_getter_id(key) {
             if self.is_same_class_static_private_receiver(object) {
@@ -1346,38 +1337,29 @@ impl super::super::Resolver {
                     span: Span::generated("call"),
                 });
             }
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
+            return Err(Diagnostic::unsupported_at(
+                span,
+                format!(
                     "issue-255: static private getter `{key}` access is currently supported only as `this.{key}` inside static methods or `Class.{key}` inside the declaring class"
                 ),
-                span: Some(span),
-                phase: None,
-            });
+            ));
         }
         if self.current_private_method_id(key).is_some() {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
+            return Err(Diagnostic::unsupported_at(
+                span,
+                format!(
                     "issue-255: private method `{key}` extraction is not supported in this private method runtime slice; call it directly as `this.{key}(...)`"
                 ),
-                span: Some(span),
-                phase: None,
-            });
+            ));
         }
         if let Some(getter_id) = self.current_private_getter_id(key) {
             let receiver = if matches!(object, ResolvedExpr::This { .. }) {
                 LoweredExpr::Local(self.resolve_local("this")?, Span::generated("local"))
             } else {
                 let class_name = self.ctx.classes.current_class.clone().ok_or_else(|| {
-                    Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: format!(
-                            "issue-255: private getter `{key}` access requires declaring class context"
-                        ),
-                        span: Some(span),
-                        phase: None,
-                    }
+                                        Diagnostic::unsupported_at(span, format!(
+"issue-255: private getter `{key}` access requires declaring class context"
+))
                 })?;
                 let brand = self.private_brand_for_class(&class_name, Some(span))?;
                 LoweredExpr::RuntimeCall {
@@ -1398,14 +1380,12 @@ impl super::super::Resolver {
         if let Some(class_name) = self.infer_class_for_expr(object)
             && self.private_getter_id_for_class(&class_name, key).is_some()
         {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
+            return Err(Diagnostic::unsupported_at(
+                span,
+                format!(
                     "issue-255: private getter `{key}` external access is not supported in this private accessor runtime slice"
                 ),
-                span: Some(span),
-                phase: None,
-            });
+            ));
         }
         let (brand, slot) = self.private_field_brand_and_slot(object, key, span)?;
         Ok(LoweredExpr::RuntimeCall {

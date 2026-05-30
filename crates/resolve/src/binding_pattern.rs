@@ -728,11 +728,11 @@ fn is_identifier(text: &str) -> bool {
 }
 
 fn issue_251(detail: &str, span: Option<Span>) -> Diagnostic {
+    let msg = format!("issue-251: {detail}");
     Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message: format!("issue-251: {detail}"),
+        code: ts2wasm_diagnostic::resolve_diag_code(&msg),
+        message: msg,
         span,
-
         phase: None,
     }
 }

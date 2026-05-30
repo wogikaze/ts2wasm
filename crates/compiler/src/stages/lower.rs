@@ -114,12 +114,10 @@ pub(crate) fn lower_static_named_import_bindings_for_build(
                 span,
                 ..
             } => {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "source phase imports are parsed but not lowered yet".to_owned(),
-                    span: Some(*span),
-                    phase: None,
-                });
+                return Err(Diagnostic::unsupported_at(
+                    *span,
+                    "source phase imports are parsed but not lowered yet".to_owned(),
+                ));
             }
             Stmt::ImportDefault {
                 specifier: default_specifier,
@@ -250,14 +248,12 @@ pub(crate) fn lower_static_named_import_bindings_for_build(
                         lowered_statement_index: index,
                     });
                     if !is_let_like {
-                        return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message: format!(
+                        return Err(Diagnostic::unsupported_at(
+                            declaration.span(),
+                            format!(
                                 "issue-5005: entry module `export {name}` uses a declaration form outside the current static export slice; only export const and export default are supported"
                             ),
-                            span: Some(declaration.span()),
-                            phase: None,
-                        });
+                        ));
                     }
                     lowered_statement_index += 1;
                 }
@@ -268,28 +264,21 @@ pub(crate) fn lower_static_named_import_bindings_for_build(
                     let mut exported_names: HashSet<String> = HashSet::new();
                     for specifier in specifiers {
                         if !exported_names.insert(specifier.exported.clone()) {
-                            return Err(Diagnostic {
-                                code: DiagCode::UnsupportedSyntax,
-                                message: format!(
+                            return Err(Diagnostic::unsupported_at(
+                                specifier.span,
+                                format!(
                                     "issue-5005: duplicate export name `{}`",
                                     specifier.exported
                                 ),
-                                span: Some(specifier.span),
-                                phase: None,
-                            });
+                            ));
                         }
                         let local_index = local_name_to_index
                             .get(&specifier.local)
                             .copied()
-                            .ok_or_else(|| Diagnostic {
-                                code: DiagCode::UnsupportedSyntax,
-                                message: format!(
-                                    "issue-5005: entry module `export {{ {} }}` references unknown local binding `{}`",
-                                    specifier.exported, specifier.local
-                                ),
-                                span: Some(specifier.span),
-                                phase: None,
-                            })?;
+                                                        .ok_or_else(|| Diagnostic::unsupported_at(specifier.span, format!(
+"issue-5005: entry module `export {{ {} }}` references unknown local binding `{}`",
+specifier.exported, specifier.local
+)))?;
                         module_exports.push(ModuleExport {
                             name: specifier.exported.clone(),
                             lowered_statement_index: local_index,
@@ -742,36 +731,21 @@ pub(crate) fn populate_static_module_exports_for_build(
                                 span: Span::generated("Export"),
                             });
                         } else {
-                            return Err(Diagnostic {
-                                code: DiagCode::UnsupportedSyntax,
-                                message: "issue-5005: entry module `export const {...}` contains non-let statement".to_string(),
-                                span: None,
-                                phase: None,
-                            });
+                            return Err(Diagnostic::unsupported("issue-5005: entry module `export const {...}` contains non-let statement".to_string()));
                         }
                     }
                 }
                 lowered::LoweredStmt::ClassDecl { .. } => {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: format!(
-                            "issue-5005: entry module `export {}` references a class declaration; only simple exported expressions are supported in module mode",
-                            export.name
-                        ),
-                        span: None,
-                        phase: None,
-                    });
+                    return Err(Diagnostic::unsupported(format!(
+                        "issue-5005: entry module `export {}` references a class declaration; only simple exported expressions are supported in module mode",
+                        export.name
+                    )));
                 }
                 _ => {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: format!(
-                            "issue-5005: entry module `export {}` uses an unsupported declaration form",
-                            export.name
-                        ),
-                        span: None,
-                        phase: None,
-                    });
+                    return Err(Diagnostic::unsupported(format!(
+                        "issue-5005: entry module `export {}` uses an unsupported declaration form",
+                        export.name
+                    )));
                 }
             }
         }
@@ -1237,12 +1211,10 @@ fn rewrite_static_module_body_for_build(
                 let index = lowered_statement_index;
                 let name = specifier.exported.clone();
                 if !exported_names.insert(name.clone()) {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: format!("issue-5005: duplicate export name `{name}`"),
-                        span: Some(specifier.local_span),
-                        phase: None,
-                    });
+                    return Err(Diagnostic::unsupported_at(
+                        specifier.local_span,
+                        format!("issue-5005: duplicate export name `{name}`"),
+                    ));
                 }
                 if let Stmt::Function {
                     name: func_name,
@@ -1322,14 +1294,10 @@ fn rewrite_static_module_body_for_build(
                         lowered_statement_index: index,
                     });
                     if !is_let_like {
-                        return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message:
-                                "issue-5005: dependency module declaration export uses a form outside the current static export slice"
-                                    .to_owned(),
-                            span: Some(declaration.span()),
-                            phase: None,
-                        });
+                        return Err(Diagnostic::unsupported_at(
+                            declaration.span(),
+                            "issue-5005: unsupported declaration in export".to_owned(),
+                        ));
                     }
                     lowered_statement_index += 1;
                 }
@@ -1337,28 +1305,18 @@ fn rewrite_static_module_body_for_build(
             Stmt::ExportNamed { specifiers, .. } => {
                 for specifier in specifiers {
                     if !exported_names.insert(specifier.exported.clone()) {
-                        return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message: format!(
-                                "issue-5005: duplicate export name `{}`",
-                                specifier.exported
-                            ),
-                            span: Some(specifier.span),
-                            phase: None,
-                        });
+                        return Err(Diagnostic::unsupported_at(
+                            specifier.span,
+                            format!("issue-5005: duplicate export name `{}`", specifier.exported),
+                        ));
                     }
                     let local_index = local_name_to_index
                         .get(&specifier.local)
                         .copied()
-                        .ok_or_else(|| Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message: format!(
-                                "issue-5005: dependency module `export {{ {} }}` references unknown local binding `{}`",
-                                specifier.exported, specifier.local
-                            ),
-                            span: Some(specifier.span),
-                            phase: None,
-                        })?;
+                                                .ok_or_else(|| Diagnostic::unsupported_at(specifier.span, format!(
+"issue-5005: dependency module `export {{ {} }}` references unknown local binding `{}`",
+specifier.exported, specifier.local
+)))?;
                     module_exports.push(ModuleExport {
                         name: specifier.exported.clone(),
                         lowered_statement_index: local_index,
@@ -1367,12 +1325,10 @@ fn rewrite_static_module_body_for_build(
             }
             Stmt::ExportDefault { expr, span, .. } => {
                 if !exported_names.insert("default".to_owned()) {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: "issue-5005: duplicate export name `default`".to_owned(),
-                        span: Some(*span),
-                        phase: None,
-                    });
+                    return Err(Diagnostic::unsupported_at(
+                        *span,
+                        "issue-5005: duplicate export name `default`".to_owned(),
+                    ));
                 }
                 let index = lowered_statement_index;
                 let local_name = format!("__ts2wasm_default_{index}");
@@ -1395,12 +1351,10 @@ fn rewrite_static_module_body_for_build(
                 let exports = collect_literal_named_exports(&source_path)?;
                 for (export_name, expr) in exports {
                     if !exported_names.insert(export_name.clone()) {
-                        return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message: format!("issue-5005: duplicate export name `{export_name}`"),
-                            span: Some(source.span),
-                            phase: None,
-                        });
+                        return Err(Diagnostic::unsupported_at(
+                            source.span,
+                            format!("issue-5005: duplicate export name `{export_name}`"),
+                        ));
                     }
                     let local_name = format!("__ts2wasm_re_{export_name}");
                     rewritten.push(Stmt::Let {
@@ -1425,15 +1379,10 @@ fn rewrite_static_module_body_for_build(
                 let exports = collect_literal_named_exports(&source_path)?;
                 for specifier in specifiers {
                     if !exported_names.insert(specifier.exported.clone()) {
-                        return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message: format!(
-                                "issue-5005: duplicate export name `{}`",
-                                specifier.exported
-                            ),
-                            span: Some(specifier.span),
-                            phase: None,
-                        });
+                        return Err(Diagnostic::unsupported_at(
+                            specifier.span,
+                            format!("issue-5005: duplicate export name `{}`", specifier.exported),
+                        ));
                     }
                     let expr = match exports.get(&specifier.imported) {
                         Some(e) => e.clone(),
@@ -1466,15 +1415,10 @@ fn rewrite_static_module_body_for_build(
                     .map(|(key, value)| ObjectProp::KeyValue { key, value })
                     .collect();
                 if !exported_names.insert(namespace.exported.clone()) {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: format!(
-                            "issue-5005: duplicate export name `{}`",
-                            namespace.exported
-                        ),
-                        span: Some(namespace.span),
-                        phase: None,
-                    });
+                    return Err(Diagnostic::unsupported_at(
+                        namespace.span,
+                        format!("issue-5005: duplicate export name `{}`", namespace.exported),
+                    ));
                 }
                 let local_name = format!("__ts2wasm_ns_{}", namespace.exported);
                 rewritten.push(Stmt::Let {
@@ -1553,16 +1497,14 @@ fn process_collected_export_stmt(
     {
         if let Stmt::Let { expr, .. } = declaration.as_ref() {
             if !is_static_export_literal(expr) {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!(
+                return Err(Diagnostic::unsupported_at(
+                    specifier.local_span,
+                    format!(
                         "issue-233: export `{}` in {} uses an initializer outside the current static named import build slice",
                         specifier.exported,
                         path.display()
                     ),
-                    span: Some(specifier.local_span),
-                    phase: None,
-                });
+                ));
             }
             exports.insert(specifier.exported.clone(), expr.clone());
             literal_locals.insert(specifier.local.clone(), expr.clone());
@@ -1613,15 +1555,10 @@ fn process_collected_export_stmt(
             None
         };
         let Some(export_expr) = export_expr else {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
-                    "issue-233: default export in {} uses a non-literal; only literal default exports and static local aliases are supported",
-                    path.display()
-                ),
-                span: None,
-                phase: None,
-            });
+            return Err(Diagnostic::unsupported(format!(
+                "issue-233: default export in {} uses a non-literal; only literal default exports and static local aliases are supported",
+                path.display()
+            )));
         };
         exports.insert("default".to_owned(), export_expr);
     } else if let Stmt::Let { name, expr, .. } = stmt {
@@ -1669,15 +1606,10 @@ fn process_collected_export_stmt(
         );
     } else if let Stmt::ExportNamed { specifiers, .. } = stmt {
         for specifier in specifiers {
-            let expr = literal_locals.get(&specifier.local).ok_or_else(|| Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!(
-                        "issue-5005: dependency module `export {{ {} }}` references unknown or non-literal local binding `{}`",
-                        specifier.exported, specifier.local
-                    ),
-                    span: Some(specifier.span),
-                    phase: None,
-                })?;
+            let expr = literal_locals.get(&specifier.local).ok_or_else(|| Diagnostic::unsupported_at(specifier.span, format!(
+"issue-5005: dependency module `export {{ {} }}` references unknown or non-literal local binding `{}`",
+specifier.exported, specifier.local
+)))?;
             exports.insert(specifier.exported.clone(), expr.clone());
         }
     } else if let Stmt::ExportAllFrom { source, .. } = stmt {
@@ -1692,17 +1624,15 @@ fn process_collected_export_stmt(
         let source_path = resolve_static_re_export_source_path(path, &source.value, source.span)?;
         let source_exports = collect_literal_named_exports(&source_path)?;
         for specifier in specifiers {
-            let expr = source_exports
-                .get(&specifier.imported)
-                .ok_or_else(|| Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!(
+            let expr = source_exports.get(&specifier.imported).ok_or_else(|| {
+                Diagnostic::unsupported_at(
+                    specifier.imported_span,
+                    format!(
                         "issue-233: module `{}` does not export named binding `{}`",
                         source.value, specifier.imported
                     ),
-                    span: Some(specifier.imported_span),
-                    phase: None,
-                })?;
+                )
+            })?;
             exports.insert(specifier.exported.clone(), expr.clone());
         }
     } else if let Stmt::ExportNamespaceFrom {

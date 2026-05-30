@@ -31,28 +31,14 @@ impl<'a> Lexer<'a> {
             if self.source[start..self.cursor].contains(['.', 'e', 'E']) {
                 let end = self.cursor + 1;
                 self.advance_char();
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "BigInt literal cannot use decimal fractions or exponents"
-                        .to_owned(),
-                    span: Some(Span { start, end }),
-
-                    phase: None,
-                });
+                                return Err(Diagnostic::unsupported_at(Span { start, end }, "BigInt literal cannot use decimal fractions or exponents"));
             }
             self.advance_char();
             if digits.len() > 1 && self.source[start..].starts_with('0') {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "Decimal BigInt literal cannot have a leading zero"
-                        .to_owned(),
-                    span: Some(Span {
-                        start,
-                        end: self.cursor,
-                    }),
-
-                    phase: None,
-                });
+                                return Err(Diagnostic::unsupported_at(Span {
+start,
+end: self.cursor,
+}, "Decimal BigInt literal cannot have a leading zero"));
             }
             return Ok(SpannedToken {
                 kind: Token::BigIntLiteral(format!("{digits}n")),
@@ -93,15 +79,10 @@ impl<'a> Lexer<'a> {
                         },
                     });
                 }
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "number too large".to_owned(),
-                    span: Some(Span {
-                        start,
-                        end: self.cursor,
-                    }),
-                    phase: None,
-                });
+                                return Err(Diagnostic::unsupported_at(Span {
+start,
+end: self.cursor,
+}, "number too large".to_owned()));
             }
         };
         Ok(SpannedToken {
@@ -202,40 +183,21 @@ impl<'a> Lexer<'a> {
                 self.advance_char();
             }
             if exponent.is_empty() {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "invalid decimal exponent numeric literal: expected exponent digits"
-                        .to_owned(),
-                    span: Some(Span {
-                        start,
-                        end: exponent_start,
-                    }),
-
-                    phase: None,
-                });
+                                return Err(Diagnostic::unsupported_at(Span {
+start,
+end: exponent_start,
+}, "invalid decimal exponent numeric literal: expected exponent digits"));
             }
             if negative_exponent {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "Negative decimal exponent numeric literals require fractional number support"
-                        .to_owned(),
-                    span: Some(Span {
-                        start,
-                        end: self.cursor,
-                    }),
-
-                    phase: None,});
+                                return Err(Diagnostic::unsupported_at(Span {
+start,
+end: self.cursor,
+}, "Negative decimal exponent numeric literals require fractional number support"));
             }
-            let zeros = exponent.parse::<usize>().map_err(|error| Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!("invalid decimal exponent numeric literal: {error}"),
-                span: Some(Span {
-                    start,
-                    end: self.cursor,
-                }),
-
-                phase: None,
-            })?;
+                        let zeros = exponent.parse::<usize>().map_err(|error| Diagnostic::unsupported_at(Span {
+start,
+end: self.cursor,
+}, format!("invalid decimal exponent numeric literal: {error}")))?;
             positive_exponent_shift = zeros;
         }
 
@@ -289,16 +251,10 @@ impl<'a> Lexer<'a> {
         }
 
         if !saw_digit {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!("invalid {label} number literal: expected digit after prefix"),
-                span: Some(Span {
-                    start,
-                    end: self.cursor,
-                }),
-
-                phase: None,
-            });
+                        return Err(Diagnostic::unsupported_at(Span {
+start,
+end: self.cursor,
+}, format!("invalid {label} number literal: expected digit after prefix")));
         }
 
         if previous_was_separator {
@@ -322,42 +278,24 @@ impl<'a> Lexer<'a> {
             return Ok(0);
         }
         if radix == 16 {
-            let value = u32::from_str_radix(digits, radix).map_err(|error| Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!("invalid number literal: {error}"),
-                span: Some(Span {
-                    start,
-                    end: self.cursor,
-                }),
-
-                phase: None,
-            })?;
+                        let value = u32::from_str_radix(digits, radix).map_err(|error| Diagnostic::unsupported_at(Span {
+start,
+end: self.cursor,
+}, format!("invalid number literal: {error}")))?;
             return Ok(value as i32);
         }
 
-        i32::from_str_radix(digits, radix).map_err(|error| Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: format!("invalid number literal: {error}"),
-            span: Some(Span {
-                start,
-                end: self.cursor,
-            }),
-
-            phase: None,
-        })
+                i32::from_str_radix(digits, radix).map_err(|error| Diagnostic::unsupported_at(Span {
+start,
+end: self.cursor,
+}, format!("invalid number literal: {error}")))
     }
 
     fn invalid_numeric_separator(&self, start: usize, message: &str) -> Diagnostic {
-        Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: format!("invalid numeric separator: {message}"),
-            span: Some(Span {
-                start,
-                end: self.cursor,
-            }),
-
-            phase: None,
-        }
+                Diagnostic::unsupported_at(Span {
+start,
+end: self.cursor,
+}, format!("invalid numeric separator: {message}"))
     }
 
     fn prefixed_bigint_literal(
@@ -401,25 +339,13 @@ impl<'a> Lexer<'a> {
 
         if !saw_digit {
             if self.char_at(cursor) == Some('n') {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!("Invalid {radix_name} BigInt literal"),
-                    span: Some(Span {
-                        start,
-                        end: cursor + 1,
-                    }),
-
-                    phase: None,
-                });
+                                return Err(Diagnostic::unsupported_at(Span {
+start,
+end: cursor + 1,
+}, format!("Invalid {radix_name} BigInt literal")));
             }
             if let Some(end) = self.invalid_prefixed_bigint_end(cursor) {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!("Invalid {radix_name} BigInt literal"),
-                    span: Some(Span { start, end }),
-
-                    phase: None,
-                });
+                                return Err(Diagnostic::unsupported_at(Span { start, end }, format!("Invalid {radix_name} BigInt literal")));
             }
             return Ok(None);
         }
@@ -433,13 +359,7 @@ impl<'a> Lexer<'a> {
 
         if self.char_at(cursor) != Some('n') {
             if let Some(end) = self.invalid_prefixed_bigint_end(cursor) {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!("Invalid {radix_name} BigInt literal"),
-                    span: Some(Span { start, end }),
-
-                    phase: None,
-                });
+                                return Err(Diagnostic::unsupported_at(Span { start, end }, format!("Invalid {radix_name} BigInt literal")));
             }
             return Ok(None);
         }
@@ -523,17 +443,10 @@ impl<'a> Lexer<'a> {
         }
 
         if saw_fraction_or_exponent && self.char_at(cursor) == Some('n') {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "BigInt literal cannot use decimal fractions or exponents"
-                    .to_owned(),
-                span: Some(Span {
-                    start,
-                    end: cursor + 1,
-                }),
-
-                phase: None,
-            });
+                        return Err(Diagnostic::unsupported_at(Span {
+start,
+end: cursor + 1,
+}, "BigInt literal cannot use decimal fractions or exponents"));
         }
 
         Ok(())

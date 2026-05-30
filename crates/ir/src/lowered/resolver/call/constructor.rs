@@ -107,24 +107,18 @@ impl super::super::Resolver {
         }
         if class_name == "Proxy" {
             let [target, _handler] = args else {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "issue-106: Proxy constructor requires target and handler arguments"
-                        .to_owned(),
-                    span: Some(span),
-                    phase: None,
-                });
+                return Err(Diagnostic::unsupported_at(
+                    span,
+                    "issue-106: Proxy constructor requires target and handler arguments",
+                ));
             };
             return self.lower_expr(target);
         }
         if class_name == "Reflect" {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "issue-106: Reflect API is not implemented yet".to_owned(),
-                span: Some(span),
-
-                phase: None,
-            });
+            return Err(Diagnostic::unsupported_at(
+                span,
+                "issue-106: Reflect API is not implemented yet".to_owned(),
+            ));
         }
         if matches!(class_name, "Intl.NumberFormat" | "NumberFormat") {
             return self.lower_intl_number_format_constructor(args);
@@ -204,13 +198,7 @@ impl super::super::Resolver {
                 && !self.is_static_number_literal_epoch_arg(epoch_ms)
                 && matches!(epoch_ms, ResolvedExpr::String(_))
             {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "issue-5243: string-based Date parsing like new Date(\"2024-01-01\") is not supported in this slice".to_owned(),
-                    span: Some(Span::generated("issue-5243")),
-
-                    phase: None,
-                });
+                return Err(Diagnostic::unsupported_at(Span::generated("issue-5243"), "issue-5243: string-based Date parsing like new Date(\"2024-01-01\") is not supported in this slice".to_owned()));
             }
             return Ok(LoweredExpr::RuntimeCall {
                 intrinsic: RuntimeFn::DateNew,
@@ -228,13 +216,11 @@ impl super::super::Resolver {
                 });
             }
             let [length] = args else {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "issue-405: new Array(length) currently supports exactly one length argument".to_owned(),
-                    span: Some(Span::generated("issue-405")),
-
-                    phase: None,
-                });
+                return Err(Diagnostic::unsupported_at(
+                    Span::generated("issue-405"),
+                    "issue-405: new Array(length) currently supports exactly one length argument"
+                        .to_owned(),
+                ));
             };
             // For small non-negative integer literals (0..=32), use compile-time sparse array
             if let ResolvedExpr::Number(length_val) = length
@@ -284,23 +270,14 @@ impl super::super::Resolver {
                 });
             }
             if class_name == "Set" {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message:
-                        "issue-276: new Set(iterable) currently supports only known dense array inputs"
-                            .to_owned(),
-                    span: Some(Span::generated("issue-276")),
-
-                    phase: None,
-                });
+                return Err(Diagnostic::unsupported_at(
+                    Span::generated("issue-276"),
+                    "unsupported syntax",
+                ));
             }
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!("issue-049: new {class_name}(iterable) is not supported yet"),
-                span: None,
-
-                phase: None,
-            });
+            return Err(Diagnostic::unsupported(format!(
+                "issue-049: new {class_name}(iterable) is not supported yet"
+            )));
         }
         if class_name == "WeakRef" {
             if args.is_empty() {
@@ -337,14 +314,10 @@ impl super::super::Resolver {
         }
         if class_name == "Promise" {
             if args.is_empty() {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "issue-5422: new Promise() without executor is not supported"
-                        .to_owned(),
-                    span: Some(Span::generated("issue-5422")),
-
-                    phase: None,
-                });
+                return Err(Diagnostic::unsupported_at(
+                    Span::generated("issue-5422"),
+                    "issue-5422: new Promise() without executor is not supported",
+                ));
             }
             let mut lowered_args = Vec::new();
             for arg in args {
@@ -383,26 +356,19 @@ impl super::super::Resolver {
                 });
             }
             let [arg] = args else {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!(
+                return Err(Diagnostic::unsupported_at(
+                    span,
+                    format!(
                         "issue-419: new {class_name} currently supports zero arguments, one small length literal, or one array/TypedArray source"
                     ),
-                    span: Some(span),
-
-                    phase: None,
-                });
+                ));
             };
             if let ResolvedExpr::Number(length) = arg {
                 if *length < 0 {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: format!(
-                            "issue-419: new {class_name}(length) must be non-negative"
-                        ),
-                        span: Some(span),
-                        phase: None,
-                    });
+                    return Err(Diagnostic::unsupported_at(
+                        span,
+                        format!("issue-419: new {class_name}(length) must be non-negative"),
+                    ));
                 }
                 if *length > 32 {
                     // Large lengths route to a runtime function that allocates
@@ -460,22 +426,16 @@ impl super::super::Resolver {
         }
         if class_name == "DataView" {
             if args.is_empty() {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "issue-206: DataView constructor requires a buffer argument"
-                        .to_owned(),
-                    span: Some(span),
-                    phase: None,
-                });
+                return Err(Diagnostic::unsupported_at(
+                    span,
+                    "issue-206: DataView constructor requires a buffer argument",
+                ));
             }
             if args.len() > 2 {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "issue-424: DataView constructor byteLength is not supported yet"
-                        .to_owned(),
-                    span: Some(span),
-                    phase: None,
-                });
+                return Err(Diagnostic::unsupported_at(
+                    span,
+                    "issue-424: DataView constructor byteLength is not supported yet",
+                ));
             }
             let buffer = self.lower_expr(&args[0])?;
             let byte_offset = match args.get(1) {

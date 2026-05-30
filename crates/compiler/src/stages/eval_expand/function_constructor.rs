@@ -43,19 +43,16 @@ pub(super) fn expand_function_constructor(
 
     let tokens = ts2wasm_frontend::Lexer::new(&function_source)
         .tokenize()
-        .map_err(|e| Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: format!("Function constructor source lex error: {e}"),
-            span: Some(span),
-            phase: None,
+        .map_err(|e| {
+            Diagnostic::unsupported_at(span, format!("Function constructor source lex error: {e}"))
         })?;
     let program = ts2wasm_frontend::Parser::new(tokens, &function_source)
         .parse_program()
-        .map_err(|e| Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: format!("Function constructor source parse error: {e}"),
-            span: Some(span),
-            phase: None,
+        .map_err(|e| {
+            Diagnostic::unsupported_at(
+                span,
+                format!("Function constructor source parse error: {e}"),
+            )
         })?;
     validate_static_function_constructor_wrapper_shape(&program, span)?;
     validate_static_function_constructor_early_errors(&program, span)?;
@@ -279,12 +276,10 @@ pub(super) fn function_constructor_syntax_error(
     message: &str,
     span: ts2wasm_source::Span,
 ) -> Diagnostic {
-    Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message: format!("Function constructor source parse error: SyntaxError: {message}"),
-        span: Some(span),
-        phase: None,
-    }
+    Diagnostic::unsupported_at(
+        span,
+        format!("Function constructor source parse error: SyntaxError: {message}"),
+    )
 }
 
 /// Extract the completion value from a resolved program body.

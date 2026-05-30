@@ -93,6 +93,32 @@ impl Diagnostic {
         }
     }
 
+    /// Create an unsupported-syntax diagnostic with eager code resolution.
+    /// The code is determined by `resolve_diag_code()` based on the message.
+    pub fn unsupported(message: impl Into<String>) -> Self {
+        let message = message.into();
+        Self {
+            code: resolve_diag_code(&message),
+            message,
+            span: None,
+            phase: None,
+        }
+    }
+
+    /// Create an unsupported-syntax diagnostic with an optional source span.
+    /// Accepts both `Span` (converted to `Some(span)`) and `Option<Span>`.
+    /// Resolves the diagnostic code eagerly from the message content.
+    pub fn unsupported_at(span: impl Into<Option<Span>>, message: impl Into<String>) -> Self {
+        let message = message.into();
+        let span: Option<Span> = span.into();
+        Self {
+            code: resolve_diag_code(&message),
+            message,
+            span,
+            phase: None,
+        }
+    }
+
     /// Tag this diagnostic with a pipeline phase.
     /// Returns self for chaining: `diag.with_phase("parser")`.
     pub fn with_phase(mut self, phase: &'static str) -> Self {
@@ -125,101 +151,106 @@ impl std::fmt::Display for Diagnostic {
     }
 }
 
+/// Resolve the appropriate `DiagCode` from a diagnostic message at construction time.
+///
+/// This centralises the message-to-code mapping so that all emit sites (frontend,
+/// IR, compiler, backend) set a precise code eagerly rather than relying on
+/// `display_code()` string matching at render time.
+pub fn resolve_diag_code(message: &str) -> DiagCode {
+    let lower = message.to_ascii_lowercase();
+
+    if lower.contains("issue-055")
+        || lower.contains("module resolution")
+        || lower.contains("module loading")
+        || lower.contains(" import")
+        || lower.contains(" export")
+        || lower.contains("require(")
+    {
+        return DiagCode::UnsupportedModule;
+    }
+
+    if lower.contains("issue-050") || contains_ascii_word(&lower, "date") {
+        return DiagCode::UnsupportedDate;
+    }
+
+    if lower.contains("regexp")
+        || lower.contains("regular expression")
+        || lower.contains("issue-051")
+    {
+        return DiagCode::UnsupportedRegExp;
+    }
+
+    if lower.contains("return statement is not valid in eval source") {
+        return DiagCode::UnsupportedSyntax;
+    }
+
+    if lower.contains("eval") || lower.contains("issue-302") || lower.contains("issue-347") {
+        return DiagCode::UnsupportedEval;
+    }
+
+    if lower.contains("typescript")
+        || lower.contains("type annotation")
+        || lower.contains("type directive")
+        || lower.contains("reference types")
+        || lower.contains("interface")
+        || lower.contains(" enum")
+        || contains_ascii_word(&lower, "declare")
+        || lower.contains("ambient")
+        || lower.contains("parameter propert")
+        || lower.contains("type alias")
+        || lower.contains("decorator")
+    {
+        return DiagCode::UnsupportedTypeScriptSyntax;
+    }
+
+    if lower.contains("array.prototype")
+        || lower.contains("object.")
+        || lower.contains("object prototype")
+        || lower.contains("string.prototype")
+        || lower.contains("function.prototype")
+        || lower.contains("json.")
+        || lower.contains("math.")
+        || lower.contains("number.")
+        || lower.contains("boolean.")
+        || lower.contains("console.")
+        || lower.contains("process.")
+        || lower.contains("bigint.")
+        || lower.contains("bigint(")
+        || lower.contains("bigint is not a constructor")
+        || lower.contains("globalthis")
+        || lower.contains("builtin")
+    {
+        return DiagCode::UnsupportedBuiltin;
+    }
+
+    if lower.contains("runtime slice")
+        || lower.contains("runtime subset")
+        || lower.contains("runtime semantics")
+        || lower.contains("literal runtime slice")
+        || lower.contains("literal-folding slice")
+        || lower.contains("coercion slice")
+        || lower.contains("in this subset")
+        || lower.contains("in this slice")
+        || lower.contains("not implemented in")
+        || lower.contains("is not implemented")
+        || lower.contains("are not implemented")
+    {
+        return DiagCode::UnsupportedRuntimeSubset;
+    }
+
+    DiagCode::UnsupportedSyntax
+}
+
 impl Diagnostic {
     pub fn display_code(&self) -> DiagCode {
         if self.code != DiagCode::UnsupportedSyntax {
             return self.code;
         }
-
-        let message = self.message.to_ascii_lowercase();
-
-        if message.contains("issue-055")
-            || message.contains("module resolution")
-            || message.contains("module loading")
-            || message.contains(" import")
-            || message.contains(" export")
-            || message.contains("require(")
-        {
-            return DiagCode::UnsupportedModule;
-        }
-
-        if message.contains("issue-050") || contains_ascii_word(&message, "date") {
-            return DiagCode::UnsupportedDate;
-        }
-
-        if message.contains("regexp")
-            || message.contains("regular expression")
-            || message.contains("issue-051")
-        {
-            return DiagCode::UnsupportedRegExp;
-        }
-
-        if message.contains("return statement is not valid in eval source") {
-            return DiagCode::UnsupportedSyntax;
-        }
-
-        if message.contains("eval")
-            || message.contains("issue-302")
-            || message.contains("issue-347")
-        {
-            return DiagCode::UnsupportedEval;
-        }
-
-        if message.contains("typescript")
-            || message.contains("type annotation")
-            || message.contains("type directive")
-            || message.contains("reference types")
-            || message.contains("interface")
-            || message.contains(" enum")
-            || contains_ascii_word(&message, "declare")
-            || message.contains("ambient")
-            || message.contains("parameter propert")
-            || message.contains("type alias")
-            || message.contains("decorator")
-        {
-            return DiagCode::UnsupportedTypeScriptSyntax;
-        }
-
-        if message.contains("array.prototype")
-            || message.contains("object.")
-            || message.contains("object prototype")
-            || message.contains("string.prototype")
-            || message.contains("function.prototype")
-            || message.contains("json.")
-            || message.contains("math.")
-            || message.contains("number.")
-            || message.contains("boolean.")
-            || message.contains("console.")
-            || message.contains("process.")
-            || message.contains("bigint.")
-            || message.contains("bigint(")
-            || message.contains("bigint is not a constructor")
-            || message.contains("globalthis")
-            || message.contains("builtin")
-        {
-            return DiagCode::UnsupportedBuiltin;
-        }
-
-        if message.contains("runtime slice")
-            || message.contains("runtime subset")
-            || message.contains("runtime semantics")
-            || message.contains("literal runtime slice")
-            || message.contains("literal-folding slice")
-            || message.contains("coercion slice")
-            || message.contains("in this subset")
-            || message.contains("in this slice")
-            || message.contains("not implemented in")
-            || message.contains("is not implemented")
-            || message.contains("are not implemented")
-        {
-            return DiagCode::UnsupportedRuntimeSubset;
-        }
-
-        DiagCode::UnsupportedSyntax
+        resolve_diag_code(&self.message)
     }
 }
 
-fn contains_ascii_word(haystack: &str, needle: &str) -> bool {
+pub(crate) fn contains_ascii_word(haystack: &str, needle: &str) -> bool {
     haystack.match_indices(needle).any(|(start, _)| {
         let before_is_boundary = start == 0
             || !haystack.as_bytes()[start - 1].is_ascii_alphanumeric()
@@ -245,6 +276,12 @@ pub enum DiagCode {
     DuplicateLocal,
     /// Two parameters share the same name in the same function parameter list.
     DuplicateParameter,
+    /// Two labels share the same name in the same label scope.
+    DuplicateLabel,
+    /// A label referenced in break/continue was not declared in any enclosing scope.
+    UnresolvedLabel,
+    /// A name binding is a class declaration and cannot be assigned to.
+    ClassSideEffect,
     /// A number literal is outside small-int tagged range.
     NumberOutOfRange,
     /// A function call passes the wrong number of arguments.
@@ -362,6 +399,38 @@ mod tests {
             let diagnostic = unsupported(message);
             assert_eq!(diagnostic.display_code(), expected);
             assert!(diagnostic.to_string().contains(rendered_code));
+        }
+    }
+
+    #[test]
+    fn direct_code_variants_render_correctly() {
+        let cases = [
+            (
+                "duplicate label `foo`",
+                DiagCode::DuplicateLabel,
+                "[DuplicateLabel]",
+            ),
+            (
+                "undefined break label `foo`",
+                DiagCode::UnresolvedLabel,
+                "[UnresolvedLabel]",
+            ),
+            (
+                "cannot assign to `Foo` because it is a class declaration",
+                DiagCode::ClassSideEffect,
+                "[ClassSideEffect]",
+            ),
+        ];
+
+        for (message, code, rendered) in cases {
+            let diagnostic = Diagnostic {
+                code,
+                message: message.to_owned(),
+                span: Some(Span { start: 1, end: 2 }),
+                phase: None,
+            };
+            assert_eq!(diagnostic.display_code(), code);
+            assert!(diagnostic.to_string().contains(rendered));
         }
     }
 }

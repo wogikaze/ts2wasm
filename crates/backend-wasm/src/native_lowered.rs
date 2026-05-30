@@ -3235,7 +3235,10 @@ impl<'a> NativeLoweredEmitter<'a> {
                 | LoweredBinaryOp::StrictEqual
                 | LoweredBinaryOp::EqualEqual
                 | LoweredBinaryOp::StrictNotEqual
-                | LoweredBinaryOp::BangEqual => {
+                | LoweredBinaryOp::BangEqual
+                | LoweredBinaryOp::Shl
+                | LoweredBinaryOp::Shr
+                | LoweredBinaryOp::ShrU => {
                     if self.try_emit_equality_runtime_call(*op, left, right, ctx, out)? {
                         return Ok(());
                     }
@@ -3298,6 +3301,11 @@ impl<'a> NativeLoweredEmitter<'a> {
                             out.push(WasmInstr::Drop);
                         }
                         out.push(WasmInstr::I32Const(ValueTag::TRUE));
+                        Ok(())
+                    }
+                    LoweredUnaryOp::BitwiseNot => {
+                        out.push(WasmInstr::I32Const(-1));
+                        out.push(WasmInstr::I32Xor);
                         Ok(())
                     }
                 }
@@ -30737,6 +30745,9 @@ fn static_unary_value_from_expr_with_functions(
                 span,
             )))
         }
+        // BitwiseNot ~x = -x-1 in bitwise arithmetic.  Can't evaluate
+        // statically because it requires runtime i32 conversion.
+        LoweredUnaryOp::BitwiseNot => None,
     }
 }
 
@@ -35859,7 +35870,7 @@ fn body_ends_with_return(body: &[WasmInstr]) -> bool {
 
 fn unsupported(message: &str) -> Diagnostic {
     Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
+        code: ts2wasm_diagnostic::resolve_diag_code(message),
         message: message.to_owned(),
         span: None,
         phase: None,

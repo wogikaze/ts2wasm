@@ -49,7 +49,7 @@ impl Parser {
                 let span = self.peek_span();
                 self.advance();
                 Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
+                    code: crate::diagnostic::resolve_diag_code("static declarations are not valid in constructor/function bodies"),
                     message: "static declarations are not valid in constructor/function bodies"
                         .to_owned(),
                     span,
@@ -295,15 +295,9 @@ impl Parser {
                         Some(Token::Default) => "default export",
                         _ => "static export",
                     };
-                    Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: format!(
-                            "Unsupported {form}; module resolution and loading are not implemented"
-                        ),
-                        span: Some(export_span),
-
-                        phase: None,
-                    })
+                                        Err(Diagnostic::unsupported_at(export_span, format!(
+"Unsupported {form}; module resolution and loading are not implemented"
+)))
                 }
             }
         }
@@ -865,15 +859,9 @@ impl Parser {
     }
 
     fn unsupported_module_form(&self, span: Span, form: &str) -> Result<Stmt, Diagnostic> {
-        Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: format!(
-                "Unsupported {form}; module resolution and loading are not implemented"
-            ),
-            span: Some(span),
-
-            phase: None,
-        })
+                Err(Diagnostic::unsupported_at(span, format!(
+"Unsupported {form}; module resolution and loading are not implemented"
+)))
     }
 
     fn expression_statement(&mut self) -> Result<Stmt, Diagnostic> {
@@ -948,15 +936,9 @@ impl Parser {
                     });
                 }
                 _ => {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: String::from(
-                            "left-hand side of assignment must be a property access",
-                        ),
-                        span: Some(expr.span()),
-
-                        phase: None,
-                    });
+                                        return Err(Diagnostic::unsupported_at(expr.span(), String::from(
+"left-hand side of assignment must be a property access",
+)));
                 }
             }
         }
@@ -1042,15 +1024,9 @@ impl Parser {
                     });
                 }
                 _ => {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: String::from(
-                            "left-hand side of compound assignment must be a property or index access",
-                        ),
-                        span: Some(expr.span()),
-
-                        phase: None,
-                    });
+                                        return Err(Diagnostic::unsupported_at(expr.span(), String::from(
+"left-hand side of compound assignment must be a property or index access",
+)));
                 }
             }
         }
@@ -1124,13 +1100,7 @@ impl Parser {
         {
             return Ok(fallback_end);
         }
-        Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: format!("expected Semicolon, got {:?}", self.peek()),
-            span: self.peek_span(),
-
-            phase: None,
-        })
+                Err(Diagnostic::unsupported_at(self.peek_span(), format!("expected Semicolon, got {:?}", self.peek())))
     }
 
     fn let_statement(&mut self) -> Result<Stmt, Diagnostic> {
@@ -1152,13 +1122,7 @@ impl Parser {
                 span,
             }) => (span, true, Token::Const),
             other => {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!("expected let/const/var, got {other:?}"),
-                    span: self.peek_span(),
-
-                    phase: None,
-                });
+                                return Err(Diagnostic::unsupported_at(self.peek_span(), format!("expected let/const/var, got {other:?}")));
             }
         };
         let binding = self.parse_binding_pattern()?;
@@ -1179,21 +1143,9 @@ impl Parser {
             }
             self.expression()?
         } else if !binding.is_identifier {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "Binding patterns require an initializer".to_owned(),
-                span: Some(binding.span),
-
-                phase: None,
-            });
+                        return Err(Diagnostic::unsupported_at(binding.span, "Binding patterns require an initializer".to_owned()));
         } else if is_const {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "const declarations require an initializer".to_owned(),
-                span: Some(binding.span),
-
-                phase: None,
-            });
+                        return Err(Diagnostic::unsupported_at(binding.span, "const declarations require an initializer".to_owned()));
         } else {
             Expr::Undefined { span: binding.span }
         };
@@ -1210,21 +1162,9 @@ impl Parser {
             let extra_expr = if self.consume(TokenKind::Equal) {
                 self.expression()?
             } else if !extra_binding.is_identifier {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "Binding patterns require an initializer".to_owned(),
-                    span: Some(extra_binding.span),
-
-                    phase: None,
-                });
+                                return Err(Diagnostic::unsupported_at(extra_binding.span, "Binding patterns require an initializer".to_owned()));
             } else if is_const {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "const declarations require an initializer".to_owned(),
-                    span: Some(extra_binding.span),
-
-                    phase: None,
-                });
+                                return Err(Diagnostic::unsupported_at(extra_binding.span, "const declarations require an initializer".to_owned()));
             } else {
                 Expr::Undefined {
                     span: extra_binding.span,
@@ -1262,12 +1202,7 @@ impl Parser {
         }
         let (name, name_span) = self.expect_binding_ident()?;
         if !self.consume(TokenKind::Equal) {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "using declarations require an initializer".to_owned(),
-                span: Some(name_span),
-                phase: None,
-            });
+                        return Err(Diagnostic::unsupported_at(name_span, "using declarations require an initializer".to_owned()));
         }
         let expr = self.expression()?;
         let end = self.statement_terminator_end(expr.span().end)?;
@@ -1303,13 +1238,7 @@ impl Parser {
             } else if self.consume(TokenKind::CaretEqual) {
                 BinaryOp::BitwiseXor
             } else {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "expected assignment operator".to_owned(),
-                    span: self.peek_span(),
-
-                    phase: None,
-                });
+                                return Err(Diagnostic::unsupported_at(self.peek_span(), "expected assignment operator".to_owned()));
             };
             let right = self.expression()?;
             let end = right.span().end;
@@ -1872,15 +1801,10 @@ impl Parser {
         let for_span = self.expect(TokenKind::For)?;
         let await_span = self.expect(TokenKind::Await)?;
         if !self.in_async_fn {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "'for await' loops are only allowed within async functions and at the top levels of modules".to_owned(),
-                span: Some(Span {
-                    start: for_span.start,
-                    end: await_span.end,
-                }),
-
-                phase: None,});
+                        return Err(Diagnostic::unsupported_at(Span {
+start: for_span.start,
+end: await_span.end,
+}, "'for await' loops are only allowed within async functions and at the top levels of modules".to_owned()));
         }
         self.expect(TokenKind::LeftParen)?;
         if matches!(self.peek(), Some(Token::Var | Token::Let | Token::Const)) {
@@ -2257,13 +2181,7 @@ impl Parser {
                     },
                 })
             } else {
-                Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "expected 'in' or 'of' in for loop".to_owned(),
-                    span: self.peek_span(),
-
-                    phase: None,
-                })
+                                Err(Diagnostic::unsupported_at(self.peek_span(), "expected 'in' or 'of' in for loop".to_owned()))
             }
         } else {
             // Parse traditional for loop
@@ -2369,13 +2287,7 @@ impl Parser {
                 }
                 cases.push((None, case_stmts));
             } else {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "expected 'case' or 'default' in switch statement".to_owned(),
-                    span: self.peek_span(),
-
-                    phase: None,
-                });
+                                return Err(Diagnostic::unsupported_at(self.peek_span(), "expected 'case' or 'default' in switch statement".to_owned()));
             }
         }
 
@@ -2436,16 +2348,10 @@ impl Parser {
         };
 
         if catch_block.is_none() && finally_block.is_none() {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "try statement must have catch or finally block".to_owned(),
-                span: Some(Span {
-                    start: start.start,
-                    end: start.end,
-                }),
-
-                phase: None,
-            });
+                        return Err(Diagnostic::unsupported_at(Span {
+start: start.start,
+end: start.end,
+}, "try statement must have catch or finally block".to_owned()));
         }
 
         let end = finally_block
@@ -2488,13 +2394,7 @@ impl Parser {
                 continue;
             }
             if self.is_at_end() {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "unterminated block".to_owned(),
-                    span: self.prev_span().or_else(|| self.peek_span()),
-
-                    phase: None,
-                });
+                                return Err(Diagnostic::unsupported_at(self.prev_span().or_else(|| self.peek_span()), "unterminated block".to_owned()));
             }
             if self.consume(TokenKind::Semicolon) {
                 continue;
@@ -2521,13 +2421,7 @@ impl Parser {
         let mut stmts = Vec::new();
         while !self.consume(TokenKind::RightBrace) {
             if self.is_at_end() {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "unterminated block".to_owned(),
-                    span: self.prev_span().or_else(|| self.peek_span()),
-
-                    phase: None,
-                });
+                                return Err(Diagnostic::unsupported_at(self.prev_span().or_else(|| self.peek_span()), "unterminated block".to_owned()));
             }
             if self.consume(TokenKind::Semicolon) {
                 continue;
@@ -2662,15 +2556,10 @@ impl Parser {
                 value,
                 span,
             }),
-            other => Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
-                    "expected member expression in for-in/of loop head, got {:?}",
-                    std::mem::discriminant(&other)
-                ),
-                span: Some(other.span()),
-                phase: None,
-            }),
+                        other => Err(Diagnostic::unsupported_at(other.span(), format!(
+"expected member expression in for-in/of loop head, got {:?}",
+std::mem::discriminant(&other)
+))),
         }
     }
 }

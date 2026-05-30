@@ -45,13 +45,10 @@ pub(super) fn lower_html_wrapper_string_method(
         "sub" => ("<sub>", None, "</sub>"),
         "sup" => ("<sup>", None, "</sup>"),
         _ => {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!("String.prototype.{method} is not supported in this milestone"),
-                span: Some(span),
-
-                phase: None,
-            });
+            return Err(Diagnostic::unsupported_at(
+                span,
+                format!("String.prototype.{method} is not supported in this milestone"),
+            ));
         }
     };
 

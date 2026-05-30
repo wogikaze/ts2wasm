@@ -21,15 +21,10 @@ impl super::super::Resolver {
             .strict_mode_check(crate::lowered::ctx::StrictModeCheck::StrictEval)
             && matches!(name, "eval" | "arguments")
         {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
-                    "issue-450: {:?} strict mode forbids assigning to `{name}`",
-                    crate::lowered::ctx::StrictModeCheck::StrictEval
-                ),
-                span: None,
-                phase: None,
-            });
+            return Err(Diagnostic::unsupported(format!(
+                "issue-450: {:?} strict mode forbids assigning to `{name}`",
+                crate::lowered::ctx::StrictModeCheck::StrictEval
+            )));
         }
         let local = self.resolve_local(name)?;
         crate::lowered::resolver::expr::facts::invalidate_static_object_literal_local(
@@ -517,14 +512,9 @@ impl super::super::Resolver {
     ) -> Result<LoweredExpr, Diagnostic> {
         if let Some(local_name) = self.current_static_private_field_local_name(key) {
             if self.is_same_class_static_private_receiver(object) {
-                let local = self.resolve_local(&local_name).map_err(|_| Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!(
-                        "issue-352: static private field `{key}` cannot be accessed before its declaration in class static initialization order"
-                    ),
-                    span: Some(span),
-                    phase: None,
-                })?;
+                let local = self.resolve_local(&local_name).map_err(|_| Diagnostic::unsupported_at(span, format!(
+"issue-352: static private field `{key}` cannot be accessed before its declaration in class static initialization order"
+)))?;
                 let expr = Box::new(self.lower_expr(value)?);
                 return Ok(if self.ctx.facts.env_cell_locals.contains(&local) {
                     LoweredExpr::EnvCellSet {
@@ -540,14 +530,12 @@ impl super::super::Resolver {
                     }
                 });
             }
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
+            return Err(Diagnostic::unsupported_at(
+                span,
+                format!(
                     "issue-255: static private field `{key}` assignment is currently supported only as `this.{key} = value` inside static methods or `Class.{key} = value` inside the declaring class"
                 ),
-                span: Some(span),
-                phase: None,
-            });
+            ));
         }
         if let Some(setter_id) = self.current_static_private_setter_id(key) {
             if self.is_same_class_static_private_receiver(object) {
@@ -557,28 +545,21 @@ impl super::super::Resolver {
                     span: Span::generated("call"),
                 });
             }
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
+            return Err(Diagnostic::unsupported_at(
+                span,
+                format!(
                     "issue-255: static private setter `{key}` assignment is currently supported only as `this.{key} = value` inside static methods or `Class.{key} = value` inside the declaring class"
                 ),
-                span: Some(span),
-                phase: None,
-            });
+            ));
         }
         if let Some(setter_id) = self.current_private_setter_id(key) {
             let receiver = if matches!(object, ResolvedExpr::This { .. }) {
                 LoweredExpr::Local(self.resolve_local("this")?, Span::generated("local"))
             } else {
                 let class_name = self.ctx.classes.current_class.clone().ok_or_else(|| {
-                    Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: format!(
-                            "issue-255: private setter `{key}` assignment requires declaring class context"
-                        ),
-                        span: Some(span),
-                        phase: None,
-                    }
+                                        Diagnostic::unsupported_at(span, format!(
+"issue-255: private setter `{key}` assignment requires declaring class context"
+))
                 })?;
                 let brand = self.private_brand_for_class(&class_name, Some(span))?;
                 LoweredExpr::RuntimeCall {
@@ -599,14 +580,12 @@ impl super::super::Resolver {
         if let Some(class_name) = self.infer_class_for_expr(object)
             && self.private_setter_id_for_class(&class_name, key).is_some()
         {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
+            return Err(Diagnostic::unsupported_at(
+                span,
+                format!(
                     "issue-255: private setter `{key}` external assignment is not supported in this private setter runtime slice"
                 ),
-                span: Some(span),
-                phase: None,
-            });
+            ));
         }
         let (brand, slot) = self.private_field_brand_and_slot(object, key, span)?;
         Ok(LoweredExpr::RuntimeCall {
@@ -628,28 +607,23 @@ impl super::super::Resolver {
         value: &ResolvedExpr,
         _span: Span,
     ) -> Result<LoweredExpr, Diagnostic> {
-        let class_name = self
-            .ctx
-            .classes
-            .current_class
-            .as_ref()
-            .ok_or_else(|| Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "super property assignment requires class context".to_owned(),
-                span: Some(Span::generated("super-assign")),
-                phase: None,
-            })?;
+        let class_name = self.ctx.classes.current_class.as_ref().ok_or_else(|| {
+            Diagnostic::unsupported_at(
+                Span::generated("super-assign"),
+                "super property assignment requires class context".to_owned(),
+            )
+        })?;
         let _parent_name = self
             .ctx
             .classes
             .class_parents
             .get(class_name)
             .and_then(|p| p.clone())
-            .ok_or_else(|| Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "super property assignment used in class without extends".to_owned(),
-                span: Some(Span::generated("super-assign")),
-                phase: None,
+            .ok_or_else(|| {
+                Diagnostic::unsupported_at(
+                    Span::generated("super-assign"),
+                    "super property assignment used in class without extends".to_owned(),
+                )
             })?;
         Ok(object_kernel::ordinary_set(
             LoweredExpr::Local(self.resolve_local("this")?, Span::generated("local")),
@@ -665,28 +639,23 @@ impl super::super::Resolver {
         key: &ResolvedExpr,
         value: &ResolvedExpr,
     ) -> Result<LoweredExpr, Diagnostic> {
-        let class_name = self
-            .ctx
-            .classes
-            .current_class
-            .as_ref()
-            .ok_or_else(|| Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "super computed assignment requires class context".to_owned(),
-                span: Some(Span::generated("super-computed")),
-                phase: None,
-            })?;
+        let class_name = self.ctx.classes.current_class.as_ref().ok_or_else(|| {
+            Diagnostic::unsupported_at(
+                Span::generated("super-computed"),
+                "super computed assignment requires class context".to_owned(),
+            )
+        })?;
         let _parent_name = self
             .ctx
             .classes
             .class_parents
             .get(class_name)
             .and_then(|p| p.clone())
-            .ok_or_else(|| Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "super computed assignment used in class without extends".to_owned(),
-                span: Some(Span::generated("super-computed")),
-                phase: None,
+            .ok_or_else(|| {
+                Diagnostic::unsupported_at(
+                    Span::generated("super-computed"),
+                    "super computed assignment used in class without extends".to_owned(),
+                )
             })?;
         Ok(object_kernel::ordinary_set_dynamic(
             LoweredExpr::Local(self.resolve_local("this")?, Span::generated("local")),

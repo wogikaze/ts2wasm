@@ -31,26 +31,15 @@ impl super::Resolver {
             .unwrap_or(&[]);
 
         for capture in captures {
-            let local = self.resolve_local(capture).map_err(|_| Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
-                    "issue-289: class method capture `{capture}` is not available at this call site; escaped class lexical environments require heap environment support"
-                ),
-                span: None,
-
-                phase: None,})?;
+            let local = self.resolve_local(capture).map_err(|_| Diagnostic::unsupported(format!(
+"issue-289: class method capture `{capture}` is not available at this call site; escaped class lexical environments require heap environment support"
+)))?;
             if mutable_captures.contains(capture)
                 && !self.ctx.facts.env_cell_locals.contains(&local)
             {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!(
-                        "issue-301: mutable class method capture `{capture}` is not available as an environment cell at this call site"
-                    ),
-                    span: None,
-
-                    phase: None,
-                });
+                return Err(Diagnostic::unsupported(format!(
+                    "issue-301: mutable class method capture `{capture}` is not available as an environment cell at this call site"
+                )));
             }
             lowered_args.push(LoweredExpr::Local(local, Span::generated("local")));
         }
@@ -262,15 +251,9 @@ impl super::Resolver {
             .classes
             .current_class
             .as_ref()
-            .ok_or_else(|| Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
-                "issue-255: private field `#{field_name}` access requires declaring class context"
-            ),
-                span: Some(span),
-
-                phase: None,
-            })?;
+                        .ok_or_else(|| Diagnostic::unsupported_at(span, format!(
+"issue-255: private field `#{field_name}` access requires declaring class context"
+)))?;
         let Some(mut slot) = self
             .ctx
             .classes
@@ -279,15 +262,12 @@ impl super::Resolver {
             .and_then(|fields| fields.get(field_name))
             .copied()
         else {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
+            return Err(Diagnostic::unsupported_at(
+                span,
+                format!(
                     "issue-255: private field `#{field_name}` is not declared in class `{class_name}`"
                 ),
-                span: Some(span),
-
-                phase: None,
-            });
+            ));
         };
         slot += self.ancestor_private_slot_count(class_name);
         let brand = self.private_brand_for_class(class_name, Some(span))?;
@@ -474,15 +454,10 @@ impl super::Resolver {
         let constructor = self.ctx.classes.class_constructor_ids
             .get(class_name)
             .copied()
-            .ok_or_else(|| Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
-                    "issue-207: instanceof right-hand side must be a supported class constructor `{}`",
-                    class_name
-                ),
-                span: None,
-
-                phase: None,})?;
+                        .ok_or_else(|| Diagnostic::unsupported(format!(
+"issue-207: instanceof right-hand side must be a supported class constructor `{}`",
+class_name
+)))?;
 
         let mut parent_constructors = Vec::new();
         let mut current = self

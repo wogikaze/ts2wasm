@@ -230,26 +230,15 @@ impl super::super::Resolver {
             .unwrap_or(&[]);
 
         for capture in captures {
-            let local = self.resolve_local(capture).map_err(|_| Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
-                    "issue-404: callback capture `{capture}` is not available at this call site; escaped callback lexical environments require heap environment support"
-                ),
-                span: None,
-
-                phase: None,})?;
+            let local = self.resolve_local(capture).map_err(|_| Diagnostic::unsupported(format!(
+"issue-404: callback capture `{capture}` is not available at this call site; escaped callback lexical environments require heap environment support"
+)))?;
             if mutable_captures.contains(capture)
                 && !self.ctx.facts.env_cell_locals.contains(&local)
             {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!(
-                        "issue-404: mutable callback capture `{capture}` is not available as an environment cell at this call site"
-                    ),
-                    span: None,
-
-                    phase: None,
-                });
+                return Err(Diagnostic::unsupported(format!(
+                    "issue-404: mutable callback capture `{capture}` is not available as an environment cell at this call site"
+                )));
             }
             lowered_args.push(LoweredExpr::Local(local, Span::generated("local")));
         }
@@ -278,48 +267,26 @@ impl super::super::Resolver {
         let Some(input) =
             crate::lowered::resolver::string::resolved_expr_static_string_value(&self.ctx, object)
         else {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "issue-5129: String.prototype.matchAll currently requires a static string receiver"
-                    .to_owned(),
-                span: Some(span),
-
-                phase: None,});
+            return Err(Diagnostic::unsupported_at(
+                span,
+                "issue-5129: String.prototype.matchAll currently requires a static string receiver",
+            ));
         };
         if !input.is_ascii() {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message:
-                    "issue-5129: String.prototype.matchAll currently supports ASCII input only"
-                        .to_owned(),
-                span: Some(span),
-
-                phase: None,
-            });
+            return Err(Diagnostic::unsupported_at(span, "unsupported syntax"));
         }
 
         let ResolvedExpr::String(raw_pattern) = &args[0] else {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "issue-5129: String.prototype.matchAll currently requires a RegExp literal argument"
-                    .to_owned(),
-                span: Some(span),
-
-                phase: None,});
+            return Err(Diagnostic::unsupported_at(
+                span,
+                "issue-5129: String.prototype.matchAll currently requires a RegExp literal argument",
+            ));
         };
 
         // Plain string search: find all occurrences of the literal string
         if !looks_like_regexp_literal(raw_pattern) {
             if raw_pattern.is_empty() {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message:
-                        "issue-5129: String.prototype.matchAll does not support empty string arg in this slice"
-                            .to_owned(),
-                    span: Some(span),
-
-                    phase: None,
-                });
+                return Err(Diagnostic::unsupported_at(span, "unsupported syntax"));
             }
             let mut elements = Vec::new();
             let mut start = 0;
@@ -358,13 +325,10 @@ impl super::super::Resolver {
             .expect("regexp literal has delimiter");
         let flags = &raw_pattern[delimiter + 1..];
         if !flags.contains('g') {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "issue-5129: String.prototype.matchAll requires a global RegExp literal in this slice"
-                    .to_owned(),
-                span: Some(span),
-
-                phase: None,});
+            return Err(Diagnostic::unsupported_at(
+                span,
+                "issue-5129: String.prototype.matchAll requires a global RegExp literal in this slice",
+            ));
         }
 
         let pattern = &raw_pattern[1..delimiter];
@@ -375,14 +339,7 @@ impl super::super::Resolver {
                 "." => ch != '\n' && ch != '\r',
                 literal if literal.len() == 1 => literal.as_bytes()[0] == ch as u8,
                 _ => {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message:
-                            "issue-5129: String.prototype.matchAll currently supports /\\w/g, /./g, and one-byte literal patterns"
-                                .to_owned(),
-                        span: Some(span),
-
-                        phase: None,});
+                    return Err(Diagnostic::unsupported_at(span, "unsupported syntax"));
                 }
             };
             if matches {
@@ -497,14 +454,7 @@ impl super::super::Resolver {
                     {
                         lowered_args.push(map_array);
                     } else {
-                        return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message:
-                                "issue-274: spread arguments are only supported for literal arrays, known static array locals, and ASCII literal-derived strings in this milestone"
-                                    .to_owned(),
-                            span: Some(Span::generated("issue-274")),
-
-                            phase: None,});
+                                                return Err(Diagnostic::unsupported_at(Span::generated("issue-274"), "unsupported syntax"));
                     }
                 }
                 _ => lowered_args.push(self.lower_expr(arg)?),

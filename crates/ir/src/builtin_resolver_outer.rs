@@ -153,21 +153,19 @@ pub(super) fn reject_class_method_outer_local_references(
         class_names,
     )?;
     if let Some(name) = captures.first() {
-        return Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: format!(
+        let span = first_outer_local_reference_in_stmts(
+            body,
+            outer_bindings,
+            &class_method_local_names(class_name, params, body)?,
+            class_names,
+        )
+        .map(|(_, s)| s);
+        return Err(Diagnostic::unsupported_at(
+            span.unwrap_or(ts2wasm_source::Span::generated("issue-289")),
+            format!(
                 "issue-289: class constructor `{method_name}` references outer local `{name}`; class constructor lexical captures require environment support"
             ),
-            span: first_outer_local_reference_in_stmts(
-                body,
-                outer_bindings,
-                &class_method_local_names(class_name, params, body)?,
-                class_names,
-            )
-            .map(|(_, span)| span),
-
-            phase: None,
-        });
+        ));
     }
 
     Ok(())
@@ -192,15 +190,12 @@ pub(super) fn class_method_outer_local_captures(
         first_outer_local_reference_in_stmts(body, outer_bindings, &method_locals, class_names)
     {
         if params.iter().any(|(_, _, is_rest)| *is_rest) {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
+            return Err(Diagnostic::unsupported_at(
+                span,
+                format!(
                     "issue-289: class method `{method_name}` captures outer local `{name}` with a rest parameter; hidden capture parameters after rest require a broader call ABI",
                 ),
-                span: Some(span),
-
-                phase: None,
-            });
+            ));
         }
 
         method_locals.insert(name.clone());

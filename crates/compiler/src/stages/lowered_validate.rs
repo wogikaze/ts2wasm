@@ -12,7 +12,7 @@ fn lowered_validation_backend_error(mut diagnostic: Diagnostic) -> Diagnostic {
         && diagnostic.message.contains("FuncId")
         && diagnostic.message.contains("out of range")
     {
-        diagnostic.code = DiagCode::UnsupportedSyntax;
+        diagnostic.code = DiagCode::UnsupportedRuntimeSubset;
     }
     diagnostic
 }

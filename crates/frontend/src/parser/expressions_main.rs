@@ -114,12 +114,7 @@ impl Parser {
             };
             self.cursor = probe;
             if is_jsx {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "JSX syntax is not supported".to_owned(),
-                    span: self.peek_span(),
-
-                    phase: None,});
+                                return Err(Diagnostic::unsupported_at(self.peek_span(), "JSX syntax is not supported".to_owned()));
             }
         }
 
@@ -288,14 +283,7 @@ impl Parser {
                 }
                 _ => {}
             }
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "Compound assignment expressions currently support only identifier, member, and computed member targets"
-                    .to_owned(),
-                span: Some(target_span),
-
-                phase: None,
-            });
+                        return Err(Diagnostic::unsupported_at(target_span, "Compound assignment expressions currently support only identifier, member, and computed member targets"));
         }
         if let Some(op) = self.logical_assignment_operator() {
             let target_span = expr.span();
@@ -423,14 +411,7 @@ impl Parser {
                 }
                 _ => {}
             }
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message:
-                    "Logical assignment currently supports only identifier, member, and string-literal computed member targets"
-                        .to_owned(),
-                span: Some(target_span),
-
-                phase: None,});
+                        return Err(Diagnostic::unsupported_at(target_span, "unsupported syntax"));
         }
 
         Ok(expr)
@@ -760,13 +741,13 @@ impl Parser {
     }
 
     fn nullish_mixing_error(&self, span: Option<Span>) -> Diagnostic {
+        let msg = "unparenthesized `??` cannot be mixed directly with `&&` or `||`".to_owned();
         Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: "unparenthesized `??` cannot be mixed directly with `&&` or `||`".to_owned(),
+            code: crate::diagnostic::resolve_diag_code(&msg),
+            message: msg,
             span,
-
-
-            phase: None,}
+            phase: None,
+        }
     }
 
     fn logical_or(&mut self) -> Result<Expr, Diagnostic> {
@@ -1541,14 +1522,7 @@ impl Parser {
             }
             if self.consume(TokenKind::LeftBracket) {
                 if matches!(self.peek(), Some(Token::RightBracket)) {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message:
-                            "Empty element access `expr[]` requires an index expression"
-                                .to_owned(),
-                        span: Some(self.prev_span().unwrap_or(Span::generated("parser"))),
-
-                        phase: None,});
+                                        return Err(Diagnostic::unsupported_at(self.prev_span().unwrap_or(Span::generated("parser")), "unsupported syntax"));
                 }
                 let index = self.expression()?;
                 let right_span = self.expect(TokenKind::RightBracket)?;
@@ -1632,15 +1606,7 @@ impl Parser {
     }
 
     fn invalid_optional_chain_target(&self, span: Span) -> Diagnostic {
-        Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message:
-                "Optional chaining cannot be used as an assignment or update target"
-                    .to_owned(),
-            span: Some(span),
-
-
-            phase: None,}
+                Diagnostic::unsupported_at(span, "unsupported syntax")
     }
 
     fn consume_typescript_const_angle_assertion(&mut self) -> bool {
@@ -1847,12 +1813,7 @@ impl Parser {
         if consumed_type_token {
             Ok(())
         } else {
-            Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!("expected TypeScript type after `{keyword}`"),
-                span: Some(keyword_span),
-
-                phase: None,})
+                        Err(Diagnostic::unsupported_at(keyword_span, format!("expected TypeScript type after `{keyword}`")))
         }
     }
 
@@ -1898,12 +1859,7 @@ impl Parser {
             }
         }
 
-        Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: format!("unterminated TypeScript {description}"),
-            span: Some(less_span),
-
-            phase: None,})
+                Err(Diagnostic::unsupported_at(less_span, format!("unterminated TypeScript {description}")))
     }
 
     fn primary(&mut self) -> Result<Expr, Diagnostic> {
@@ -2254,14 +2210,7 @@ impl Parser {
                                         self.advance();
                                     }
                                     None => {
-                                        return Err(Diagnostic {
-                                            code: DiagCode::UnsupportedSyntax,
-                                            message:
-                                                "unterminated decorator call expression"
-                                                    .to_owned(),
-                                            span: Some(at_span),
-                                            phase: None,
-                                        });
+                                                                                return Err(Diagnostic::unsupported_at(at_span, "unsupported syntax"));
                                     }
                                 }
                             }
@@ -2286,12 +2235,7 @@ impl Parser {
             }
             Some(SpannedToken {
                 kind: Token::With, ..
-            }) => Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "With statement is not supported".to_owned(),
-                span: self.peek_span(),
-
-                phase: None,}),
+                        }) => Err(Diagnostic::unsupported_at(self.peek_span(), "With statement is not supported".to_owned())),
             // Dynamic import: keep a distinct callee so IR can preserve import() vs require().
             Some(SpannedToken {
                 kind: Token::Import,
@@ -2766,15 +2710,9 @@ impl Parser {
 }
 
 fn bigint_fractional_number_diagnostic(value: &str, span: Span) -> Diagnostic {
-    Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message: format!(
-            "BigInt/Number comparison with fractional number `{value}` requires broader number-model support"
-        ),
-        span: Some(span),
-
-
-            phase: None,}
+        Diagnostic::unsupported_at(span, format!(
+"BigInt/Number comparison with fractional number `{value}` requires broader number-model support"
+))
 }
 
 fn parser_expr_is_bigint_literal_operand(expr: &Expr) -> bool {

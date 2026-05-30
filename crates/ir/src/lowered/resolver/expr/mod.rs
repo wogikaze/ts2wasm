@@ -49,12 +49,7 @@ impl super::Resolver {
             ResolvedExpr::Await { expr } => self.lower_await_expr(expr),
             ResolvedExpr::Yield { expr, delegate } => {
                 if *delegate {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: "yield* delegation is not supported in expression context (only as statement or let initializer)".to_owned(),
-                        span: Some(Span::generated("yield_star")),
-                        phase: None,
-                    });
+                    return Err(Diagnostic::unsupported_at(Span::generated("yield_star"), "yield* delegation is not supported in expression context (only as statement or let initializer)".to_owned()));
                 }
                 expr.as_ref()
                     .map(|expr| self.lower_expr(expr))

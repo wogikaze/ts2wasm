@@ -1012,24 +1012,14 @@ fn expand_static_eval_source(
         ts2wasm_frontend::Lexer::new(src)
     }
     .tokenize()
-    .map_err(|e| Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message: format!("eval source lex error: {e}"),
-        span: None,
-        phase: None,
-    })?;
+    .map_err(|e| Diagnostic::unsupported(format!("eval source lex error: {e}")))?;
     let program = if caller_is_strict {
         ts2wasm_frontend::Parser::new_with_strict_mode(tokens, true, src)
     } else {
         ts2wasm_frontend::Parser::new(tokens, src)
     }
     .parse_program()
-    .map_err(|e| Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message: format!("eval source parse error: {e}"),
-        span: None,
-        phase: None,
-    })?;
+    .map_err(|e| Diagnostic::unsupported(format!("eval source parse error: {e}")))?;
     validate_static_eval_source(&program)?;
 
     let eval_is_strict = caller_is_strict || block_has_use_strict_directive(&program);
@@ -1125,12 +1115,10 @@ fn resolved_block_has_use_strict_directive(stmts: &[ResolvedStmt]) -> bool {
 
 fn validate_static_eval_source(program: &[Stmt]) -> Result<(), Diagnostic> {
     if let Some(span) = eval_source_illegal_return_span(program) {
-        return Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: "return statement is not valid in eval source".to_owned(),
-            span: Some(span),
-            phase: None,
-        });
+        return Err(Diagnostic::unsupported_at(
+            span,
+            "return statement is not valid in eval source".to_owned(),
+        ));
     }
     Ok(())
 }

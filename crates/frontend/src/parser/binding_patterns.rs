@@ -24,14 +24,7 @@ impl Parser {
                     continue;
                 }
                 let span = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message:
-                        "Parameter property modifiers are only allowed in constructor parameters"
-                            .to_owned(),
-                    span: Some(span),
-
-                    phase: None,});
+                                return Err(Diagnostic::unsupported_at(span, "unsupported syntax"));
             }
             // Detect invalid modifiers (issue 5355)
             if matches!(self.peek(), Some(Token::Static)) {
@@ -42,21 +35,11 @@ impl Parser {
                     // Static is the parameter name — break out of modifier loop
                     break;
                 }
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "'static' modifier cannot appear on a parameter.".to_owned(),
-                    span: Some(span),
-
-                    phase: None,});
+                                return Err(Diagnostic::unsupported_at(span, "'static' modifier cannot appear on a parameter.".to_owned()));
             }
             if matches!(self.peek(), Some(Token::Export)) {
                 let span = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "'export' modifier cannot appear on a parameter.".to_owned(),
-                    span: Some(span),
-
-                    phase: None,});
+                                return Err(Diagnostic::unsupported_at(span, "'export' modifier cannot appear on a parameter.".to_owned()));
             }
             is_parameter_property = true;
             self.advance();
@@ -68,22 +51,10 @@ impl Parser {
                 .expect("peek() returned Some(Token::This) so advance() must succeed")
                 .span;
             if !allow_this_parameter || is_rest || is_parameter_property {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "TypeScript this parameters must be the leading parameter"
-                        .to_owned(),
-                    span: Some(span),
-
-                    phase: None,});
+                                return Err(Diagnostic::unsupported_at(span, "TypeScript this parameters must be the leading parameter"));
             }
             if !self.consume(TokenKind::Colon) {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "TypeScript this parameters require a type annotation"
-                        .to_owned(),
-                    span: Some(span),
-
-                    phase: None,});
+                                return Err(Diagnostic::unsupported_at(span, "TypeScript this parameters require a type annotation"));
             }
             self.skip_type_annotation_until(&[
                 TokenKind::Equal,
@@ -102,12 +73,7 @@ impl Parser {
 
 let binding = self.parse_binding_pattern()?;
         if is_parameter_property && !binding.is_identifier {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "Parameter properties require identifier bindings".to_owned(),
-                span: Some(binding.span),
-
-                phase: None,});
+                        return Err(Diagnostic::unsupported_at(binding.span, "Parameter properties require identifier bindings".to_owned()));
         }
         let is_optional = self.consume(TokenKind::Question);
         if self.consume(TokenKind::Colon) {
@@ -127,12 +93,7 @@ let binding = self.parse_binding_pattern()?;
         }
 
         if is_rest && is_parameter_property {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "Rest parameter properties are not supported".to_owned(),
-                span: Some(binding.span),
-
-                phase: None,});
+                        return Err(Diagnostic::unsupported_at(binding.span, "Rest parameter properties are not supported".to_owned()));
         }
 
         Ok(ParsedParam {
@@ -202,12 +163,7 @@ let binding = self.parse_binding_pattern()?;
             }
             Some(Token::LeftBracket) => self.parse_array_binding_pattern(),
             Some(Token::LeftBrace) => self.parse_object_binding_pattern(),
-            other => Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!("Expected binding identifier or pattern, got {other:?}"),
-                span: self.peek_span(),
-
-                phase: None,}),
+                        other => Err(Diagnostic::unsupported_at(self.peek_span(), format!("Expected binding identifier or pattern, got {other:?}"))),
         }
     }
 
@@ -217,12 +173,7 @@ let binding = self.parse_binding_pattern()?;
 
         while !matches!(self.peek(), Some(Token::RightBracket)) {
             if self.is_at_end() {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "Unterminated array binding pattern".to_owned(),
-                    span: Some(start),
-
-                    phase: None,});
+                                return Err(Diagnostic::unsupported_at(start, "Unterminated array binding pattern".to_owned()));
             }
 
             if self.consume(TokenKind::Comma) {
@@ -287,21 +238,11 @@ let binding = self.parse_binding_pattern()?;
 
         while !matches!(self.peek(), Some(Token::RightBrace)) {
             if self.is_at_end() {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "Unterminated object binding pattern".to_owned(),
-                    span: Some(start),
-
-                    phase: None,});
+                                return Err(Diagnostic::unsupported_at(start, "Unterminated object binding pattern".to_owned()));
             }
 
             if let Some(rest_span) = self.consume_span(TokenKind::DotDotDot) {
-                let (name, name_span) = self.expect_ident().map_err(|_| Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "Object rest binding requires an identifier".to_owned(),
-                    span: self.peek_span(),
-
-                    phase: None,})?;
+                                let (name, name_span) = self.expect_ident().map_err(|_| Diagnostic::unsupported_at(self.peek_span(), "Object rest binding requires an identifier".to_owned()))?;
                 if self.strict_mode && is_strict_reserved_word(&name) {
                     return Err(Diagnostic {
                         code: DiagCode::SyntaxError,
@@ -324,13 +265,7 @@ let binding = self.parse_binding_pattern()?;
             } else if shorthand_allowed {
                 key
             } else {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "Literal object binding keys require a target after `:`"
-                        .to_owned(),
-                    span: self.peek_span(),
-
-                    phase: None,});
+                                return Err(Diagnostic::unsupported_at(self.peek_span(), "Literal object binding keys require a target after `:`"));
             };
 
             if self.consume(TokenKind::Equal) {
@@ -393,24 +328,12 @@ let binding = self.parse_binding_pattern()?;
                 kind: Token::BigIntLiteral(raw),
                 ..
             }) => Ok((bigint_literal_property_key(&raw), false)),
-            other => Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!("Expected object binding property key, got {other:?}"),
-                span: self.peek_span(),
-
-                phase: None,}),
+                        other => Err(Diagnostic::unsupported_at(self.peek_span(), format!("Expected object binding property key, got {other:?}"))),
         }
     }
 
     fn invalid_rest_binding_diagnostic(&self, span: Span) -> Diagnostic {
-        Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: "Rest binding must be the final element in a binding pattern"
-                .to_owned(),
-            span: Some(span),
-
-
-            phase: None,}
+                Diagnostic::unsupported_at(span, "Rest binding must be the final element in a binding pattern")
     }
 
     #[allow(clippy::only_used_in_recursion)]

@@ -233,23 +233,16 @@ impl super::super::Resolver {
             return Ok(LoweredExpr::Undefined(Span::generated("undef")));
         }
         if name == "super" {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "issue-5255: super property access is not supported in this milestone"
-                    .to_owned(),
-                span: Some(Span::generated("issue-5255")),
-                phase: None,
-            });
+            return Err(Diagnostic::unsupported_at(
+                Span::generated("issue-5255"),
+                "issue-5255: super property access is not supported in this milestone",
+            ));
         }
         if name == "arguments" {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message:
-                    "issue-062d: `arguments` is only supported inside non-arrow functions in this milestone"
-                        .to_owned(),
-                span: Some(Span::generated("issue-062d")),
-                phase: None,
-            });
+            return Err(Diagnostic::unsupported_at(
+                Span::generated("issue-062d"),
+                "unsupported syntax",
+            ));
         }
         if self.ctx.classes.class_constructor_ids.contains_key(name) {
             return Ok(LoweredExpr::ClassPrototype(
@@ -277,13 +270,9 @@ impl super::super::Resolver {
     }
 
     pub(super) fn lower_spread_expr(&self) -> Result<LoweredExpr, Diagnostic> {
-        Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message:
-                "issue-274: spread expressions are only supported in call arguments over literal arrays in this milestone"
-                    .to_owned(),
-            span: Some(Span::generated("issue-274")),
-            phase: None,
-        })
+        Err(Diagnostic::unsupported_at(
+            Span::generated("issue-274"),
+            "unsupported syntax",
+        ))
     }
 }

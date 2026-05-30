@@ -774,15 +774,10 @@ impl super::super::Resolver {
         scope_index: usize,
     ) -> Result<(LocalId, bool), Diagnostic> {
         if self.ctx.is_strict_context() && matches!(name, "eval" | "arguments") {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
-                    "issue-450: {:?} strict mode forbids binding local `{name}`",
-                    crate::lowered::ctx::StrictModeCheck::StrictEval
-                ),
-                span: None,
-                phase: None,
-            });
+            return Err(Diagnostic::unsupported(format!(
+                "issue-450: {:?} strict mode forbids binding local `{name}`",
+                crate::lowered::ctx::StrictModeCheck::StrictEval
+            )));
         }
         let scope = self
             .ctx

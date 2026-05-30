@@ -19,13 +19,7 @@ impl Parser {
         let (name, _) = self.read_class_name()?;
         if self.namespace_names_encountered.contains(&name) {
             let span = self.prev_span().unwrap_or(Span { start: 0, end: 0 });
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!("namespace before class: `{name}`"),
-                span: Some(span),
-
-                phase: None,
-            });
+                        return Err(Diagnostic::unsupported_at(span, format!("namespace before class: `{name}`")));
         }
 
         let _ = self.consume_typescript_generic_parameter_list()?;
@@ -159,13 +153,7 @@ impl Parser {
             // Report multiple base classes (issue 5317)
             if matches!(self.peek(), Some(Token::Comma)) {
                 let comma_span = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "classes can only extend a single class".to_owned(),
-                    span: Some(comma_span),
-
-                    phase: None,
-                });
+                                return Err(Diagnostic::unsupported_at(comma_span, "classes can only extend a single class".to_owned()));
             }
             Ok(Some(Box::new(expr)))
         } else {
@@ -214,13 +202,7 @@ impl Parser {
         let mut static_field_initializers = Vec::<Stmt>::new();
         while !matches!(self.peek(), Some(Token::RightBrace)) {
             if self.is_at_end() {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "unterminated class body".to_owned(),
-                    span: self.prev_span().or_else(|| self.peek_span()),
-
-                    phase: None,
-                });
+                                return Err(Diagnostic::unsupported_at(self.prev_span().or_else(|| self.peek_span()), "unterminated class body".to_owned()));
             }
 
             if self.consume(TokenKind::Semicolon) {

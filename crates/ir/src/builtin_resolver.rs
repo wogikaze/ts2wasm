@@ -1708,7 +1708,12 @@ fn resolve_stmt_with_outer_bindings(
         // Import/export forms are handled by the compiler's module rewrite path
         // (lower_static_named_import_bindings_for_build) before reaching the resolver.
         // They are still listed in the catch-all below for exhaustive matching and dump paths.
-        Stmt::Let { name, expr, span, is_var: _ } => {
+        Stmt::Let {
+            name,
+            expr,
+            span,
+            is_var: _,
+        } => {
             if let Some(pattern) = parse_binding_pattern(name, Some(*span))? {
                 Ok(ResolvedStmt::DestructureLet {
                     pattern,
@@ -1718,7 +1723,9 @@ fn resolve_stmt_with_outer_bindings(
                 Ok(ResolvedStmt::Let(name.clone(), resolve_expr(expr)?))
             }
         }
-        Stmt::Using { name, expr, span, .. } => {
+        Stmt::Using {
+            name, expr, span, ..
+        } => {
             if let Some(pattern) = parse_binding_pattern(name, Some(*span))? {
                 Ok(ResolvedStmt::DestructureLet {
                     pattern,
@@ -1758,7 +1765,12 @@ fn resolve_stmt_with_outer_bindings(
                 }
             }
             // Detect destructuring assignment: [a, b] = expr or {x, y} = expr
-            if let Expr::Assign { name, expr: value, span } = expr {
+            if let Expr::Assign {
+                name,
+                expr: value,
+                span,
+            } = expr
+            {
                 if let Some(pattern) = parse_binding_pattern(name, Some(*span))? {
                     return Ok(ResolvedStmt::DestructureAssign {
                         pattern,
@@ -1855,20 +1867,21 @@ fn resolve_stmt_with_outer_bindings(
                     Expr::Null { .. } => None,
                     Expr::Member { property, .. } => Some(property.clone()),
                     _ => {
-                        return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message: "only simple inheritance (extends ClassName) is supported"
-                                .to_owned(),
-                            span: Some(Span::generated("issue-066")),
-
-                            phase: None,});
+                        return Err(Diagnostic::unsupported_at(
+                            Span::generated("issue-066"),
+                            "only simple inheritance (extends ClassName) is supported",
+                        ));
                     }
                 },
                 None => None,
             };
 
-            let (private_fields, static_private_fields, private_field_initializers, private_methods) =
-                resolve_private_elements(name, extends_name.as_ref(), private_elements)?;
+            let (
+                private_fields,
+                static_private_fields,
+                private_field_initializers,
+                private_methods,
+            ) = resolve_private_elements(name, extends_name.as_ref(), private_elements)?;
 
             // Parse class body to extract constructor and methods
             let mut constructor = None;
@@ -1899,7 +1912,8 @@ fn resolve_stmt_with_outer_bindings(
                                 message: "duplicate constructor definition".to_owned(),
                                 span: Some(Span::generated("duplicate-constructor")),
 
-                                phase: None,});
+                                phase: None,
+                            });
                         }
                         let resolved_params = params
                             .iter()
@@ -1979,13 +1993,10 @@ fn resolve_stmt_with_outer_bindings(
                     }
                     // Static members (for now, we'll just skip them - not yet supported)
                     _ => {
-                        return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message: "class body may only contain methods and constructors"
-                                .to_owned(),
-                            span: Some(Span::generated("class-body")),
-
-                            phase: None,});
+                        return Err(Diagnostic::unsupported_at(
+                            Span::generated("class-body"),
+                            "class body may only contain methods and constructors",
+                        ));
                     }
                 }
             }
@@ -1997,7 +2008,9 @@ fn resolve_stmt_with_outer_bindings(
                     .collect::<Vec<_>>();
                 for method in &mut methods {
                     if method.name.starts_with("static::") {
-                        method.captures.extend(static_private_capture_names.iter().cloned());
+                        method
+                            .captures
+                            .extend(static_private_capture_names.iter().cloned());
                     }
                 }
             }
@@ -2151,14 +2164,12 @@ fn resolve_stmt_with_outer_bindings(
             label: label.clone(),
             body: Box::new(resolve_stmt(body)?),
         }),
-        Stmt::Block { statements, .. } => {
-            Ok(ResolvedStmt::Block {
-                statements: statements
-                    .iter()
-                    .map(resolve_stmt)
-                    .collect::<Result<Vec<_>, _>>()?,
-            })
-        }
+        Stmt::Block { statements, .. } => Ok(ResolvedStmt::Block {
+            statements: statements
+                .iter()
+                .map(resolve_stmt)
+                .collect::<Result<Vec<_>, _>>()?,
+        }),
         Stmt::Break { label, .. } => Ok(ResolvedStmt::Break {
             label: label.clone(),
         }),
@@ -2180,14 +2191,10 @@ fn resolve_stmt_with_outer_bindings(
         | Stmt::ExportNamespaceFrom { .. }
         | Stmt::ExportDecl { .. }
         | Stmt::ExportAssignment { .. }
-        | Stmt::ExportDefault { .. } => Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message:
-                "issue-055: internal — static module declaration reached resolver without compiler rewrite"
-                    .to_owned(),
-            span: Some(Span::generated("issue-055")),
-
-            phase: None,}),
+        | Stmt::ExportDefault { .. } => Err(Diagnostic::unsupported_at(
+            Span::generated("issue-055"),
+            "unsupported syntax",
+        )),
     }
 }
 
@@ -2201,14 +2208,12 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
         Expr::Null { .. } => Ok(ResolvedExpr::Null),
         Expr::Undefined { .. } => Ok(ResolvedExpr::Undefined),
         Expr::This { span } => Ok(ResolvedExpr::This { span: *span }),
-        Expr::PrivateIdent { name, span } => Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: format!(
+        Expr::PrivateIdent { name, span } => Err(Diagnostic::unsupported_at(
+            *span,
+            format!(
                 "private identifier `#{name}` is only valid as the left operand of the `in` operator or as a member access target (`obj.#<name>`)"
             ),
-            span: Some(*span),
-            phase: None,
-        }),
+        )),
         Expr::NewTarget { span } => Ok(ResolvedExpr::NewTarget { span: *span }),
         Expr::ImportMeta { span } => Ok(ResolvedExpr::ImportMeta { span: *span }),
         Expr::Await { expr, .. } => {
@@ -2225,12 +2230,10 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             delegate: *delegate,
         }),
         Expr::Ident { name, .. } => Ok(ResolvedExpr::Ident(name.clone())),
-        Expr::Topic { span } => Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: "pipeline topic references are not supported in this milestone".to_owned(),
-            span: Some(*span),
-            phase: None,
-        }),
+        Expr::Topic { span } => Err(Diagnostic::unsupported_at(
+            *span,
+            "pipeline topic references are not supported in this milestone".to_owned(),
+        )),
         Expr::InstanceOf {
             expr, type_expr, ..
         } => Ok(ResolvedExpr::Binary {
@@ -2282,13 +2285,7 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                     });
                 }
                 if let Some(message) = bigint_unary_op_issue(*op) {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: message.to_owned(),
-                        span: Some(*span),
-
-                        phase: None,
-                    });
+                    return Err(Diagnostic::unsupported_at(*span, message.to_owned()));
                 }
                 return Ok(ResolvedExpr::Unary {
                     op: *op,
@@ -2313,14 +2310,12 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 let Expr::PrivateIdent { name, .. } = left.as_ref() else {
                     unreachable!()
                 };
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!(
+                return Err(Diagnostic::unsupported_at(
+                    *first_span,
+                    format!(
                         "issue-255: private field `in` check (`#{name} in obj`) is not yet supported"
                     ),
-                    span: Some(*first_span),
-                    phase: None,
-                });
+                ));
             }
 
             // Iterative left-spine flattening to avoid stack overflow.
@@ -2440,12 +2435,7 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                         BinaryOp::LeftShift | BinaryOp::RightShift | BinaryOp::UnsignedRightShift =>
                             return Err(bigint_shift_diagnostic(span)),
                         BinaryOp::And | BinaryOp::Or | BinaryOp::NullishCoalesce => {}
-                        BinaryOp::InstanceOf | BinaryOp::In => return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message: "issue-261: BigInt object/coercion operator boundaries are tracked separately from literal runtime values".to_owned(),
-                            span: Some(span),
-
-                            phase: None,}),
+                                                BinaryOp::InstanceOf | BinaryOp::In => return Err(Diagnostic::unsupported_at(span, "issue-261: BigInt object/coercion operator boundaries are tracked separately from literal runtime values".to_owned())),
                         _ => {} // Less/Greater/Equal etc handled by fold_bigint_static_abstract_equality
                     }
                 }
@@ -2470,13 +2460,10 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                     is_dynamic_import: false,
                 })
             } else {
-                Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "require() expects a string literal argument".to_owned(),
-                    span: Some(Span::generated("require-literal")),
-
-                    phase: None,
-                })
+                Err(Diagnostic::unsupported_at(
+                    Span::generated("require-literal"),
+                    "require() expects a string literal argument".to_owned(),
+                ))
             }
         }
         Expr::Call { callee, args, .. } if is_dynamic_import_call(callee, args) => {
@@ -2621,12 +2608,7 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             ..
         } => {
             if is_private_member_key(property) {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "issue-255: private field logical assignment is not supported in this private field runtime slice".to_owned(),
-                    span: span_of_expr(expr),
-
-                    phase: None,});
+                return Err(Diagnostic::unsupported_at(span_of_expr(expr), "issue-255: private field logical assignment is not supported in this private field runtime slice".to_owned()));
             }
             match (object_expr.as_ref(), computed_key.as_ref()) {
                 (Some(object_expr), Some(key)) => Ok(ResolvedExpr::LogicalComputedMemberAssign {
@@ -2672,13 +2654,10 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                         builtin: BuiltinId::ProcessEnv,
                         args: Vec::new(),
                     }),
-                    _ => Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: format!("process.{} is not supported in this milestone", property),
-                        span: span_of_expr(expr),
-
-                        phase: None,
-                    }),
+                    _ => Err(Diagnostic::unsupported_at(
+                        span_of_expr(expr),
+                        format!("process.{} is not supported in this milestone", property),
+                    )),
                 };
             }
 
@@ -2735,14 +2714,10 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             span,
         } => {
             if is_private_member_key(property) {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "issue-253: optional chaining of private fields is not supported"
-                        .to_owned(),
-                    span: Some(*span),
-
-                    phase: None,
-                });
+                return Err(Diagnostic::unsupported_at(
+                    *span,
+                    "issue-253: optional chaining of private fields is not supported",
+                ));
             }
             // ShadowRealm optional member access: explicit unsupported
             if let Expr::Ident { name, .. } = object.as_ref() {
@@ -2857,15 +2832,11 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             } = new_expr.as_ref()
             {
                 if class_name == "BigInt" {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message:
-                            "issue-262: BigInt is not a constructor; use BigInt(...) without new"
-                                .to_owned(),
-                        span: Some(*span),
-
-                        phase: None,
-                    });
+                    return Err(Diagnostic::unsupported_at(
+                        *span,
+                        "issue-262: BigInt is not a constructor; use BigInt(...) without new"
+                            .to_owned(),
+                    ));
                 }
                 // ShadowRealm: explicit unsupported diagnostic
                 if class_name == "ShadowRealm" {
@@ -2895,13 +2866,10 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                     span: *span,
                 })
             } else {
-                Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "only new ClassName(...) is supported".to_owned(),
-                    span: Some(Span::generated("new-classname")),
-
-                    phase: None,
-                })
+                Err(Diagnostic::unsupported_at(
+                    Span::generated("new-classname"),
+                    "only new ClassName(...) is supported".to_owned(),
+                ))
             }
         }
         Expr::PropertyAssign {
@@ -3041,13 +3009,5 @@ fn resolve_for_update_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
 }
 
 fn increment_update_diagnostic(span: Span) -> Diagnostic {
-    Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message:
-            "issue-268: for-loop increment/decrement updates currently require an identifier target"
-                .to_owned(),
-        span: Some(span),
-
-        phase: None,
-    }
+    Diagnostic::unsupported_at(span, "issue-5256: increment/update expressions in this position require mutable binding semantics not yet implemented".to_owned())
 }

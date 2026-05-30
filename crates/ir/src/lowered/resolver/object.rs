@@ -14,28 +14,21 @@ impl super::Resolver {
         let mut lowered = Vec::new();
         for prop in props {
             let Some(key) = prop.static_key() else {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message:
-                        "issue-410: computed keys in statically spread object literals are not supported"
-                            .to_owned(),
-                    span: Some(Span::generated("issue-410")),
-
-                    phase: None,
-                });
+                return Err(Diagnostic::unsupported_at(
+                    Span::generated("issue-410"),
+                    "unsupported syntax",
+                ));
             };
             let value = prop.value();
             if key == OBJECT_SPREAD_SENTINEL {
-                let spread_props = self.static_object_literal_spread_props(value).ok_or_else(|| {
-                    Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message:
-                            "issue-274: object literal spread is only supported for object literals and known static object-literal locals in this milestone"
-                                .to_owned(),
-                        span: Some(Span::generated("issue-274")),
-
-                        phase: None,}
-                })?;
+                let spread_props =
+                    self.static_object_literal_spread_props(value)
+                        .ok_or_else(|| {
+                            Diagnostic::unsupported_at(
+                                Span::generated("issue-274"),
+                                "unsupported syntax",
+                            )
+                        })?;
                 lowered.extend(self.lower_object_literal_props(&spread_props)?);
                 continue;
             }
@@ -63,14 +56,10 @@ impl super::Resolver {
             } = value
         {
             if is_object_literal_accessor_function_name(name) {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message:
-                        "issue-67ZV8S: object literal getter/setter accessors are not supported"
-                            .to_owned(),
-                    span: Some(Span::generated("issue-67ZV8S")),
-                    phase: None,
-                });
+                return Err(Diagnostic::unsupported_at(
+                    Span::generated("issue-67ZV8S"),
+                    "unsupported syntax",
+                ));
             }
             return self.lower_object_method_function_expr(name, params, body, *is_generator);
         }

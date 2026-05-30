@@ -49,14 +49,9 @@ fn validate_nested_function_receiver_support(
     if block_contains_this(body) {
         return Ok(());
     }
-    Err(Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message: format!(
-            "issue-062e: nested function `{name}` closures with `this` or `arguments` are not supported in this slice"
-        ),
-        span: None,
-        phase: None,
-    })
+    Err(Diagnostic::unsupported(format!(
+        "issue-062e: nested function `{name}` closures with `this` or `arguments` are not supported in this slice"
+    )))
 }
 
 impl super::Resolver {
@@ -305,15 +300,9 @@ impl super::Resolver {
             .iter()
             .any(|capture| !self.ctx.facts.env_cell_names.contains(capture))
         {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
-                    "issue-062e: nested function `{name}` mutates a captured outer local; mutable closure environments require heap environment support"
-                ),
-                span: None,
-
-                phase: None,
-            });
+            return Err(Diagnostic::unsupported(format!(
+                "issue-062e: nested function `{name}` mutates a captured outer local; mutable closure environments require heap environment support"
+            )));
         }
         let captures = capture_names
             .iter()
@@ -619,14 +608,9 @@ impl super::Resolver {
             .iter()
             .any(|capture| !self.ctx.facts.env_cell_names.contains(capture))
         {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
-                    "issue-062e: nested function `{name}` mutates a captured outer local; mutable closure environments require heap environment support"
-                ),
-                span: None,
-                phase: None,
-            });
+            return Err(Diagnostic::unsupported(format!(
+                "issue-062e: nested function `{name}` mutates a captured outer local; mutable closure environments require heap environment support"
+            )));
         }
         let captures = capture_names
             .iter()
@@ -775,15 +759,10 @@ impl super::Resolver {
 
     pub(crate) fn declare_local(&mut self, name: &str) -> Result<LocalId, Diagnostic> {
         if self.ctx.is_strict_context() && matches!(name, "eval" | "arguments") {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
-                    "issue-450: {:?} strict mode forbids binding local `{name}`",
-                    crate::lowered::ctx::StrictModeCheck::StrictEval
-                ),
-                span: None,
-                phase: None,
-            });
+            return Err(Diagnostic::unsupported(format!(
+                "issue-450: {:?} strict mode forbids binding local `{name}`",
+                crate::lowered::ctx::StrictModeCheck::StrictEval
+            )));
         }
         let scope = self
             .ctx

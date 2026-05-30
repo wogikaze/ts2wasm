@@ -13,15 +13,7 @@ impl super::super::Resolver {
         let func_name = match callee {
             ResolvedExpr::Ident(name) => name,
             _ => {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message:
-                        "issue-253: optional calls are currently supported only for identifier callees"
-                            .to_owned(),
-                    span: Some(span),
-
-                    phase: None,
-                });
+                return Err(Diagnostic::unsupported_at(span, "unsupported syntax"));
             }
         };
 
@@ -60,15 +52,12 @@ impl super::super::Resolver {
             .get(&func_id)
             .is_some_and(|signature| signature.needs_receiver)
         {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
+            return Err(Diagnostic::unsupported_at(
+                span,
+                format!(
                     "issue-062d: optional direct call `{func_name}?.(...)` cannot bind a supported receiver for `this`; call through a supported receiver object"
                 ),
-                span: Some(span),
-
-                phase: None,
-            });
+            ));
         }
         let lowered_args = self.lower_function_call_args(
             func_id,

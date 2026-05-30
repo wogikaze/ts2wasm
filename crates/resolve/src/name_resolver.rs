@@ -324,15 +324,10 @@ impl NameResolver {
                 && !*is_ambient
                 && !concrete_names.contains(name.as_str())
             {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!(
-                        "TS2391: function overload signature `{name}` has no implementation"
-                    ),
-                    span: Some(*span),
-
-                    phase: None,
-                });
+                return Err(Diagnostic::unsupported_at(
+                    *span,
+                    format!("TS2391: function overload signature `{name}` has no implementation"),
+                ));
             }
         }
         // First pass: collect all class declarations (hoisting)
@@ -448,12 +443,7 @@ impl NameResolver {
             Stmt::ImportSideEffect { span, .. } => {
                 Err(unsupported_module_decl(*span, "side-effect import"))
             }
-            Stmt::ImportNamed { span, import_type, .. } if *import_type => Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "issue-5253: TypeScript type-only import is not supported; the `type` keyword is an erased compile-time annotation".to_string(),
-                span: Some(*span),
-
-                phase: None,}),
+                        Stmt::ImportNamed { span, import_type, .. } if *import_type => Err(Diagnostic::unsupported_at(*span, "issue-5253: TypeScript type-only import is not supported; the `type` keyword is an erased compile-time annotation".to_string())),
             Stmt::ImportNamed { span, .. } => Err(unsupported_module_decl(*span, "named import")),
             Stmt::ImportDefault { span, .. } => {
                 Err(unsupported_module_decl(*span, "default import"))
@@ -521,14 +511,9 @@ impl NameResolver {
                 self.resolve_identifier(name, *span)?;
                 // Reject assignment to class bindings (TS2588 equivalent)
                 if self.is_class_only(name) {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: format!(
-                            "cannot assign to `{name}` because it is a class declaration"
-                        ),
-                        span: Some(*span),
-
-                        phase: None,});
+                                        return Err(Diagnostic::unsupported_at(*span, format!(
+"cannot assign to `{name}` because it is a class declaration"
+)));
                 }
                 Ok(Stmt::Assign {
                     name: name.clone(),
@@ -910,12 +895,7 @@ impl NameResolver {
             }
             Stmt::Labeled { label, body, span } => {
                 if self.labels.iter().any(|binding| binding.name == *label) {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: format!("duplicate label `{label}`"),
-                        span: Some(*span),
-
-                        phase: None,});
+                                        return Err(Diagnostic::unsupported_at(*span, format!("duplicate label `{label}`")));
                 }
                 self.labels.push(LabelBinding {
                     name: label.clone(),
@@ -932,20 +912,10 @@ impl NameResolver {
             Stmt::Break { label, span } => {
                 if let Some(label) = label {
                     if !self.labels.iter().any(|binding| binding.name == *label) {
-                        return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message: format!("undefined break label `{label}`"),
-                            span: Some(*span),
-
-                            phase: None,});
+                                                return Err(Diagnostic::unsupported_at(*span, format!("undefined break label `{label}`")));
                     }
                 } else if self.breakable_depth == 0 {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: "break must be inside a loop or switch".to_owned(),
-                        span: Some(*span),
-
-                        phase: None,});
+                                        return Err(Diagnostic::unsupported_at(*span, "break must be inside a loop or switch".to_owned()));
                 }
                 Ok(Stmt::Break {
                     label: label.clone(),
@@ -972,29 +942,14 @@ impl NameResolver {
                     {
                         Some(binding) if binding.is_loop => {}
                         Some(_) => {
-                            return Err(Diagnostic {
-                                code: DiagCode::UnsupportedSyntax,
-                                message: format!("continue label `{label}` does not target a loop"),
-                                span: Some(*span),
-
-                                phase: None,});
+                                                        return Err(Diagnostic::unsupported_at(*span, format!("continue label `{label}` does not target a loop")));
                         }
                         None => {
-                            return Err(Diagnostic {
-                                code: DiagCode::UnsupportedSyntax,
-                                message: format!("undefined continue label `{label}`"),
-                                span: Some(*span),
-
-                                phase: None,});
+                                                        return Err(Diagnostic::unsupported_at(*span, format!("undefined continue label `{label}`")));
                         }
                     }
                 } else if self.loop_depth == 0 {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: "continue must be inside a loop".to_owned(),
-                        span: Some(*span),
-
-                        phase: None,});
+                                        return Err(Diagnostic::unsupported_at(*span, "continue must be inside a loop".to_owned()));
                 }
                 Ok(Stmt::Continue {
                     label: label.clone(),
@@ -1288,15 +1243,7 @@ impl NameResolver {
                             span: *span,
                         });
                     }
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message:
-                            "issue-5255: super property access is not supported in this milestone"
-                                .to_owned(),
-                        span: Some(*span),
-
-                        phase: None,
-                    });
+                    return Err(Diagnostic::unsupported_at(*span, "unsupported syntax"));
                 }
                 // Check if it's a function name
                 if self.functions.contains_key(name) || self.is_implicit_arguments(name) {
@@ -1401,15 +1348,10 @@ impl NameResolver {
                 self.resolve_identifier(name, *span)?;
                 // Reject assignment to class bindings
                 if self.classes.contains_key(name) {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: format!(
-                            "cannot assign to `{name}` because it is a class declaration"
-                        ),
-                        span: Some(*span),
-
-                        phase: None,
-                    });
+                    return Err(Diagnostic::unsupported_at(
+                        *span,
+                        format!("cannot assign to `{name}` because it is a class declaration"),
+                    ));
                 }
                 Ok(Expr::Assign {
                     name: name.clone(),
@@ -1426,15 +1368,10 @@ impl NameResolver {
                 self.resolve_identifier(name, *span)?;
                 // Reject assignment to class bindings
                 if self.classes.contains_key(name) {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: format!(
-                            "cannot assign to `{name}` because it is a class declaration"
-                        ),
-                        span: Some(*span),
-
-                        phase: None,
-                    });
+                    return Err(Diagnostic::unsupported_at(
+                        *span,
+                        format!("cannot assign to `{name}` because it is a class declaration"),
+                    ));
                 }
                 Ok(Expr::LogicalAssign {
                     name: name.clone(),
@@ -1492,15 +1429,12 @@ impl NameResolver {
                     && !self.functions.contains_key(name.as_str())
                     && !self.allowed_globals.contains(name.as_str())
                 {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: format!(
+                    return Err(Diagnostic::unsupported_at(
+                        *span,
+                        format!(
                             "issue-5253: nested namespace/module resolution `{name}.{property}` is not supported; use destructuring instead"
                         ),
-                        span: Some(*span),
-
-                        phase: None,
-                    });
+                    ));
                 }
                 let resolved_object = self.resolve_member_target(object)?;
                 Ok(Expr::Member {
@@ -1590,14 +1524,10 @@ impl NameResolver {
                         Expr::Ident { name, .. } => name.clone(),
                         Expr::Member { property, .. } => property.clone(),
                         _ => {
-                            return Err(Diagnostic {
-                                code: DiagCode::UnsupportedSyntax,
-                                message: "issue-062: new requires a class name identifier"
-                                    .to_owned(),
-                                span: Some(*span),
-
-                                phase: None,
-                            });
+                            return Err(Diagnostic::unsupported_at(
+                                *span,
+                                "issue-062: new requires a class name identifier",
+                            ));
                         }
                     }
                 };
@@ -2146,15 +2076,12 @@ impl NameResolver {
             None
         }?;
         let model_value = self.bigint_number_model_gap_value(other)?;
-        Some(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: format!(
+        Some(Diagnostic::unsupported_at(
+            span,
+            format!(
                 "issue-281: BigInt/Number comparison with `{model_value}` requires broader number-model support"
             ),
-            span: Some(span),
-
-            phase: None,
-        })
+        ))
     }
 
     fn literal_reference_comparison_gap(
@@ -2184,9 +2111,9 @@ impl NameResolver {
         };
 
         if triggers_diagnostic {
-            Some(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
+            Some(Diagnostic::unsupported_at(
+                span,
+                format!(
                     "issue-5301: this comparison between object/array literals always results in `{}` because each literal creates a distinct reference",
                     if matches!(op, BinaryOp::StrictEqual | BinaryOp::EqualEqual) {
                         "false"
@@ -2194,10 +2121,7 @@ impl NameResolver {
                         "true"
                     }
                 ),
-                span: Some(span),
-
-                phase: None,
-            })
+            ))
         } else {
             None
         }
@@ -2400,15 +2324,7 @@ fn unwrapped_stmt(stmt: &Stmt) -> &Stmt {
 }
 
 fn unsupported_arguments_outside_function(span: Span) -> Diagnostic {
-    Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message:
-            "issue-062d: `arguments` is only supported inside non-arrow functions in this milestone"
-                .to_owned(),
-        span: Some(span),
-
-        phase: None,
-    }
+    Diagnostic::unsupported_at(span, "unsupported syntax")
 }
 
 fn is_type_only_ambient_global(_name: &str) -> bool {
@@ -2428,25 +2344,14 @@ fn type_only_value_use_diagnostic(name: &str, span: Span) -> Diagnostic {
 }
 
 fn unsupported_annex_b_ishtmldda(span: Span) -> Diagnostic {
-    Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message: "issue-237: Annex B [[IsHTMLDDA]] test262 host hook `$262.IsHTMLDDA` is not modeled; document.all compatibility semantics are unsupported".to_owned(),
-        span: Some(span),
-
-
-        phase: None,}
+    Diagnostic::unsupported_at(span, "issue-237: Annex B [[IsHTMLDDA]] test262 host hook `$262.IsHTMLDDA` is not modeled; document.all compatibility semantics are unsupported".to_owned())
 }
 
 fn unsupported_module_decl(span: Span, form: &str) -> Diagnostic {
-    Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message: format!(
-            "issue-055: unsupported {form}; module resolution and loading are not implemented"
-        ),
-        span: Some(span),
-
-        phase: None,
-    }
+    Diagnostic::unsupported_at(
+        span,
+        format!("issue-055: unsupported {form}; module resolution and loading are not implemented"),
+    )
 }
 
 fn collect_static_direct_eval_declarations_from_stmts(stmts: &[Stmt], names: &mut Vec<String>) {

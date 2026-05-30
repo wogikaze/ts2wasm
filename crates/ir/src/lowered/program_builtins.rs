@@ -4,7 +4,7 @@ use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr};
 use crate::lowered::ctx::LoweringCtx;
 use crate::lowered::types::{FuncId, LoweredExpr};
 use std::collections::{HashMap, HashSet};
-use ts2wasm_diagnostic::{DiagCode, Diagnostic};
+use ts2wasm_diagnostic::{DiagCode, Diagnostic, resolve_diag_code};
 use ts2wasm_runtime_abi::ValueTag;
 use ts2wasm_source::Span;
 use ts2wasm_syntax::UnaryOp;
@@ -766,12 +766,7 @@ pub(crate) fn validate_json_stringify_args(
     if let Some(space) = args.get(2)
         && !is_supported_json_stringify_space(space, function_ids)
     {
-        return Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: "issue-052e: JSON.stringify space currently supports numeric/string primitives, selected boxed Number/String literals, and ignored object/function values; broader object coercion is not supported yet".to_owned(),
-            span: Some(span),
-
-            phase: None,});
+        return Err(Diagnostic::unsupported_at(span, "issue-052e: JSON.stringify space currently supports numeric/string primitives, selected boxed Number/String literals, and ignored object/function values; broader object coercion is not supported yet".to_owned()));
     }
 
     Ok(())
@@ -1072,15 +1067,12 @@ pub(crate) fn json_stringify_boxed_space_value(space: &ResolvedExpr) -> Option<&
 }
 
 pub(crate) fn json_stringify_replacer_diagnostic(kind: &str, span: Span) -> Diagnostic {
-    Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message: format!(
+    Diagnostic::unsupported_at(
+        span,
+        format!(
             "issue-052: JSON.stringify {kind} are not supported yet; pass null or undefined until replacer semantics are implemented"
         ),
-        span: Some(span),
-
-        phase: None,
-    }
+    )
 }
 
 pub(crate) fn is_date_now_live_time_call(object: &ResolvedExpr, method: &str) -> bool {
@@ -1107,13 +1099,13 @@ pub(crate) fn unsupported_annex_b_date_method_diagnostic(
     method: &str,
     span: Option<Span>,
 ) -> Diagnostic {
+    let msg = format!(
+        "issue-241: Date.prototype.{method} is Annex B legacy Date behavior and is not supported in the deterministic Date epoch slice"
+    );
     Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message: format!(
-            "issue-241: Date.prototype.{method} is Annex B legacy Date behavior and is not supported in the deterministic Date epoch slice"
-        ),
+        code: resolve_diag_code(&msg),
+        message: msg,
         span,
-
         phase: None,
     }
 }
@@ -1144,15 +1136,10 @@ pub(crate) fn regexp_constructor_literal(
     let Some(pattern) =
         crate::lowered::resolver::string::resolved_expr_static_string_value(ctx, &args[0])
     else {
-        return Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message:
-                "issue-051: RegExp constructor pattern must be a string literal in this subset"
-                    .to_owned(),
-            span: Some(Span::generated("issue-051")),
-
-            phase: None,
-        });
+        return Err(Diagnostic::unsupported_at(
+            Span::generated("issue-051"),
+            "unsupported syntax",
+        ));
     };
     let flags = regexp_constructor_static_flags(ctx, args)?;
     let raw = format!("/{pattern}/{flags}");
@@ -1166,18 +1153,15 @@ pub(crate) fn regexp_constructor_static_flags(
 ) -> Result<String, Diagnostic> {
     validate_regexp_constructor_arity(args)?;
     let flags = match args.get(1) {
-        Some(flags) => {
-            crate::lowered::resolver::string::resolved_expr_static_string_value(ctx, flags)
-                .ok_or_else(|| {
-                    Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: "issue-051: RegExp constructor flags must be a string literal in this subset"
-                .to_owned(),
-            span: Some(Span::generated("issue-051")),
-            phase: None,
-        }
-                })?
-        }
+        Some(flags) => crate::lowered::resolver::string::resolved_expr_static_string_value(
+            ctx, flags,
+        )
+        .ok_or_else(|| {
+            Diagnostic::unsupported_at(
+                Span::generated("issue-051"),
+                "issue-051: RegExp constructor flags must be a string literal in this subset",
+            )
+        })?,
         None => String::new(),
     };
     validate_regexp_constructor_flags(&flags, &format!("//{flags}"), "RegExp constructor")?;
@@ -1186,15 +1170,10 @@ pub(crate) fn regexp_constructor_static_flags(
 
 fn validate_regexp_constructor_arity(args: &[ResolvedExpr]) -> Result<(), Diagnostic> {
     if !(0..=2).contains(&args.len()) {
-        return Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: format!(
-                "issue-051: RegExp constructor supports 1 pattern and optional string literal flags in this subset, got {}",
-                args.len()
-            ),
-            span: None,
-            phase: None,
-        });
+        return Err(Diagnostic::unsupported(format!(
+            "issue-051: RegExp constructor supports 1 pattern and optional string literal flags in this subset, got {}",
+            args.len()
+        )));
     }
     Ok(())
 }
@@ -1295,14 +1274,12 @@ pub(crate) fn regexp_string_match_runtime(
         return Ok(None);
     }
     let Some(arg) = args.first() else {
-        return Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: format!(
+        return Err(Diagnostic::unsupported_at(
+            span,
+            format!(
                 "issue-051: String.prototype.{method} supports only RegExp literal or new RegExp(\"plain\") arguments in this subset"
             ),
-            span: Some(span),
-            phase: None,
-        });
+        ));
     };
     let context = format!("String.prototype.{method} literal");
     match arg {
@@ -1316,15 +1293,12 @@ pub(crate) fn regexp_string_match_runtime(
             regexp_constructor_static_flags(ctx, args)?;
         }
         _ => {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
+            return Err(Diagnostic::unsupported_at(
+                span,
+                format!(
                     "issue-051: String.prototype.{method} supports only RegExp literal or new RegExp(\"plain\") arguments in this subset"
                 ),
-                span: Some(span),
-
-                phase: None,
-            });
+            ));
         }
     }
     Ok(Some(vec![arg.clone(), object.clone()]))
@@ -1663,21 +1637,18 @@ pub(crate) fn validate_regexp_plain_literal(raw: &str, context: &str) -> Result<
 }
 
 pub(crate) fn unsupported_regexp_literal(context: &str, raw: &str, reason: &str) -> Diagnostic {
-    Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message: format!("issue-051: {context} `{raw}` is not supported yet: {reason}"),
-        span: None,
-        phase: None,
-    }
+    Diagnostic::unsupported(format!(
+        "issue-051: {context} `{raw}` is not supported yet: {reason}"
+    ))
 }
 
 pub(crate) fn unsupported_regexp_compile_diagnostic(span: Option<Span>) -> Diagnostic {
+    let msg = "issue-051: RegExp.prototype.compile is not supported in this subset; create a new RegExp(\"plain\") value instead"
+        .to_owned();
     Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message: "issue-051: RegExp.prototype.compile is not supported in this subset; create a new RegExp(\"plain\") value instead"
-            .to_owned(),
+        code: resolve_diag_code(&msg),
+        message: msg,
         span,
-
-
-        phase: None,}
+        phase: None,
+    }
 }

@@ -2,13 +2,10 @@ use super::*;
 
 pub(super) fn parse_bigint_literal(raw: &str, span: Span) -> Result<ResolvedExpr, Diagnostic> {
     let Some(body) = raw.strip_suffix('n') else {
-        return Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: format!("issue-259: invalid BigInt literal `{raw}` reached runtime lowering"),
-            span: Some(span),
-
-            phase: None,
-        });
+        return Err(Diagnostic::unsupported_at(
+            span,
+            format!("issue-259: invalid BigInt literal `{raw}` reached runtime lowering"),
+        ));
     };
     let (radix, digits) =
         if let Some(digits) = body.strip_prefix("0b").or_else(|| body.strip_prefix("0B")) {
@@ -26,13 +23,10 @@ pub(super) fn parse_bigint_literal(raw: &str, span: Span) -> Result<ResolvedExpr
     let mut magnitude_overflowed = false;
     for ch in digits.chars() {
         let Some(digit) = ch.to_digit(radix) else {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!("issue-259: invalid BigInt literal digit in `{raw}`"),
-                span: Some(span),
-
-                phase: None,
-            });
+            return Err(Diagnostic::unsupported_at(
+                span,
+                format!("issue-259: invalid BigInt literal digit in `{raw}`"),
+            ));
         };
         decimal_mul_add(&mut decimal_digits, radix as u8, digit as u8);
         if !magnitude_overflowed {
@@ -407,34 +401,18 @@ pub(super) fn bigint_from_bool(value: bool) -> BigIntConst {
 }
 
 pub(super) fn bigint_string_diagnostic(span: Span) -> Diagnostic {
-    Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message: "issue-280: BigInt(string) currently supports decimal, binary, octal, or hexadecimal integer string literals"
-            .to_owned(),
-        span: Some(span),
-
-
-        phase: None,}
+    Diagnostic::unsupported_at(
+        span,
+        "issue-280: BigInt(string) currently supports decimal, binary, octal, or hexadecimal integer string literals",
+    )
 }
 
 pub(super) fn bigint_dynamic_string_diagnostic(span: Span) -> Diagnostic {
-    Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message: "issue-333: dynamic BigInt(string) inputs with provably invalid or out-of-range StringToBigInt values require compatible runtime exception support".to_owned(),
-        span: Some(span),
-
-
-        phase: None,}
+    Diagnostic::unsupported_at(span, "issue-333: dynamic BigInt(string) inputs with provably invalid or out-of-range StringToBigInt values require compatible runtime exception support".to_owned())
 }
 
 pub(super) fn bigint_builtin_unsupported_diagnostic(span: Span) -> Diagnostic {
-    Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message: "issue-280: BigInt(...) currently supports static string/boolean/integer number inputs and dynamic boolean/integer number/BigInt inputs in this builtin slice".to_owned(),
-        span: Some(span),
-
-
-        phase: None,}
+    Diagnostic::unsupported_at(span, "issue-280: BigInt(...) currently supports static string/boolean/integer number inputs and dynamic boolean/integer number/BigInt inputs in this builtin slice".to_owned())
 }
 
 pub(super) fn resolve_bigint_static_function_call(
@@ -523,27 +501,11 @@ pub(super) fn bigint_static_width(arg: &ResolvedExpr, span: Span) -> Result<u32,
 }
 
 pub(super) fn bigint_static_width_diagnostic(span: Span) -> Diagnostic {
-    Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message:
-            "issue-280: BigInt.asIntN/asUintN currently support integer literal bit widths 0..64"
-                .to_owned(),
-        span: Some(span),
-
-        phase: None,
-    }
+    Diagnostic::unsupported_at(span, "unsupported syntax")
 }
 
 pub(super) fn bigint_as_value_diagnostic(span: Span) -> Diagnostic {
-    Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message:
-            "issue-280: BigInt.asIntN/asUintN currently require a supported BigInt value input"
-                .to_owned(),
-        span: Some(span),
-
-        phase: None,
-    }
+    Diagnostic::unsupported_at(span, "unsupported syntax")
 }
 
 pub(super) fn bigint_as_uint_n(bits: u32, value: BigIntConst) -> BigIntConst {
@@ -861,13 +823,10 @@ impl BigIntRuntimeGuard {
             | Stmt::Continue { .. } => Ok(()),
             Stmt::Block { .. } => Ok(()),
             Stmt::EnumDecl { .. } | Stmt::TypeAlias { .. } | Stmt::InterfaceDecl { .. } => Ok(()),
-            Stmt::Using { span, .. } => Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "using declarations not yet supported".to_string(),
-                span: Some(*span),
-
-                phase: None,
-            }),
+            Stmt::Using { span, .. } => Err(Diagnostic::unsupported_at(
+                *span,
+                "using declarations not yet supported".to_string(),
+            )),
         }
     }
 
@@ -1583,33 +1542,15 @@ pub(super) fn bigint_fits_runtime_mixed_string(value: &BigIntConst) -> bool {
 }
 
 pub(super) fn bigint_comparison_string_boundary_diagnostic(span: Span) -> Diagnostic {
-    Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message: "issue-282: dynamic BigInt/String comparison is limited to signed-i32 StringToBigInt values in this runtime coercion slice".to_owned(),
-        span: Some(span),
-
-
-        phase: None,}
+    Diagnostic::unsupported_at(span, "issue-282: dynamic BigInt/String comparison is limited to signed-i32 StringToBigInt values in this runtime coercion slice".to_owned())
 }
 
 pub(super) fn bigint_object_toprimitive_string_boundary_diagnostic(span: Span) -> Diagnostic {
-    Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message: "issue-373: direct object ToPrimitive toString string returns that are invalid or outside the signed-i32 StringToBigInt comparison boundary require source-backed diagnostics in this slice".to_owned(),
-        span: Some(span),
-
-
-        phase: None,}
+    Diagnostic::unsupported_at(span, "issue-373: direct object ToPrimitive toString string returns that are invalid or outside the signed-i32 StringToBigInt comparison boundary require source-backed diagnostics in this slice".to_owned())
 }
 
 pub(super) fn bigint_object_toprimitive_diagnostic(span: Span) -> Diagnostic {
-    Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message: "issue-374: object ToPrimitive for mixed BigInt comparison is limited to direct no-argument arrow valueOf/toString methods returning supported primitive literals".to_owned(),
-        span: Some(span),
-
-
-        phase: None,}
+    Diagnostic::unsupported_at(span, "issue-374: object ToPrimitive for mixed BigInt comparison is limited to direct no-argument arrow valueOf/toString methods returning supported primitive literals".to_owned())
 }
 
 fn object_toprimitive_string_boundary_return(props: &[ObjectProp]) -> Option<()> {

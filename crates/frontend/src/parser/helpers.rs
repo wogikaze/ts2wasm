@@ -67,12 +67,7 @@ fn merge_constructor_initializers(
         return Ok(merged);
     }
 
-    Err(Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message: derived_error.to_owned(),
-        span: body.first().map(Stmt::span),
-
-        phase: None,})
+        Err(Diagnostic::unsupported_at(body.first().map(Stmt::span), derived_error.to_owned()))
 }
 
 fn is_super_call_statement(stmt: &Stmt) -> bool {
@@ -282,12 +277,7 @@ fn parse_template_literal(
             let expr_end = find_template_expr_end(raw, expr_start, span)?;
             let source = raw[expr_start..expr_end].trim();
             if source.is_empty() {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "Empty template interpolation expression".to_owned(),
-                    span: Some(span),
-
-                    phase: None,});
+                                return Err(Diagnostic::unsupported_at(span, "Empty template interpolation expression".to_owned()));
             }
             exprs.push(parse_template_expression(
                 source,
@@ -317,12 +307,7 @@ fn parse_template_expression(
     let mut parser = Parser::new_with_strict_mode(tokens, strict_mode, source);
     let expr = parser.expression()?;
     if !parser.is_at_end() {
-        return Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: "Unsupported template interpolation expression".to_owned(),
-            span: Some(span),
-
-            phase: None,});
+                return Err(Diagnostic::unsupported_at(span, "Unsupported template interpolation expression".to_owned()));
     }
     Ok(expr)
 }
@@ -388,12 +373,7 @@ fn find_template_expr_end(raw: &str, start: usize, span: Span) -> Result<usize, 
         }
     }
 
-    Err(Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message: "Unterminated template interpolation".to_owned(),
-        span: Some(span),
-
-        phase: None,})
+        Err(Diagnostic::unsupported_at(span, "Unterminated template interpolation".to_owned()))
 }
 
 fn cook_template_segment(raw: &str, span: Span) -> Result<String, Diagnostic> {
@@ -428,26 +408,12 @@ fn cook_template_segment(raw: &str, span: Span) -> Result<String, Diagnostic> {
                 }
                 '0' => {
                     if matches!(next_char_at(raw, cursor), Some((_, '0'..='9'))) {
-                        return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message:
-                                "Legacy octal escapes are not allowed in template literal text"
-                                    .to_owned(),
-                            span: Some(span),
-
-                            phase: None,});
+                                                return Err(Diagnostic::unsupported_at(span, "unsupported syntax"));
                     }
                     '\0'
                 }
                 '1'..='9' => {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message:
-                            "Legacy octal escapes are not allowed in template literal text"
-                                .to_owned(),
-                        span: Some(span),
-
-                        phase: None,});
+                                        return Err(Diagnostic::unsupported_at(span, "unsupported syntax"));
                 }
                 other => other,
             });
@@ -483,31 +449,16 @@ fn read_fixed_hex_escape(
     let mut value = 0u32;
     for _ in 0..digit_count {
         let Some((_, ch)) = next_char_at(source, cursor) else {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!("unterminated {label} escape sequence"),
-                span: Some(span),
-
-                phase: None,});
+                        return Err(Diagnostic::unsupported_at(span, format!("unterminated {label} escape sequence")));
         };
         let Some(digit) = ch.to_digit(16) else {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!("invalid {label} escape sequence"),
-                span: Some(span),
-
-                phase: None,});
+                        return Err(Diagnostic::unsupported_at(span, format!("invalid {label} escape sequence")));
         };
         value = (value << 4) | digit;
         cursor += ch.len_utf8();
     }
 
-    let ch = char::from_u32(value).ok_or(Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message: format!("invalid {label} escape scalar value"),
-        span: Some(span),
-
-        phase: None,})?;
+        let ch = char::from_u32(value).ok_or(Diagnostic::unsupported_at(span, format!("invalid {label} escape scalar value")))?;
     Ok((ch, cursor))
 }
 

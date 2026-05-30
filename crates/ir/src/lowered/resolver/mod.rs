@@ -20,7 +20,7 @@ use crate::lowered::facts::{
     GeneratorMethodIteratorBinding, HostExternalKind, StaticFunctionArrayLike,
 };
 use crate::lowered::*;
-use ts2wasm_diagnostic::{DiagCode, Diagnostic};
+use ts2wasm_diagnostic::{DiagCode, Diagnostic, resolve_diag_code};
 use ts2wasm_source::Span;
 use ts2wasm_syntax::{BinaryOp, SYMBOL_ITERATOR_OBJECT_KEY, TypeRef, UnaryOp};
 
@@ -477,15 +477,10 @@ impl Resolver {
                 && matches!(clean_name, "eval" | "arguments")
                 && !is_synthetic_arguments_param
             {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!(
-                        "issue-450: {:?} strict mode forbids binding parameter `{clean_name}`",
-                        crate::lowered::ctx::StrictModeCheck::StrictEval
-                    ),
-                    span: None,
-                    phase: None,
-                });
+                return Err(Diagnostic::unsupported(format!(
+                    "issue-450: {:?} strict mode forbids binding parameter `{clean_name}`",
+                    crate::lowered::ctx::StrictModeCheck::StrictEval
+                )));
             }
             if seen_params.contains_key(clean_name) {
                 // Non-strict mode allows duplicate parameter names (per ES spec).
@@ -813,25 +808,13 @@ impl Resolver {
             return Ok(None);
         }
         if direct_iife_body_has_unsupported_return(body) {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "issue-302: direct eval IIFE lowering does not support function returns"
-                    .to_owned(),
-                span: Some(*span),
-
-                phase: None,
-            });
+            return Err(Diagnostic::unsupported_at(
+                *span,
+                "issue-302: direct eval IIFE lowering does not support function returns",
+            ));
         }
         if block_contains_this(body) || block_contains_arguments(body) {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message:
-                    "issue-302: direct eval IIFE lowering does not support `this` or `arguments`"
-                        .to_owned(),
-                span: Some(*span),
-
-                phase: None,
-            });
+            return Err(Diagnostic::unsupported_at(*span, "unsupported syntax"));
         }
 
         self.ctx.symbols.scopes.push(HashMap::new());
@@ -851,11 +834,11 @@ impl Resolver {
             }
             ResolvedStmt::Expr(ResolvedExpr::Yield { expr, delegate }) => {
                 if *delegate {
-                    let inner = expr.as_ref().ok_or_else(|| Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: "yield* requires an expression".to_owned(),
-                        span: Some(Span::generated("yield_star")),
-                        phase: None,
+                    let inner = expr.as_ref().ok_or_else(|| {
+                        Diagnostic::unsupported_at(
+                            Span::generated("yield_star"),
+                            "yield* requires an expression".to_owned(),
+                        )
                     })?;
                     return self.lower_yield_star_stmt(inner, None);
                 }
@@ -2467,13 +2450,13 @@ pub(crate) fn is_private_field_storage_key(key: &str) -> bool {
 }
 
 pub(crate) fn private_storage_observable_access_diagnostic(span: Option<Span>) -> Diagnostic {
+    let msg = "issue-255: private field backing storage is not accessible through ordinary property access in this private field runtime slice".to_owned();
     Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message: "issue-255: private field backing storage is not accessible through ordinary property access in this private field runtime slice".to_owned(),
+        code: resolve_diag_code(&msg),
+        message: msg,
         span,
-
-
-        phase: None,}
+        phase: None,
+    }
 }
 
 pub(crate) fn is_static_copy_safe_object_prop_value(expr: &ResolvedExpr) -> bool {
@@ -2555,23 +2538,23 @@ pub(crate) fn is_map_prototype_property(
 }
 
 pub(crate) fn unsupported_array_map_diagnostic(span: Option<Span>) -> Diagnostic {
+    let msg = "issue-270: Array.prototype.map requires callback dispatch and new array allocation semantics that are not supported in this runtime slice".to_owned();
     Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message: "issue-270: Array.prototype.map requires callback dispatch and new array allocation semantics that are not supported in this runtime slice".to_owned(),
+        code: resolve_diag_code(&msg),
+        message: msg,
         span,
-
-
-        phase: None,}
+        phase: None,
+    }
 }
 
 pub(crate) fn unsupported_array_sort_diagnostic(span: Option<Span>) -> Diagnostic {
+    let msg = "issue-299: Array.prototype.sort is currently supported only for dense numeric arrays with comparator `(a, b) => a - b`".to_owned();
     Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message: "issue-299: Array.prototype.sort is currently supported only for dense numeric arrays with comparator `(a, b) => a - b`".to_owned(),
+        code: resolve_diag_code(&msg),
+        message: msg,
         span,
-
-
-        phase: None,}
+        phase: None,
+    }
 }
 
 pub(crate) fn is_static_date_constructor_expr(expr: &ResolvedExpr) -> bool {

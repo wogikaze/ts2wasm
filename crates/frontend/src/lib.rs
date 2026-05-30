@@ -15,7 +15,7 @@ pub use ast::{
     ImportPhase, LogicalAssignOp, ModuleSpecifier, OBJECT_SPREAD_SENTINEL, ObjectProp,
     ReExportNamedSpecifier, SYMBOL_ITERATOR_OBJECT_KEY, Stmt, TypeRef, UnaryOp,
 };
-pub use diagnostic::{DiagCode, Diagnostic, Span};
+pub use diagnostic::{DiagCode, Diagnostic, Span, resolve_diag_code};
 pub use lexer::{Lexer, SpannedToken, Token, TokenKind};
 pub use parser::Parser;
 pub use type_reference_directive::validate_type_reference_directives;
