@@ -251,7 +251,7 @@ impl Parser {
                 if matches!(self.peek(), Some(Token::Ident(name)) if name == "readonly") {
                     self.advance(); // consume readonly TypeScript modifier
                 }
-                private_elements.push(self.class_private_element(is_static)?);
+                private_elements.push(self.class_private_element(is_static, false, false)?);
                 continue;
             }
 
@@ -303,7 +303,10 @@ impl Parser {
             // interfering with the computed property branch below).
             let is_async = if !matches!(self.peek(), Some(Token::LeftBracket))
                 && matches!(self.peek(), Some(Token::Async))
-                && matches!(self.peek_n(1), Some(Token::Star | Token::Ident(_)))
+                && matches!(
+                    self.peek_n(1),
+                    Some(Token::Star | Token::Ident(_) | Token::PrivateIdentifier(_))
+                )
             {
                 self.advance();
                 true
@@ -353,6 +356,18 @@ impl Parser {
                     self.expression()?;
                 }
                 self.consume(TokenKind::Semicolon);
+                continue;
+            }
+
+            // Catch-all for private methods that were not matched by the
+            // early check above (e.g. async #method(), * #gen(),
+            // async * #method(), static async #method()).
+            if matches!(self.peek(), Some(Token::PrivateIdentifier(_))) {
+                private_elements.push(self.class_private_element(
+                    is_static,
+                    is_generator,
+                    is_async,
+                )?);
                 continue;
             }
 
@@ -795,6 +810,8 @@ impl Parser {
     fn class_private_element(
         &mut self,
         is_static: bool,
+        is_generator: bool,
+        is_async: bool,
     ) -> Result<ClassPrivateElement, Diagnostic> {
         if matches!(self.peek(), Some(Token::Ident(name)) if name == "get") {
             let accessor_span = self.expect_contextual_keyword("get")?;
@@ -891,7 +908,13 @@ impl Parser {
                 self.skip_type_annotation_until(&[TokenKind::LeftBrace])?;
             }
             self.fn_depth += 1;
+            let prev_in_generator = self.in_generator_fn;
+            let prev_in_async = self.in_async_fn;
+            self.in_generator_fn = is_generator;
+            self.in_async_fn = is_async;
             let mut body = self.block()?;
+            self.in_generator_fn = prev_in_generator;
+            self.in_async_fn = prev_in_async;
             self.fn_depth -= 1;
             desugar_destructured_params(&mut params, &mut body);
             let end = self
@@ -904,6 +927,8 @@ impl Parser {
                 params,
                 body,
                 is_static,
+                is_generator,
+                is_async,
                 span: Span {
                     start: name_span.start,
                     end,

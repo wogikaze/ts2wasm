@@ -151,6 +151,8 @@ pub enum ClassPrivateElement {
         params: Vec<(String, Option<Expr>, bool)>,
         body: Vec<Stmt>,
         is_static: bool,
+        is_generator: bool,
+        is_async: bool,
         span: Span,
     },
     Getter {
