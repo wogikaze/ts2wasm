@@ -29861,6 +29861,10 @@ fn collect_synthetic_runtime_functions_from_stmt(
         }
         LoweredStmt::ForIn { iter, body, .. } => {
             collect_synthetic_runtime_functions_from_expr(iter, locals, functions, required);
+            required.insert(RuntimeFn::ObjectKeys);
+            required.insert(RuntimeFn::ArrayGet);
+            required.insert(RuntimeFn::GetLength);
+            required.insert(RuntimeFn::NumberToI32);
             let mut body_locals = locals.clone();
             collect_synthetic_runtime_functions_from_stmts(
                 body,
