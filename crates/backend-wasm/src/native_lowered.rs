@@ -4252,6 +4252,9 @@ impl<'a> NativeLoweredEmitter<'a> {
                     if self.try_emit_parse_builtin_call(*builtin, args, out)? {
                         return Ok(());
                     }
+                    if self.try_emit_runtime_builtin_call(*builtin, args, ctx, out)? {
+                        return Ok(());
+                    }
                     Err(unsupported(
                         "native LoweredProgram emitter does not support this builtin call",
                     ))
@@ -8214,6 +8217,45 @@ impl<'a> NativeLoweredEmitter<'a> {
         out.push(WasmInstr::Call(intrinsic.symbol().to_owned()));
         out.push(WasmInstr::I32Const(ValueTag::TRUE));
         out.push(WasmInstr::I32Eq);
+        Ok(true)
+    }
+
+    /// Emit a RuntimeFn call for builtins that don't need special lowering but
+    /// whose argument is a runtime (non-static) value.  Falls through to the
+    /// static compile-time path first (in the catch-all), so this is the
+    /// last-resort runtime emission for BooleanCoerce, NumberCoerce, and the
+    /// URI encode/decode/escape family.
+    fn try_emit_runtime_builtin_call(
+        &mut self,
+        builtin: BuiltinId,
+        args: &[LoweredExpr],
+        ctx: &FunctionCtx,
+        out: &mut Vec<WasmInstr>,
+    ) -> Result<bool, Diagnostic> {
+        let Some(intrinsic) = (match builtin {
+            BuiltinId::BooleanCoerce => Some(RuntimeFn::BooleanCoerce),
+            BuiltinId::NumberCoerce => Some(RuntimeFn::NumberCoerce),
+            BuiltinId::EncodeURI => Some(RuntimeFn::EncodeURI),
+            BuiltinId::EncodeURIComponent => Some(RuntimeFn::EncodeURIComponent),
+            BuiltinId::DecodeURI => Some(RuntimeFn::DecodeURI),
+            BuiltinId::DecodeURIComponent => Some(RuntimeFn::DecodeURIComponent),
+            BuiltinId::Escape => Some(RuntimeFn::Escape),
+            BuiltinId::Unescape => Some(RuntimeFn::Unescape),
+            BuiltinId::ParseInt => Some(RuntimeFn::GlobalParseInt),
+            BuiltinId::ParseFloat => Some(RuntimeFn::GlobalParseFloat),
+            _ => None,
+        }) else {
+            return Ok(false);
+        };
+        let signature = intrinsic.stack_effect();
+        // Emit the actual args, then pad missing ones with undefined.
+        for arg in args {
+            self.emit_concat_arg_as_tagged(arg, ctx, out)?;
+        }
+        for _ in args.len()..signature.params {
+            out.push(WasmInstr::I32Const(ValueTag::UNDEFINED));
+        }
+        out.push(WasmInstr::Call(intrinsic.symbol().to_owned()));
         Ok(true)
     }
 
@@ -34783,6 +34825,9 @@ fn binary_op_instr(op: LoweredBinaryOp) -> Result<WasmInstr, Diagnostic> {
         LoweredBinaryOp::GreaterEqual => Ok(WasmInstr::I32GeS),
         LoweredBinaryOp::StrictEqual | LoweredBinaryOp::EqualEqual => Ok(WasmInstr::I32Eq),
         LoweredBinaryOp::StrictNotEqual | LoweredBinaryOp::BangEqual => Ok(WasmInstr::I32Ne),
+        LoweredBinaryOp::Shl => Ok(WasmInstr::I32Shl),
+        LoweredBinaryOp::Shr => Ok(WasmInstr::I32ShrS),
+        LoweredBinaryOp::ShrU => Ok(WasmInstr::I32ShrU),
         _ => Err(unsupported(
             "native LoweredProgram emitter does not support this binary operator",
         )),
