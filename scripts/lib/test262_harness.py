@@ -98,12 +98,9 @@ NON_BLOCKING_METADATA_FEATURES = (
 
 BLOCKED_INCLUDES = (
     "agent.js",
-    "wellKnownIntrinsicObjects.js",
 )
 BLOCKED_FEATURES = (
     "evalScript",
-    "SharedArrayBuffer",
-    "Atomics",
     "Intl",
 )
 
