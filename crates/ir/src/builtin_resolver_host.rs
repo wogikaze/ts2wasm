@@ -218,7 +218,7 @@ pub(super) fn resolve_builtin_call(
         if object_name == "BigInt" && matches!(property.as_str(), "asIntN" | "asUintN") {
             return Err(Diagnostic::unsupported_at(
                 span_of_expr(callee),
-                "unsupported syntax",
+                "issue-5281: BigInt.asIntN/asUintN is not supported in this runtime slice",
             ));
         }
         if object_name == "console" {
@@ -703,7 +703,7 @@ pub(super) fn validate_read_stdin_utf8_args(
         _ => {
             return Err(Diagnostic::unsupported_at(
                 span_of_expr(fd_expr),
-                "unsupported syntax",
+                "issue-5281: require('fs').readFileSync currently supports only fd=0 in this slice",
             ));
         }
     }

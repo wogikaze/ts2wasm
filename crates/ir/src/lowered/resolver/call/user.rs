@@ -142,6 +142,42 @@ impl super::super::Resolver {
             });
         }
 
+        // Generic ComputedIndex call fallback: evaluate object, get property,
+        // call it dynamically via FunctionCallMethodHost. This covers all
+        // computed property call patterns that did not match the more specific
+        // handlers above (class method, host external, function handle).
+        if let ResolvedExpr::ComputedIndex { object, index } = callee {
+            let receiver_temp = self.alloc_temp();
+            let receiver = LoweredExpr::Local(receiver_temp, Span::generated("local"));
+            let args_array = ResolvedExpr::Array(
+                args.iter()
+                    .cloned()
+                    .map(ResolvedArrayElement::Present)
+                    .collect(),
+            );
+            return Ok(LoweredExpr::Block {
+                stmts: vec![LoweredStmt::Let(
+                    receiver_temp,
+                    self.lower_expr(object)?,
+                    Span::generated("let_stmt"),
+                )],
+                result: Box::new(LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::FunctionCallMethodHost,
+                    args: vec![
+                        object_kernel::ordinary_get_dynamic(
+                            receiver.clone(),
+                            self.lower_expr(index)?,
+                            span,
+                        ),
+                        receiver,
+                        self.lower_expr(&args_array)?,
+                    ],
+                    span: Span::generated("runtime_call"),
+                }),
+                span: Span::generated("block"),
+            });
+        }
+
         if let ResolvedExpr::MethodCall {
             object,
             method,
@@ -716,7 +752,10 @@ impl super::super::Resolver {
         span: Span,
     ) -> Result<LoweredExpr, Diagnostic> {
         let ResolvedExpr::Ident(func_name) = object else {
-            return Err(Diagnostic::unsupported_at(span, "unsupported syntax"));
+            return Err(Diagnostic::unsupported_at(
+                span,
+                "issue-274: Function.prototype.bind requires an identifier function receiver for direct call lowering",
+            ));
         };
         let func_id = self.resolve_func(func_name)?;
         let receiver = match bind_args.first() {

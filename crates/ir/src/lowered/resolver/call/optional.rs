@@ -13,7 +13,10 @@ impl super::super::Resolver {
         let func_name = match callee {
             ResolvedExpr::Ident(name) => name,
             _ => {
-                return Err(Diagnostic::unsupported_at(span, "unsupported syntax"));
+                return Err(Diagnostic::unsupported_at(
+                    span,
+                    "issue-246: optional call with non-identifier callee is not supported in this milestone",
+                ));
             }
         };
 

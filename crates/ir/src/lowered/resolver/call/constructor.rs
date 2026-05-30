@@ -272,7 +272,7 @@ impl super::super::Resolver {
             if class_name == "Set" {
                 return Err(Diagnostic::unsupported_at(
                     Span::generated("issue-276"),
-                    "unsupported syntax",
+                    "issue-276: Set constructor with single non-iterable argument is not supported in this slice",
                 ));
             }
             return Err(Diagnostic::unsupported(format!(

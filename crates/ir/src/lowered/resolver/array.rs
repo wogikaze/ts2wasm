@@ -122,7 +122,7 @@ impl super::Resolver {
 
                     return Err(Diagnostic::unsupported_at(
                         Span::generated("issue-274"),
-                        "unsupported syntax",
+                        "issue-274: array literal spread with unsupported iterable is not implemented in this slice",
                     ));
                 }
                 ResolvedArrayElement::Present(expr) => pending_dense.push(self.lower_expr(expr)?),
@@ -334,7 +334,10 @@ impl super::Resolver {
                     });
                 }
             }
-            return Err(Diagnostic::unsupported_at(span, "unsupported syntax"));
+            return Err(Diagnostic::unsupported_at(
+                span,
+                "issue-313: Array.from with this mapFn/callback combination is not implemented in this slice",
+            ));
         }
 
         // No mapFn, single source: copy elements (existing behavior)
@@ -716,7 +719,7 @@ impl super::Resolver {
                     {
                         return Err(crate::lowered::resolver::expr::facts::unsupported_symbol_iterator_spread_diagnostic());
                     } else {
-                                                return Err(Diagnostic::unsupported_at(Span::generated("issue-274"), "unsupported syntax"));
+                                                return Err(Diagnostic::unsupported_at(Span::generated("issue-274"), "issue-274: array element spread with unsupported iterable value is not implemented in this slice"));
                     }
                 }
                 ResolvedArrayElement::Present(expr) => lowered.push(self.lower_expr(expr)?),
@@ -934,7 +937,10 @@ impl super::Resolver {
                 ..
             } => {
                 if params.len() > 4 {
-                    return Err(Diagnostic::unsupported_at(span, "unsupported syntax"));
+                    return Err(Diagnostic::unsupported_at(
+                        span,
+                        "issue-270: Array method arrow callbacks with more than 4 parameters are not supported in this slice",
+                    ));
                 }
                 let LoweredExpr::ArrowFn {
                     func_id, captures, ..
@@ -952,7 +958,10 @@ impl super::Resolver {
                 ..
             } => {
                 if params.len() > 4 {
-                    return Err(Diagnostic::unsupported_at(span, "unsupported syntax"));
+                    return Err(Diagnostic::unsupported_at(
+                        span,
+                        "issue-270: Array method named function callbacks with more than 4 parameters are not supported in this slice",
+                    ));
                 }
                 let LoweredExpr::ArrowFn {
                     func_id, captures, ..
@@ -995,7 +1004,10 @@ impl super::Resolver {
                 (func_id, vec![], param_count)
             }
             _ => {
-                return Err(Diagnostic::unsupported_at(span, "unsupported syntax"));
+                return Err(Diagnostic::unsupported_at(
+                    span,
+                    "issue-270: Array method requires a callable callback; this expression type is not supported",
+                ));
             }
         };
 
@@ -1004,7 +1016,7 @@ impl super::Resolver {
             let Some(init_arg) = args.get(1) else {
                 return Err(Diagnostic::unsupported_at(
                     Span::generated("issue-270"),
-                    "unsupported syntax",
+                    "issue-270: Array.prototype.reduce/ReduceRight requires an initial value argument in this slice",
                 ));
             };
             Some(self.lower_expr(init_arg)?)
@@ -1095,7 +1107,10 @@ impl super::Resolver {
             });
         };
         if !crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, items) {
-            return Err(Diagnostic::unsupported_at(span, "unsupported syntax"));
+            return Err(Diagnostic::unsupported_at(
+                span,
+                "issue-5004: Object.groupBy with non-array items is not implemented in this slice",
+            ));
         }
         let ResolvedExpr::ArrowFn {
             params,
@@ -2386,7 +2401,7 @@ impl super::Resolver {
         let Some(init_expr) = init_expr else {
             return Err(Diagnostic::unsupported_at(
                 Span::generated("issue-270"),
-                "unsupported syntax",
+                "issue-270: reduce callback requires an initial value in this slice",
             ));
         };
         let acc = self.alloc_temp();

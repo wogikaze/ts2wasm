@@ -28,7 +28,10 @@ pub(super) fn bigint_comparison_runtime_diagnostic(span: Span) -> Diagnostic {
 }
 
 pub(super) fn bigint_exponentiation_diagnostic(span: Span) -> Diagnostic {
-    Diagnostic::unsupported_at(span, "unsupported syntax")
+    Diagnostic::unsupported_at(
+        span,
+        "issue-5281: BigInt exponentiation outside the signed-i64 exponent range is not implemented in this runtime slice",
+    )
 }
 
 pub(super) fn bigint_bitwise_diagnostic(span: Span) -> Diagnostic {
@@ -415,9 +418,10 @@ pub(super) fn fold_bigint_binary(
         BinaryOp::Add => Ok(bigint_add(left, right)),
         BinaryOp::Subtract => Ok(bigint_add(left, right.negated())),
         BinaryOp::Multiply => Ok(bigint_mul(left, right)),
-        BinaryOp::Power if right.sign < 0 => {
-            Err(Diagnostic::unsupported_at(span, "unsupported syntax"))
-        }
+        BinaryOp::Power if right.sign < 0 => Err(Diagnostic::unsupported_at(
+            span,
+            "issue-5281: BigInt negative exponent is not supported in this runtime slice",
+        )),
         BinaryOp::Power => {
             let Some(exponent) = decimal_digits_to_u64(&right.digits) else {
                 return Err(bigint_exponentiation_diagnostic(span));
@@ -427,9 +431,10 @@ pub(super) fn fold_bigint_binary(
             }
             Ok(bigint_pow(left, exponent))
         }
-        BinaryOp::Divide | BinaryOp::Modulo if right.sign == 0 => {
-            Err(Diagnostic::unsupported_at(span, "unsupported syntax"))
-        }
+        BinaryOp::Divide | BinaryOp::Modulo if right.sign == 0 => Err(Diagnostic::unsupported_at(
+            span,
+            "issue-5281: BigInt divide/modulo by zero is not supported in this runtime slice",
+        )),
         BinaryOp::Divide => {
             let (quotient, _) = div_rem_abs(&left.digits, &right.digits);
             let sign = if quotient == [0] {

@@ -273,7 +273,10 @@ impl super::super::Resolver {
             ));
         };
         if !input.is_ascii() {
-            return Err(Diagnostic::unsupported_at(span, "unsupported syntax"));
+            return Err(Diagnostic::unsupported_at(
+                span,
+                "issue-5129: String.prototype.matchAll with non-ASCII static string receiver is not supported in this slice",
+            ));
         }
 
         let ResolvedExpr::String(raw_pattern) = &args[0] else {
@@ -286,7 +289,10 @@ impl super::super::Resolver {
         // Plain string search: find all occurrences of the literal string
         if !looks_like_regexp_literal(raw_pattern) {
             if raw_pattern.is_empty() {
-                return Err(Diagnostic::unsupported_at(span, "unsupported syntax"));
+                return Err(Diagnostic::unsupported_at(
+                    span,
+                    "issue-5129: String.prototype.matchAll with empty pattern is not supported in this slice",
+                ));
             }
             let mut elements = Vec::new();
             let mut start = 0;
@@ -339,7 +345,10 @@ impl super::super::Resolver {
                 "." => ch != '\n' && ch != '\r',
                 literal if literal.len() == 1 => literal.as_bytes()[0] == ch as u8,
                 _ => {
-                    return Err(Diagnostic::unsupported_at(span, "unsupported syntax"));
+                    return Err(Diagnostic::unsupported_at(
+                        span,
+                        "issue-5129: String.prototype.matchAll with multi-character regex pattern requires RegExp runtime support in this slice",
+                    ));
                 }
             };
             if matches {
@@ -454,7 +463,7 @@ impl super::super::Resolver {
                     {
                         lowered_args.push(map_array);
                     } else {
-                                                return Err(Diagnostic::unsupported_at(Span::generated("issue-274"), "unsupported syntax"));
+                                                return Err(Diagnostic::unsupported_at(Span::generated("issue-274"), "issue-274: spread element in call arguments with unsupported iterable is not implemented in this slice"));
                     }
                 }
                 _ => lowered_args.push(self.lower_expr(arg)?),

@@ -241,7 +241,7 @@ impl super::super::Resolver {
         if name == "arguments" {
             return Err(Diagnostic::unsupported_at(
                 Span::generated("issue-062d"),
-                "unsupported syntax",
+                "issue-062d: the `arguments` binding is not implemented in this slice",
             ));
         }
         if self.ctx.classes.class_constructor_ids.contains_key(name) {
@@ -272,7 +272,7 @@ impl super::super::Resolver {
     pub(super) fn lower_spread_expr(&self) -> Result<LoweredExpr, Diagnostic> {
         Err(Diagnostic::unsupported_at(
             Span::generated("issue-274"),
-            "unsupported syntax",
+            "issue-274: spread expression requires runtime iteration which is not implemented in this slice",
         ))
     }
 }

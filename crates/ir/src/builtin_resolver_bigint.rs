@@ -501,11 +501,17 @@ pub(super) fn bigint_static_width(arg: &ResolvedExpr, span: Span) -> Result<u32,
 }
 
 pub(super) fn bigint_static_width_diagnostic(span: Span) -> Diagnostic {
-    Diagnostic::unsupported_at(span, "unsupported syntax")
+    Diagnostic::unsupported_at(
+        span,
+        "issue-5281: BigInt.asIntN/asUintN width must be between 0 and 64 in this slice",
+    )
 }
 
 pub(super) fn bigint_as_value_diagnostic(span: Span) -> Diagnostic {
-    Diagnostic::unsupported_at(span, "unsupported syntax")
+    Diagnostic::unsupported_at(
+        span,
+        "issue-5281: BigInt.asIntN/asUintN value is not statically resolvable in this slice",
+    )
 }
 
 pub(super) fn bigint_as_uint_n(bits: u32, value: BigIntConst) -> BigIntConst {

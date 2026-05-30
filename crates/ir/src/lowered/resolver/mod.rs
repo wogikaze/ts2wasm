@@ -814,7 +814,10 @@ impl Resolver {
             ));
         }
         if block_contains_this(body) || block_contains_arguments(body) {
-            return Err(Diagnostic::unsupported_at(*span, "unsupported syntax"));
+            return Err(Diagnostic::unsupported_at(
+                *span,
+                "issue-302: direct eval IIFE body contains `this` or `arguments` which are not supported in this slice",
+            ));
         }
 
         self.ctx.symbols.scopes.push(HashMap::new());

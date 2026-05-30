@@ -366,7 +366,7 @@ impl super::super::Resolver {
                 || (crate::lowered::resolver::expr::facts::resolved_expr_is_bigint_div_rem_operand(&self.ctx, left)
                     && crate::lowered::resolver::expr::facts::resolved_expr_is_control_flow_mixed_bigint(&self.ctx, right)))
         {
-                        return Err(Diagnostic::unsupported_at(Span::generated("issue-370"), "unsupported syntax"));
+                        return Err(Diagnostic::unsupported_at(Span::generated("issue-370"), "issue-370: BigInt divide/modulo with mixed control-flow values is not implemented in this slice"));
         }
         if matches!(
             op,

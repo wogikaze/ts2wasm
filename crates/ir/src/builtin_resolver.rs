@@ -2193,7 +2193,7 @@ fn resolve_stmt_with_outer_bindings(
         | Stmt::ExportAssignment { .. }
         | Stmt::ExportDefault { .. } => Err(Diagnostic::unsupported_at(
             Span::generated("issue-055"),
-            "unsupported syntax",
+            "issue-055: module imports/exports are not supported in this milestone",
         )),
     }
 }

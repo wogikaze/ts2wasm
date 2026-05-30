@@ -11,7 +11,7 @@ pub(super) fn lower_ascii_string_spread_chars(value: &str) -> Result<Vec<Lowered
     if !value.is_ascii() {
         return Err(Diagnostic::unsupported_at(
             Span::generated("issue-274"),
-            "unsupported syntax",
+            "issue-274: non-ASCII string spread chars are not implemented in this slice",
         ));
     }
     Ok(value

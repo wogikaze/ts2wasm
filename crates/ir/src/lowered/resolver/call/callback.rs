@@ -13,47 +13,54 @@ impl super::super::Resolver {
     ) -> Result<LoweredExpr, Diagnostic> {
         let callback = &args[0];
 
-        let (func_id, captures, param_count) =
-            match callback {
-                ResolvedExpr::ArrowFn {
-                    params,
-                    body,
-                    body_stmts,
-                    ..
-                } => {
-                    if params.len() > 3 {
-                        return Err(Diagnostic::unsupported_at(span, "unsupported syntax"));
-                    }
-                    let LoweredExpr::ArrowFn {
-                        func_id, captures, ..
-                    } = self.lower_arrow_fn(params, body, body_stmts)?
-                    else {
-                        return Err(Diagnostic::unsupported_at(
-                            span,
-                            "failed to lower Set.prototype.forEach arrow callback".to_owned(),
-                        ));
-                    };
-                    (func_id, captures, params.len())
+        let (func_id, captures, param_count) = match callback {
+            ResolvedExpr::ArrowFn {
+                params,
+                body,
+                body_stmts,
+                ..
+            } => {
+                if params.len() > 3 {
+                    return Err(Diagnostic::unsupported_at(
+                        span,
+                        "issue-5004: Set.prototype.forEach with more than 3 parameters is not supported in this slice",
+                    ));
                 }
-                ResolvedExpr::FunctionExpr {
-                    name,
-                    params,
-                    is_generator: false,
-                    ..
-                } => {
-                    let func_id = self
+                let LoweredExpr::ArrowFn {
+                    func_id, captures, ..
+                } = self.lower_arrow_fn(params, body, body_stmts)?
+                else {
+                    return Err(Diagnostic::unsupported_at(
+                        span,
+                        "failed to lower Set.prototype.forEach arrow callback".to_owned(),
+                    ));
+                };
+                (func_id, captures, params.len())
+            }
+            ResolvedExpr::FunctionExpr {
+                name,
+                params,
+                is_generator: false,
+                ..
+            } => {
+                let func_id = self
                     .ctx
                     .symbols
                     .function_ids
                     .get(name.as_str())
                     .copied()
-                                        .ok_or_else(|| Diagnostic::unsupported_at(span, format!(
-"Set.prototype.forEach: function `{name}` is not a known function"
-)))?;
-                    (func_id, vec![], params.len())
-                }
-                ResolvedExpr::Ident(name) => {
-                    let func_id = self
+                    .ok_or_else(|| {
+                        Diagnostic::unsupported_at(
+                            span,
+                            format!(
+                                "Set.prototype.forEach: function `{name}` is not a known function"
+                            ),
+                        )
+                    })?;
+                (func_id, vec![], params.len())
+            }
+            ResolvedExpr::Ident(name) => {
+                let func_id = self
                     .ctx
                     .symbols
                     .function_ids
@@ -62,19 +69,22 @@ impl super::super::Resolver {
                                         .ok_or_else(|| Diagnostic::unsupported_at(span, format!(
 "Set.prototype.forEach: function `{name}` is not a known function reference"
 )))?;
-                    let param_count = self
-                        .ctx
-                        .symbols
-                        .function_signatures
-                        .get(&func_id)
-                        .map(|sig| sig.explicit_params)
-                        .unwrap_or(0);
-                    (func_id, vec![], param_count)
-                }
-                _ => {
-                    return Err(Diagnostic::unsupported_at(span, "unsupported syntax"));
-                }
-            };
+                let param_count = self
+                    .ctx
+                    .symbols
+                    .function_signatures
+                    .get(&func_id)
+                    .map(|sig| sig.explicit_params)
+                    .unwrap_or(0);
+                (func_id, vec![], param_count)
+            }
+            _ => {
+                return Err(Diagnostic::unsupported_at(
+                    span,
+                    "issue-5004: Set.prototype.forEach callback must be an arrow function, named function, or function reference",
+                ));
+            }
+        };
 
         let receiver_local = match &receiver {
             LoweredExpr::Local(id, _) => *id,
@@ -199,47 +209,54 @@ impl super::super::Resolver {
     ) -> Result<LoweredExpr, Diagnostic> {
         let callback = &args[0];
 
-        let (func_id, captures, param_count) =
-            match callback {
-                ResolvedExpr::ArrowFn {
-                    params,
-                    body,
-                    body_stmts,
-                    ..
-                } => {
-                    if params.len() > 3 {
-                        return Err(Diagnostic::unsupported_at(span, "unsupported syntax"));
-                    }
-                    let LoweredExpr::ArrowFn {
-                        func_id, captures, ..
-                    } = self.lower_arrow_fn(params, body, body_stmts)?
-                    else {
-                        return Err(Diagnostic::unsupported_at(
-                            span,
-                            "failed to lower Map.prototype.forEach arrow callback".to_owned(),
-                        ));
-                    };
-                    (func_id, captures, params.len())
+        let (func_id, captures, param_count) = match callback {
+            ResolvedExpr::ArrowFn {
+                params,
+                body,
+                body_stmts,
+                ..
+            } => {
+                if params.len() > 3 {
+                    return Err(Diagnostic::unsupported_at(
+                        span,
+                        "issue-5004: Map.prototype.forEach with more than 3 parameters is not supported in this slice",
+                    ));
                 }
-                ResolvedExpr::FunctionExpr {
-                    name,
-                    params,
-                    is_generator: false,
-                    ..
-                } => {
-                    let func_id = self
+                let LoweredExpr::ArrowFn {
+                    func_id, captures, ..
+                } = self.lower_arrow_fn(params, body, body_stmts)?
+                else {
+                    return Err(Diagnostic::unsupported_at(
+                        span,
+                        "failed to lower Map.prototype.forEach arrow callback".to_owned(),
+                    ));
+                };
+                (func_id, captures, params.len())
+            }
+            ResolvedExpr::FunctionExpr {
+                name,
+                params,
+                is_generator: false,
+                ..
+            } => {
+                let func_id = self
                     .ctx
                     .symbols
                     .function_ids
                     .get(name.as_str())
                     .copied()
-                                        .ok_or_else(|| Diagnostic::unsupported_at(span, format!(
-"Map.prototype.forEach: function `{name}` is not a known function"
-)))?;
-                    (func_id, vec![], params.len())
-                }
-                ResolvedExpr::Ident(name) => {
-                    let func_id = self
+                    .ok_or_else(|| {
+                        Diagnostic::unsupported_at(
+                            span,
+                            format!(
+                                "Map.prototype.forEach: function `{name}` is not a known function"
+                            ),
+                        )
+                    })?;
+                (func_id, vec![], params.len())
+            }
+            ResolvedExpr::Ident(name) => {
+                let func_id = self
                     .ctx
                     .symbols
                     .function_ids
@@ -248,19 +265,22 @@ impl super::super::Resolver {
                                         .ok_or_else(|| Diagnostic::unsupported_at(span, format!(
 "Map.prototype.forEach: function `{name}` is not a known function reference"
 )))?;
-                    let param_count = self
-                        .ctx
-                        .symbols
-                        .function_signatures
-                        .get(&func_id)
-                        .map(|sig| sig.explicit_params)
-                        .unwrap_or(0);
-                    (func_id, vec![], param_count)
-                }
-                _ => {
-                    return Err(Diagnostic::unsupported_at(span, "unsupported syntax"));
-                }
-            };
+                let param_count = self
+                    .ctx
+                    .symbols
+                    .function_signatures
+                    .get(&func_id)
+                    .map(|sig| sig.explicit_params)
+                    .unwrap_or(0);
+                (func_id, vec![], param_count)
+            }
+            _ => {
+                return Err(Diagnostic::unsupported_at(
+                    span,
+                    "issue-5004: Map.prototype.forEach callback must be an arrow function, named function, or function reference",
+                ));
+            }
+        };
 
         let receiver_local = match &receiver {
             LoweredExpr::Local(id, _) => *id,

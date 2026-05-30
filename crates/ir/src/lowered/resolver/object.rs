@@ -16,7 +16,7 @@ impl super::Resolver {
             let Some(key) = prop.static_key() else {
                 return Err(Diagnostic::unsupported_at(
                     Span::generated("issue-410"),
-                    "unsupported syntax",
+                    "issue-410: computed object property keys are not implemented in this slice",
                 ));
             };
             let value = prop.value();
@@ -26,7 +26,7 @@ impl super::Resolver {
                         .ok_or_else(|| {
                             Diagnostic::unsupported_at(
                                 Span::generated("issue-274"),
-                                "unsupported syntax",
+                                "issue-274: object literal spread with unsupported value type is not implemented in this slice",
                             )
                         })?;
                 lowered.extend(self.lower_object_literal_props(&spread_props)?);
@@ -58,7 +58,7 @@ impl super::Resolver {
             if is_object_literal_accessor_function_name(name) {
                 return Err(Diagnostic::unsupported_at(
                     Span::generated("issue-67ZV8S"),
-                    "unsupported syntax",
+                    "issue-67ZV8S: object literal accessor functions are not implemented in this slice",
                 ));
             }
             return self.lower_object_method_function_expr(name, params, body, *is_generator);

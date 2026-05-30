@@ -1743,8 +1743,37 @@ impl<'a> NativeLoweredEmitter<'a> {
                 Ok(())
             }
             LoweredStmt::ForIn {
-                var, iter, body, ..
-            } => self.emit_static_for_in(*var, iter, body, ctx, out),
+                var,
+                iter,
+                iter_local,
+                index_local,
+                len_local,
+                body,
+                ..
+            } => {
+                if let Some(keys) = static_for_in_keys_from_expr_with_functions(
+                    iter,
+                    &ctx.static_locals,
+                    &self.program.functions,
+                ) {
+                    if keys.is_empty() {
+                        return Ok(());
+                    }
+                    self.emit_static_for_in_with_keys(*var, keys, body, ctx, out, active_label)
+                } else {
+                    self.emit_dynamic_for_in(
+                        *var,
+                        iter,
+                        *iter_local,
+                        *index_local,
+                        *len_local,
+                        body,
+                        ctx,
+                        out,
+                        active_label,
+                    )
+                }
+            }
             LoweredStmt::ForOf {
                 var,
                 iter,
@@ -4887,33 +4916,20 @@ impl<'a> NativeLoweredEmitter<'a> {
         Ok(())
     }
 
-    fn emit_static_for_in(
+    fn emit_static_for_in_with_keys(
         &mut self,
         var: LocalId,
-        iter: &LoweredExpr,
+        keys: Vec<String>,
         body: &[LoweredStmt],
         ctx: &FunctionCtx,
         out: &mut Vec<WasmInstr>,
+        _label: Option<&str>,
     ) -> Result<(), Diagnostic> {
-        let Some(keys) = static_for_in_keys_from_expr_with_functions(
-            iter,
-            &ctx.static_locals,
-            &self.program.functions,
-        ) else {
-            return Err(unsupported(
-                "native LoweredProgram emitter does not support dynamic for-in",
-            ));
-        };
-
-        if keys.is_empty() {
-            return Ok(());
-        }
-
         let has_branch = stmts_contain_break_or_continue(body);
         let break_ctx;
         let base_ctx = if has_branch {
-            out.push(WasmInstr::Block(loop_break_symbol(None, "for_in")));
-            break_ctx = push_control(ctx, ControlFrame::break_target(None, true));
+            out.push(WasmInstr::Block(loop_break_symbol(_label, "for_in")));
+            break_ctx = push_control(ctx, ControlFrame::break_target(_label, true));
             &break_ctx
         } else {
             ctx
@@ -4928,11 +4944,11 @@ impl<'a> NativeLoweredEmitter<'a> {
                 .insert(var, StaticValue::Primitive(key_expr));
             if has_branch {
                 out.push(WasmInstr::Block(loop_continue_symbol(
-                    None,
+                    _label,
                     "for_in_continue",
                 )));
                 let mut body_ctx =
-                    push_control(base_ctx, ControlFrame::continue_target(None, true));
+                    push_control(base_ctx, ControlFrame::continue_target(_label, true));
                 body_ctx.static_locals = current_ctx.static_locals.clone();
                 current_ctx = self.emit_stmts_with_static_state(body, &body_ctx, out)?;
                 out.push(WasmInstr::End);
@@ -4943,6 +4959,77 @@ impl<'a> NativeLoweredEmitter<'a> {
         if has_branch {
             out.push(WasmInstr::End);
         }
+        Ok(())
+    }
+
+    fn emit_dynamic_for_in(
+        &mut self,
+        var: LocalId,
+        iter: &LoweredExpr,
+        iter_local: LocalId,
+        index_local: LocalId,
+        len_local: LocalId,
+        body: &[LoweredStmt],
+        ctx: &FunctionCtx,
+        out: &mut Vec<WasmInstr>,
+        label: Option<&str>,
+    ) -> Result<(), Diagnostic> {
+        let iter_slot = local_index(ctx, iter_local)?;
+        let index_slot = local_index(ctx, index_local)?;
+        let len_slot = local_index(ctx, len_local)?;
+        let var_slot = local_index(ctx, var)?;
+        let span = Span::generated("native-for-in");
+
+        self.emit_expr(iter, ctx, out)?;
+        out.push(WasmInstr::Call(RuntimeFn::ObjectKeys.symbol().to_owned()));
+        local_set_with_gc_mirror(out, ctx, iter_slot);
+
+        self.emit_expr(
+            &LoweredExpr::GetLength(Box::new(LoweredExpr::Local(iter_local, span)), span),
+            ctx,
+            out,
+        )?;
+        out.push(WasmInstr::LocalSet(len_slot));
+        out.push(WasmInstr::I32Const(0));
+        out.push(WasmInstr::LocalSet(index_slot));
+
+        out.push(WasmInstr::Block(loop_break_symbol(label, "for_in")));
+        let break_ctx = push_control(ctx, ControlFrame::break_target(label, true));
+        out.push(WasmInstr::Loop(loop_continue_symbol(label, "for_in_loop")));
+        let mut loop_ctx = push_control(&break_ctx, ControlFrame::plain());
+        loop_ctx.static_locals.remove(&var);
+        loop_ctx
+            .value_reprs
+            .locals
+            .insert(var, NativeValueRepr::TaggedValue);
+        loop_ctx.raw_string_locals.remove(&var);
+        remove_assigned_static_locals(body, &mut loop_ctx.static_locals);
+
+        out.push(WasmInstr::LocalGet(index_slot));
+        out.push(WasmInstr::LocalGet(len_slot));
+        out.push(WasmInstr::I32GeU);
+        out.push(WasmInstr::BrIfDepth(1));
+
+        out.push(WasmInstr::LocalGet(iter_slot));
+        self.emit_number_index_as_tagged(&LoweredExpr::Local(index_local, span), &loop_ctx, out)?;
+        out.push(WasmInstr::Call(RuntimeFn::ArrayGet.symbol().to_owned()));
+        local_set_with_gc_mirror(out, &loop_ctx, var_slot);
+
+        out.push(WasmInstr::Block(loop_continue_symbol(
+            label,
+            "for_in_continue",
+        )));
+        let body_ctx = push_control(&loop_ctx, ControlFrame::continue_target(label, true));
+        self.emit_stmts(body, &body_ctx, out)?;
+        out.push(WasmInstr::End);
+
+        out.push(WasmInstr::LocalGet(index_slot));
+        out.push(WasmInstr::I32Const(1));
+        out.push(WasmInstr::I32Add);
+        out.push(WasmInstr::LocalSet(index_slot));
+        out.push(WasmInstr::BrDepth(0));
+        out.push(WasmInstr::End);
+        out.push(WasmInstr::End);
         Ok(())
     }
 

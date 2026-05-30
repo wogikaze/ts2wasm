@@ -1176,7 +1176,7 @@ pub(crate) fn regexp_constructor_literal(
     else {
         return Err(Diagnostic::unsupported_at(
             Span::generated("issue-051"),
-            "unsupported syntax",
+            "issue-051: RegExp constructor requires a static string pattern in this subset",
         ));
     };
     let flags = regexp_constructor_static_flags(ctx, args)?;

@@ -1846,6 +1846,19 @@ impl NameResolver {
                     }
                 }
             }
+            // Annex B §B.3.3: Recursively hoist function declarations from
+            // nested blocks, so names referenced before the containing block
+            // still resolve (hoisting applies to the entire enclosing scope).
+            if !self.strict_context {
+                if let Stmt::Block { statements, .. } = unwrapped_stmt(stmt) {
+                    for name in Self::collect_block_fn_names(statements) {
+                        let parent_idx = self.scopes.len().wrapping_sub(2);
+                        if let Some(parent) = self.scopes.get_mut(parent_idx) {
+                            parent.entry(name.to_owned()).or_insert(None);
+                        }
+                    }
+                }
+            }
             if let Stmt::ClassDecl { name, span, .. } = unwrapped_stmt(stmt) {
                 self.declare_variable(name, Some(*span), false)?;
             }
@@ -1876,6 +1889,23 @@ impl NameResolver {
         let result = block.iter().map(|s| self.resolve_stmt(s)).collect();
         self.exit_scope();
         result
+    }
+
+    /// Collect function declaration names from nested blocks (Annex B hoisting).
+    fn collect_block_fn_names(block: &[Stmt]) -> Vec<&str> {
+        let mut names = Vec::new();
+        for stmt in block {
+            match stmt {
+                Stmt::Block { statements, .. } => {
+                    names.extend(Self::collect_block_fn_names(statements));
+                }
+                Stmt::Function { name, .. } => {
+                    names.push(name.as_str());
+                }
+                _ => {}
+            }
+        }
+        names
     }
 
     fn predeclare_static_direct_eval_var_bindings(
