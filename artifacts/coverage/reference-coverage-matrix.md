@@ -6,27 +6,27 @@ Do not edit manually.
 <!-- coverage-table:start -->
 | suite | denominator | executed | build_coverage% | semantic_coverage% | build_pass | semantic_pass | executable_build_pass | differential_pass | negative_compile_pass | conformance_pass | fail | unsupported | blocked | skip-with-reason | status | evidence |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---|
-| test262 | 53469 | 500 | 0.14 | 0.14 | 76 | 76 | 6 | 6 | 70 | 76 | 133 | 287 | 4 | 0 | in-progress | `mise run reference-coverage -- test262 --limit 500 --path-filter language/statements --semantic strict --jsonl` |
-| TypeScript compiler cases | 0 | 0 | 0.00 | 0.00 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | in-progress | `scripts/manager reference-coverage tsc --limit 30` |
+| test262 | 53469 | 500 | 0.39 | 0.00 | 209 | 1 | 208 | 0 | 1 | 1 | 0 | 291 | 0 | 0 | in-progress | `mise run reference-coverage -- test262 --sample-total 500 --no-semantic --no-dashboard-data --no-server --jsonl` |
+| tsc | 6419 | 500 | 4.28 | 0.00 | 275 | 0 | 275 | 0 | 0 | 0 | 0 | 225 | 0 | 0 | in-progress | `mise run reference-coverage -- tsc --limit 500 --no-semantic` |
 | typescript-go testdata | 0 | 0 | 0.00 | 0.00 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | in-progress | `scripts/manager reference-coverage tsgo --limit 20` |
 <!-- coverage-table:end -->
 
 ## Unsupported Diagnostic Codes
 
 <!-- diagcode-table:start -->
-| suite | executed | unsupported | UnsupportedSyntax | Test262AssertionFailure | SyntaxError | UnresolvedFunction | RuntimeError:255 | ExpectedNegativeSyntax | UnresolvedName | UnsupportedRuntimeSubset | RuntimeError:1 | DuplicateLocal | evidence |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| test262 | 500 | 287 | 70 | 67 | 37 | 32 | 29 | 28 | 10 | 10 | 3 | 1 | `mise run reference-coverage -- test262 --limit 500 --path-filter language/statements --semantic strict --jsonl` |
-| TypeScript compiler cases | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | `scripts/manager reference-coverage tsc --limit 30` |
-| typescript-go testdata | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | `scripts/manager reference-coverage tsgo --limit 20` |
+| suite | executed | unsupported | SyntaxError | UnsupportedSyntax | UnresolvedName | UnsupportedModule | UnsupportedBuiltin | DuplicateLocal | UnsupportedTypeScriptSyntax | UnsupportedRuntimeSubset | UnresolvedFunction | UnsupportedRegExp | InvariantViolation | CompilationError | TypeScriptTypeCheck | DuplicateFunction | UnsupportedEval | evidence |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| test262 | 500 | 291 | 160 | 57 | 22 | 3 | 17 | 0 | 1 | 11 | 0 | 8 | 7 | 5 | 0 | 0 | 0 | `mise run reference-coverage -- test262 --sample-total 500 --no-semantic --no-dashboard-data --no-server --jsonl` |
+| tsc | 500 | 225 | 24 | 32 | 61 | 62 | 3 | 14 | 13 | 0 | 9 | 0 | 0 | 0 | 3 | 2 | 2 | `mise run reference-coverage -- tsc --limit 500 --no-semantic` |
+| typescript-go testdata | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | `scripts/manager reference-coverage tsgo --limit 20` |
 <!-- diagcode-table:end -->
 
 ## Unsupported Features
 
 <!-- feature-table:start -->
-| suite | executed | unsupported | feature-unsupported | semantic-unimplemented | feature-resolution | syntax-error | runtime | negative-parse-syntaxerror | runtime-subset | duplicatelocal | evidence |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| test262 | 500 | 287 | 70 | 67 | 42 | 37 | 32 | 28 | 10 | 1 | `mise run reference-coverage -- test262 --limit 500 --path-filter language/statements --semantic strict --jsonl` |
-| TypeScript compiler cases | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | `scripts/manager reference-coverage tsc --limit 30` |
-| typescript-go testdata | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | `scripts/manager reference-coverage tsgo --limit 20` |
+| suite | executed | unsupported | syntax-error | feature-unsupported | import-export | name-resolution | feature-resolution | builtin-api | parser-syntax | duplicate-local | runtime-subset | function-resolution | unknown-unsupported | regexp-literal | compiler-invariant | async | compilation | unknown-unsupported:parser | duplicate-function | eval-unsupported | property-access | ambient-declaration | class-accessor | module-resolution | module-system-amd | object-literal | scope-analysis | type-annotation | type-assertion | type-system | evidence |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| test262 | 500 | 291 | 160 | 57 | 3 | 0 | 22 | 17 | 1 | 0 | 11 | 0 | 0 | 8 | 7 | 0 | 5 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | `mise run reference-coverage -- test262 --sample-total 500 --no-semantic --no-dashboard-data --no-server --jsonl` |
+| tsc | 500 | 225 | 0 | 21 | 68 | 61 | 0 | 3 | 17 | 14 | 0 | 9 | 9 | 0 | 0 | 5 | 0 | 3 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | `mise run reference-coverage -- tsc --limit 500 --no-semantic` |
+| typescript-go testdata | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | `scripts/manager reference-coverage tsgo --limit 20` |
 <!-- feature-table:end -->
