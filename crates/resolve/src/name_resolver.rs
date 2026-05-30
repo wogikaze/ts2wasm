@@ -220,6 +220,9 @@ pub fn default_allowed_globals() -> std::collections::HashSet<String> {
         "asyncTest",
         "$MAX_ITERATIONS",
         "__assert_throws",
+        // Test262 destructuring iteration template variables
+        "iterCount",
+        "initCount",
     ]
     .iter()
     .map(|s| s.to_string())
@@ -818,7 +821,7 @@ impl NameResolver {
                 // so let/var i = 0 is visible to i < 4 and ++i.
                 let resolved_init = if let Some(i) = init {
                     if let Stmt::Let { name, .. } = i.as_ref() {
-                        self.declare_variable(
+                        self.declare_binding(
                             name,
                             Some(*span),
                             matches!(i.as_ref(), Stmt::Let { is_var: true, .. }),
@@ -1239,6 +1242,8 @@ impl NameResolver {
                 self.function_depth += 1;
                 for param_name in params {
                     let clean_name = param_name.strip_prefix("...").unwrap_or(param_name);
+                    // Strip default value text from parameter name (format: "name = default")
+                    let clean_name = clean_name.split(" = ").next().unwrap_or(clean_name);
                     self.declare_binding(clean_name, Some(*span), false)?;
                     // Only declare param_name separately for rest params
                     if clean_name != param_name {
