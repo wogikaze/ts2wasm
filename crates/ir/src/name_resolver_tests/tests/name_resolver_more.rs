@@ -521,3 +521,118 @@ fn resolves_test262_harness_is_primitive_global() {
         result.err()
     );
 }
+
+#[test]
+fn resolves_var_in_for_init_hoisted_to_enclosing_scope() {
+    // var in for-init must be hoisted so subsequent for-loop init
+    // assignments referencing the same variable resolve.
+    // This is the `alpha` case from test262 RegExp-control-escape-russian-letter.
+    let program = vec![Stmt::Function {
+        name: "f".to_string(),
+        params: vec![],
+        body: vec![
+            Stmt::For {
+                init: Some(Box::new(Stmt::Let {
+                    name: "i".to_string(),
+                    expr: Expr::Number {
+                        value: 0,
+                        span: Span { start: 0, end: 5 },
+                    },
+                    is_var: true,
+                    span: Span { start: 0, end: 5 },
+                })),
+                condition: None,
+                update: None,
+                body: vec![],
+                span: Span { start: 0, end: 10 },
+            },
+            Stmt::For {
+                init: Some(Box::new(Stmt::Expr {
+                    expr: Expr::Assign {
+                        name: "i".to_string(),
+                        expr: Box::new(Expr::Number {
+                            value: 0,
+                            span: Span { start: 0, end: 5 },
+                        }),
+                        span: Span { start: 0, end: 5 },
+                    },
+                    span: Span { start: 0, end: 5 },
+                })),
+                condition: None,
+                update: None,
+                body: vec![],
+                span: Span { start: 0, end: 10 },
+            },
+        ],
+        is_generator: false,
+        is_async: false,
+        is_ambient: false,
+        overload_signature: false,
+        source_text: String::new(),
+        span: Span { start: 0, end: 20 },
+    }];
+    let result = name_resolver::resolve_names(&program);
+    assert!(
+        result.is_ok(),
+        "var in for-init should be hoisted: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn resolves_var_in_block_hoisted_for_later_assignments() {
+    // var inside a block (if, for body) must be hoisted so assignments
+    // after the block referencing the same variable resolve.
+    // This is the `arr` case from test262 RegExp-invalid-control-escape-character-class.
+    let program = vec![Stmt::Function {
+        name: "f".to_string(),
+        params: vec![],
+        body: vec![Stmt::ForOf {
+            var: "x".to_string(),
+            iter: Expr::Array {
+                elements: vec![],
+                span: Span { start: 0, end: 5 },
+            },
+            body: vec![
+                Stmt::If {
+                    condition: Expr::Bool {
+                        value: true,
+                        span: Span { start: 0, end: 5 },
+                    },
+                    then_body: vec![Stmt::Let {
+                        name: "arr".to_string(),
+                        expr: Expr::Number {
+                            value: 1,
+                            span: Span { start: 0, end: 5 },
+                        },
+                        is_var: true,
+                        span: Span { start: 0, end: 5 },
+                    }],
+                    else_body: vec![],
+                    span: Span { start: 0, end: 10 },
+                },
+                Stmt::Assign {
+                    name: "arr".to_string(),
+                    expr: Expr::Number {
+                        value: 2,
+                        span: Span { start: 0, end: 5 },
+                    },
+                    span: Span { start: 0, end: 5 },
+                },
+            ],
+            span: Span { start: 0, end: 20 },
+        }],
+        is_generator: false,
+        is_async: false,
+        is_ambient: false,
+        overload_signature: false,
+        source_text: String::new(),
+        span: Span { start: 0, end: 25 },
+    }];
+    let result = name_resolver::resolve_names(&program);
+    assert!(
+        result.is_ok(),
+        "var inside block should be hoisted for later assignments: {:?}",
+        result.err()
+    );
+}

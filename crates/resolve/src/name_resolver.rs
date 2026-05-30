@@ -801,6 +801,14 @@ impl NameResolver {
                 body,
                 span,
             } => {
+                // Hoist var declarations from for-init to the enclosing scope,
+                // matching ES spec var hoisting semantics (§13.7.4.3).
+                if let Some(i) = init
+                    && let Stmt::Let { name, .. } = i.as_ref()
+                    && matches!(i.as_ref(), Stmt::Let { is_var: true, .. })
+                {
+                    self.declare_binding(name, Some(*span), true)?;
+                }
                 self.enter_scope();
                 // Declare for-loop init variables before resolving condition/update
                 // so let/var i = 0 is visible to i < 4 and ++i.
@@ -1839,6 +1847,15 @@ impl NameResolver {
             {
                 if *is_var {
                     self.declare_binding(name, None, true)?;
+                    // Hoist var to the parent scope (ES spec var hoisting
+                    // semantics, §13.3.2.4). var declarations are hoisted to
+                    // the nearest function/global scope, not the nearest block.
+                    // Without this, var inside if/for/while bodies is invisible
+                    // to name references outside the block.
+                    let parent_idx = self.scopes.len().wrapping_sub(2);
+                    if let Some(parent) = self.scopes.get_mut(parent_idx) {
+                        parent.entry(name.clone()).or_insert(None);
+                    }
                 } else {
                     self.predeclare_binding(name, Some(*span))?;
                 }
