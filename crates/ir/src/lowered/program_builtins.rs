@@ -1137,6 +1137,10 @@ pub(crate) fn regexp_constructor_literal(
     args: &[ResolvedExpr],
 ) -> Result<String, Diagnostic> {
     validate_regexp_constructor_arity(args)?;
+    if args.is_empty() {
+        // new RegExp() with no args creates an empty pattern regexp
+        return Ok("//".to_owned());
+    }
     let Some(pattern) =
         crate::lowered::resolver::string::resolved_expr_static_string_value(ctx, &args[0])
     else {
@@ -1181,7 +1185,7 @@ pub(crate) fn regexp_constructor_static_flags(
 }
 
 fn validate_regexp_constructor_arity(args: &[ResolvedExpr]) -> Result<(), Diagnostic> {
-    if !(1..=2).contains(&args.len()) {
+    if !(0..=2).contains(&args.len()) {
         return Err(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
             message: format!(
@@ -1200,34 +1204,22 @@ fn validate_regexp_constructor_flags(
     raw: &str,
     context: &str,
 ) -> Result<(), Diagnostic> {
-    if flags.chars().any(|ch| ch != 'g' && ch != 'i') || flags.chars().count() > 2 {
-        return Err(unsupported_regexp_literal(
-            context,
-            raw,
-            "only the empty flag set, `g`, `i`, or `gi` is supported",
-        ));
-    }
-    let mut seen_g = false;
-    let mut seen_i = false;
+    let valid = ['d', 'g', 'i', 'm', 's', 'u', 'y'];
+    let mut seen = std::collections::HashSet::new();
     for ch in flags.chars() {
-        match ch {
-            'g' if seen_g => {
-                return Err(unsupported_regexp_literal(
-                    context,
-                    raw,
-                    "duplicate flag `g`",
-                ));
-            }
-            'i' if seen_i => {
-                return Err(unsupported_regexp_literal(
-                    context,
-                    raw,
-                    "duplicate flag `i`",
-                ));
-            }
-            'g' => seen_g = true,
-            'i' => seen_i = true,
-            _ => unreachable!(),
+        if !valid.contains(&ch) {
+            return Err(unsupported_regexp_literal(
+                context,
+                raw,
+                &format!("unsupported RegExp flag `{ch}`"),
+            ));
+        }
+        if !seen.insert(ch) {
+            return Err(unsupported_regexp_literal(
+                context,
+                raw,
+                &format!("duplicate flag `{ch}`"),
+            ));
         }
     }
     Ok(())
@@ -1502,12 +1494,47 @@ pub(crate) fn validate_regexp_plain_literal(raw: &str, context: &str) -> Result<
                             ));
                         }
                     }
+                    // Hex escape: \xNN
+                    b'x' => {
+                        i += 2; // skip \x
+                        // Consume up to 2 hex digits
+                        let mut hex_digits = 0;
+                        while i < bytes.len() && hex_digits < 2 && bytes[i].is_ascii_hexdigit() {
+                            i += 1;
+                            hex_digits += 1;
+                        }
+                    }
+                    // Unicode escape: \uNNNN or \u{...}
+                    b'u' => {
+                        i += 2; // skip \u
+                        if i < bytes.len() && bytes[i] == b'{' {
+                            // \u{...} variable-length unicode escape
+                            i += 1; // skip {
+                            while i < bytes.len() && bytes[i] != b'}' {
+                                i += 1;
+                            }
+                            if i < bytes.len() {
+                                i += 1; // skip }
+                            }
+                        } else {
+                            // \uNNNN 4-digit hex unicode escape
+                            let mut hex_digits = 0;
+                            while i < bytes.len() && hex_digits < 4 && bytes[i].is_ascii_hexdigit() {
+                                i += 1;
+                                hex_digits += 1;
+                            }
+                        }
+                    }
+                    // Control escape: \cX
+                    b'c' => {
+                        i += 2; // skip \c
+                        if i < bytes.len() {
+                            i += 1; // consume the control letter
+                        }
+                    }
+                    // Identity escape: any unknown \X matches literal X
                     _ => {
-                        return Err(unsupported_regexp_literal(
-                            context,
-                            raw,
-                            &format!("unsupported escape `\\{}`", bytes[i + 1] as char),
-                        ));
+                        i += 2; // skip backslash and the escaped character
                     }
                 }
             } else {
@@ -1525,6 +1552,11 @@ pub(crate) fn validate_regexp_plain_literal(raw: &str, context: &str) -> Result<
             }
             if i < bytes.len() && bytes[i] == b']' {
                 i += 1; // literal ']' as first char
+                // If no bytes remain after the literal ']' first char, this is
+                // actually an empty character class: [] or [^] (matches nothing)
+                if i >= bytes.len() {
+                    continue;
+                }
             }
             while i < bytes.len() && bytes[i] != b']' {
                 if bytes[i] == b'\\' {
