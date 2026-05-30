@@ -2,10 +2,15 @@
  * Persistent WAMR runner: reads JSONL jobs from stdin, runs wasm modules,
  * writes JSONL results to stdout. WAMR runtime is initialized once.
  *
+ * Includes native function stubs for host imports that would otherwise
+ * cause "unlinked import" RuntimeErrors.
+ *
  * Build:
  *   gcc -o ts2wasm-iwasm-runner main.c \
  *       -I/path/to/wasm-micro-runtime/core/iwasm/include \
- *       -I/path/to/wasm-micro-runtime/core/shared \
+ *       -I/path/to/wasm-micro-runtime/core/shared/utils \
+ *       -I/path/to/wasm-micro-runtime/core/shared/platform/linux \
+ *       -I/path/to/wasm-micro-runtime/core/shared/platform/include \
  *       /path/to/wasm-micro-runtime/libiwasm.a \
  *       -lm -lpthread -ldl
  */
@@ -22,9 +27,11 @@
 #include <unistd.h>
 #include <time.h>
 #include <signal.h>
+#include <errno.h>
 
 #include "bh_platform.h"
 #include "wasm_export.h"
+#include "lib_export.h"
 
 static char global_heap_buf[16 * 1024 * 1024];
 
@@ -141,6 +148,153 @@ static void print_json_str(FILE *f, const char *s)
     fputc('"', f);
 }
 
+/* ------------------------------------------------------------------ */
+/* Native host functions                                               */
+/* ------------------------------------------------------------------ */
+
+/*
+ * host.eval.direct — stub that returns undefined (tagged value 0).
+ * Calling code sees undefined as the eval result and continues execution,
+ * causing a test262 assertion failure instead of a RuntimeError crash.
+ * WASM signature: (i32 source_tag, i32 env_tag) -> i32
+ */
+static uint32_t
+host_eval_direct(wasm_exec_env_t exec_env, uint32_t source_tag, uint32_t env_tag)
+{
+    (void)exec_env;
+    (void)source_tag;
+    (void)env_tag;
+    /* Return undefined (tagged value 0) */
+    return 0;
+}
+
+/*
+ * host.dateGetLocalTimeField — return a local time field from epoch ms.
+ * WASM signature: (i32 epoch_ms, i32 field) -> i32
+ *
+ * field codes (from Date constructor):
+ *   0 = year, 1 = month (0-based), 2 = day, 3 = hours,
+ *   4 = minutes, 5 = seconds, 6 = ms
+ */
+static uint32_t
+host_date_get_local_time_field(wasm_exec_env_t exec_env,
+                                uint32_t epoch_ms, uint32_t field)
+{
+    (void)exec_env;
+    time_t secs = (time_t)(epoch_ms / 1000);
+    int ms_part = (int)(epoch_ms % 1000);
+    if (ms_part < 0) { ms_part += 1000; secs -= 1; }
+
+    struct tm result;
+    if (!localtime_r(&secs, &result)) {
+        return 0;
+    }
+
+    switch (field) {
+        case 0: return result.tm_year + 1900;
+        case 1: return result.tm_mon;
+        case 2: return result.tm_mday;
+        case 3: return result.tm_hour;
+        case 4: return result.tm_min;
+        case 5: return result.tm_sec;
+        case 6: return (uint32_t)ms_part;
+        default: return 0;
+    }
+}
+
+/*
+ * host.dateGetTimezoneOffset — return timezone offset in minutes.
+ * WASM signature: (i32 epoch_ms) -> i32
+ */
+static uint32_t
+host_date_get_timezone_offset(wasm_exec_env_t exec_env, uint32_t epoch_ms)
+{
+    (void)exec_env;
+    time_t secs = (time_t)(epoch_ms / 1000);
+
+    struct tm local_result;
+    if (!localtime_r(&secs, &local_result)) {
+        return 0;
+    }
+
+    /* Compute timezone offset by comparing local and UTC time.
+     * mktime interprets tm as local time; we compare with gmtime. */
+    struct tm utc_result;
+    if (!gmtime_r(&secs, &utc_result)) {
+        return 0;
+    }
+
+    /* Compute offset = local - UTC in minutes */
+    time_t local_epoch = mktime(&local_result);
+    time_t utc_epoch = timegm(&utc_result);
+
+    int offset_minutes = (int)difftime(local_epoch, utc_epoch) / 60;
+    return (uint32_t)(-offset_minutes); /* ECMAScript: positive = behind UTC */
+}
+
+/*
+ * host.dateUTC — compute epoch ms from calendar fields (UTC).
+ * WASM signature: (i32 year, i32 month, i32 date, i32 hours, i32 minutes, i32 seconds, i32 ms) -> i32
+ */
+static uint32_t
+host_date_utc(wasm_exec_env_t exec_env,
+              uint32_t year, uint32_t month, uint32_t day,
+              uint32_t hours, uint32_t minutes, uint32_t seconds,
+              uint32_t ms)
+{
+    (void)exec_env;
+    struct tm tm_val;
+    memset(&tm_val, 0, sizeof(tm_val));
+    tm_val.tm_year = (int)year - 1900;
+    tm_val.tm_mon = (int)month;
+    tm_val.tm_mday = (int)day;
+    tm_val.tm_hour = (int)hours;
+    tm_val.tm_min = (int)minutes;
+    tm_val.tm_sec = (int)seconds;
+    tm_val.tm_isdst = 0;
+
+    time_t epoch_secs = timegm(&tm_val);
+    if (epoch_secs == (time_t)-1) {
+        return 0;
+    }
+    return (uint32_t)((int64_t)epoch_secs * 1000 + (int64_t)ms);
+}
+
+/* Native symbol table for the "host" module.
+ * import names in WASM use dot notation: host.eval.direct, host.dateGetTimezoneOffset, etc.
+ */
+static NativeSymbol host_native_symbols[] = {
+    {
+        .symbol = "eval.direct",
+        .func_ptr = (void *)host_eval_direct,
+        .signature = "(ii)i",
+        .attachment = NULL,
+    },
+    {
+        .symbol = "dateGetTimezoneOffset",
+        .func_ptr = (void *)host_date_get_timezone_offset,
+        .signature = "(i)i",
+        .attachment = NULL,
+    },
+    {
+        .symbol = "dateGetLocalTimeField",
+        .func_ptr = (void *)host_date_get_local_time_field,
+        .signature = "(ii)i",
+        .attachment = NULL,
+    },
+    {
+        .symbol = "dateUTC",
+        .func_ptr = (void *)host_date_utc,
+        .signature = "(iiiiiii)i",
+        .attachment = NULL,
+    },
+};
+
+static int host_native_symbol_count =
+    sizeof(host_native_symbols) / sizeof(host_native_symbols[0]);
+
+/* ------------------------------------------------------------------ */
+
 int main(int argc, char *argv[])
 {
     RuntimeInitArgs init_args;
@@ -155,6 +309,13 @@ int main(int argc, char *argv[])
         return 1;
     }
     bh_log_set_verbose_level(0);
+
+    /* Register native host functions */
+    if (!wasm_runtime_register_natives("host",
+                                       host_native_symbols,
+                                       (uint32_t)host_native_symbol_count)) {
+        fprintf(stderr, "WARNING: failed to register host native symbols\n");
+    }
 
     char *line;
     while ((line = read_line()) != NULL) {
@@ -226,9 +387,12 @@ int main(int argc, char *argv[])
                        (t1.tv_nsec - t0.tv_nsec) / 1000;
         dur = (dur + 500) / 1000; /* round to nearest ms */
 
-        /* Capture exception info when execution fails */
-        if (exec_ret != 0) {
-            const char *exc = wasm_runtime_get_exception(inst);
+        /* Capture exception info — check even when exec_ret==0 because
+         * native functions that call wasm_runtime_set_exception may not
+         * immediately trap execution. */
+        const char *exc = wasm_runtime_get_exception(inst);
+        int has_exception = (exc && exc[0]);
+        if (exec_ret != 0 || has_exception) {
             if (exc && exc[0]) {
                 /* Prepend exception to captured stderr */
                 size_t exc_len = strlen(exc);
@@ -247,19 +411,10 @@ int main(int argc, char *argv[])
         }
 
         const char *status;
-        if (exec_ret == 0) {
+        if (exec_ret == 0 && !has_exception) {
             status = "ok";
         } else {
-            /* wasm_application_execute_main returns non-zero for both proc_exit(0/1)
-               and uncaught exceptions. Use wasm_runtime_get_exception to distinguish:
-               - Real exceptions/crashes: exception string is non-empty -> error
-               - proc_exit (normal exit): exception string is NULL/empty -> treat as ok
-               iwasm CLI also treats proc_exit(0) as rc=0. */
-            const char *exc = wasm_runtime_get_exception(inst);
-            if (exc && exc[0])
-                status = "error";
-            else
-                status = "ok";
+            status = "error";
         }
 
         printf("{\"id\":%" PRId64 ",\"status\":\"%s\"", id_val, status);

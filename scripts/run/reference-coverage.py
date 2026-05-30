@@ -2727,6 +2727,20 @@ def main():
                     )
                     return record, "blocked"
 
+                # Check for assertion failure sentinel even when returncode != 0,
+                # since native function stubs may let tests run partially before
+                # hitting a test262 assertion failure.
+                actual_stderr = wasm_result.stderr or ""
+                actual_stdout = wasm_result.stdout or ""
+                if t262.ASSERT_FAILURE_SENTINEL in actual_stdout:
+                    return make_unsupported_record(
+                        item,
+                        "Test262AssertionFailure",
+                        "semantic-unimplemented",
+                        "test262 assertion failed under currently unsupported semantics",
+                        stderr=actual_stderr,
+                    )
+
                 if metadata.expects_negative:
                     if wasm_result.returncode == 124:
                         return make_unsupported_record(
