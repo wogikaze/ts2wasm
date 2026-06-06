@@ -328,7 +328,20 @@ fn rewrite_assert_method_calls(source: &str) -> String {
     result
 }
 
+/// Strip TypeScript triple-slash reference directives (`/// <reference ... />`)
+/// from JavaScript test262 sources, since they are ignored in JS but rejected
+/// by the lexer as unsupported TypeScript syntax.
+fn strip_ts_reference_directives(source: &str) -> String {
+    source
+        .lines()
+        .filter(|line| !line.trim_start().starts_with("/// <reference"))
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
 pub fn process_test262_includes(input: &Path, source: &str) -> Result<String, Diagnostic> {
+    let cleaned = strip_ts_reference_directives(source);
+    let source = cleaned.as_str();
     // Check if this is a test262 file by looking for YAML frontmatter
     let Some(frontmatter_end) = source.find("---*/") else {
         // No frontmatter, return source as-is

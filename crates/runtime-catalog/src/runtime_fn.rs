@@ -2738,48 +2738,7 @@ impl RuntimeFn {
             | Self::DataViewGetBuffer
             | Self::DataViewGetByteOffset
             | Self::RegExpSourceOf
-            | Self::RegExpFlagsOf
-            | Self::TypedArraySet
-            | Self::TypedArrayLoad
-            | Self::TypedArrayStore
-            | Self::AtomicsElementPtr
-            | Self::AtomicsLoad
-            | Self::AtomicsStore
-            | Self::AtomicsAdd
-            | Self::AtomicsSub
-            | Self::AtomicsAnd
-            | Self::AtomicsOr
-            | Self::AtomicsXor
-            | Self::AtomicsExchange
-            | Self::AtomicsCompareExchange
-            | Self::AtomicsIsLockFree
-            | Self::AtomicsWait
-            | Self::AtomicsWaitAsync
-            | Self::AtomicsNotify
-            | Self::DataViewNew
-            | Self::DataViewGetInt8
-            | Self::DataViewSetInt8
-            | Self::DataViewGetUint8
-            | Self::DataViewSetUint8
-            | Self::DataViewGetInt16
-            | Self::DataViewSetInt16
-            | Self::DataViewGetUint16
-            | Self::DataViewSetUint16
-            | Self::DataViewGetInt32
-            | Self::DataViewSetInt32
-            | Self::DataViewGetUint32
-            | Self::DataViewSetUint32
-            | Self::DataViewGetFloat32
-            | Self::DataViewSetFloat32
-            | Self::DataViewGetFloat64
-            | Self::DataViewSetFloat64
-            | Self::DataViewGetFloat16
-            | Self::DataViewSetFloat16
-            | Self::DataViewGetBigInt64
-            | Self::DataViewSetBigInt64
-            | Self::DataViewGetBigUint64
-            | Self::DataViewSetBigUint64
-            | Self::DataViewGetBuffer => RuntimeDomain::TypedArray,
+            | Self::RegExpFlagsOf => RuntimeDomain::TypedArray,
         }
     }
 
