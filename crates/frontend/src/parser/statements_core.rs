@@ -49,13 +49,25 @@ impl Parser {
             }
             if matches!(self.peek(), Some(Token::LeftBrace)) {
                 let block = self.block_as_stmt()?;
-                if let Stmt::Block {
-                    statements: inner,
-                    ..
-                } = block
-                {
-                    statements.extend(inner);
+                // Only flatten blocks without lexical declarations (let/const)
+                // so that block-scoped bindings are properly scoped.
+                let has_lexical = match &block {
+                    Stmt::Block { statements, .. } => {
+                        statements.iter().any(|s| matches!(s, Stmt::Let { is_var: false, .. }))
+                    }
+                    _ => false,
+                };
+                if !has_lexical {
+                    if let Stmt::Block {
+                        statements: inner,
+                        ..
+                    } = block
+                    {
+                        statements.extend(inner);
+                    }
+                    continue;
                 }
+                statements.push(block);
                 continue;
             }
             statements.push(self.statement()?);
@@ -89,13 +101,23 @@ impl Parser {
                     statements: Vec::new(),
                     span: Span::generated("block"),
                 });
-                if let Stmt::Block {
-                    statements: inner,
-                    ..
-                } = block
-                {
-                    statements.extend(inner);
+                let has_lexical = match &block {
+                    Stmt::Block { statements, .. } => {
+                        statements.iter().any(|s| matches!(s, Stmt::Let { is_var: false, .. }))
+                    }
+                    _ => false,
+                };
+                if !has_lexical {
+                    if let Stmt::Block {
+                        statements: inner,
+                        ..
+                    } = block
+                    {
+                        statements.extend(inner);
+                    }
+                    continue;
                 }
+                statements.push(block);
                 continue;
             }
             if let Ok(stmt) = self.statement() {

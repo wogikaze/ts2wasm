@@ -126,8 +126,10 @@ mod tests {
     #[test]
     fn parses_top_level_block_by_flattening_statements() {
         let program = parse_program("{ let x = 1; } let y = 2;").unwrap();
+        // Blocks with lexical declarations (let/const) are no longer flattened
+        // to preserve block scoping semantics.
         assert_eq!(program.len(), 2);
-        assert!(matches!(program[0], Stmt::Let { ref name, .. } if name == "x"));
+        assert!(matches!(&program[0], Stmt::Block { .. }));
         assert!(matches!(program[1], Stmt::Let { ref name, .. } if name == "y"));
     }
 
