@@ -615,6 +615,9 @@ fn build_feature_stubs(features: &[String], source: &str) -> Result<String, Diag
             "tail-call-optimization" => {
                 // feature marker currently used only for test262 metadata filtering.
             }
+            "regexp-lookbehind" | "regexp-duplicate-named-groups" | "regexp-dotall" | "regexp-named-groups" | "regexp-unicode-property-escapes" | "regexp-modifiers" | "regexp-v-flag" | "legacy-regexp" | "RegExp.escape" | "RegExp-v-flag" => {
+                // Regex feature markers — no stubs needed, just recognized.
+            }
             "source-phase-imports" => {
                 needs_262 = true;
                 stubs.push_str(
