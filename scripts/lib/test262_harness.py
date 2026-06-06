@@ -369,11 +369,11 @@ function test262_agent_start() {
   throw new Error("$262.agent is not supported by this runner slice");
 }
 
-function $DONE(error) {
+var $DONE = function(error) {
   if (error !== undefined) {
     throw error;
   }
-}
+};
 
 $262.global = (function() { return this; })();
 $262.gc = test262_gc;
