@@ -81,6 +81,7 @@ impl<'a> Lexer<'a> {
             | Some(Token::Import)
             | Some(Token::Export)
             | Some(Token::Default)
+            | Some(Token::Arrow)
             | Some(Token::Case)
             | Some(Token::Do)
             | Some(Token::In)
