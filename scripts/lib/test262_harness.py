@@ -376,6 +376,7 @@ var $DONE = function(error) {
 };
 
 $262.global = (function() { return this; })();
+var globalThis = $262.global;
 $262.gc = test262_gc;
 $262.evalScript = test262_evalScript;
 $262.createRealm = test262_createRealm;
@@ -403,7 +404,7 @@ var Infinity = 1/0;
 """
 
 WASM_HARNESS_GLOBAL_PATTERN = re.compile(
-    r"(\$262\b|\$DONE\b|\$DETACHBUFFER\b|\bassert\b|\bTest262Error\b|\bprint\s*\(|\bfnGlobalObject\b|\bisPrimitive\b)"
+    r"(\$262\b|\$DONE\b|\$DETACHBUFFER\b|\bassert\b|\bTest262Error\b|\bprint\s*\(|\bfnGlobalObject\b|\bisPrimitive\b|\bglobalThis\b)"
 )
 
 INLINE_DETACHARRAYBUFFER_JS = r"""
