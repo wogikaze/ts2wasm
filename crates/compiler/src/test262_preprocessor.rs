@@ -366,6 +366,9 @@ pub fn process_test262_includes(input: &Path, source: &str) -> Result<String, Di
         if !disable_stubs && !source_has_function(source, "verifyCallableProperty") {
             stubs.push_str("function verifyCallableProperty() {}\n");
         }
+        if !disable_stubs && !source_has_function(source, "$DETACHBUFFER") {
+            stubs.push_str("function $DETACHBUFFER() {}\n");
+        }
         if stubs.is_empty() {
             return Ok(rewrite_assert_method_calls(source));
         }
