@@ -3977,6 +3977,96 @@ impl WatEmitter<'_> {
         );
     }
 
+    pub(crate) fn emit_iterator_map(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+    (func $iterator_map (param $iter i32) (param $callback i32) (result i32)
+    (call $host_iterator_map (local.get $iter) (local.get $callback)))
+  "#,
+        );
+    }
+
+    pub(crate) fn emit_iterator_filter(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+    (func $iterator_filter (param $iter i32) (param $callback i32) (result i32)
+    (call $host_iterator_filter (local.get $iter) (local.get $callback)))
+  "#,
+        );
+    }
+
+    pub(crate) fn emit_iterator_take(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+    (func $iterator_take (param $iter i32) (param $limit i32) (result i32)
+    (call $host_iterator_take (local.get $iter) (local.get $limit)))
+  "#,
+        );
+    }
+
+    pub(crate) fn emit_iterator_drop(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+    (func $iterator_drop (param $iter i32) (param $count i32) (result i32)
+    (call $host_iterator_drop (local.get $iter) (local.get $count)))
+  "#,
+        );
+    }
+
+    pub(crate) fn emit_iterator_to_array(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+    (func $iterator_to_array (param $iter i32) (result i32)
+    (call $host_iterator_to_array (local.get $iter)))
+  "#,
+        );
+    }
+
+    pub(crate) fn emit_iterator_reduce(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+    (func $iterator_reduce (param $iter i32) (param $callback i32) (param $initial_value i32) (param $needs_init i32) (result i32)
+    (call $host_iterator_reduce (local.get $iter) (local.get $callback) (local.get $initial_value) (local.get $needs_init)))
+  "#,
+        );
+    }
+
+    pub(crate) fn emit_iterator_for_each(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+    (func $iterator_for_each (param $iter i32) (param $callback i32) (result i32)
+    (call $host_iterator_for_each (local.get $iter) (local.get $callback)))
+  "#,
+        );
+    }
+
+    pub(crate) fn emit_iterator_some(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+    (func $iterator_some (param $iter i32) (param $callback i32) (result i32)
+    (call $host_iterator_some (local.get $iter) (local.get $callback)))
+  "#,
+        );
+    }
+
+    pub(crate) fn emit_iterator_every(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+    (func $iterator_every (param $iter i32) (param $callback i32) (result i32)
+    (call $host_iterator_every (local.get $iter) (local.get $callback)))
+  "#,
+        );
+    }
+
+    pub(crate) fn emit_iterator_find(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+    (func $iterator_find (param $iter i32) (param $callback i32) (result i32)
+    (call $host_iterator_find (local.get $iter) (local.get $callback)))
+  "#,
+        );
+    }
+
     pub(crate) fn emit_eval_direct_host(&self, wat: &mut String) {
         // Per ECMAScript: if source is not a string, return it unchanged.
         // If it IS a string, call the host shim import ($host_eval_direct) to evaluate it.

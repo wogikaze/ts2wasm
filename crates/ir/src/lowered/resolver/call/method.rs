@@ -3827,6 +3827,21 @@ impl super::super::Resolver {
             }));
         }
 
+        // Boolean non-ident receiver (e.g. (true).toString()) — route to BooleanToString
+        if matches!(method, "toString" | "valueOf")
+            && matches!(self.infer_class_for_expr(object).as_deref(), Some("Boolean"))
+        {
+            let receiver = self.lower_expr(object)?;
+            if method == "valueOf" {
+                return Ok(Some(receiver));
+            }
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::BooleanToString,
+                args: vec![receiver],
+                span: Span::generated("runtime_call"),
+            }));
+        }
+
         if let Some(intrinsic) = collection_method_runtime_fn_arg(method) {
             let receiver_expr = self.lower_expr(object)?;
             let mut lowered_args = vec![receiver_expr];

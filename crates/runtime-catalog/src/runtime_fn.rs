@@ -845,6 +845,8 @@ pub enum RuntimeGlobal {
     ConsoleIndentLevel,
     SetPrototypeObject,
     MapPrototypeObject,
+    WeakMapPrototypeObject,
+    WeakSetPrototypeObject,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -884,6 +886,8 @@ impl RuntimeGlobal {
             Self::ConsoleIndentLevel => "$console_indent_level",
             Self::SetPrototypeObject => "$set_prototype_object",
             Self::MapPrototypeObject => "$map_prototype_object",
+            Self::WeakMapPrototypeObject => "$weak_map_prototype_object",
+            Self::WeakSetPrototypeObject => "$weak_set_prototype_object",
         }
     }
 
@@ -913,7 +917,9 @@ impl RuntimeGlobal {
             Self::GlobalThisObject
             | Self::ObjectPrototypeObject
             | Self::SetPrototypeObject
-            | Self::MapPrototypeObject => 0,
+            | Self::MapPrototypeObject
+            | Self::WeakMapPrototypeObject
+            | Self::WeakSetPrototypeObject => 0,
             Self::ConsoleIndentLevel => 0,
         }
     }
