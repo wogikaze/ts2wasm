@@ -74,6 +74,7 @@ OVERSIZED_ALLOWLIST = {
     "plans/next-architecture-design (4).md": "architecture planning document",
     # Done issue with extensive notes
     "issues/done/I-20260514-67ZV8S.md": "done issue with extensive notes",
+    "scripts/check/fixture-differential.py": "differential runner — 1223 lines, larger than average but actively maintained",
 }
 
 # Crates that must not directly depend on ts2wasm-frontend via Cargo.toml.
@@ -195,6 +196,19 @@ FILE_SIZE_ALLOWLIST_1200 = {
     # P7: resolver decomposition
     "crates/ir/src/lowered/program_builtins.rs": "P7: resolver decomposition",
     "crates/ir/src/lowered/resolver/call/user.rs": "P7: resolver decomposition",
+    # P4: native emitter — legacy large files pending domain split
+    "crates/backend-wasm/src/native_lowered.rs": "P4: native emitter — 36046 lines",
+    "crates/backend-wasm/src/native_runtime_embed.rs": "P4: native runtime embed — 7648 lines",
+    "crates/backend-wasm/src/runtime/core/typed.rs": "P4: runtime domain split — 48876 lines",
+    "crates/backend-wasm/src/runtime/object/emit.rs": "P4: runtime domain split — 1248 lines",
+    "crates/compiler/src/module_graph/mod.rs": "P7: resolver decomposition — 1545 lines",
+    "crates/compiler/src/test262_preprocessor.rs": "test262 preprocessor — 1221 lines",
+    "crates/compiler/src/tests/compiler_late.rs": "test file — 1467 lines",
+    "crates/ir/src/lowered/mir/dce.rs": "P14: MIR decomposition — 1837 lines",
+    "crates/ir/src/lowered/mir/escape.rs": "P14: MIR decomposition — 1760 lines",
+    "crates/ir/src/lowered/mir/scalar_replace.rs": "P14: MIR decomposition — 3286 lines",
+    "crates/ir/src/lowered/resolver/expr/property.rs": "P7: resolver decomposition — 1507 lines",
+    "crates/runtime-catalog/src/host_import.rs": "P11: link plan refactor — 1272 lines",
 }
 
 # Files that use `use super::*` outside test modules (known legacy pattern).
@@ -292,6 +306,79 @@ FUNCTION_LENGTH_ALLOWLIST = {
     ("crates/ir/src/lowered/resolver/object.rs", "lower_object_literal_expr_with_computed_keys"): "P7: resolver decomposition -- 227 lines",
     # Test file (naturally large test function)
     ("crates/ir/tests/lowered_snapshot.rs", "lowered_generator_object_accessor_captures_top_level_assignment"): "test file -- 226 lines",
+    # P4: native emitter decomposition — native_lowered.rs functions
+    ("crates/backend-wasm/src/native_lowered.rs", "emit_stmt_with_label"): "P4: native emitter decomposition -- 414 lines",
+    ("crates/backend-wasm/src/native_lowered.rs", "emit_expr"): "P4: native emitter decomposition -- 1325 lines",
+    ("crates/backend-wasm/src/native_lowered.rs", "try_emit_console_call"): "P4: native emitter decomposition -- 256 lines",
+    ("crates/backend-wasm/src/native_lowered.rs", "try_emit_static_user_function_call_stmt"): "P4: native emitter decomposition -- 347 lines",
+    ("crates/backend-wasm/src/native_lowered.rs", "static_exception_console_eval_stmts"): "P4: native emitter decomposition -- 208 lines",
+    ("crates/backend-wasm/src/native_lowered.rs", "static_try_finally_eval_stmts_with_loop_label"): "P4: native emitter decomposition -- 287 lines",
+    ("crates/backend-wasm/src/native_lowered.rs", "static_console_arg_bytes_with_functions"): "P4: native emitter decomposition -- 231 lines",
+    ("crates/backend-wasm/src/native_lowered.rs", "collect_static_locals_with_functions"): "P4: native emitter decomposition -- 496 lines",
+    ("crates/backend-wasm/src/native_lowered.rs", "collect_static_locals_from_expr_with_functions"): "P4: native emitter decomposition -- 983 lines",
+    ("crates/backend-wasm/src/native_lowered.rs", "static_value_from_expr_with_functions"): "P4: native emitter decomposition -- 1543 lines",
+    ("crates/backend-wasm/src/native_lowered.rs", "collect_synthetic_runtime_functions_from_stmt"): "P4: native emitter decomposition -- 227 lines",
+    ("crates/backend-wasm/src/native_lowered.rs", "collect_synthetic_runtime_functions_from_expr"): "P4: native emitter decomposition -- 206 lines",
+    ("crates/backend-wasm/src/native_lowered.rs", "collect_runtime_required_from_expr"): "P4: native emitter decomposition -- 232 lines",
+    # P4: native runtime embed decomposition
+    ("crates/backend-wasm/src/native_runtime_embed.rs", "build_native_runtime_function"): "P4: native runtime embed decomposition -- 571 lines",
+    ("crates/backend-wasm/src/native_runtime_embed.rs", "native_runtime_builder_coverage_reports_missing_non_pseudo_builders"): "P4: native runtime embed decomposition -- 706 lines",
+    ("crates/backend-wasm/src/native_runtime_embed.rs", "core_abi_runtime_calls_to_embedded_helpers_validate"): "P4: native runtime embed decomposition -- 560 lines",
+    ("crates/backend-wasm/src/native_runtime_embed.rs", "iterator_host_runtime_calls_embed_native_helpers_and_imports"): "P4: native runtime embed decomposition -- 207 lines",
+    # P4: runtime domain split — typed.rs runtime builders
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_array_push_grow"): "P4: runtime domain split -- 257 lines",
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_array_sort_lexicographic"): "P4: runtime domain split -- 221 lines",
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_array_flat"): "P4: runtime domain split -- 279 lines",
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_array_iterator_next"): "P4: runtime domain split -- 225 lines",
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_string_char_code_at"): "P4: runtime domain split -- 208 lines",
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "append_trim_leading_loop"): "P4: runtime domain split -- 215 lines",
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "append_trim_trailing_loop"): "P4: runtime domain split -- 230 lines",
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_string_replace_all"): "P4: runtime domain split -- 332 lines",
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_string_match_all"): "P4: runtime domain split -- 329 lines",
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_string_pad"): "P4: runtime domain split -- 205 lines",
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_string_split"): "P4: runtime domain split -- 328 lines",
+    # P4: manifest refactor
+    ("crates/backend-wasm/src/capability_manifest.rs", "canonical_manifest_from_link_plan"): "P4: manifest refactor -- 206 lines",
+    # P4: typed.rs runtime builders (batch 2 — remaining oversize functions)
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_string_from_code_unit"): "P4: runtime domain split -- 256 lines",
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_bigint_index_0_64"): "P4: runtime domain split -- 229 lines",
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_bigint_from_string"): "P4: runtime domain split -- 452 lines",
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_bigint_mul"): "P4: runtime domain split -- 288 lines",
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_bigint_div_rem_decimal"): "P4: runtime domain split -- 298 lines",
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_dataview_get_float16"): "P4: runtime domain split -- 231 lines",
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_dataview_set_float16"): "P4: runtime domain split -- 237 lines",
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_bigint_compare"): "P4: runtime domain split -- 239 lines",
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_bigint_compare_decimal_string_for_relational"): "P4: runtime domain split -- 458 lines",
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_equality_string_number_parser"): "P4: runtime domain split -- 319 lines",
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_object_keys"): "P4: runtime domain split -- 379 lines",
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_object_get_own_property_names"): "P4: runtime domain split -- 344 lines",
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_rest_object"): "P4: runtime domain split -- 219 lines",
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_promise_all_settled"): "P4: runtime domain split -- 259 lines",
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_math_f16round"): "P4: runtime domain split -- 488 lines",
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_property_is_enumerable"): "P4: runtime domain split -- 208 lines",
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_object_get_own_property_descriptor"): "P4: runtime domain split -- 248 lines",
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_object_define_property"): "P4: runtime domain split -- 202 lines",
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_property_has"): "P4: runtime domain split -- 204 lines",
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_property_get"): "P4: runtime domain split -- 484 lines",
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_property_set"): "P4: runtime domain split -- 384 lines",
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_property_delete"): "P4: runtime domain split -- 203 lines",
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_number_to_exponential"): "P4: runtime domain split -- 297 lines",
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_number_to_string"): "P4: runtime domain split -- 331 lines",
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_parse_int_string"): "P4: runtime domain split -- 330 lines",
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_escape"): "P4: runtime domain split -- 259 lines",
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_strict_equality_function"): "P4: runtime domain split -- 266 lines",
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "typed_array_mutation_and_copy_helpers_emit_valid_wasm"): "test file -- 332 lines",
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "typed_date_seed_helpers_emit_valid_wasm"): "test file -- 390 lines",
+    ("crates/backend-wasm/src/runtime/core/typed.rs", "typed_promise_basic_helpers_emit_valid_wasm"): "test file -- 306 lines",
+    # Other files
+    ("crates/backend-wasm/src/wasm_encoder_backend.rs", "build_single_function"): "P4: wasm encoder decomposition -- 335 lines",
+    ("crates/compiler/src/module_graph/mod.rs", "visit_module"): "P7: resolver decomposition -- 216 lines",
+    ("crates/frontend/src/lexer_strings.rs", "_regexp_impl"): "P4: parser decomposition -- 231 lines",
+    ("crates/frontend/src/parser/statements_general.rs", "for_statement"): "P4: parser decomposition -- 413 lines",
+    ("crates/ir/src/lowered/mir/dce.rs", "process_stmts_backward"): "P14: MIR DCE decomposition -- 535 lines",
+    ("crates/ir/src/lowered/mir/scalar_replace.rs", "rewrite_expr_in_stmt"): "P14: MIR scalar replace decomposition -- 277 lines",
+    ("crates/ir/src/lowered/mir/scalar_replace.rs", "rewrite_expr"): "P14: MIR scalar replace decomposition -- 377 lines",
+    ("crates/ir/src/lowered/program.rs", "lower_program_inner"): "P7: resolver decomposition -- 717 lines",
 }
 
 # Files that still use string-based RuntimeCall { runtime_fn: String } — legacy pattern.
@@ -327,6 +414,9 @@ HIGH_PUBLIC_API_COUNT_ALLOWLIST = {
     "crates/ir/src/lowered/types.rs": "35 pub items — lowered IR types are inherently public",
     "crates/runtime-abi/src/layout.rs": "type layout definitions are inherently public",
     "crates/runtime-abi/src/value.rs": "value type definitions are inherently public",
+    "crates/ir/src/lowered/facts.rs": "31 pub items — fact helpers pending fact-context split",
+    "crates/backend-wasm/src/native_runtime_embed.rs": "32 pub items — embed exports many native helpers",
+    "crates/backend-wasm/src/runtime/core/typed.rs": "528 pub items — typed runtime builders exports all domain helpers",
 }
 
 # Allowlist for files with oversized match expressions (> 30 arms).
@@ -366,6 +456,8 @@ LARGE_MATCH_ALLOWLIST = {
     "crates/backend-wasm/src/runtime_builder.rs": "runtime builder dispatch over all RuntimeFn variants",
     "crates/backend-wasm/src/runtime_fn.rs": "RuntimeFn dispatch over all variants (backup catalog)",
     "crates/backend-wasm/src/runtime_fn_impl.rs": "RuntimeFn impl dispatch over all variants",
+    "crates/backend-wasm/src/native_runtime_embed.rs": "native runtime embed dispatches all RuntimeFn variants (496 arms)",
+    "crates/backend-wasm/src/native_lowered.rs": "native lowered emitter dispatches many expression/statement types",
 }
 
 

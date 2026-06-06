@@ -38208,6 +38208,21 @@ pub fn build_function_construct_host() -> WasmFunction {
     build_host_call_bridge("$function_construct_host", "$host_function_construct", 2)
 }
 
+/// Build the `$super_call_external` function.
+///
+/// External/ambient parent class constructor call — takes (this, args)
+/// and delegates to the external parent. Since no host import is declared
+/// for this variant yet, the stub returns `this` unchanged.
+/// TODO: add host import bridge when external super() needs real delegation.
+/// Remaining raw escape hatches: this is a stub.
+pub fn build_super_call_external() -> WasmFunction {
+    WasmFunction::new("$super_call_external")
+        .param(WasmValType::I32)
+        .param(WasmValType::I32)
+        .result(WasmValType::I32)
+        .body(vec![WasmInstr::LocalGet(0)])
+}
+
 /// Build the `$json_stringify` host bridge.
 ///
 /// The native mainline delegates dynamic JSON serialization to the Node shim

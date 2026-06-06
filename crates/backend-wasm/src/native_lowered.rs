@@ -3850,18 +3850,6 @@ impl<'a> NativeLoweredEmitter<'a> {
                     out.push(WasmInstr::Call(intrinsic.symbol().to_owned()));
                     return Ok(());
                 }
-                if *intrinsic == RuntimeFn::ReflectConstruct && matches!(args.len(), 2 | 3) {
-                    for arg in args {
-                        self.emit_expr(arg, ctx, out)?;
-                        if expr_produces_value(arg, &self.function_results) {
-                            out.push(WasmInstr::Drop);
-                        }
-                    }
-                    out.push(WasmInstr::I32Const(STATIC_REF_TOKEN));
-                    out.push(WasmInstr::GlobalSet(EXCEPTION_PENDING_SYMBOL.to_owned()));
-                    out.push(WasmInstr::I32Const(ValueTag::UNDEFINED));
-                    return Ok(());
-                }
                 if matches!(
                     intrinsic,
                     RuntimeFn::BigIntMixedArithmeticTypeError

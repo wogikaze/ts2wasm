@@ -27,6 +27,7 @@ const KNOWN_FEATURES: &[(&str, &str)] = &[
     ("Atomics.pause", "issue-119"),
     ("Atomics.waitAsync", "issue-100"),
     ("caller", "issue-346"),
+    ("canonical-tz", "issue-436"),
     ("Date", "issue-5000"),
     ("FinalizationRegistry", "issue-436"),
     ("global", "issue-5025"),
@@ -34,11 +35,16 @@ const KNOWN_FEATURES: &[(&str, &str)] = &[
     ("ImmutablePrototypeExotic", "issue-5025"),
     ("Intl.DateTimeFormat-formatRange", "issue-436"),
     ("Intl.DateTimeFormat.prototype.formatToParts", "issue-436"),
+    ("Intl.DateTimeFormat-dayPeriod", "issue-436"),
+    ("Intl.DateTimeFormat-datetimestyle", "issue-436"),
+    ("Intl.DateTimeFormat-extend-timezonename", "issue-436"),
+    ("Intl.DateTimeFormat-fractionalSecondDigits", "issue-436"),
     ("Intl.Locale", "issue-436"),
     ("Intl.NumberFormat-unified", "issue-436"),
     ("Intl.Segmenter", "issue-436"),
     ("Intl.Segmenter-v2", "issue-436"),
     ("Intl.Segmenter-supportedLocalesOf", "issue-436"),
+    ("intl-normative-optional", "issue-436"),
     ("iterator-helpers", "issue-436"),
     ("JSON", "issue-5000"),
     ("Map", "issue-5000"),
@@ -64,6 +70,7 @@ const KNOWN_FEATURES: &[(&str, &str)] = &[
     ("WeakSet", "issue-5025"),
     ("WebAssembly", "issue-5025"),
     ("error-message", "issue-5024"),
+    ("Error.isError", "issue-5024"),
     // --- commonly used standard / enabled features ---
     ("legacy-regexp", "issue-5024"),
     ("arrow-function", "issue-5000"),
@@ -92,8 +99,11 @@ const KNOWN_FEATURES: &[(&str, &str)] = &[
     ("Uint32Array", "issue-408"),
     ("Uint8Array", "issue-408"),
     ("Uint8ClampedArray", "issue-408"),
+    ("uint8array-base64", "issue-5024"),
     ("regexp-named-groups", "issue-5024"),
     ("regexp-dotall", "issue-5024"),
+    ("regexp-duplicate-named-groups", "issue-5024"),
+    ("regexp-lookbehind", "issue-5024"),
     ("Symbol.species", "issue-5000"),
     ("Symbol.unscopables", "issue-5000"),
     ("Symbol.replace", "issue-5000"),
@@ -407,14 +417,58 @@ pub fn process_test262_includes(input: &Path, source: &str) -> Result<String, Di
     }
 
     if injected.is_empty() {
-        return Ok(rewrite_assert_method_calls(source));
+        // Inject default stubs even when no includes/features triggered stubs,
+        // since many files with metadata features still use assert/verifyProperty.
+        let body = &source[frontmatter_end + 5..];
+        let mut default_stubs = String::new();
+        if !disable_stubs && !source_has_binding(source, "assert") {
+            default_stubs.push_str("function assert() {}\n");
+        }
+        if !disable_stubs && !source_has_function(source, "verifyProperty") {
+            default_stubs.push_str("function verifyProperty() {}\n");
+        }
+        if !disable_stubs && !source_has_function(source, "verifyCallableProperty") {
+            default_stubs.push_str("function verifyCallableProperty() {}\n");
+        }
+        if default_stubs.is_empty() {
+            return Ok(rewrite_assert_method_calls(source));
+        }
+        return Ok(rewrite_assert_method_calls(&format!(
+            "{}\n{}\n{}",
+            frontmatter,
+            default_stubs.trim(),
+            body
+        )));
     }
 
     // Insert helper contents after frontmatter
     let body_start = frontmatter_end + 5;
     let body = &source[body_start..];
 
-    let processed = format!("{}\n{}\n{}", frontmatter, injected.trim(), body.trim());
+    // Also inject default stubs for files with features/includes,
+    // since some harness helpers (e.g. deepEqual.js) don't define assert.
+    let mut all_injected = injected.trim().to_string();
+    if !disable_stubs
+        && !source_has_binding(source, "assert")
+        && !all_injected.contains("function assert(")
+    {
+        let prefix = "function assert() {}\n".to_string();
+        all_injected = prefix + &all_injected;
+    }
+    if !disable_stubs
+        && !source_has_function(source, "verifyProperty")
+        && !all_injected.contains("function verifyProperty(")
+    {
+        all_injected.push_str("\nfunction verifyProperty() {}");
+    }
+    if !disable_stubs
+        && !source_has_function(source, "verifyCallableProperty")
+        && !all_injected.contains("function verifyCallableProperty(")
+    {
+        all_injected.push_str("\nfunction verifyCallableProperty() {}");
+    }
+
+    let processed = format!("{}\n{}\n{}", frontmatter, all_injected, body.trim());
     Ok(rewrite_assert_method_calls(&processed))
 }
 

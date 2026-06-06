@@ -370,6 +370,8 @@ const PSEUDO_RUNTIME_FUNCTIONS: &[RuntimeFn] = &[
     RuntimeFn::PrivateBrandCheck,
     RuntimeFn::PrivateFieldGet,
     RuntimeFn::PrivateFieldSet,
+    RuntimeFn::RegExpSourceOf,
+    RuntimeFn::RegExpFlagsOf,
 ];
 
 #[cfg(test)]
@@ -474,39 +476,10 @@ pub(crate) fn ordered_required_native_runtime_functions_with_extra(
 }
 
 fn native_runtime_function_survives_lowering(
-    program: &LoweredProgram,
-    runtime_fn: RuntimeFn,
+    _program: &LoweredProgram,
+    _runtime_fn: RuntimeFn,
 ) -> bool {
-    if runtime_fn != RuntimeFn::ReflectConstruct {
-        return true;
-    }
-
-    lowered_contains_runtime_call_matching(program, RuntimeFn::ReflectConstruct, |args| {
-        args.len() != 3
-    })
-}
-
-fn lowered_contains_runtime_call_matching(
-    program: &LoweredProgram,
-    runtime_fn: RuntimeFn,
-    predicate: fn(&[LoweredExpr]) -> bool,
-) -> bool {
-    program
-        .top_level_statements
-        .iter()
-        .any(|stmt| stmt_contains_runtime_call_matching(stmt, runtime_fn, predicate))
-        || program.functions.iter().any(|function| {
-            function
-                .body
-                .iter()
-                .any(|stmt| stmt_contains_runtime_call_matching(stmt, runtime_fn, predicate))
-        })
-        || program.modules.iter().any(|module| {
-            module
-                .statements
-                .iter()
-                .any(|stmt| stmt_contains_runtime_call_matching(stmt, runtime_fn, predicate))
-        })
+    true
 }
 
 fn stmt_contains_runtime_call_matching(
@@ -1266,6 +1239,7 @@ pub(crate) fn native_runtime_function_available(runtime_fn: RuntimeFn) -> bool {
             | RuntimeFn::StrictNotEqual
             | RuntimeFn::Sub
             | RuntimeFn::SubFast
+            | RuntimeFn::SuperCallExternal
             | RuntimeFn::SymbolDescription
             | RuntimeFn::SymbolFor
             | RuntimeFn::SymbolHasInstance
@@ -1831,6 +1805,7 @@ fn build_native_runtime_function(
         RuntimeFn::StrictNotEqual => Some(typed::build_strict_not_equal()),
         RuntimeFn::Sub => Some(typed::build_sub()),
         RuntimeFn::SubFast => Some(typed::build_sub_fast()),
+        RuntimeFn::SuperCallExternal => Some(typed::build_super_call_external()),
         RuntimeFn::SymbolDescription => Some(typed::build_symbol_description()),
         RuntimeFn::SymbolFor => Some(typed::build_symbol_for(0, 0)),
         RuntimeFn::SymbolHasInstance => Some(typed::build_symbol_has_instance(
@@ -6319,7 +6294,7 @@ mod tests {
     }
 
     #[test]
-    fn three_arg_reflect_construct_inline_fallback_does_not_import_host_helper() {
+    fn three_arg_reflect_construct_embeds_native_helpers_and_imports() {
         let span = Span::generated("native-reflect-construct-inline");
         let program = LoweredProgram {
             top_level_statements: vec![LoweredStmt::Expr(
@@ -6344,22 +6319,22 @@ mod tests {
         let (validated, _) = Validated::new(program).expect("program should validate");
 
         assert!(
-            !ordered_required_native_runtime_functions(validated.program())
+            ordered_required_native_runtime_functions(validated.program())
                 .contains(&RuntimeFn::ReflectConstruct)
         );
         let module = crate::emit_wasm_module_native(&validated)
-            .expect("three-arg Reflect.construct inline fallback should emit");
+            .expect("three-arg Reflect.construct should emit");
         assert!(
             module
                 .imports
                 .iter()
-                .all(|import| import.func_symbol != "$host_reflect_construct")
+                .any(|import| import.func_symbol == "$host_reflect_construct")
         );
         assert!(
             module
                 .functions
                 .iter()
-                .all(|function| function.symbol != RuntimeFn::ReflectConstruct.symbol())
+                .any(|function| function.symbol == RuntimeFn::ReflectConstruct.symbol())
         );
     }
 

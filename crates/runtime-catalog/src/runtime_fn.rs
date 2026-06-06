@@ -3527,6 +3527,8 @@ impl RuntimeFn {
             Self::RegExpTest,
             Self::RegExpMatch,
             Self::RegExpSearch,
+            Self::RegExpSourceOf,
+            Self::RegExpFlagsOf,
             // Array methods
             Self::ArrayPush,
             Self::ArrayPushGrow,
@@ -4046,6 +4048,8 @@ impl RuntimeFn {
             Self::RegExpTest,
             Self::RegExpMatch,
             Self::RegExpSearch,
+            Self::RegExpSourceOf,
+            Self::RegExpFlagsOf,
             // Array methods
             Self::ArrayPush,
             Self::ArrayPushGrow,
