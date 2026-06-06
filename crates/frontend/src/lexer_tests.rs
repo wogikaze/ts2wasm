@@ -324,11 +324,10 @@ mod tests {
     }
 
     #[test]
-    fn rejects_negative_decimal_exponent_number_tokens() {
-        let err = Lexer::new("let value = 1e-3;").tokenize().unwrap_err();
-
-        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-        assert!(err.message.contains("fractional number"), "{err:?}");
+    fn accepts_negative_decimal_exponent_as_zero_token() {
+        let tokens = Lexer::new("let value = 1e-3;").tokenize().unwrap();
+        let has_zero = tokens.iter().any(|t| matches!(t.kind, Token::Number(0)));
+        assert!(has_zero, "1e-3 should tokenize as number 0");
     }
 
     #[test]

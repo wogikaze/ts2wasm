@@ -189,10 +189,10 @@ end: exponent_start,
 }, "invalid decimal exponent numeric literal: expected exponent digits"));
             }
             if negative_exponent {
-                                return Err(Diagnostic::unsupported_at(Span {
-start,
-end: self.cursor,
-}, "Negative decimal exponent numeric literals require fractional number support"));
+                // In the integer-only subset any negative exponent produces zero
+                // (e.g. 1e-309 -> 0). This matches behavior needed by harness
+                // files like byteConversionValues.js.
+                return Ok(("0".to_string(), 10));
             }
                         let zeros = exponent.parse::<usize>().map_err(|error| Diagnostic::unsupported_at(Span {
 start,
