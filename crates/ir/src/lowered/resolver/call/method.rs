@@ -2823,6 +2823,10 @@ impl super::super::Resolver {
             && matches!(self.infer_class_for_expr(object).as_deref(), Some("Number"))
         {
             // fall through to class dispatch — Number.toString(value, radix)
+        } else if method == "toString"
+            && matches!(self.infer_class_for_expr(object).as_deref(), Some("Boolean"))
+        {
+            // fall through to class dispatch — Boolean.toString → BooleanToString
         } else if let Some(intrinsic) = resolve_method_to_runtime_fn(object, method) {
             if intrinsic == RuntimeFn::JsonParse {
                 if args.is_empty() || args.len() > 2 {

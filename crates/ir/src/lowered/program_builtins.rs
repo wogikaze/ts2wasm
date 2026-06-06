@@ -489,6 +489,9 @@ pub(crate) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("Array", "unshift") => Some(RuntimeFn::ArrayUnshift),
         ("Array", "splice") => Some(RuntimeFn::ArraySplice),
         ("Object", "valueOf") => Some(RuntimeFn::ValueOf),
+        // Boolean prototype methods
+        ("Boolean", "toString") => Some(RuntimeFn::BooleanToString),
+        ("Boolean", "valueOf") => Some(RuntimeFn::ValueOf),
         // Function prototype methods
         ("Function", "call") => Some(RuntimeFn::HeapClosureCall),
         ("Function", "toString") => Some(RuntimeFn::ObjectToString),
