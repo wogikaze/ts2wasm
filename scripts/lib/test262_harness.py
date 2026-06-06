@@ -276,7 +276,7 @@ def unsupported_metadata_reason(flags, includes, features):
         if include in BLOCKED_INCLUDES:
             return f"test262 include `{include}` is not supported by this runner slice"
     for feature in features:
-        if feature in BLOCKED_FEATURES:
+        if any(feature == blocked or feature.startswith(blocked + ".") for blocked in BLOCKED_FEATURES):
             return f"test262 feature `{feature}` is not supported by this runner slice"
     return None
 
