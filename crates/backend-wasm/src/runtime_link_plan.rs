@@ -462,12 +462,16 @@ fn collect_required_runtime_expr(plan: &mut RuntimeLinkPlan, expr: &LoweredExpr)
         }
         LoweredExpr::ArrayNew { elements, .. } => {
             plan.add_required_runtime(RuntimeFn::AllocHeap);
+            plan.add_required_runtime(RuntimeFn::ArrayCtorWithLength);
+            plan.add_required_runtime(RuntimeFn::ArrayPushGrow);
             for elem in elements {
                 collect_required_runtime_expr(plan, elem);
             }
         }
         LoweredExpr::ArrayNewSparse { slots, .. } => {
             plan.add_required_runtime(RuntimeFn::AllocHeap);
+            plan.add_required_runtime(RuntimeFn::ArrayCtorWithLength);
+            plan.add_required_runtime(RuntimeFn::ArrayPushGrow);
             for slot in slots {
                 if let ts2wasm_ir::lowered::LoweredArraySlot::Present(elem) = slot {
                     collect_required_runtime_expr(plan, elem);
