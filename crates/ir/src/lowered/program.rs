@@ -5539,10 +5539,7 @@ pub(super) fn lower_unary_op(op: UnaryOp) -> Result<LoweredUnaryOp, Diagnostic> 
                 op
             )))
         }
-        UnaryOp::BitwiseNot => Err(Diagnostic::unsupported(format!(
-            "unary operator {:?} not yet supported",
-            op
-        ))),
+        UnaryOp::BitwiseNot => Ok(LoweredUnaryOp::BitwiseNot),
         UnaryOp::Void => Ok(LoweredUnaryOp::Void),
     }
 }
