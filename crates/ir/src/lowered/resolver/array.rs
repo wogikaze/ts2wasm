@@ -933,7 +933,9 @@ impl super::Resolver {
         args: &[ResolvedExpr],
         span: Span,
     ) -> Result<LoweredExpr, Diagnostic> {
-        let callback = &args[0];
+        let Some(callback) = args.first() else {
+            return Err(unsupported_array_map_diagnostic(Some(span)));
+        };
 
         // Array.forEach with a variable-held callback: expand at IR level
         // with WhileLoop + HeapClosureCall, because the WAT $array_for_each
