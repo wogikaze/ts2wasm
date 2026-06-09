@@ -1147,7 +1147,8 @@ impl<'a> NativeLoweredEmitter<'a> {
             }
         }
         let mut runtime_array_locals = collect_array_push_grow_locals(&function.body);
-        runtime_array_locals.extend(collect_array_index_mutation_locals(&function.body));
+        let anl_fn = collect_array_index_mutation_locals(&function.body);
+        runtime_array_locals.extend(anl_fn);
         let static_array_plan = collect_static_array_plan(&function.body, &self.program.functions);
         let (next_wasm, mut static_arrays) =
             append_static_array_locals(wasm, function.params.len(), &static_array_plan);
@@ -1284,8 +1285,8 @@ impl<'a> NativeLoweredEmitter<'a> {
         }
         let mut runtime_array_locals =
             collect_array_push_grow_locals(&self.program.top_level_statements);
-        runtime_array_locals
-            .extend(collect_array_index_mutation_locals(&self.program.top_level_statements));
+        let anl = collect_array_index_mutation_locals(&self.program.top_level_statements);
+        runtime_array_locals.extend(anl);
         let static_array_plan =
             collect_static_array_plan(&self.program.top_level_statements, &self.program.functions);
         let (next_wasm, mut static_arrays) =
@@ -10845,6 +10846,11 @@ fn find_array_new_locals_from_stmts(stmts: &[LoweredStmt], locals: &mut HashSet<
                     LoweredExpr::ArrayNew { .. } | LoweredExpr::ArrayNewSparse { .. }
                 ) {
                     locals.insert(*local);
+                } else if let LoweredExpr::RuntimeCall {
+                    intrinsic: RuntimeFn::ArrayCtorWithLength,
+                    ..
+                } = expr {
+                    locals.insert(*local);
                 } else if let LoweredExpr::Local(src, _) = expr {
                     if locals.contains(src) {
                         locals.insert(*local);
@@ -11091,9 +11097,9 @@ fn collect_array_index_mutation_locals_from_expr(
             ..
         } => {
             if let LoweredExpr::Local(local, _) = object.as_ref() {
-                if array_new_locals.contains(local)
-                    && matches!(index.as_ref(), LoweredExpr::Number(_, _))
-                {
+                let is_in_anl = array_new_locals.contains(local);
+                let is_num = matches!(index.as_ref(), LoweredExpr::Number(_, _));
+                if is_in_anl && is_num {
                     result.insert(*local);
                 }
             }
@@ -11198,6 +11204,10 @@ fn update_runtime_array_alias_state(stmt: &LoweredStmt, locals: &mut HashSet<Loc
         LoweredStmt::Let(local, LoweredExpr::ArrayNew { .. }, _)
         | LoweredStmt::Assign(local, LoweredExpr::ArrayNew { .. }, _)
             if locals.contains(local) => {}
+        LoweredStmt::Let(local, LoweredExpr::RuntimeCall { intrinsic: RuntimeFn::ArrayCtorWithLength, .. }, _)
+        | LoweredStmt::Assign(local, LoweredExpr::RuntimeCall { intrinsic: RuntimeFn::ArrayCtorWithLength, .. }, _) => {
+            locals.insert(*local);
+        }
         LoweredStmt::Let(local, _, _) | LoweredStmt::Assign(local, _, _) => {
             locals.remove(local);
         }
