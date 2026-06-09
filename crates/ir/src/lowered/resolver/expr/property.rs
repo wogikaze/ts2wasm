@@ -901,17 +901,27 @@ impl super::super::Resolver {
             return Ok(function);
         }
 
+        // ES spec: a property name P is an array index iff
+        // ToString(ToUint32(P)) == P AND ToUint32(P) != 2^32-1.
+        // DecimalNumber values >= 2^32-1 are not valid array indices and must
+        // be lowered as property access, not ArrayGet.
+        let index_is_static_non_array_index =
+            super::super::string::resolved_expr_static_number_literal_value(&self.ctx, index)
+                .and_then(|v| v.parse::<u64>().ok())
+                .map_or(false, |n| n >= 4_294_967_295);
+
         if matches!(object, ResolvedExpr::String(_)) {
             Ok(object_kernel::ordinary_get_dynamic(
                 lowered_object,
                 lowered_index,
                 Span::generated("index"),
             ))
-        } else if matches!(object, ResolvedExpr::Array(_))
-            || matches!(
-                lowered_object,
-                LoweredExpr::ArrayNew { .. } | LoweredExpr::ArrayNewSparse { .. }
-            )
+        } else if !index_is_static_non_array_index
+            && (matches!(object, ResolvedExpr::Array(_))
+                || matches!(
+                    lowered_object,
+                    LoweredExpr::ArrayNew { .. } | LoweredExpr::ArrayNewSparse { .. }
+                ))
         {
             Ok(LoweredExpr::ArrayGet {
                 arr: Box::new(lowered_object),

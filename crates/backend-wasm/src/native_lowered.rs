@@ -43,6 +43,10 @@ const EXCEPTION_PENDING_SYMBOL: &str = "$exception_pending";
 const EXCEPTION_HANDLER_DEPTH_SYMBOL: &str = "$exception_handler_depth";
 const SET_PROTOTYPE_ADD_GLOBAL: &str = "$set_prototype_add";
 const STATIC_USER_FUNCTION_LOOP_LIMIT: usize = 4096;
+/// Maximum number of elements in a statically-tracked array. Beyond this,
+/// array property-set operations fall back to dynamic storage instead of
+/// attempting Vec::resize_with which would OOM for very large indices.
+const MAX_STATIC_ARRAY_ELEMENTS: usize = 10000;
 
 thread_local! {
     static USER_FUNCTION_RETURN_TYPE_STACK: RefCell<HashSet<FuncId>> = RefCell::new(HashSet::new());
@@ -32931,8 +32935,17 @@ fn static_array_dynamic_property_value_from_locals_with_functions(
 }
 
 fn canonical_static_array_index(key: &str) -> Option<usize> {
-    let index = key.parse::<usize>().ok()?;
-    (key == index.to_string()).then_some(index)
+    // ES spec: an array index is ToString(ToUint32(P)) == P AND P != 2^32-1.
+    let index = key.parse::<u32>().ok()?;
+    if index == u32::MAX {
+        return None;
+    }
+    // Practical limit: don't statically track arrays beyond this size.
+    // Prevents OOM from Vec::resize_with for large indices like 4294967294.
+    if index as usize > MAX_STATIC_ARRAY_ELEMENTS {
+        return None;
+    }
+    (key == index.to_string()).then_some(index as usize)
 }
 
 fn static_array_len_from_expr_with_functions(
