@@ -8939,7 +8939,10 @@ impl<'a> NativeLoweredEmitter<'a> {
                 self.emit_expr(expr, ctx, out)
             }
             LoweredExpr::Binary {
-                op: LoweredBinaryOp::Or | LoweredBinaryOp::And,
+                op:
+                    LoweredBinaryOp::Or
+                    | LoweredBinaryOp::And
+                    | LoweredBinaryOp::NullishCoalesce,
                 ..
             } => self.emit_expr(expr, ctx, out),
             _ => self.emit_js_value_expr_as_tagged(expr, ctx, out),
