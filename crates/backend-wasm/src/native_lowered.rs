@@ -1004,6 +1004,19 @@ impl<'a> NativeLoweredEmitter<'a> {
                 &mut required,
             );
         }
+        // emit_runtime_rest_array emits synthetic $array_ctor_with_length /
+        // $array_push_grow calls for runtime array locals, rest params, and
+        // static arrays passed as user-function arguments.  None of these
+        // correspond to RuntimeCall intrinsics in the IR, so the regular scan
+        // above misses them.  Conservatively register both when the program
+        // contains any ArrayNew whose target local MIGHT end up materialised
+        // through emit_runtime_rest_array.
+        if program_has_any_array_new(&self.program.top_level_statements, &self.program.functions, &self.program.modules) {
+            if !required.contains(&RuntimeFn::ArrayCtorWithLength) {
+                required.insert(RuntimeFn::ArrayCtorWithLength);
+                required.insert(RuntimeFn::ArrayPushGrow);
+            }
+        }
         required
     }
 
@@ -10396,6 +10409,68 @@ fn collect_collection_identity_runtime_call_args(
 fn collect_collection_identity_key_arg(arg: &LoweredExpr, key_locals: &mut HashSet<LocalId>) {
     if let LoweredExpr::Local(local, _) = arg {
         key_locals.insert(*local);
+    }
+}
+
+fn program_has_any_array_new(
+    top_level: &[LoweredStmt],
+    functions: &[LoweredFunction],
+    modules: &[ModuleInfo],
+) -> bool {
+    if stmts_contain_array_new(top_level) {
+        return true;
+    }
+    for function in functions {
+        if stmts_contain_array_new(&function.body) {
+            return true;
+        }
+    }
+    for module in modules {
+        if stmts_contain_array_new(&module.statements) {
+            return true;
+        }
+    }
+    false
+}
+
+fn stmts_contain_array_new(stmts: &[LoweredStmt]) -> bool {
+    for stmt in stmts {
+        if expr_contains_array_new(stmt) {
+            return true;
+        }
+    }
+    false
+}
+
+fn expr_contains_array_new(stmt: &LoweredStmt) -> bool {
+    match stmt {
+        LoweredStmt::Let(_, expr, _) | LoweredStmt::Assign(_, expr, _) => {
+            matches!(expr, LoweredExpr::ArrayNew { .. })
+                || match expr {
+                    LoweredExpr::Block { stmts, .. } => stmts_contain_array_new(stmts),
+                    LoweredExpr::RuntimeCall { args, .. } | LoweredExpr::Call { args, .. } => {
+                        args.iter().any(|a| match a {
+                            LoweredExpr::ArrayNew { .. } => true,
+                            _ => false,
+                        })
+                    }
+                    _ => false,
+                }
+        }
+        LoweredStmt::Block(stmts, _) => stmts_contain_array_new(stmts),
+        LoweredStmt::If {
+            condition,
+            then_body,
+            else_body,
+            ..
+        } => {
+            stmts_contain_array_new(then_body) || stmts_contain_array_new(else_body)
+        }
+        LoweredStmt::While { condition, body, .. }
+        | LoweredStmt::DoWhile { condition, body, .. } => {
+            stmts_contain_array_new(body)
+        }
+        _ => false,
     }
 }
 
