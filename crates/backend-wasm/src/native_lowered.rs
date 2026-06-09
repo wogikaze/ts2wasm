@@ -3640,15 +3640,26 @@ impl<'a> NativeLoweredEmitter<'a> {
                     }
                     return Ok(());
                 }
+                // Emit and drop object for side effects, then convert index to string
                 self.emit_expr(object, ctx, out)?;
                 if expr_produces_value(object, &self.function_results) {
                     out.push(WasmInstr::Drop);
                 }
                 self.emit_expr(index, ctx, out)?;
-                if expr_produces_value(index, &self.function_results) {
-                    out.push(WasmInstr::Drop);
-                }
-                self.emit_expr(value, ctx, out)
+                out.push(WasmInstr::I32Const(Layout::SCRATCH_OFFSET as i32));
+                out.push(WasmInstr::Call(
+                    RuntimeFn::ValueToStringInto.symbol().to_owned(),
+                ));
+                out.push(WasmInstr::LocalSet(ctx.switch_value_local));
+                // Re-emit object for the actual $property_set call
+                self.emit_expr(object, ctx, out)?;
+                out.push(WasmInstr::I32Const(Layout::SCRATCH_OFFSET as i32));
+                out.push(WasmInstr::LocalGet(ctx.switch_value_local));
+                self.emit_expr(value, ctx, out)?;
+                out.push(WasmInstr::Call(
+                    RuntimeFn::PropertySet.symbol().to_owned(),
+                ));
+                Ok(())
             }
             LoweredExpr::EnvCellNew(inner, _) => {
                 self.emit_expr(inner, ctx, out)?;
