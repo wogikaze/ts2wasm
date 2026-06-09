@@ -487,6 +487,7 @@ fn collect_required_runtime_expr(plan: &mut RuntimeLinkPlan, expr: &LoweredExpr)
         LoweredExpr::GetLength(inner, _) => {
             plan.add_required_runtime(RuntimeFn::GetLength);
             plan.add_required_runtime(RuntimeFn::NumberToI32);
+            plan.add_required_runtime(RuntimeFn::NumberFromI32);
             collect_required_runtime_expr(plan, inner);
         }
         LoweredExpr::ObjectNew { props, .. } => {

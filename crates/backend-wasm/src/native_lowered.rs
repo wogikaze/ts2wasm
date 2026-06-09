@@ -7757,6 +7757,7 @@ impl<'a> NativeLoweredEmitter<'a> {
                 op: LoweredUnaryOp::TypeOf,
                 ..
             } => true,
+            LoweredExpr::GetLength(_, _) => true,
             LoweredExpr::PropertyGetDynamic { obj, key, .. }
             | LoweredExpr::Index {
                 object: obj,
@@ -7915,6 +7916,11 @@ impl<'a> NativeLoweredEmitter<'a> {
                 op: LoweredUnaryOp::TypeOf,
                 ..
             } => self.emit_expr(expr, ctx, out),
+            LoweredExpr::GetLength(_, _) => {
+                self.emit_expr(expr, ctx, out)?;
+                out.push(WasmInstr::Call(RuntimeFn::NumberFromI32.symbol().to_owned()));
+                Ok(())
+            }
             LoweredExpr::Binary {
                 left,
                 op: LoweredBinaryOp::Add,
