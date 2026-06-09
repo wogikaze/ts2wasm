@@ -465,14 +465,15 @@ pub(crate) fn ordered_required_native_runtime_functions_with_extra(
     if !extra_required.is_empty() {
         plan.populate_derived_sets();
     }
-    RuntimeFn::emission_order()
+    let result: Vec<RuntimeFn> = RuntimeFn::emission_order()
         .iter()
         .copied()
         .filter(|runtime_fn| plan.required_runtime_functions().contains(runtime_fn))
         .filter(|runtime_fn| native_runtime_function_survives_lowering(program, *runtime_fn))
         .filter(|runtime_fn| !is_pseudo_runtime_function(*runtime_fn))
         .filter(|runtime_fn| native_runtime_function_available(*runtime_fn))
-        .collect()
+        .collect();
+    result
 }
 
 fn native_runtime_function_survives_lowering(

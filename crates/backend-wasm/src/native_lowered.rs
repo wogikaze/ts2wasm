@@ -3392,7 +3392,10 @@ impl<'a> NativeLoweredEmitter<'a> {
             LoweredExpr::ArrayNew { elements, .. } if elements.is_empty() => {
                 self.emit_runtime_rest_array(&[], ctx, out)
             }
-            LoweredExpr::ObjectNew { .. } | LoweredExpr::ArrayNew { .. } => {
+            LoweredExpr::ArrayNew { elements, .. } => {
+                self.emit_runtime_rest_array(elements, ctx, out)
+            }
+            LoweredExpr::ObjectNew { .. } => {
                 out.push(WasmInstr::I32Const(STATIC_REF_TOKEN));
                 Ok(())
             }
@@ -3961,6 +3964,11 @@ impl<'a> NativeLoweredEmitter<'a> {
                     out.push(WasmInstr::LocalGet(ctx.switch_value_local));
                     out.push(WasmInstr::Call(intrinsic.symbol().to_owned()));
                     return Ok(());
+                }
+                if *intrinsic == RuntimeFn::ArrayFill && args.len() >= 2 {
+                    if self.try_emit_expr_array_fill(args, ctx, out)? {
+                        return Ok(());
+                    }
                 }
                 if native_runtime_function_available(*intrinsic) {
                     let signature = intrinsic.stack_effect();
@@ -5270,6 +5278,34 @@ impl<'a> NativeLoweredEmitter<'a> {
             return Ok(true);
         }
         Ok(false)
+    }
+
+    /// Handle `ArrayFill` in emit_expr (expression context).
+    /// When the receiver is an `ArrayNew` literal, pre-compute filled elements
+    /// and emit a real runtime array (avoiding STATIC_REF_TOKEN passed to $array_fill).
+    fn try_emit_expr_array_fill(
+        &mut self,
+        args: &[LoweredExpr],
+        ctx: &FunctionCtx,
+        out: &mut Vec<WasmInstr>,
+    ) -> Result<bool, Diagnostic> {
+        let [LoweredExpr::ArrayNew { elements, .. }, value, start, end] = &args[..] else {
+            return Ok(false);
+        };
+        let len = elements.len();
+        let fill_value = static_value_from_expr_with_functions(value, &ctx.static_locals, &self.program.functions)
+            .and_then(static_value_to_expr)
+            .unwrap_or_else(|| value.clone());
+        let start_idx = static_array_relative_index(start, len, 0, &ctx.static_locals, &self.program.functions).unwrap_or(0);
+        let end_idx = static_array_relative_index(end, len, len as isize, &ctx.static_locals, &self.program.functions).unwrap_or(len);
+        let from = start_idx.min(len);
+        let to = end_idx.min(len);
+        let mut filled = elements.clone();
+        for elem in filled.iter_mut().take(to).skip(from) {
+            *elem = fill_value.clone();
+        }
+        self.emit_runtime_rest_array(&filled, ctx, out)?;
+        Ok(true)
     }
 
     fn try_emit_static_array_copy_within_init(
@@ -10585,6 +10621,22 @@ fn expr_contains_array_new(stmt: &LoweredStmt) -> bool {
         LoweredStmt::While { condition, body, .. }
         | LoweredStmt::DoWhile { condition, body, .. } => {
             stmts_contain_array_new(body)
+        }
+        LoweredStmt::Expr(expr, _) | LoweredStmt::Yield(expr, _) => expr_contains_array_new_recursive(expr),
+        _ => false,
+    }
+}
+
+/// Recursively check if an expression tree (including nested RuntimeCall/Call args) contains ArrayNew.
+fn expr_contains_array_new_recursive(expr: &LoweredExpr) -> bool {
+    match expr {
+        LoweredExpr::ArrayNew { .. } => true,
+        LoweredExpr::RuntimeCall { args, .. } | LoweredExpr::Call { args, .. } => {
+            args.iter().any(expr_contains_array_new_recursive)
+        }
+        LoweredExpr::Block { stmts, .. } => stmts_contain_array_new(stmts),
+        LoweredExpr::Assign { expr: inner, .. } => {
+            expr_contains_array_new_recursive(inner)
         }
         _ => false,
     }
