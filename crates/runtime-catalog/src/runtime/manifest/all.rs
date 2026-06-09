@@ -13,6 +13,7 @@ match self {
             Self::ArrayPop => "array_pop",
             Self::ArraySlice => "array_slice",
             Self::ArrayConcat => "array_concat",
+            Self::ArrayGrowTo => "array_grow_to",
             Self::ArrayCtorWithLength => "array_ctor_with_length",
             Self::ArrayMapValueToString => "array_map_value_to_string",
             Self::ArrayMapUnaryPlus => "array_map_unary_plus",

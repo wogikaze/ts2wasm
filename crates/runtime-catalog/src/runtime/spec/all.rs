@@ -89,6 +89,14 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::ArrayGrowTo => RuntimeSpec {
+                symbol: "$array_grow_to",
+                deps: ARRAY_PUSH_GROW_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::ArraySlice => RuntimeSpec {
                 symbol: "$array_slice",
                 deps: ARRAY_SLICE_DEPS,

@@ -746,4 +746,51 @@ impl WatEmitter<'_> {
             array_tag = ValueTag::ARRAY,
         ));
     }
+
+    pub(crate) fn emit_array_grow_to(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $array_grow_to (param $arr i32) (param $min_cap i32) (result i32)
+    (local $base i32) (local $cap i32) (local $new_cap i32) (local $new_arr i32)
+    (local $len i32)
+    (local.set $base (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (if (i32.ne (i32.and (local.get $arr) (i32.const {tag_mask})) (i32.const {array_tag}))
+      (then (return (local.get $arr))))
+    (local.set $cap (i32.load (i32.add (local.get $base) (i32.const {array_capacity_offset}))))
+    (if (i32.ge_u (local.get $cap) (local.get $min_cap))
+      (then (return (local.get $arr))))
+    (local.set $new_cap (i32.shl (local.get $cap) (i32.const 2)))
+    (if (i32.lt_u (local.get $new_cap) (local.get $min_cap))
+      (then (local.set $new_cap (local.get $min_cap))))
+    (if (i32.lt_u (local.get $new_cap) (i32.const 4))
+      (then (local.set $new_cap (i32.const 4))))
+    (local.set $len (i32.load (local.get $base)))
+    (local.set $new_arr
+      (call $alloc_heap
+        (i32.add
+          (i32.const {array_header})
+          (i32.shl (local.get $new_cap) (i32.const {elem_shift})))))
+    (i32.store (local.get $new_arr) (local.get $len))
+    (i32.store (i32.add (local.get $new_arr) (i32.const {array_capacity_offset})) (local.get $new_cap))
+    (i32.store (i32.add (local.get $new_arr) (i32.const {presence_word_count_offset})) (i32.const 1))
+    (i32.store (i32.add (local.get $new_arr) (i32.const {elements_offset_offset})) (i32.const {array_header}))
+    (i32.store (i32.add (local.get $new_arr) (i32.const {presence_words_offset}))
+      (i32.load (i32.add (local.get $base) (i32.const {presence_words_offset}))))
+    (call $copy
+      (i32.add (local.get $base) (i32.const {array_header}))
+      (i32.add (local.get $new_arr) (i32.const {array_header}))
+      (i32.shl (local.get $cap) (i32.const {elem_shift})))
+    (i32.or (local.get $new_arr) (i32.const {array_tag})))
+"#,
+            heap_mask = ValueTag::HEAP_MASK,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            array_capacity_offset = Layout::ARRAY_CAPACITY_OFFSET,
+            presence_word_count_offset = Layout::ARRAY_PRESENCE_WORD_COUNT_OFFSET,
+            elements_offset_offset = Layout::ARRAY_ELEMENTS_OFFSET_OFFSET,
+            presence_words_offset = Layout::ARRAY_PRESENCE_WORDS_OFFSET,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+        ));
+    }
 }

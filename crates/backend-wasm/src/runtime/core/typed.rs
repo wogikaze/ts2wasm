@@ -362,6 +362,173 @@ pub fn build_array_is_array() -> WasmFunction {
         ])
 }
 
+/// Build `$array_grow_to` — ensures an array has at least `min_capacity` element slots,
+/// reallocating if necessary. Returns the (possibly new) tagged array.
+pub fn build_array_grow_to() -> WasmFunction {
+    let heap_mask = ValueTag::HEAP_MASK;
+    let array_tag = ValueTag::ARRAY;
+    let array_header = Layout::ARRAY_HEADER_SIZE as i32;
+    let array_capacity_offset = Layout::ARRAY_CAPACITY_OFFSET as i32;
+    let presence_words_offset = Layout::ARRAY_PRESENCE_WORDS_OFFSET as i32;
+    let elem_shift = Layout::ARRAY_ELEM_SHIFT as i32;
+
+    let base = 2;
+    let cap = 3;
+    let new_cap = 4;
+    let new_arr = 5;
+    let old_elem_size = 6;
+    let new_elem_size = 7;
+
+    let mut body = vec![
+        WasmInstr::LocalGet(0),
+        WasmInstr::I32Const(heap_mask),
+        WasmInstr::I32And,
+        WasmInstr::LocalSet(base),
+        WasmInstr::LocalGet(0),
+        WasmInstr::I32Const(array_tag),
+        WasmInstr::I32And,
+        WasmInstr::I32Const(array_tag),
+        WasmInstr::I32Ne,
+        WasmInstr::If {
+            result_ty: WasmBlockType::Empty,
+        },
+        WasmInstr::Then,
+        WasmInstr::LocalGet(0),
+        WasmInstr::Return,
+        WasmInstr::End,
+        WasmInstr::LocalGet(base),
+        WasmInstr::I32Const(array_capacity_offset),
+        WasmInstr::I32Add,
+        WasmInstr::I32Load {
+            align: 2,
+            offset: 0,
+        },
+        WasmInstr::LocalSet(cap),
+        WasmInstr::LocalGet(cap),
+        WasmInstr::LocalGet(1),
+        WasmInstr::I32GeU,
+        WasmInstr::If {
+            result_ty: WasmBlockType::Empty,
+        },
+        WasmInstr::Then,
+        WasmInstr::LocalGet(0),
+        WasmInstr::Return,
+        WasmInstr::End,
+        WasmInstr::LocalGet(cap),
+        WasmInstr::I32Const(2),
+        WasmInstr::I32Shl,
+        WasmInstr::LocalSet(new_cap),
+        WasmInstr::LocalGet(new_cap),
+        WasmInstr::LocalGet(1),
+        WasmInstr::I32LtU,
+        WasmInstr::If {
+            result_ty: WasmBlockType::Empty,
+        },
+        WasmInstr::Then,
+        WasmInstr::LocalGet(1),
+        WasmInstr::LocalSet(new_cap),
+        WasmInstr::End,
+        WasmInstr::LocalGet(new_cap),
+        WasmInstr::I32Const(4),
+        WasmInstr::I32LtU,
+        WasmInstr::If {
+            result_ty: WasmBlockType::Empty,
+        },
+        WasmInstr::Then,
+        WasmInstr::I32Const(4),
+        WasmInstr::LocalSet(new_cap),
+        WasmInstr::End,
+        WasmInstr::LocalGet(new_cap),
+        WasmInstr::I32Const(elem_shift),
+        WasmInstr::I32Shl,
+        WasmInstr::I32Const(array_header),
+        WasmInstr::I32Add,
+        WasmInstr::Call("$alloc_heap".to_owned()),
+        WasmInstr::LocalSet(new_arr),
+        WasmInstr::LocalGet(base),
+        WasmInstr::I32Load {
+            align: 2,
+            offset: 0,
+        },
+        WasmInstr::LocalSet(old_elem_size),
+        WasmInstr::LocalGet(new_arr),
+        WasmInstr::LocalGet(old_elem_size),
+        WasmInstr::I32Store {
+            align: 2,
+            offset: 0,
+        },
+        WasmInstr::LocalGet(new_arr),
+        WasmInstr::I32Const(array_capacity_offset),
+        WasmInstr::I32Add,
+        WasmInstr::LocalGet(new_cap),
+        WasmInstr::I32Store {
+            align: 2,
+            offset: 0,
+        },
+        WasmInstr::LocalGet(new_arr),
+        WasmInstr::I32Const(Layout::ARRAY_PRESENCE_WORD_COUNT_OFFSET as i32),
+        WasmInstr::I32Add,
+        WasmInstr::LocalGet(base),
+        WasmInstr::I32Const(Layout::ARRAY_PRESENCE_WORD_COUNT_OFFSET as i32),
+        WasmInstr::I32Add,
+        WasmInstr::I32Load {
+            align: 2,
+            offset: 0,
+        },
+        WasmInstr::I32Store {
+            align: 2,
+            offset: 0,
+        },
+        WasmInstr::LocalGet(new_arr),
+        WasmInstr::I32Const(Layout::ARRAY_ELEMENTS_OFFSET_OFFSET as i32),
+        WasmInstr::I32Add,
+        WasmInstr::I32Const(array_header),
+        WasmInstr::I32Store {
+            align: 2,
+            offset: 0,
+        },
+        WasmInstr::LocalGet(new_arr),
+        WasmInstr::I32Const(presence_words_offset),
+        WasmInstr::I32Add,
+        WasmInstr::LocalGet(base),
+        WasmInstr::I32Const(presence_words_offset),
+        WasmInstr::I32Add,
+        WasmInstr::I32Load {
+            align: 2,
+            offset: 0,
+        },
+        WasmInstr::I32Store {
+            align: 2,
+            offset: 0,
+        },
+        WasmInstr::LocalGet(base),
+        WasmInstr::I32Const(array_header),
+        WasmInstr::I32Add,
+        WasmInstr::LocalGet(new_arr),
+        WasmInstr::I32Const(array_header),
+        WasmInstr::I32Add,
+        WasmInstr::LocalGet(cap),
+        WasmInstr::I32Const(elem_shift),
+        WasmInstr::I32Shl,
+        WasmInstr::Call("$copy".to_owned()),
+        WasmInstr::LocalGet(new_arr),
+        WasmInstr::I32Const(array_tag),
+        WasmInstr::I32Or,
+    ];
+
+    WasmFunction::new("$array_grow_to")
+        .param(WasmValType::I32)
+        .param(WasmValType::I32)
+        .result(WasmValType::I32)
+        .local(WasmValType::I32) // base
+        .local(WasmValType::I32) // cap
+        .local(WasmValType::I32) // new_cap
+        .local(WasmValType::I32) // new_arr
+        .local(WasmValType::I32) // old_elem_size
+        .local(WasmValType::I32) // new_elem_size (unused, but needed for alignment)
+        .body(body)
+}
+
 /// Build an array-only `$array_push` fallback.
 ///
 /// This matches the array branch of the legacy helper. Object receiver support

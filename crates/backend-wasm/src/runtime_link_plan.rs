@@ -548,6 +548,7 @@ fn collect_required_runtime_expr(plan: &mut RuntimeLinkPlan, expr: &LoweredExpr)
         }
         LoweredExpr::PropertySet { object, value, .. } => {
             plan.add_required_runtime(RuntimeFn::PropertySet);
+            plan.add_required_runtime(RuntimeFn::ArrayGrowTo);
             collect_required_runtime_expr(plan, object);
             collect_required_runtime_expr(plan, value);
         }
@@ -558,6 +559,7 @@ fn collect_required_runtime_expr(plan: &mut RuntimeLinkPlan, expr: &LoweredExpr)
             ..
         } => {
             plan.add_required_runtime(RuntimeFn::PropertySet);
+            plan.add_required_runtime(RuntimeFn::ArrayGrowTo);
             plan.add_required_runtime(RuntimeFn::ValueToStringInto);
             collect_required_runtime_expr(plan, object);
             collect_required_runtime_expr(plan, index);

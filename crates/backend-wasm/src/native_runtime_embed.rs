@@ -832,6 +832,7 @@ pub(crate) fn native_runtime_function_available(runtime_fn: RuntimeFn) -> bool {
             | RuntimeFn::ArrayPop
             | RuntimeFn::ArrayPush
             | RuntimeFn::ArrayPushGrow
+            | RuntimeFn::ArrayGrowTo
             | RuntimeFn::ArrayPushOrSpread
             | RuntimeFn::ArrayReduce
             | RuntimeFn::ArrayReduceRight
@@ -1337,6 +1338,7 @@ fn build_native_runtime_function(
         RuntimeFn::ArrayPop => Some(typed::build_array_pop()),
         RuntimeFn::ArrayPush => Some(typed::build_array_push()),
         RuntimeFn::ArrayPushGrow => Some(typed::build_array_push_grow()),
+        RuntimeFn::ArrayGrowTo => Some(typed::build_array_grow_to()),
         RuntimeFn::ArrayPushOrSpread => Some(typed::build_array_push_or_spread()),
         RuntimeFn::ArrayReduce => Some(typed::build_array_reduce()),
         RuntimeFn::ArrayReduceRight => Some(typed::build_array_reduce_right()),

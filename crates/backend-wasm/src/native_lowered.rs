@@ -366,6 +366,11 @@ struct FunctionCtx {
     static_arrays: HashMap<LocalId, Vec<usize>>,
     static_objects: HashMap<LocalId, HashMap<String, usize>>,
     runtime_array_locals: HashSet<LocalId>,
+    /// Maps copy locals back to their original array-new local.
+    /// When a null guard creates `Let(Local(1), Local(0))`, this maps
+    /// `LocalId(1) -> LocalId(0)` so that array growth can update the
+    /// original variable, not just the copy used in the property set.
+    array_copy_to_original: HashMap<LocalId, LocalId>,
     switch_value_local: usize,
     returns_value: bool,
     module_id: Option<usize>,
@@ -1180,6 +1185,7 @@ impl<'a> NativeLoweredEmitter<'a> {
             static_arrays,
             static_objects,
             runtime_array_locals,
+            array_copy_to_original: build_array_copy_map(&function.body),
             switch_value_local,
             returns_value,
             module_id: None,
@@ -1307,6 +1313,7 @@ impl<'a> NativeLoweredEmitter<'a> {
             static_arrays,
             static_objects,
             runtime_array_locals,
+            array_copy_to_original: build_array_copy_map(&self.program.top_level_statements),
             switch_value_local,
             returns_value: false,
             module_id: None,
@@ -1360,6 +1367,7 @@ impl<'a> NativeLoweredEmitter<'a> {
             static_arrays,
             static_objects,
             runtime_array_locals,
+            array_copy_to_original: build_array_copy_map(&module_info.statements),
             switch_value_local,
             returns_value: false,
             module_id: Some(module_info.id),
@@ -3566,9 +3574,28 @@ impl<'a> NativeLoweredEmitter<'a> {
                     return Ok(());
                 }
                 let key_offset = self.alloc_data(key.as_bytes()) as i32;
-                self.emit_expr(object, ctx, out)?;
-                local_set_with_gc_mirror(out, ctx, ctx.switch_value_local);
-                out.push(WasmInstr::LocalGet(ctx.switch_value_local));
+                // For runtime arrays with integer keys, ensure capacity before write
+                if let LoweredExpr::Local(local_id, _) = &**object
+                    && ctx.runtime_array_locals.contains(local_id)
+                    && let Ok(key_int) = key.parse::<i32>()
+                {
+                    let local_idx = local_index(ctx, *local_id)?;
+                    out.push(WasmInstr::LocalGet(local_idx));
+                    out.push(WasmInstr::I32Const(key_int + 1));
+                    out.push(WasmInstr::Call(RuntimeFn::ArrayGrowTo.symbol().to_owned()));
+                    local_set_with_gc_mirror(out, ctx, local_idx);
+                    // Also update the original array local (not just the copy used for the property set)
+                    if let Some(original) = ctx.array_copy_to_original.get(local_id) {
+                        let orig_idx = local_index(ctx, *original)?;
+                        out.push(WasmInstr::LocalGet(local_idx));
+                        local_set_with_gc_mirror(out, ctx, orig_idx);
+                    }
+                    out.push(WasmInstr::LocalGet(local_idx));
+                } else {
+                    self.emit_expr(object, ctx, out)?;
+                    local_set_with_gc_mirror(out, ctx, ctx.switch_value_local);
+                    out.push(WasmInstr::LocalGet(ctx.switch_value_local));
+                }
                 out.push(WasmInstr::I32Const(key_offset));
                 out.push(WasmInstr::I32Const(key.len() as i32));
                 self.emit_concat_arg_as_tagged(value, ctx, out)?;
@@ -3668,7 +3695,26 @@ impl<'a> NativeLoweredEmitter<'a> {
                 ));
                 out.push(WasmInstr::LocalSet(ctx.switch_value_local));
                 // Re-emit object for the actual $property_set call
-                self.emit_expr(object, ctx, out)?;
+                // For runtime arrays with known numeric index, ensure capacity before write
+                if let LoweredExpr::Local(local_id, _) = &**object
+                    && ctx.runtime_array_locals.contains(local_id)
+                    && let LoweredExpr::Number(num_val, _) = &**index
+                {
+                    let local_idx = local_index(ctx, *local_id)?;
+                    out.push(WasmInstr::LocalGet(local_idx));
+                    out.push(WasmInstr::I32Const((*num_val as i32) + 1));
+                    out.push(WasmInstr::Call(RuntimeFn::ArrayGrowTo.symbol().to_owned()));
+                    local_set_with_gc_mirror(out, ctx, local_idx);
+                    // Also update the original array local (not just the copy used for the property set)
+                    if let Some(original) = ctx.array_copy_to_original.get(local_id) {
+                        let orig_idx = local_index(ctx, *original)?;
+                        out.push(WasmInstr::LocalGet(local_idx));
+                        local_set_with_gc_mirror(out, ctx, orig_idx);
+                    }
+                    out.push(WasmInstr::LocalGet(local_idx));
+                } else {
+                    self.emit_expr(object, ctx, out)?;
+                }
                 out.push(WasmInstr::I32Const(Layout::SCRATCH_OFFSET as i32));
                 out.push(WasmInstr::LocalGet(ctx.switch_value_local));
                 self.emit_concat_arg_as_tagged(value, ctx, out)?;
@@ -8284,6 +8330,7 @@ impl<'a> NativeLoweredEmitter<'a> {
                     static_arrays: HashMap::new(),
                     static_objects: HashMap::new(),
                     runtime_array_locals: HashSet::new(),
+                    array_copy_to_original: HashMap::new(),
                     switch_value_local: 0,
                     returns_value: false,
                     module_id: None,
@@ -9096,6 +9143,7 @@ impl<'a> NativeLoweredEmitter<'a> {
             static_arrays: HashMap::new(),
             static_objects: HashMap::new(),
             runtime_array_locals: HashSet::new(),
+            array_copy_to_original: HashMap::new(),
             switch_value_local: 0,
             returns_value: false,
             module_id: None,
@@ -9913,6 +9961,7 @@ impl<'a> NativeLoweredEmitter<'a> {
             static_arrays: HashMap::new(),
             static_objects: HashMap::new(),
             runtime_array_locals: HashSet::new(),
+            array_copy_to_original: HashMap::new(),
             switch_value_local: 0,
             returns_value: true,
             module_id: None,
@@ -10751,6 +10800,13 @@ fn build_copy_map_from_stmts(
             _ => {}
         }
     }
+}
+
+fn build_array_copy_map(stmts: &[LoweredStmt]) -> HashMap<LocalId, LocalId> {
+    let array_new_locals = find_array_new_locals(stmts);
+    let mut copy_map = HashMap::new();
+    build_copy_map_from_stmts(stmts, &array_new_locals, &mut copy_map);
+    copy_map
 }
 
 fn collect_array_index_mutation_locals(stmts: &[LoweredStmt]) -> HashSet<LocalId> {
@@ -15044,6 +15100,7 @@ fn static_user_function_console_ctx(
         static_arrays: HashMap::new(),
         static_objects: HashMap::new(),
         runtime_array_locals: HashSet::new(),
+        array_copy_to_original: HashMap::new(),
         switch_value_local: 0,
         returns_value,
         module_id: None,
@@ -15071,6 +15128,7 @@ fn static_console_ctx_for_stmts(
         static_arrays: HashMap::new(),
         static_objects: HashMap::new(),
         runtime_array_locals: HashSet::new(),
+        array_copy_to_original: HashMap::new(),
         switch_value_local: 0,
         returns_value,
         module_id: None,
@@ -35447,6 +35505,7 @@ fn static_analysis_ctx(static_locals: HashMap<LocalId, StaticValue>) -> Function
         static_arrays: HashMap::new(),
         static_objects: HashMap::new(),
         runtime_array_locals: HashSet::new(),
+        array_copy_to_original: HashMap::new(),
         switch_value_local: 0,
         returns_value: false,
         module_id: None,

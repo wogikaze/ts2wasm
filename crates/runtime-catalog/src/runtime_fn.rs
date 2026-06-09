@@ -408,6 +408,8 @@ pub enum RuntimeFn {
     /// M10: Array methods
     ArrayPush,
     ArrayPushGrow,
+    /// Grow an array to at least the specified capacity (reallocates if needed)
+    ArrayGrowTo,
     ArrayPop,
     /// new Array(length) with single numeric argument — allocates an array with given length (all holes)
     ArrayCtorWithLength,
@@ -1894,6 +1896,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "RegexpParseFlags" => Some(RuntimeFn::RegexpParseFlags),
         "ArrayPush" => Some(RuntimeFn::ArrayPush),
         "ArrayPushGrow" => Some(RuntimeFn::ArrayPushGrow),
+        "ArrayGrowTo" => Some(RuntimeFn::ArrayGrowTo),
         "ArrayIndexPresent" => Some(RuntimeFn::ArrayIndexPresent),
         "ArrayPop" => Some(RuntimeFn::ArrayPop),
         "ArrayCtorWithLength" => Some(RuntimeFn::ArrayCtorWithLength),
@@ -2255,6 +2258,7 @@ impl RuntimeFn {
             | Self::SharedArrayBufferNew
             | Self::ArrayPush
             | Self::ArrayPushGrow
+            | Self::ArrayGrowTo
             | Self::ArrayPop
             | Self::ArrayCtorWithLength
             | Self::ArraySlice
@@ -2982,6 +2986,7 @@ impl RuntimeFn {
             | Self::ArrayMapStringSplit
             | Self::ArrayPush
             | Self::ArrayPushGrow
+            | Self::ArrayGrowTo
             | Self::ArrayPushOrSpread
             | Self::ArrayUnshift
             | Self::DateSetTime
@@ -3497,6 +3502,7 @@ impl RuntimeFn {
             // Array methods
             Self::ArrayPush,
             Self::ArrayPushGrow,
+            Self::ArrayGrowTo,
             Self::ArrayPop,
             Self::ArrayCtorWithLength,
             Self::ArraySlice,
@@ -4018,6 +4024,7 @@ impl RuntimeFn {
             // Array methods
             Self::ArrayPush,
             Self::ArrayPushGrow,
+            Self::ArrayGrowTo,
             Self::ArrayPop,
             Self::ArrayCtorWithLength,
             Self::ArraySlice,
