@@ -7729,6 +7729,10 @@ impl<'a> NativeLoweredEmitter<'a> {
                 expr,
                 ..
             } => self.can_emit_js_value_expr_as_tagged(expr, ctx),
+            LoweredExpr::Unary {
+                op: LoweredUnaryOp::TypeOf,
+                ..
+            } => true,
             LoweredExpr::PropertyGetDynamic { obj, key, .. }
             | LoweredExpr::Index {
                 object: obj,
@@ -7883,6 +7887,10 @@ impl<'a> NativeLoweredEmitter<'a> {
                 out.push(WasmInstr::Call(RuntimeFn::NumberCoerce.symbol().to_owned()));
                 Ok(())
             }
+            LoweredExpr::Unary {
+                op: LoweredUnaryOp::TypeOf,
+                ..
+            } => self.emit_expr(expr, ctx, out),
             LoweredExpr::Binary {
                 left,
                 op: LoweredBinaryOp::Add,
