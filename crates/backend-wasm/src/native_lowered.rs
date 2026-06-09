@@ -3307,6 +3307,12 @@ impl<'a> NativeLoweredEmitter<'a> {
                     if self.try_emit_bitwise_runtime_call(*op, left, right, ctx, out)? {
                         return Ok(());
                     }
+                    if *op == LoweredBinaryOp::Power {
+                        self.emit_concat_arg_as_tagged(left, ctx, out)?;
+                        self.emit_concat_arg_as_tagged(right, ctx, out)?;
+                        out.push(WasmInstr::Call(RuntimeFn::MathPow.symbol().to_owned()));
+                        return Ok(());
+                    }
                     self.emit_expr(left, ctx, out)?;
                     self.emit_expr(right, ctx, out)?;
                     out.push(binary_op_instr(*op)?);
@@ -4246,6 +4252,12 @@ impl<'a> NativeLoweredEmitter<'a> {
                 }
                 FunctionCallKind::Builtin(BuiltinId::MathPow) => {
                     if self.try_emit_static_value_expr(expr, ctx, out)? {
+                        return Ok(());
+                    }
+                    if args.len() == 2 {
+                        self.emit_concat_arg_as_tagged(&args[0], ctx, out)?;
+                        self.emit_concat_arg_as_tagged(&args[1], ctx, out)?;
+                        out.push(WasmInstr::Call(RuntimeFn::MathPow.symbol().to_owned()));
                         return Ok(());
                     }
                     for arg in args {
@@ -35628,6 +35640,7 @@ fn native_numeric_binary_runtime_fn(op: LoweredBinaryOp) -> Option<RuntimeFn> {
         LoweredBinaryOp::Multiply => Some(RuntimeFn::Mul),
         LoweredBinaryOp::Divide => Some(RuntimeFn::Div),
         LoweredBinaryOp::Modulo => Some(RuntimeFn::Mod),
+        LoweredBinaryOp::Power => Some(RuntimeFn::MathPow),
         _ => None,
     }
 }
