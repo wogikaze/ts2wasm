@@ -1141,7 +1141,8 @@ impl<'a> NativeLoweredEmitter<'a> {
                 wasm = wasm.local(WasmValType::I32);
             }
         }
-        let runtime_array_locals = collect_array_push_grow_locals(&function.body);
+        let mut runtime_array_locals = collect_array_push_grow_locals(&function.body);
+        runtime_array_locals.extend(collect_array_index_mutation_locals(&function.body));
         let static_array_plan = collect_static_array_plan(&function.body, &self.program.functions);
         let (next_wasm, mut static_arrays) =
             append_static_array_locals(wasm, function.params.len(), &static_array_plan);
@@ -1275,8 +1276,10 @@ impl<'a> NativeLoweredEmitter<'a> {
             locals.insert(*local, index);
             wasm = wasm.local(WasmValType::I32);
         }
-        let runtime_array_locals =
+        let mut runtime_array_locals =
             collect_array_push_grow_locals(&self.program.top_level_statements);
+        runtime_array_locals
+            .extend(collect_array_index_mutation_locals(&self.program.top_level_statements));
         let static_array_plan =
             collect_static_array_plan(&self.program.top_level_statements, &self.program.functions);
         let (next_wasm, mut static_arrays) =
@@ -1333,7 +1336,8 @@ impl<'a> NativeLoweredEmitter<'a> {
             locals.insert(LocalId(index), index);
             wasm = wasm.local(WasmValType::I32);
         }
-        let runtime_array_locals = collect_array_push_grow_locals(&module_info.statements);
+        let mut runtime_array_locals = collect_array_push_grow_locals(&module_info.statements);
+        runtime_array_locals.extend(collect_array_index_mutation_locals(&module_info.statements));
         let static_array_plan =
             collect_static_array_plan(&module_info.statements, &self.program.functions);
         let (next_wasm, mut static_arrays) =
@@ -3517,7 +3521,7 @@ impl<'a> NativeLoweredEmitter<'a> {
                 Ok(())
             }
             LoweredExpr::PropertySet {
-                object, key, value, ..
+                object, key, value, span,
             } => {
                 if let Some(module_id) = self.module_namespace_id(object, ctx) {
                     let symbol = self
@@ -3561,7 +3565,7 @@ impl<'a> NativeLoweredEmitter<'a> {
                 out.push(WasmInstr::LocalGet(ctx.switch_value_local));
                 out.push(WasmInstr::I32Const(key_offset));
                 out.push(WasmInstr::I32Const(key.len() as i32));
-                self.emit_expr(value, ctx, out)?;
+                self.emit_concat_arg_as_tagged(value, ctx, out)?;
                 out.push(WasmInstr::Call(RuntimeFn::PropertySet.symbol().to_owned()));
                 Ok(())
             }
@@ -3614,7 +3618,7 @@ impl<'a> NativeLoweredEmitter<'a> {
                 object,
                 index,
                 value,
-                ..
+                span,
             } => {
                 if let Some(key) = static_property_key_from_locals(&ctx.static_locals, index)
                     && static_object_property_can_write(ctx, object, &key) == Some(false)
@@ -3651,7 +3655,7 @@ impl<'a> NativeLoweredEmitter<'a> {
                 if expr_produces_value(object, &self.function_results) {
                     out.push(WasmInstr::Drop);
                 }
-                self.emit_expr(index, ctx, out)?;
+                self.emit_concat_arg_as_tagged(index, ctx, out)?;
                 out.push(WasmInstr::I32Const(Layout::SCRATCH_OFFSET as i32));
                 out.push(WasmInstr::Call(
                     RuntimeFn::ValueToStringInto.symbol().to_owned(),
@@ -3661,7 +3665,7 @@ impl<'a> NativeLoweredEmitter<'a> {
                 self.emit_expr(object, ctx, out)?;
                 out.push(WasmInstr::I32Const(Layout::SCRATCH_OFFSET as i32));
                 out.push(WasmInstr::LocalGet(ctx.switch_value_local));
-                self.emit_expr(value, ctx, out)?;
+                self.emit_concat_arg_as_tagged(value, ctx, out)?;
                 out.push(WasmInstr::Call(
                     RuntimeFn::PropertySet.symbol().to_owned(),
                 ));
@@ -10646,6 +10650,436 @@ fn collect_array_push_grow_locals(stmts: &[LoweredStmt]) -> HashSet<LocalId> {
     let mut locals = HashSet::new();
     collect_array_push_grow_locals_from_stmts(stmts, &mut locals);
     locals
+}
+
+/// Collect locals where an array property set with an integer key occurs.
+///
+/// When code like `x["0"] = val` or `x[0] = val` is used on a static array,
+/// the static array tracking can't handle the mutation — it either silently
+/// drops the assignment or only updates compile-time state without emitting
+/// runtime code.  These arrays must be materialised as real heap arrays so
+/// that `$property_set` / `$index` work at runtime.
+///
+/// This function first finds all locals initialised as `ArrayNew`, then
+/// scans for `PropertySet`/`PropertySetDynamic` with integer keys on those
+/// locals.  The resulting set is merged into `runtime_array_locals`.
+fn build_copy_map_from_stmts(
+    stmts: &[LoweredStmt],
+    array_new_locals: &HashSet<LocalId>,
+    copy_map: &mut HashMap<LocalId, LocalId>,
+) {
+    for stmt in stmts {
+        match stmt {
+            LoweredStmt::Let(local, expr, _) | LoweredStmt::Assign(local, expr, _) => {
+                if let LoweredExpr::Local(src, _) = expr {
+                    if array_new_locals.contains(src) {
+                        copy_map.insert(*local, *src);
+                    }
+                } else if let LoweredExpr::Block { stmts, .. } = expr {
+                    build_copy_map_from_stmts(stmts, array_new_locals, copy_map);
+                }
+            }
+            LoweredStmt::Expr(expr, _)
+            | LoweredStmt::Yield(expr, _)
+            | LoweredStmt::Return(expr, _)
+            | LoweredStmt::Throw(expr, _)
+            | LoweredStmt::Export { expr, .. }
+            | LoweredStmt::ModuleExportsAssign { expr, .. } => {
+                if let LoweredExpr::Block { stmts, .. } = expr {
+                    build_copy_map_from_stmts(stmts, array_new_locals, copy_map);
+                }
+            }
+            LoweredStmt::Block(stmts, _) => {
+                build_copy_map_from_stmts(stmts, array_new_locals, copy_map);
+            }
+            LoweredStmt::If {
+                then_body,
+                else_body,
+                ..
+            } => {
+                build_copy_map_from_stmts(then_body, array_new_locals, copy_map);
+                build_copy_map_from_stmts(else_body, array_new_locals, copy_map);
+            }
+            LoweredStmt::While { body, .. }
+            | LoweredStmt::DoWhile { body, .. }
+            | LoweredStmt::For { body, .. }
+            | LoweredStmt::ForOf { body, .. } => {
+                build_copy_map_from_stmts(body, array_new_locals, copy_map);
+            }
+            LoweredStmt::Switch { cases, .. } => {
+                for (_, body) in cases {
+                    build_copy_map_from_stmts(body, array_new_locals, copy_map);
+                }
+            }
+            LoweredStmt::Labeled { body, .. } => {
+                build_copy_map_from_stmts(std::slice::from_ref(body), array_new_locals, copy_map);
+            }
+            LoweredStmt::TryFinally {
+                try_body,
+                finally_body,
+                ..
+            } => {
+                build_copy_map_from_stmts(try_body, array_new_locals, copy_map);
+                build_copy_map_from_stmts(finally_body, array_new_locals, copy_map);
+            }
+            LoweredStmt::TryCatch {
+                try_body,
+                catch_body,
+                finally_body,
+                ..
+            } => {
+                build_copy_map_from_stmts(try_body, array_new_locals, copy_map);
+                if let Some(catch_body) = catch_body {
+                    build_copy_map_from_stmts(catch_body, array_new_locals, copy_map);
+                }
+                if let Some(finally_body) = finally_body {
+                    build_copy_map_from_stmts(finally_body, array_new_locals, copy_map);
+                }
+            }
+            _ => {}
+        }
+    }
+}
+
+fn collect_array_index_mutation_locals(stmts: &[LoweredStmt]) -> HashSet<LocalId> {
+    let array_new_locals = find_array_new_locals(stmts);
+    let mut result = HashSet::new();
+    // First pass: find locals directly used in PropertySet/PropertySetDynamic
+    collect_array_index_mutation_locals_from_stmts(stmts, &mut result, &array_new_locals);
+    // Second pass: if a copy of an array-new local is in the result,
+    // also add the original so that try_emit_runtime_empty_array_init fires
+    // for the original declaration.  The null guard creates a copy:
+    //   Let(local1, Local(local0))
+    //   PropertySet { object: Local(local1), ... }
+    // Here local0 is the real variable and needs to be runtime too.
+    let mut copy_map: HashMap<LocalId, LocalId> = HashMap::new();
+    build_copy_map_from_stmts(stmts, &array_new_locals, &mut copy_map);
+    for mutated in result.clone() {
+        if let Some(original) = copy_map.get(&mutated) {
+            result.insert(*original);
+        }
+    }
+    result
+}
+
+fn find_array_new_locals(stmts: &[LoweredStmt]) -> HashSet<LocalId> {
+    let mut locals = HashSet::new();
+    find_array_new_locals_from_stmts(stmts, &mut locals);
+    locals
+}
+
+fn find_array_new_locals_from_stmts(stmts: &[LoweredStmt], locals: &mut HashSet<LocalId>) {
+    for stmt in stmts {
+        match stmt {
+            LoweredStmt::Let(local, expr, _) | LoweredStmt::Assign(local, expr, _) => {
+                if matches!(
+                    expr,
+                    LoweredExpr::ArrayNew { .. } | LoweredExpr::ArrayNewSparse { .. }
+                ) {
+                    locals.insert(*local);
+                } else if let LoweredExpr::Local(src, _) = expr {
+                    if locals.contains(src) {
+                        locals.insert(*local);
+                    }
+                } else if let LoweredExpr::Block { stmts, .. } = expr {
+                    find_array_new_locals_from_stmts(stmts, locals);
+                }
+            }
+            LoweredStmt::Expr(expr, _)
+            | LoweredStmt::Yield(expr, _)
+            | LoweredStmt::Return(expr, _)
+            | LoweredStmt::Throw(expr, _)
+            | LoweredStmt::Export { expr, .. }
+            | LoweredStmt::ModuleExportsAssign { expr, .. } => {
+                find_array_new_locals_from_expr(expr, locals);
+            }
+            LoweredStmt::Block(stmts, _) => {
+                find_array_new_locals_from_stmts(stmts, locals);
+            }
+            LoweredStmt::If {
+                then_body,
+                else_body,
+                ..
+            } => {
+                find_array_new_locals_from_stmts(then_body, locals);
+                find_array_new_locals_from_stmts(else_body, locals);
+            }
+            LoweredStmt::While { body, .. }
+            | LoweredStmt::DoWhile { body, .. }
+            | LoweredStmt::For { body, .. }
+            | LoweredStmt::ForOf { body, .. } => {
+                find_array_new_locals_from_stmts(body, locals);
+            }
+            LoweredStmt::Switch { cases, .. } => {
+                for (_, body) in cases {
+                    find_array_new_locals_from_stmts(body, locals);
+                }
+            }
+            LoweredStmt::Labeled { body, .. } => {
+                find_array_new_locals_from_stmts(std::slice::from_ref(body), locals);
+            }
+            LoweredStmt::TryFinally {
+                try_body,
+                finally_body,
+                ..
+            } => {
+                find_array_new_locals_from_stmts(try_body, locals);
+                find_array_new_locals_from_stmts(finally_body, locals);
+            }
+            LoweredStmt::TryCatch {
+                try_body,
+                catch_body,
+                finally_body,
+                ..
+            } => {
+                find_array_new_locals_from_stmts(try_body, locals);
+                if let Some(catch_body) = catch_body {
+                    find_array_new_locals_from_stmts(catch_body, locals);
+                }
+                if let Some(finally_body) = finally_body {
+                    find_array_new_locals_from_stmts(finally_body, locals);
+                }
+            }
+            _ => {}
+        }
+    }
+}
+
+fn find_array_new_locals_from_expr(expr: &LoweredExpr, locals: &mut HashSet<LocalId>) {
+    match expr {
+        LoweredExpr::ArrayNew { elements, .. } => {
+            // Sub-expressions of ArrayNew don't create new array locals
+            for elem in elements {
+                find_array_new_locals_from_expr(elem, locals);
+            }
+        }
+        LoweredExpr::ArrayNewSparse { slots, .. } => {
+            for slot in slots {
+                if let LoweredArraySlot::Present(elem) = slot {
+                    find_array_new_locals_from_expr(elem, locals);
+                }
+            }
+        }
+        LoweredExpr::Block { stmts, result, .. } => {
+            find_array_new_locals_from_stmts(stmts, locals);
+            find_array_new_locals_from_expr(result, locals);
+        }
+        LoweredExpr::RuntimeCall { args, .. } | LoweredExpr::Call { args, .. } => {
+            for arg in args {
+                find_array_new_locals_from_expr(arg, locals);
+            }
+        }
+        LoweredExpr::Binary { left, right, .. } => {
+            find_array_new_locals_from_expr(left, locals);
+            find_array_new_locals_from_expr(right, locals);
+        }
+        LoweredExpr::Unary { expr, .. }
+        | LoweredExpr::Assign { expr, .. }
+        | LoweredExpr::LogicalAssign { expr, .. }
+        | LoweredExpr::EnvCellNew(expr, _)
+        | LoweredExpr::EnvCellSet { expr, .. }
+        | LoweredExpr::GetLength(expr, _)
+        | LoweredExpr::PromiseGetValue { promise: expr, .. } => {
+            find_array_new_locals_from_expr(expr, locals);
+        }
+        LoweredExpr::ObjectNew { props, .. } => {
+            for (_, value) in props {
+                find_array_new_locals_from_expr(value, locals);
+            }
+        }
+        LoweredExpr::PropertyGet { obj, .. }
+        | LoweredExpr::OptionalPropertyGet { obj, .. }
+        | LoweredExpr::PropertyDelete { object: obj, .. } => {
+            find_array_new_locals_from_expr(obj, locals);
+        }
+        LoweredExpr::ArrayGet { arr: obj, index, .. }
+        | LoweredExpr::Index { object: obj, index, .. }
+        | LoweredExpr::OptionalIndex { object: obj, index, .. }
+        | LoweredExpr::PropertyGetDynamic { obj, key: index, .. }
+        | LoweredExpr::PropertyDeleteDynamic { object: obj, key: index, .. } => {
+            find_array_new_locals_from_expr(obj, locals);
+            find_array_new_locals_from_expr(index, locals);
+        }
+        LoweredExpr::PropertySet { object, value, .. } => {
+            find_array_new_locals_from_expr(object, locals);
+            find_array_new_locals_from_expr(value, locals);
+        }
+        LoweredExpr::PropertySetDynamic { object, index, value, .. } => {
+            find_array_new_locals_from_expr(object, locals);
+            find_array_new_locals_from_expr(index, locals);
+            find_array_new_locals_from_expr(value, locals);
+        }
+        _ => {}
+    }
+}
+
+fn collect_array_index_mutation_locals_from_stmts(
+    stmts: &[LoweredStmt],
+    result: &mut HashSet<LocalId>,
+    array_new_locals: &HashSet<LocalId>,
+) {
+    for stmt in stmts {
+        match stmt {
+            LoweredStmt::Expr(expr, _)
+            | LoweredStmt::Yield(expr, _)
+            | LoweredStmt::Return(expr, _)
+            | LoweredStmt::Throw(expr, _)
+            | LoweredStmt::Export { expr, .. }
+            | LoweredStmt::ModuleExportsAssign { expr, .. } => {
+                collect_array_index_mutation_locals_from_expr(expr, result, array_new_locals);
+            }
+            LoweredStmt::Let(_, expr, _) | LoweredStmt::Assign(_, expr, _) => {
+                collect_array_index_mutation_locals_from_expr(expr, result, array_new_locals);
+            }
+            LoweredStmt::Block(stmts, _) => {
+                collect_array_index_mutation_locals_from_stmts(stmts, result, array_new_locals);
+            }
+            LoweredStmt::If {
+                then_body,
+                else_body,
+                ..
+            } => {
+                collect_array_index_mutation_locals_from_stmts(then_body, result, array_new_locals);
+                collect_array_index_mutation_locals_from_stmts(else_body, result, array_new_locals);
+            }
+            LoweredStmt::While { body, .. }
+            | LoweredStmt::DoWhile { body, .. }
+            | LoweredStmt::For { body, .. }
+            | LoweredStmt::ForOf { body, .. } => {
+                collect_array_index_mutation_locals_from_stmts(body, result, array_new_locals);
+            }
+            LoweredStmt::Switch { cases, .. } => {
+                for (_, body) in cases {
+                    collect_array_index_mutation_locals_from_stmts(body, result, array_new_locals);
+                }
+            }
+            LoweredStmt::Labeled { body, .. } => {
+                collect_array_index_mutation_locals_from_stmts(
+                    std::slice::from_ref(body),
+                    result,
+                    array_new_locals,
+                );
+            }
+            LoweredStmt::TryFinally {
+                try_body,
+                finally_body,
+                ..
+            } => {
+                collect_array_index_mutation_locals_from_stmts(try_body, result, array_new_locals);
+                collect_array_index_mutation_locals_from_stmts(
+                    finally_body,
+                    result,
+                    array_new_locals,
+                );
+            }
+            LoweredStmt::TryCatch {
+                try_body,
+                catch_body,
+                finally_body,
+                ..
+            } => {
+                collect_array_index_mutation_locals_from_stmts(try_body, result, array_new_locals);
+                if let Some(catch_body) = catch_body {
+                    collect_array_index_mutation_locals_from_stmts(
+                        catch_body,
+                        result,
+                        array_new_locals,
+                    );
+                }
+                if let Some(finally_body) = finally_body {
+                    collect_array_index_mutation_locals_from_stmts(
+                        finally_body,
+                        result,
+                        array_new_locals,
+                    );
+                }
+            }
+            _ => {}
+        }
+    }
+}
+
+fn collect_array_index_mutation_locals_from_expr(
+    expr: &LoweredExpr,
+    result: &mut HashSet<LocalId>,
+    array_new_locals: &HashSet<LocalId>,
+) {
+    match expr {
+        LoweredExpr::PropertySet {
+            object, key, value, ..
+        } => {
+            if let LoweredExpr::Local(local, _) = object.as_ref() {
+                if array_new_locals.contains(local) && key.parse::<u32>().is_ok() {
+                    result.insert(*local);
+                }
+            }
+            collect_array_index_mutation_locals_from_expr(object, result, array_new_locals);
+            collect_array_index_mutation_locals_from_expr(value, result, array_new_locals);
+        }
+        LoweredExpr::PropertySetDynamic {
+            object,
+            index,
+            value,
+            ..
+        } => {
+            if let LoweredExpr::Local(local, _) = object.as_ref() {
+                if array_new_locals.contains(local)
+                    && matches!(index.as_ref(), LoweredExpr::Number(_, _))
+                {
+                    result.insert(*local);
+                }
+            }
+            collect_array_index_mutation_locals_from_expr(object, result, array_new_locals);
+            collect_array_index_mutation_locals_from_expr(index, result, array_new_locals);
+            collect_array_index_mutation_locals_from_expr(value, result, array_new_locals);
+        }
+        LoweredExpr::Block { stmts, result: block_result, .. } => {
+            collect_array_index_mutation_locals_from_stmts(stmts, result, array_new_locals);
+            collect_array_index_mutation_locals_from_expr(block_result, result, array_new_locals);
+        }
+        LoweredExpr::RuntimeCall { args, .. } | LoweredExpr::Call { args, .. } => {
+            for arg in args {
+                collect_array_index_mutation_locals_from_expr(arg, result, array_new_locals);
+            }
+        }
+        LoweredExpr::Binary { left, right, .. } => {
+            collect_array_index_mutation_locals_from_expr(left, result, array_new_locals);
+            collect_array_index_mutation_locals_from_expr(right, result, array_new_locals);
+        }
+        LoweredExpr::Unary { expr, .. }
+        | LoweredExpr::Assign { expr, .. }
+        | LoweredExpr::LogicalAssign { expr, .. }
+        | LoweredExpr::EnvCellNew(expr, _)
+        | LoweredExpr::EnvCellSet { expr, .. }
+        | LoweredExpr::GetLength(expr, _)
+        | LoweredExpr::PromiseGetValue { promise: expr, .. } => {
+            collect_array_index_mutation_locals_from_expr(expr, result, array_new_locals);
+        }
+        LoweredExpr::ArrayNew { elements, .. } => {
+            for elem in elements {
+                collect_array_index_mutation_locals_from_expr(elem, result, array_new_locals);
+            }
+        }
+        LoweredExpr::ObjectNew { props, .. } => {
+            for (_, value) in props {
+                collect_array_index_mutation_locals_from_expr(value, result, array_new_locals);
+            }
+        }
+        LoweredExpr::PropertyGet { obj, .. }
+        | LoweredExpr::OptionalPropertyGet { obj, .. }
+        | LoweredExpr::PropertyDelete { object: obj, .. } => {
+            collect_array_index_mutation_locals_from_expr(obj, result, array_new_locals);
+        }
+        LoweredExpr::ArrayGet { arr: obj, index, .. }
+        | LoweredExpr::Index { object: obj, index, .. }
+        | LoweredExpr::OptionalIndex { object: obj, index, .. }
+        | LoweredExpr::PropertyGetDynamic { obj, key: index, .. }
+        | LoweredExpr::PropertyDeleteDynamic { object: obj, key: index, .. } => {
+            collect_array_index_mutation_locals_from_expr(obj, result, array_new_locals);
+            collect_array_index_mutation_locals_from_expr(index, result, array_new_locals);
+        }
+        _ => {}
+    }
 }
 
 fn runtime_array_mutator_args(args: &[LoweredExpr], ctx: &FunctionCtx) -> bool {

@@ -507,13 +507,26 @@ impl WatEmitter<'_> {
         (if (i32.ne (local.get $is_array_index) (i32.const 0))
           (then
             (if (i32.ge_u (local.get $count) (i32.load (local.get $base)))
-              (then (return (i32.const {undefined}))))
+              (then
+                ;; Check capacity — can't grow past allocated capacity
+                (if (i32.ge_u (local.get $count) (i32.load offset={capacity_offset} (local.get $base)))
+                  (then (return (i32.const {undefined}))))
+                ;; Grow array: set length = index + 1
+                (i32.store (local.get $base) (i32.add (local.get $count) (i32.const 1)))))
             (i32.store
               (i32.add (local.get $base)
                 (i32.add (i32.const 20) (i32.shl (local.get $count) (i32.const 2))))
               (local.get $value))
+            ;; Set presence bit for this index
+            (i32.store
+              (i32.add (local.get $base) (i32.const {presence_words_offset}))
+              (i32.or
+                (i32.load (i32.add (local.get $base) (i32.const {presence_words_offset})))
+                (i32.shl (i32.const 1) (local.get $count))))
             (return (local.get $value))))
         (return (i32.const {undefined}))))
+
+
 
     (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {undefined}))))
     ;; Check frozen flag — frozen objects reject writes (non-strict: silent fail)
@@ -609,6 +622,8 @@ impl WatEmitter<'_> {
             tracked_attr_count = Layout::OBJECT_ACCESSOR_PROP_SHIFT
                 - Layout::OBJECT_NON_CONFIGURABLE_SHIFT,
             symbol_sentinel = Layout::SYMBOL_SENTINEL,
+            capacity_offset = Layout::ARRAY_CAPACITY_OFFSET,
+            presence_words_offset = Layout::ARRAY_PRESENCE_WORDS_OFFSET,
         ));
     }
 
