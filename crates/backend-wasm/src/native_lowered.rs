@@ -3334,13 +3334,22 @@ impl<'a> NativeLoweredEmitter<'a> {
                         Ok(())
                     }
                     LoweredUnaryOp::TypeOf => {
-                        if expr_produces_value(expr, &self.function_results) {
-                            out.push(WasmInstr::Drop);
+                        if let Some(bytes) = native_typeof_bytes(expr, ctx) {
+                            if expr_produces_value(expr, &self.function_results) {
+                                out.push(WasmInstr::Drop);
+                            }
+                            let offset = self.alloc_data(bytes);
+                            out.push(WasmInstr::I32Const(offset as i32));
+                            Ok(())
+                        } else {
+                            // Fall back to runtime typeof for expressions whose type
+                            // cannot be determined at compile time (e.g. property access
+                            // chains like Array.prototype.at).
+                            out.push(WasmInstr::Call(
+                                RuntimeFn::TypeOf.symbol().to_owned(),
+                            ));
+                            Ok(())
                         }
-                        let bytes = native_typeof_bytes(expr, ctx).unwrap_or(b"undefined");
-                        let offset = self.alloc_data(bytes);
-                        out.push(WasmInstr::I32Const(offset as i32));
-                        Ok(())
                     }
                     LoweredUnaryOp::Delete => {
                         if expr_produces_value(expr, &self.function_results) {
@@ -7883,6 +7892,9 @@ impl<'a> NativeLoweredEmitter<'a> {
                     ))
                 }
             }
+            LoweredExpr::PropertyGet { obj, key, .. } => {
+                self.emit_property_get_as_tagged(obj, key, ctx, out)
+            }
             LoweredExpr::PropertyGetDynamic { obj, key, .. }
             | LoweredExpr::Index {
                 object: obj,
@@ -7941,6 +7953,51 @@ impl<'a> NativeLoweredEmitter<'a> {
                 "native LoweredProgram emitter cannot tag this equality operand",
             )),
         }
+    }
+
+    fn can_emit_property_get_as_tagged(
+        &self,
+        obj: &LoweredExpr,
+        key: &str,
+        ctx: &FunctionCtx,
+    ) -> bool {
+        if let Some(expr) = static_object_property(ctx, obj, key) {
+            return self.can_emit_js_value_expr_as_tagged(expr, ctx);
+        }
+        if key == "length" {
+            return true;
+        }
+        if static_object_slot(ctx, obj, key).is_some() {
+            return true;
+        }
+        if static_object_known(ctx, obj) {
+            return true;
+        }
+        true
+    }
+
+    fn emit_property_get_as_tagged(
+        &mut self,
+        obj: &LoweredExpr,
+        key: &str,
+        ctx: &FunctionCtx,
+        out: &mut Vec<WasmInstr>,
+    ) -> Result<(), Diagnostic> {
+        if let Some(expr) = static_object_property(ctx, obj, key) {
+            return self.emit_js_value_expr_as_tagged(expr, ctx, out);
+        }
+        self.emit_expr(
+            &LoweredExpr::PropertyGet {
+                obj: Box::new(obj.clone()),
+                key: key.to_owned(),
+                span: Span::generated("native-prop-get-tagged"),
+            },
+            ctx,
+            out,
+        )?;
+        // PropertyGet with non-static slot returns a tagged value via $index.
+        // Static slot reads may produce an untagged value; ensure we return tagged.
+        Ok(())
     }
 
     fn can_emit_dynamic_index_expr_as_tagged(
@@ -8783,6 +8840,9 @@ impl<'a> NativeLoweredEmitter<'a> {
             let result_ctx = self.emit_stmts_with_static_state(stmts, ctx, out)?;
             return self.emit_concat_arg_as_tagged(result, &result_ctx, out);
         }
+        if let LoweredExpr::PropertyGet { obj, key, .. } = expr {
+            return self.emit_property_get_as_tagged(obj, key, ctx, out);
+        }
         if let LoweredExpr::PropertyGetDynamic { obj, key, .. }
         | LoweredExpr::Index {
             object: obj,
@@ -8878,6 +8938,10 @@ impl<'a> NativeLoweredEmitter<'a> {
             {
                 self.emit_expr(expr, ctx, out)
             }
+            LoweredExpr::Binary {
+                op: LoweredBinaryOp::Or | LoweredBinaryOp::And,
+                ..
+            } => self.emit_expr(expr, ctx, out),
             _ => self.emit_js_value_expr_as_tagged(expr, ctx, out),
         }
     }
