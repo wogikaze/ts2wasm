@@ -593,6 +593,10 @@ fn collect_required_runtime_expr(plan: &mut RuntimeLinkPlan, expr: &LoweredExpr)
         LoweredExpr::RuntimeCall {
             intrinsic, args, ..
         } => {
+            if *intrinsic == RuntimeFn::ArrayFill {
+                plan.add_required_runtime(RuntimeFn::ArrayCtorWithLength);
+                plan.add_required_runtime(RuntimeFn::ArrayFill);
+            }
             if *intrinsic == RuntimeFn::ArrayPushMany {
                 plan.add_required_runtime(RuntimeFn::ArrayPush);
                 plan.add_required_runtime(RuntimeFn::ArrayPushGrow);

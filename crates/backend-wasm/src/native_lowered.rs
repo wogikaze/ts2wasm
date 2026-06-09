@@ -1547,6 +1547,9 @@ impl<'a> NativeLoweredEmitter<'a> {
                 if self.try_emit_static_array_copy_within_init(*local, expr, ctx, out)? {
                     return Ok(());
                 }
+                if self.try_emit_static_array_fill_call(*local, expr, ctx, out)? {
+                    return Ok(());
+                }
                 if self.try_emit_static_typed_array_set_init(*local, expr, ctx, out)? {
                     return Ok(());
                 }
@@ -1595,9 +1598,6 @@ impl<'a> NativeLoweredEmitter<'a> {
                     return Ok(());
                 }
                 if self.try_emit_console_call(expr, ctx, out)? {
-                    return Ok(());
-                }
-                if self.try_emit_static_array_fill_call(expr, ctx, out)? {
                     return Ok(());
                 }
                 if self.try_emit_static_array_copy_within_call(expr, ctx, out)? {
@@ -3388,6 +3388,9 @@ impl<'a> NativeLoweredEmitter<'a> {
                 }
                 out.push(WasmInstr::I32Const(STATIC_REF_TOKEN));
                 Ok(())
+            }
+            LoweredExpr::ArrayNew { elements, .. } if elements.is_empty() => {
+                self.emit_runtime_rest_array(&[], ctx, out)
             }
             LoweredExpr::ObjectNew { .. } | LoweredExpr::ArrayNew { .. } => {
                 out.push(WasmInstr::I32Const(STATIC_REF_TOKEN));
@@ -5221,6 +5224,7 @@ impl<'a> NativeLoweredEmitter<'a> {
 
     fn try_emit_static_array_fill_call(
         &mut self,
+        target_local: LocalId,
         expr: &LoweredExpr,
         ctx: &FunctionCtx,
         out: &mut Vec<WasmInstr>,
@@ -5233,19 +5237,39 @@ impl<'a> NativeLoweredEmitter<'a> {
         else {
             return Ok(false);
         };
-        let Some((array, elements)) =
-            static_array_fill_elements_from_args(args, &ctx.static_locals, &self.program.functions)
-        else {
-            return Ok(false);
-        };
-        let Some(slots) = ctx.static_arrays.get(&array) else {
-            return Ok(false);
-        };
-        for (slot, element) in slots.iter().zip(elements.iter()) {
-            self.emit_expr(element, ctx, out)?;
-            local_set_with_gc_mirror(out, ctx, *slot);
+        let fill_args = args;
+        // Try the standard path: first arg is a Local referencing a static array.
+        if let Some((array, elements)) =
+            static_array_fill_elements_from_args(fill_args, &ctx.static_locals, &self.program.functions)
+        {
+            if let Some(slots) = ctx.static_arrays.get(&array) {
+                for (slot, element) in slots.iter().zip(elements.iter()) {
+                    self.emit_expr(element, ctx, out)?;
+                    local_set_with_gc_mirror(out, ctx, *slot);
+                }
+                return Ok(true);
+            }
         }
-        Ok(true)
+        // Try the inline ArrayNew path: first arg is an ArrayNew literal.
+        if let [LoweredExpr::ArrayNew { elements, .. }, value, start, end] = &fill_args[..] {
+            let len = elements.len();
+            let fill_value = static_value_from_expr_with_functions(value, &ctx.static_locals, &self.program.functions)
+                .and_then(static_value_to_expr)
+                .unwrap_or_else(|| value.clone());
+            let start_idx = static_array_relative_index(start, len, 0, &ctx.static_locals, &self.program.functions).unwrap_or(0);
+            let end_idx = static_array_relative_index(end, len, len as isize, &ctx.static_locals, &self.program.functions).unwrap_or(len);
+            let from = start_idx.min(len);
+            let to = end_idx.min(len);
+            let mut filled = elements.clone();
+            for elem in filled.iter_mut().take(to).skip(from) {
+                *elem = fill_value.clone();
+            }
+            let local = local_index(ctx, target_local)?;
+            self.emit_runtime_rest_array(&filled, ctx, out)?;
+            local_set_with_gc_mirror(out, ctx, local);
+            return Ok(true);
+        }
+        Ok(false)
     }
 
     fn try_emit_static_array_copy_within_init(
