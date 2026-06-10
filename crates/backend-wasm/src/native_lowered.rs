@@ -3485,8 +3485,13 @@ impl<'a> NativeLoweredEmitter<'a> {
                     return self.emit_expr(&expr, ctx, out);
                 }
                 if key == "length" {
-                    if let Some(len) =
-                        static_array_len_with_functions(ctx, obj, &self.program.functions)
+                    // For runtime arrays, always use the runtime GetLength so that
+                    // prior length mutations (e.g. x.length = 2) are reflected.
+                    let is_runtime_array = matches!(&**obj, LoweredExpr::Local(local, _)
+                        if ctx.runtime_array_locals.contains(local));
+                    if !is_runtime_array
+                        && let Some(len) =
+                            static_array_len_with_functions(ctx, obj, &self.program.functions)
                     {
                         out.push(WasmInstr::I32Const(len as i32));
                     } else {
@@ -11301,6 +11306,25 @@ fn collect_array_push_grow_locals_from_expr(expr: &LoweredExpr, locals: &mut Has
         LoweredExpr::Block { stmts, result, .. } => {
             collect_array_push_grow_locals_from_stmts(stmts, locals);
             collect_array_push_grow_locals_from_expr(result, locals);
+            // The null-guard wrapper (lower_property_set_with_null_guard) creates:
+            //   Block { stmts: [Let(temp, Local(original)), If(_)], result: PropertySet { object: Local(temp), key: "length" } }
+            // The PropertySet handler above adds `temp` to locals, but the static array
+            // optimization keys on `original` (the variable in static_arrays).  Trace the
+            // Let alias back so `original` is also promoted to runtime.
+            if let LoweredExpr::PropertySet { object, key, .. } = result.as_ref()
+                && key == "length"
+                && let LoweredExpr::Local(temp_local, _) = object.as_ref()
+                && locals.contains(temp_local)
+            {
+                for stmt in stmts {
+                    if let LoweredStmt::Let(local, expr, _) = stmt && *local == *temp_local {
+                        let inner: &LoweredExpr = expr;
+                        if let LoweredExpr::Local(original, _) = inner {
+                            locals.insert(*original);
+                        }
+                    }
+                }
+            }
         }
         LoweredExpr::RuntimeCall { args, .. } | LoweredExpr::Call { args, .. } => {
             for arg in args {
@@ -11355,9 +11379,21 @@ fn collect_array_push_grow_locals_from_expr(expr: &LoweredExpr, locals: &mut Has
             collect_array_push_grow_locals_from_expr(obj, locals);
             collect_array_push_grow_locals_from_expr(index, locals);
         }
-        LoweredExpr::PropertySet { object, value, .. } => {
+        LoweredExpr::PropertySet {
+            object,
+            value,
+            key,
+            ..
+        } => {
             collect_array_push_grow_locals_from_expr(object, locals);
             collect_array_push_grow_locals_from_expr(value, locals);
+            // Setting .length on an array requires runtime array treatment
+            // so the PropertySet reaches $property_set at runtime.
+            if key == "length" {
+                if let LoweredExpr::Local(local, _) = object.as_ref() {
+                    locals.insert(*local);
+                }
+            }
         }
         LoweredExpr::PropertySetDynamic {
             object,

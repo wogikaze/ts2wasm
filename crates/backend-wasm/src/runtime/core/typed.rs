@@ -33862,7 +33862,134 @@ pub fn build_property_set() -> WasmFunction {
         WasmInstr::LocalGet(3),
         WasmInstr::Return,
         WasmInstr::End,
+        // Non-numeric key on array — check if it is "length"
+        // (key_ptr=local1, key_len=local2, heap_ptr=local5, value=local3)
+        WasmInstr::LocalGet(2),
+        WasmInstr::I32Const(6),
+        WasmInstr::I32Ne,
+        WasmInstr::If {
+            result_ty: WasmBlockType::Empty,
+        },
+        WasmInstr::Then,
         WasmInstr::I32Const(ValueTag::UNDEFINED),
+        WasmInstr::Return,
+        WasmInstr::End,
+        WasmInstr::LocalGet(1),
+        WasmInstr::I32Load {
+            align: 2,
+            offset: 0,
+        },
+        WasmInstr::I32Const(0x676E656C), // "leng" in LE
+        WasmInstr::I32Ne,
+        WasmInstr::If {
+            result_ty: WasmBlockType::Empty,
+        },
+        WasmInstr::Then,
+        WasmInstr::I32Const(ValueTag::UNDEFINED),
+        WasmInstr::Return,
+        WasmInstr::End,
+        WasmInstr::LocalGet(1),
+        WasmInstr::I32Load16U {
+            align: 1,
+            offset: 4,
+        },
+        WasmInstr::I32Const(0x6874), // "th" in LE
+        WasmInstr::I32Ne,
+        WasmInstr::If {
+            result_ty: WasmBlockType::Empty,
+        },
+        WasmInstr::Then,
+        WasmInstr::I32Const(ValueTag::UNDEFINED),
+        WasmInstr::Return,
+        WasmInstr::End,
+        // Key is "length" — extract numeric value
+        WasmInstr::LocalGet(3),
+        WasmInstr::I32Const(tag_mask),
+        WasmInstr::I32And,
+        WasmInstr::I32Const(ValueTag::NUMBER),
+        WasmInstr::I32Ne,
+        WasmInstr::If {
+            result_ty: WasmBlockType::Empty,
+        },
+        WasmInstr::Then,
+        WasmInstr::I32Const(ValueTag::UNDEFINED),
+        WasmInstr::Return,
+        WasmInstr::End,
+        WasmInstr::LocalGet(3),
+        WasmInstr::I32Const(ValueTag::NUMBER_SHIFT),
+        WasmInstr::I32ShrS,
+        WasmInstr::LocalSet(7), // local 7 = new_length (reuse i)
+
+        // Ensure new_length >= 0
+        WasmInstr::LocalGet(7),
+        WasmInstr::I32Const(0),
+        WasmInstr::I32LtS,
+        WasmInstr::If {
+            result_ty: WasmBlockType::Empty,
+        },
+        WasmInstr::Then,
+        WasmInstr::I32Const(ValueTag::UNDEFINED),
+        WasmInstr::Return,
+        WasmInstr::End,
+
+        // Truncate presence bits if new_length < current_length
+        WasmInstr::LocalGet(7),
+        WasmInstr::LocalGet(5),
+        WasmInstr::I32Load {
+            align: 2,
+            offset: 0,
+        },
+        WasmInstr::I32GeU,
+        WasmInstr::If {
+            result_ty: WasmBlockType::Empty,
+        },
+        WasmInstr::Then,
+        // Growing or no-op
+        WasmInstr::Else,
+        // Truncating — clear presence bits for indices >= new_length
+        WasmInstr::LocalGet(7),
+        WasmInstr::I32Const(31),
+        WasmInstr::I32GtU,
+        WasmInstr::If {
+            result_ty: WasmBlockType::Empty,
+        },
+        WasmInstr::Then,
+        // new_length >= 32: clear all (presence word only covers 0-31)
+        WasmInstr::LocalGet(5),
+        WasmInstr::I32Const(0),
+        WasmInstr::I32Store {
+            align: 2,
+            offset: Layout::ARRAY_PRESENCE_WORDS_OFFSET,
+        },
+        WasmInstr::Else,
+        // new_length < 32: mask presence
+        WasmInstr::LocalGet(5),
+        WasmInstr::LocalGet(5),
+        WasmInstr::I32Load {
+            align: 2,
+            offset: Layout::ARRAY_PRESENCE_WORDS_OFFSET,
+        },
+        WasmInstr::I32Const(1),
+        WasmInstr::LocalGet(7),
+        WasmInstr::I32Shl,
+        WasmInstr::I32Const(1),
+        WasmInstr::I32Sub,
+        WasmInstr::I32And,
+        WasmInstr::I32Store {
+            align: 2,
+            offset: Layout::ARRAY_PRESENCE_WORDS_OFFSET,
+        },
+        WasmInstr::End,
+        WasmInstr::End,
+        // Store new length
+        WasmInstr::LocalGet(5),
+        WasmInstr::LocalGet(7),
+        WasmInstr::I32Store {
+            align: 2,
+            offset: 0,
+        },
+        // Return the set value
+        WasmInstr::LocalGet(3),
         WasmInstr::Return,
         WasmInstr::End,
         WasmInstr::LocalGet(4),
