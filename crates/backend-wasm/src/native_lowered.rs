@@ -7891,6 +7891,7 @@ impl<'a> NativeLoweredEmitter<'a> {
                     &mut HashSet::new(),
                 )
             }
+            LoweredExpr::ArrayNew { .. } | LoweredExpr::ArrayNewSparse { .. } => true,
             _ => false,
         }
     }
@@ -8096,6 +8097,9 @@ impl<'a> NativeLoweredEmitter<'a> {
                     }
                 }
                 Ok(())
+            }
+            LoweredExpr::ArrayNew { .. } | LoweredExpr::ArrayNewSparse { .. } => {
+                self.emit_expr(expr, ctx, out)
             }
             _ => Err(unsupported(
                 "native LoweredProgram emitter cannot tag this equality operand",
