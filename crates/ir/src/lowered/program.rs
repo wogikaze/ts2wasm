@@ -121,7 +121,42 @@ fn lower_program_inner(
     let class_private_fields = collect_class_private_fields(program);
     let class_static_private_fields = collect_class_static_private_fields(program);
     let function_recursion_depths = compute_recursion_depths(program, &function_ids);
-    let mut next_func_id = function_ids.len();
+
+    // Compute needed builtin constructors EARLY so their IDs are reserved
+    // before pre-indexed function properties allocate IDs. This prevents
+    // FuncId collisions between builtins and pre-indexed properties
+    // when both are appended to generated_functions.
+    let builtin_class_parents: &[(&str, Option<&str>)] = &[
+        ("Object", None),
+        ("RegExp", Some("Object")),
+        ("Array", Some("Object")),
+        ("Date", Some("Object")),
+        ("Map", Some("Object")),
+        ("Set", Some("Object")),
+        ("WeakMap", Some("Object")),
+        ("WeakSet", Some("Object")),
+        ("Promise", Some("Object")),
+        ("Error", Some("Object")),
+        ("TypeError", Some("Error")),
+        ("RangeError", Some("Error")),
+        ("ReferenceError", Some("Error")),
+        ("SyntaxError", Some("Error")),
+        ("EvalError", Some("Error")),
+        ("URIError", Some("Error")),
+        ("AggregateError", Some("Error")),
+    ];
+    let needed_builtins = collect_needed_builtins(&class_parents, builtin_class_parents);
+    let builtin_ctor_base = function_ids.len();
+    let builtin_ctor_ids = builtin_class_parents
+        .iter()
+        .filter(|(name, _)| needed_builtins.contains(*name))
+        .enumerate()
+        .map(|(idx, (name, _))| ((*name).to_string(), FuncId(builtin_ctor_base + idx)))
+        .collect::<HashMap<_, _>>();
+
+    // Offset next_func_id past builtins so pre-indexed function properties
+    // and generated functions avoid ID collisions with builtin constructors.
+    let mut next_func_id = function_ids.len() + needed_builtins.len();
     let preindexed_function_properties = collect_preindexed_function_properties(
         program,
         &mut next_func_id,
@@ -130,7 +165,8 @@ fn lower_program_inner(
     );
     let function_property_assignments =
         function_property_assignment_map(&preindexed_function_properties);
-    let mut functions_by_id = vec![None; function_ids.len()];
+    // Reserve slots for all named functions plus builtin constructor stubs.
+    let mut functions_by_id = vec![None; function_ids.len() + needed_builtins.len()];
     let mut generated_functions = Vec::new();
 
     let (type_aliases, interface_definitions) = type_maps.unwrap_or_default();
@@ -491,40 +527,11 @@ fn lower_program_inner(
         interface_definitions.clone(),
     );
 
-    // Register synthetic FuncIds for known builtin classes that appear as
-    // extends targets (e.g., RegExp in `class MyRegExp extends RegExp {}`).
-    // This lets class_prototype_ref find builtin constructors for instanceof
-    // checks, and the backend can set up prototype chain links via synthetic
-    // ClassDecl statements emitted below.
-    let builtin_class_parents: &[(&str, Option<&str>)] = &[
-        ("Object", None),
-        ("RegExp", Some("Object")),
-        ("Array", Some("Object")),
-        ("Date", Some("Object")),
-        ("Map", Some("Object")),
-        ("Set", Some("Object")),
-        ("WeakMap", Some("Object")),
-        ("WeakSet", Some("Object")),
-        ("Promise", Some("Object")),
-        ("Error", Some("Object")),
-        ("TypeError", Some("Error")),
-        ("RangeError", Some("Error")),
-        ("ReferenceError", Some("Error")),
-        ("SyntaxError", Some("Error")),
-        ("EvalError", Some("Error")),
-        ("URIError", Some("Error")),
-        ("AggregateError", Some("Error")),
-    ];
-    // Collect builtin names that are actually referenced as extends targets
-    // in the user program (or are ancestors of such targets).
-    let needed_builtins = collect_needed_builtins(&class_parents, builtin_class_parents);
-    let builtin_ctor_base = function_ids.len();
-    let builtin_ctor_ids = builtin_class_parents
-        .iter()
-        .filter(|(name, _)| needed_builtins.contains(*name))
-        .enumerate()
-        .map(|(idx, (name, _))| ((*name).to_string(), FuncId(builtin_ctor_base + idx)))
-        .collect::<HashMap<_, _>>();
+    // Register synthetic FuncIds (already computed above) for known builtin
+    // classes that appear as extends targets (e.g., RegExp in
+    // `class MyRegExp extends RegExp {}`).  This lets class_prototype_ref
+    // find builtin constructors for instanceof checks, and the backend can
+    // set up prototype chain links via synthetic ClassDecl statements.
     let mut builtin_class_decls: Vec<LoweredStmt> = Vec::new();
     for (name, parent_name) in builtin_class_parents {
         if !needed_builtins.contains(*name) {
@@ -5509,12 +5516,9 @@ pub(super) fn lower_binary_op(op: BinaryOp) -> Result<LoweredBinaryOp, Diagnosti
         BinaryOp::LeftShift => Ok(LoweredBinaryOp::Shl),
         BinaryOp::RightShift => Ok(LoweredBinaryOp::Shr),
         BinaryOp::UnsignedRightShift => Ok(LoweredBinaryOp::ShrU),
-        BinaryOp::In
-        | BinaryOp::InstanceOf
-        | BinaryOp::Pipeline => Err(Diagnostic::unsupported(format!(
-            "binary operator {:?} not yet supported",
-            op
-        ))),
+        BinaryOp::In | BinaryOp::InstanceOf | BinaryOp::Pipeline => Err(Diagnostic::unsupported(
+            format!("binary operator {:?} not yet supported", op),
+        )),
     }
 }
 

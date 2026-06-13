@@ -537,7 +537,7 @@ fn validate_expr(
             }
             if *intrinsic == RuntimeFn::ObjectDefineProperty && args.len() != 3 {
                 errors.push(Diagnostic {
-                    code: DiagCode::InvariantViolation,
+                    code: DiagCode::UnsupportedSyntax,
                     message: "ObjectDefineProperty must include an object, key, and descriptor"
                         .to_owned(),
                     span: None,
@@ -547,7 +547,7 @@ fn validate_expr(
             }
             if *intrinsic == RuntimeFn::ObjectGetOwnPropertyDescriptor && args.len() != 2 {
                 errors.push(Diagnostic {
-                    code: DiagCode::InvariantViolation,
+                    code: DiagCode::UnsupportedSyntax,
                     message: "ObjectGetOwnPropertyDescriptor must include an object and key"
                         .to_owned(),
                     span: None,
@@ -557,7 +557,7 @@ fn validate_expr(
             }
             if *intrinsic == RuntimeFn::ObjectGetPrototypeOf && args.len() != 1 {
                 errors.push(Diagnostic {
-                    code: DiagCode::InvariantViolation,
+                    code: DiagCode::UnsupportedSyntax,
                     message: "ObjectGetPrototypeOf must include an object argument".to_owned(),
                     span: None,
 
@@ -566,7 +566,7 @@ fn validate_expr(
             }
             if *intrinsic == RuntimeFn::ObjectSetPrototypeOf && args.len() != 2 {
                 errors.push(Diagnostic {
-                    code: DiagCode::InvariantViolation,
+                    code: DiagCode::UnsupportedSyntax,
                     message: "ObjectSetPrototypeOf must include an object and prototype".to_owned(),
                     span: None,
 

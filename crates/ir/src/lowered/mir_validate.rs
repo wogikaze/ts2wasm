@@ -67,6 +67,15 @@ fn arity(message: impl Into<String>) -> Diagnostic {
     }
 }
 
+fn unsupported(message: impl Into<String>) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: message.into(),
+        span: None,
+        phase: None,
+    }
+}
+
 fn validate_functions(program: &MirProgram, errors: &mut Vec<Diagnostic>) {
     for (idx, function) in program.functions.iter().enumerate() {
         if function.id.0 != idx {
@@ -669,22 +678,22 @@ fn validate_runtime_call(intrinsic: RuntimeFn, args: &[MirExpr], errors: &mut Ve
         ));
     }
     if intrinsic == RuntimeFn::ObjectDefineProperty && args.len() != 3 {
-        errors.push(invariant(
+        errors.push(unsupported(
             "ObjectDefineProperty must include an object, key, and descriptor",
         ));
     }
     if intrinsic == RuntimeFn::ObjectGetOwnPropertyDescriptor && args.len() != 2 {
-        errors.push(invariant(
+        errors.push(unsupported(
             "ObjectGetOwnPropertyDescriptor must include an object and key",
         ));
     }
     if intrinsic == RuntimeFn::ObjectGetPrototypeOf && args.len() != 1 {
-        errors.push(invariant(
+        errors.push(unsupported(
             "ObjectGetPrototypeOf must include an object argument",
         ));
     }
     if intrinsic == RuntimeFn::ObjectSetPrototypeOf && args.len() != 2 {
-        errors.push(invariant(
+        errors.push(unsupported(
             "ObjectSetPrototypeOf must include an object and prototype",
         ));
     }
