@@ -1016,7 +1016,11 @@ impl<'a> NativeLoweredEmitter<'a> {
         // above misses them.  Conservatively register both when the program
         // contains any ArrayNew whose target local MIGHT end up materialised
         // through emit_runtime_rest_array.
-        if program_has_any_array_new(&self.program.top_level_statements, &self.program.functions, &self.program.modules) {
+        if program_has_any_array_new(
+            &self.program.top_level_statements,
+            &self.program.functions,
+            &self.program.modules,
+        ) {
             if !required.contains(&RuntimeFn::ArrayCtorWithLength) {
                 required.insert(RuntimeFn::ArrayCtorWithLength);
                 required.insert(RuntimeFn::ArrayPushGrow);
@@ -3364,9 +3368,7 @@ impl<'a> NativeLoweredEmitter<'a> {
                             // Fall back to runtime typeof for expressions whose type
                             // cannot be determined at compile time (e.g. property access
                             // chains like Array.prototype.at).
-                            out.push(WasmInstr::Call(
-                                RuntimeFn::TypeOf.symbol().to_owned(),
-                            ));
+                            out.push(WasmInstr::Call(RuntimeFn::TypeOf.symbol().to_owned()));
                             Ok(())
                         }
                     }
@@ -3541,7 +3543,10 @@ impl<'a> NativeLoweredEmitter<'a> {
                 Ok(())
             }
             LoweredExpr::PropertySet {
-                object, key, value, span,
+                object,
+                key,
+                value,
+                span,
             } => {
                 if let Some(module_id) = self.module_namespace_id(object, ctx) {
                     let symbol = self
@@ -3724,9 +3729,7 @@ impl<'a> NativeLoweredEmitter<'a> {
                 out.push(WasmInstr::I32Const(Layout::SCRATCH_OFFSET as i32));
                 out.push(WasmInstr::LocalGet(ctx.switch_value_local));
                 self.emit_concat_arg_as_tagged(value, ctx, out)?;
-                out.push(WasmInstr::Call(
-                    RuntimeFn::PropertySet.symbol().to_owned(),
-                ));
+                out.push(WasmInstr::Call(RuntimeFn::PropertySet.symbol().to_owned()));
                 Ok(())
             }
             LoweredExpr::EnvCellNew(inner, _) => {
@@ -4396,9 +4399,15 @@ impl<'a> NativeLoweredEmitter<'a> {
                     if self.try_emit_runtime_builtin_call(*builtin, args, ctx, out)? {
                         return Ok(());
                     }
-                    Err(unsupported(
-                        "native LoweredProgram emitter does not support this builtin call",
-                    ))
+                    // Console builtins used as expressions: emit the side effect,
+                    // then push undefined as the expression result.
+                    if self.try_emit_console_call(expr, ctx, out)? {
+                        out.push(WasmInstr::I32Const(ValueTag::UNDEFINED));
+                        return Ok(());
+                    }
+                    Err(unsupported(&format!(
+                        "native LoweredProgram emitter does not support the {builtin:?} builtin call",
+                    )))
                 }
             },
             LoweredExpr::String(value, _) => {
@@ -5315,9 +5324,11 @@ impl<'a> NativeLoweredEmitter<'a> {
         };
         let fill_args = args;
         // Try the standard path: first arg is a Local referencing a static array.
-        if let Some((array, elements)) =
-            static_array_fill_elements_from_args(fill_args, &ctx.static_locals, &self.program.functions)
-        {
+        if let Some((array, elements)) = static_array_fill_elements_from_args(
+            fill_args,
+            &ctx.static_locals,
+            &self.program.functions,
+        ) {
             if let Some(slots) = ctx.static_arrays.get(&array) {
                 for (slot, element) in slots.iter().zip(elements.iter()) {
                     self.emit_expr(element, ctx, out)?;
@@ -5329,11 +5340,29 @@ impl<'a> NativeLoweredEmitter<'a> {
         // Try the inline ArrayNew path: first arg is an ArrayNew literal.
         if let [LoweredExpr::ArrayNew { elements, .. }, value, start, end] = &fill_args[..] {
             let len = elements.len();
-            let fill_value = static_value_from_expr_with_functions(value, &ctx.static_locals, &self.program.functions)
-                .and_then(static_value_to_expr)
-                .unwrap_or_else(|| value.clone());
-            let start_idx = static_array_relative_index(start, len, 0, &ctx.static_locals, &self.program.functions).unwrap_or(0);
-            let end_idx = static_array_relative_index(end, len, len as isize, &ctx.static_locals, &self.program.functions).unwrap_or(len);
+            let fill_value = static_value_from_expr_with_functions(
+                value,
+                &ctx.static_locals,
+                &self.program.functions,
+            )
+            .and_then(static_value_to_expr)
+            .unwrap_or_else(|| value.clone());
+            let start_idx = static_array_relative_index(
+                start,
+                len,
+                0,
+                &ctx.static_locals,
+                &self.program.functions,
+            )
+            .unwrap_or(0);
+            let end_idx = static_array_relative_index(
+                end,
+                len,
+                len as isize,
+                &ctx.static_locals,
+                &self.program.functions,
+            )
+            .unwrap_or(len);
             let from = start_idx.min(len);
             let to = end_idx.min(len);
             let mut filled = elements.clone();
@@ -5361,11 +5390,24 @@ impl<'a> NativeLoweredEmitter<'a> {
             return Ok(false);
         };
         let len = elements.len();
-        let fill_value = static_value_from_expr_with_functions(value, &ctx.static_locals, &self.program.functions)
-            .and_then(static_value_to_expr)
-            .unwrap_or_else(|| value.clone());
-        let start_idx = static_array_relative_index(start, len, 0, &ctx.static_locals, &self.program.functions).unwrap_or(0);
-        let end_idx = static_array_relative_index(end, len, len as isize, &ctx.static_locals, &self.program.functions).unwrap_or(len);
+        let fill_value = static_value_from_expr_with_functions(
+            value,
+            &ctx.static_locals,
+            &self.program.functions,
+        )
+        .and_then(static_value_to_expr)
+        .unwrap_or_else(|| value.clone());
+        let start_idx =
+            static_array_relative_index(start, len, 0, &ctx.static_locals, &self.program.functions)
+                .unwrap_or(0);
+        let end_idx = static_array_relative_index(
+            end,
+            len,
+            len as isize,
+            &ctx.static_locals,
+            &self.program.functions,
+        )
+        .unwrap_or(len);
         let from = start_idx.min(len);
         let to = end_idx.min(len);
         let mut filled = elements.clone();
@@ -8023,7 +8065,9 @@ impl<'a> NativeLoweredEmitter<'a> {
             } => self.emit_expr(expr, ctx, out),
             LoweredExpr::GetLength(_, _) => {
                 self.emit_expr(expr, ctx, out)?;
-                out.push(WasmInstr::Call(RuntimeFn::NumberFromI32.symbol().to_owned()));
+                out.push(WasmInstr::Call(
+                    RuntimeFn::NumberFromI32.symbol().to_owned(),
+                ));
                 Ok(())
             }
             LoweredExpr::Binary {
@@ -9097,10 +9141,7 @@ impl<'a> NativeLoweredEmitter<'a> {
                 self.emit_expr(expr, ctx, out)
             }
             LoweredExpr::Binary {
-                op:
-                    LoweredBinaryOp::Or
-                    | LoweredBinaryOp::And
-                    | LoweredBinaryOp::NullishCoalesce,
+                op: LoweredBinaryOp::Or | LoweredBinaryOp::And | LoweredBinaryOp::NullishCoalesce,
                 ..
             } => self.emit_expr(expr, ctx, out),
             _ => self.emit_js_value_expr_as_tagged(expr, ctx, out),
@@ -10690,14 +10731,16 @@ fn expr_contains_array_new(stmt: &LoweredStmt) -> bool {
             then_body,
             else_body,
             ..
-        } => {
-            stmts_contain_array_new(then_body) || stmts_contain_array_new(else_body)
+        } => stmts_contain_array_new(then_body) || stmts_contain_array_new(else_body),
+        LoweredStmt::While {
+            condition, body, ..
         }
-        LoweredStmt::While { condition, body, .. }
-        | LoweredStmt::DoWhile { condition, body, .. } => {
-            stmts_contain_array_new(body)
+        | LoweredStmt::DoWhile {
+            condition, body, ..
+        } => stmts_contain_array_new(body),
+        LoweredStmt::Expr(expr, _) | LoweredStmt::Yield(expr, _) => {
+            expr_contains_array_new_recursive(expr)
         }
-        LoweredStmt::Expr(expr, _) | LoweredStmt::Yield(expr, _) => expr_contains_array_new_recursive(expr),
         _ => false,
     }
 }
@@ -10710,9 +10753,7 @@ fn expr_contains_array_new_recursive(expr: &LoweredExpr) -> bool {
             args.iter().any(expr_contains_array_new_recursive)
         }
         LoweredExpr::Block { stmts, .. } => stmts_contain_array_new(stmts),
-        LoweredExpr::Assign { expr: inner, .. } => {
-            expr_contains_array_new_recursive(inner)
-        }
+        LoweredExpr::Assign { expr: inner, .. } => expr_contains_array_new_recursive(inner),
         _ => false,
     }
 }
@@ -10858,7 +10899,8 @@ fn find_array_new_locals_from_stmts(stmts: &[LoweredStmt], locals: &mut HashSet<
                 } else if let LoweredExpr::RuntimeCall {
                     intrinsic: RuntimeFn::ArrayCtorWithLength,
                     ..
-                } = expr {
+                } = expr
+                {
                     locals.insert(*local);
                 } else if let LoweredExpr::Local(src, _) = expr {
                     if locals.contains(src) {
@@ -10975,11 +11017,23 @@ fn find_array_new_locals_from_expr(expr: &LoweredExpr, locals: &mut HashSet<Loca
         | LoweredExpr::PropertyDelete { object: obj, .. } => {
             find_array_new_locals_from_expr(obj, locals);
         }
-        LoweredExpr::ArrayGet { arr: obj, index, .. }
-        | LoweredExpr::Index { object: obj, index, .. }
-        | LoweredExpr::OptionalIndex { object: obj, index, .. }
-        | LoweredExpr::PropertyGetDynamic { obj, key: index, .. }
-        | LoweredExpr::PropertyDeleteDynamic { object: obj, key: index, .. } => {
+        LoweredExpr::ArrayGet {
+            arr: obj, index, ..
+        }
+        | LoweredExpr::Index {
+            object: obj, index, ..
+        }
+        | LoweredExpr::OptionalIndex {
+            object: obj, index, ..
+        }
+        | LoweredExpr::PropertyGetDynamic {
+            obj, key: index, ..
+        }
+        | LoweredExpr::PropertyDeleteDynamic {
+            object: obj,
+            key: index,
+            ..
+        } => {
             find_array_new_locals_from_expr(obj, locals);
             find_array_new_locals_from_expr(index, locals);
         }
@@ -10987,7 +11041,12 @@ fn find_array_new_locals_from_expr(expr: &LoweredExpr, locals: &mut HashSet<Loca
             find_array_new_locals_from_expr(object, locals);
             find_array_new_locals_from_expr(value, locals);
         }
-        LoweredExpr::PropertySetDynamic { object, index, value, .. } => {
+        LoweredExpr::PropertySetDynamic {
+            object,
+            index,
+            value,
+            ..
+        } => {
             find_array_new_locals_from_expr(object, locals);
             find_array_new_locals_from_expr(index, locals);
             find_array_new_locals_from_expr(value, locals);
@@ -11116,7 +11175,11 @@ fn collect_array_index_mutation_locals_from_expr(
             collect_array_index_mutation_locals_from_expr(index, result, array_new_locals);
             collect_array_index_mutation_locals_from_expr(value, result, array_new_locals);
         }
-        LoweredExpr::Block { stmts, result: block_result, .. } => {
+        LoweredExpr::Block {
+            stmts,
+            result: block_result,
+            ..
+        } => {
             collect_array_index_mutation_locals_from_stmts(stmts, result, array_new_locals);
             collect_array_index_mutation_locals_from_expr(block_result, result, array_new_locals);
         }
@@ -11153,11 +11216,23 @@ fn collect_array_index_mutation_locals_from_expr(
         | LoweredExpr::PropertyDelete { object: obj, .. } => {
             collect_array_index_mutation_locals_from_expr(obj, result, array_new_locals);
         }
-        LoweredExpr::ArrayGet { arr: obj, index, .. }
-        | LoweredExpr::Index { object: obj, index, .. }
-        | LoweredExpr::OptionalIndex { object: obj, index, .. }
-        | LoweredExpr::PropertyGetDynamic { obj, key: index, .. }
-        | LoweredExpr::PropertyDeleteDynamic { object: obj, key: index, .. } => {
+        LoweredExpr::ArrayGet {
+            arr: obj, index, ..
+        }
+        | LoweredExpr::Index {
+            object: obj, index, ..
+        }
+        | LoweredExpr::OptionalIndex {
+            object: obj, index, ..
+        }
+        | LoweredExpr::PropertyGetDynamic {
+            obj, key: index, ..
+        }
+        | LoweredExpr::PropertyDeleteDynamic {
+            object: obj,
+            key: index,
+            ..
+        } => {
             collect_array_index_mutation_locals_from_expr(obj, result, array_new_locals);
             collect_array_index_mutation_locals_from_expr(index, result, array_new_locals);
         }
@@ -11213,8 +11288,22 @@ fn update_runtime_array_alias_state(stmt: &LoweredStmt, locals: &mut HashSet<Loc
         LoweredStmt::Let(local, LoweredExpr::ArrayNew { .. }, _)
         | LoweredStmt::Assign(local, LoweredExpr::ArrayNew { .. }, _)
             if locals.contains(local) => {}
-        LoweredStmt::Let(local, LoweredExpr::RuntimeCall { intrinsic: RuntimeFn::ArrayCtorWithLength, .. }, _)
-        | LoweredStmt::Assign(local, LoweredExpr::RuntimeCall { intrinsic: RuntimeFn::ArrayCtorWithLength, .. }, _) => {
+        LoweredStmt::Let(
+            local,
+            LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::ArrayCtorWithLength,
+                ..
+            },
+            _,
+        )
+        | LoweredStmt::Assign(
+            local,
+            LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::ArrayCtorWithLength,
+                ..
+            },
+            _,
+        ) => {
             locals.insert(*local);
         }
         LoweredStmt::Let(local, _, _) | LoweredStmt::Assign(local, _, _) => {
@@ -11317,7 +11406,9 @@ fn collect_array_push_grow_locals_from_expr(expr: &LoweredExpr, locals: &mut Has
                 && locals.contains(temp_local)
             {
                 for stmt in stmts {
-                    if let LoweredStmt::Let(local, expr, _) = stmt && *local == *temp_local {
+                    if let LoweredStmt::Let(local, expr, _) = stmt
+                        && *local == *temp_local
+                    {
                         let inner: &LoweredExpr = expr;
                         if let LoweredExpr::Local(original, _) = inner {
                             locals.insert(*original);
@@ -11380,10 +11471,7 @@ fn collect_array_push_grow_locals_from_expr(expr: &LoweredExpr, locals: &mut Has
             collect_array_push_grow_locals_from_expr(index, locals);
         }
         LoweredExpr::PropertySet {
-            object,
-            value,
-            key,
-            ..
+            object, value, key, ..
         } => {
             collect_array_push_grow_locals_from_expr(object, locals);
             collect_array_push_grow_locals_from_expr(value, locals);
@@ -35736,8 +35824,17 @@ fn binary_op_instr(op: LoweredBinaryOp) -> Result<WasmInstr, Diagnostic> {
         LoweredBinaryOp::Shl => Ok(WasmInstr::I32Shl),
         LoweredBinaryOp::Shr => Ok(WasmInstr::I32ShrS),
         LoweredBinaryOp::ShrU => Ok(WasmInstr::I32ShrU),
-        _ => Err(unsupported(
-            "native LoweredProgram emitter does not support this binary operator",
+        LoweredBinaryOp::Power => Err(unsupported(
+            "native LoweredProgram emitter does not support the ** operator as a raw wasm binary op",
+        )),
+        LoweredBinaryOp::And => Err(unsupported(
+            "native LoweredProgram emitter does not support the && operator as a raw wasm binary op",
+        )),
+        LoweredBinaryOp::Or => Err(unsupported(
+            "native LoweredProgram emitter does not support the || operator as a raw wasm binary op",
+        )),
+        LoweredBinaryOp::NullishCoalesce => Err(unsupported(
+            "native LoweredProgram emitter does not support the ?? operator as a raw wasm binary op",
         )),
     }
 }
