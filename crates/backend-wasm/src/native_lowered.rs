@@ -4399,9 +4399,15 @@ impl<'a> NativeLoweredEmitter<'a> {
                     if self.try_emit_runtime_builtin_call(*builtin, args, ctx, out)? {
                         return Ok(());
                     }
-                    Err(unsupported(
-                        "native LoweredProgram emitter does not support this builtin call",
-                    ))
+                    // Console builtins used as expressions: emit the side effect,
+                    // then push undefined as the expression result.
+                    if self.try_emit_console_call(expr, ctx, out)? {
+                        out.push(WasmInstr::I32Const(ValueTag::UNDEFINED));
+                        return Ok(());
+                    }
+                    Err(unsupported(&format!(
+                        "native LoweredProgram emitter does not support the {builtin:?} builtin call",
+                    )))
                 }
             },
             LoweredExpr::String(value, _) => {
@@ -35818,8 +35824,17 @@ fn binary_op_instr(op: LoweredBinaryOp) -> Result<WasmInstr, Diagnostic> {
         LoweredBinaryOp::Shl => Ok(WasmInstr::I32Shl),
         LoweredBinaryOp::Shr => Ok(WasmInstr::I32ShrS),
         LoweredBinaryOp::ShrU => Ok(WasmInstr::I32ShrU),
-        _ => Err(unsupported(
-            "native LoweredProgram emitter does not support this binary operator",
+        LoweredBinaryOp::Power => Err(unsupported(
+            "native LoweredProgram emitter does not support the ** operator as a raw wasm binary op",
+        )),
+        LoweredBinaryOp::And => Err(unsupported(
+            "native LoweredProgram emitter does not support the && operator as a raw wasm binary op",
+        )),
+        LoweredBinaryOp::Or => Err(unsupported(
+            "native LoweredProgram emitter does not support the || operator as a raw wasm binary op",
+        )),
+        LoweredBinaryOp::NullishCoalesce => Err(unsupported(
+            "native LoweredProgram emitter does not support the ?? operator as a raw wasm binary op",
         )),
     }
 }
