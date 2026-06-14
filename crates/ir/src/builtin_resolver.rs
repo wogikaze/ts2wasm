@@ -2860,6 +2860,16 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                     args: resolved_args,
                     span: *span,
                 })
+            } else if let Expr::ClassExpr { .. } = new_expr.as_ref() {
+                let resolved_args = args
+                    .iter()
+                    .map(resolve_expr)
+                    .collect::<Result<Vec<_>, _>>()?;
+                Ok(ResolvedExpr::New {
+                    class_name: "__class_expr_new".to_owned(),
+                    args: resolved_args,
+                    span: *span,
+                })
             } else {
                 Err(Diagnostic::unsupported_at(
                     Span::generated("new-classname"),
