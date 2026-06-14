@@ -1547,6 +1547,7 @@ impl NameResolver {
                     match expr.as_ref() {
                         Expr::Ident { name, .. } => name.clone(),
                         Expr::Member { property, .. } => property.clone(),
+                        Expr::ClassExpr { .. } => "__class_expr_new".to_owned(),
                         _ => {
                             return Err(Diagnostic::unsupported_at(
                                 *span,
@@ -1558,9 +1559,12 @@ impl NameResolver {
                 // Only unqualified `new Function(...)` triggers the eval boundary,
                 // NOT qualified calls like `new M.Function(...)`.
                 Ok(Expr::New {
-                    expr: Box::new(Expr::Ident {
-                        name: callee_name,
-                        span: *span,
+                    expr: Box::new(match expr.as_ref() {
+                        Expr::ClassExpr { .. } => expr.as_ref().clone(),
+                        _ => Expr::Ident {
+                            name: callee_name,
+                            span: *span,
+                        },
                     }),
                     args: args
                         .iter()

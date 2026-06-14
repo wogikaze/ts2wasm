@@ -140,6 +140,13 @@ fn resolver_snapshot_for_var_is_hoisted_within_function_scope() {
     assert_eq!(stmts.len(), 1);
 }
 
+#[test]
+fn resolver_snapshot_new_class_expression_is_preserved() {
+    let stmts = resolve_names(&parse("new (class extends RegExp {})(\"\");")).unwrap();
+
+    assert_eq!(stmts.len(), 1);
+}
+
 // ---------------------------------------------------------------------------
 // Function declarations
 // ---------------------------------------------------------------------------
