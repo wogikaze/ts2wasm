@@ -728,15 +728,40 @@ pub(crate) fn is_identity_array_method(method: &str) -> bool {
     )
 }
 
+pub(crate) fn is_array_callback_method(method: &str) -> bool {
+    matches!(
+        method,
+        "forEach"
+            | "filter"
+            | "find"
+            | "findIndex"
+            | "findLast"
+            | "findLastIndex"
+            | "some"
+            | "every"
+            | "reduce"
+            | "reduceRight"
+            | "map"
+            | "flatMap"
+    )
+}
+
 #[cfg(test)]
 mod tests {
-    use super::is_identity_array_method;
+    use super::{is_array_callback_method, is_identity_array_method};
 
     #[test]
     fn every_and_filter_are_not_identity_array_methods() {
         assert!(!is_identity_array_method("every"));
         assert!(!is_identity_array_method("filter"));
         assert!(is_identity_array_method("some"));
+    }
+
+    #[test]
+    fn array_callback_methods_include_every_and_filter() {
+        assert!(is_array_callback_method("every"));
+        assert!(is_array_callback_method("filter"));
+        assert!(is_array_callback_method("some"));
     }
 }
 

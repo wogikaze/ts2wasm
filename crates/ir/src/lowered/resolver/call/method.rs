@@ -1,10 +1,10 @@
 use super::super::super::program::is_error_class;
 use super::super::{
-    bigint_runtime_fn_intrinsic, is_annex_b_date_method, is_array_from_call_receiver,
-    is_array_prototype_every_some_call_receiver, is_array_prototype_map_call_receiver,
-    is_array_prototype_push_expr, is_identity_arrow_callback, is_set_prototype_property_expr,
-    is_static_date_constructor_expr, is_string_split_result_expr, is_typed_array_class,
-    iterator_method_runtime_fn, numeric_ascending_sort_callback,
+    bigint_runtime_fn_intrinsic, is_annex_b_date_method, is_array_callback_method,
+    is_array_from_call_receiver, is_array_prototype_every_some_call_receiver,
+    is_array_prototype_map_call_receiver, is_array_prototype_push_expr, is_identity_arrow_callback,
+    is_set_prototype_property_expr, is_static_date_constructor_expr, is_string_split_result_expr,
+    is_typed_array_class, iterator_method_runtime_fn, numeric_ascending_sort_callback,
     private_storage_observable_access_diagnostic, string_constructor_arrow_callback,
     string_split_arrow_separator, unary_plus_arrow_callback,
     unsupported_annex_b_date_method_diagnostic, unsupported_array_map_diagnostic,
@@ -3556,31 +3556,9 @@ impl super::super::Resolver {
         }
 
         // User-callback array methods expanded at IR level with While loops.
-        if (method == "forEach"
-            || method == "filter"
-            || method == "find"
-            || method == "findIndex"
-            || method == "findLast"
-            || method == "findLastIndex"
-            || method == "some"
-            || method == "every"
-            || method == "reduce"
-            || method == "reduceRight"
-            || method == "map"
-            || method == "flatMap")
+        if is_array_callback_method(method)
             && crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object)
             && !args.is_empty()
-            && match &args[0] {
-                ResolvedExpr::ArrowFn { .. }
-                | ResolvedExpr::FunctionExpr {
-                    is_generator: false,
-                    ..
-                } => true,
-                ResolvedExpr::Ident(name) => {
-                    self.ctx.symbols.function_ids.contains_key(name.as_str())
-                }
-                _ => false,
-            }
         {
             let lowered_receiver = self.lower_expr(object)?;
             return Ok(Some(self.lower_array_callback_method(
@@ -3668,31 +3646,7 @@ impl super::super::Resolver {
 
         // Array.prototype callback methods with ArrowFn/FunctionExpr callback —
         // route through IR-level While loop expansion even for non-ident receivers
-        if matches!(
-            method,
-            "forEach"
-                | "find"
-                | "findIndex"
-                | "findLast"
-                | "findLastIndex"
-                | "every"
-                | "some"
-                | "filter"
-                | "reduce"
-                | "reduceRight"
-        ) && !args.is_empty()
-            && match &args[0] {
-                ResolvedExpr::ArrowFn { .. }
-                | ResolvedExpr::FunctionExpr {
-                    is_generator: false,
-                    ..
-                } => true,
-                ResolvedExpr::Ident(name) => {
-                    self.ctx.symbols.function_ids.contains_key(name.as_str())
-                }
-                _ => false,
-            }
-        {
+        if is_array_callback_method(method) && !args.is_empty() {
             let lowered_receiver = self.lower_expr(object)?;
             return Ok(Some(self.lower_array_callback_method(
                 method,

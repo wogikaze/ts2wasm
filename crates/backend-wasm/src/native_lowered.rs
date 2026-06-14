@@ -37035,7 +37035,10 @@ mod native_lowered_static_host_tests {
     fn static_date_legacy_function_object_uses_function_metadata_attrs() {
         let mut object = StaticObjectValue::from_props_with_non_enumerable(
             &[
-                ("length".to_owned(), LoweredExpr::Number(1, Span::generated("num"))),
+                (
+                    "length".to_owned(),
+                    LoweredExpr::Number(1, Span::generated("num")),
+                ),
                 (
                     "name".to_owned(),
                     LoweredExpr::String("setYear".to_owned(), Span::generated("str")),
@@ -37046,9 +37049,12 @@ mod native_lowered_static_host_tests {
         object.prototype = None;
 
         let mut visited = HashSet::new();
-        let Some((_, attrs)) =
-            static_object_property_descriptor_from_value(&HashMap::new(), &object, "length", &mut visited)
-        else {
+        let Some((_, attrs)) = static_object_property_descriptor_from_value(
+            &HashMap::new(),
+            &object,
+            "length",
+            &mut visited,
+        ) else {
             panic!("expected descriptor");
         };
         assert!(!attrs.writable);
@@ -37060,7 +37066,10 @@ mod native_lowered_static_host_tests {
     fn static_date_legacy_get_year_function_object_uses_function_metadata_attrs() {
         let mut object = StaticObjectValue::from_props_with_non_enumerable(
             &[
-                ("length".to_owned(), LoweredExpr::Number(0, Span::generated("num"))),
+                (
+                    "length".to_owned(),
+                    LoweredExpr::Number(0, Span::generated("num")),
+                ),
                 (
                     "name".to_owned(),
                     LoweredExpr::String("getYear".to_owned(), Span::generated("str")),
@@ -37071,9 +37080,12 @@ mod native_lowered_static_host_tests {
         object.prototype = None;
 
         let mut visited = HashSet::new();
-        let Some((_, attrs)) =
-            static_object_property_descriptor_from_value(&HashMap::new(), &object, "name", &mut visited)
-        else {
+        let Some((_, attrs)) = static_object_property_descriptor_from_value(
+            &HashMap::new(),
+            &object,
+            "name",
+            &mut visited,
+        ) else {
             panic!("expected descriptor");
         };
         assert!(!attrs.writable);
