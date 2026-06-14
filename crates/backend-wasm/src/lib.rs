@@ -971,11 +971,11 @@ mod tests {
             "native emitter includes JsonStringify (no longer pruned by static folding in native path)"
         );
         assert!(
-            !module
+            module
                 .imports
                 .iter()
                 .any(|import| import.func_symbol == "$host_json_stringify"),
-            "static-folded JSON.stringify should not keep the host import"
+            "native emitter includes the host.json.stringify import"
         );
     }
 
