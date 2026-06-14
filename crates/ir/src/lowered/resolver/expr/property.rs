@@ -1416,15 +1416,15 @@ fn static_builtin_prototype_object(name: &str, span: Span) -> Option<LoweredExpr
             props: vec![
                 (
                     "getYear".to_owned(),
-                    LoweredExpr::Undefined(Span::generated("date_get_year")),
+                    static_builtin_date_legacy_function_object("getYear", 0, span),
                 ),
                 (
                     "setYear".to_owned(),
-                    LoweredExpr::Undefined(Span::generated("date_set_year")),
+                    static_builtin_date_legacy_function_object("setYear", 1, span),
                 ),
                 (
                     "toGMTString".to_owned(),
-                    LoweredExpr::Undefined(Span::generated("date_to_gmt_string")),
+                    static_builtin_date_legacy_function_object("toGMTString", 0, span),
                 ),
             ],
             non_enumerable: 0b111,
@@ -1450,6 +1450,23 @@ fn static_builtin_prototype_object(name: &str, span: Span) -> Option<LoweredExpr
             span,
         }),
         _ => None,
+    }
+}
+
+fn static_builtin_date_legacy_function_object(name: &str, length: usize, span: Span) -> LoweredExpr {
+    LoweredExpr::ObjectNew {
+        props: vec![
+            (
+                "length".to_owned(),
+                LoweredExpr::Number(length as i32, Span::generated("date_legacy_length")),
+            ),
+            (
+                "name".to_owned(),
+                LoweredExpr::String(name.to_owned(), Span::generated("date_legacy_name")),
+            ),
+        ],
+        non_enumerable: 0b11,
+        span,
     }
 }
 
