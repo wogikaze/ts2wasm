@@ -150,12 +150,6 @@ pub(super) fn resolve_private_elements(
                 span,
                 ..
             } => {
-                if block_contains_return_stmt(body) {
-                    return Err(unsupported_private_element(
-                        "private setters with explicit return are not supported in this private setter runtime slice",
-                        *span,
-                    ));
-                }
                 if !seen.insert(name.clone()) {
                     return Err(Diagnostic::unsupported_at(
                         *span,
