@@ -1106,6 +1106,9 @@ impl super::super::Resolver {
         key: &str,
         desc: &[ResolvedObjectProp],
     ) -> bool {
+        if self.static_date_legacy_function_metadata_target(target, key, desc) {
+            return true;
+        }
         let Some(metadata) = self.static_function_metadata_target(target) else {
             return false;
         };
@@ -1124,6 +1127,43 @@ impl super::super::Resolver {
                 };
                 resolved_object_number_prop(desc, "value") == Some(length as i32)
             }
+            _ => false,
+        }
+    }
+
+    fn static_date_legacy_function_metadata_target(
+        &self,
+        target: &ResolvedExpr,
+        key: &str,
+        desc: &[ResolvedObjectProp],
+    ) -> bool {
+        let ResolvedExpr::PropertyAccess {
+            object: prototype_object,
+            key: method_name,
+            ..
+        } = target
+        else {
+            return false;
+        };
+        if method_name != "setYear" || !matches!(key, "name" | "length") {
+            return false;
+        }
+        let ResolvedExpr::PropertyAccess {
+            object: date_object,
+            key: prototype_key,
+            ..
+        } = prototype_object.as_ref()
+        else {
+            return false;
+        };
+        if prototype_key != "prototype"
+            || !matches!(date_object.as_ref(), ResolvedExpr::Ident(name) if name == "Date")
+        {
+            return false;
+        }
+        match key {
+            "name" => resolved_object_string_prop(desc, "value") == Some("setYear"),
+            "length" => resolved_object_number_prop(desc, "value") == Some(1),
             _ => false,
         }
     }

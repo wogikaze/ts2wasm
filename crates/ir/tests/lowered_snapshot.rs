@@ -191,6 +191,15 @@ fn date_prototype_set_year_length_is_static() {
     }
 }
 
+#[test]
+fn date_prototype_set_year_verify_property_length_matches() {
+    let program = parse_resolve_lower(
+        "function verifyProperty(obj, name, desc) { throw null; }\n\
+         verifyProperty(Date.prototype.setYear, \"length\", { value: 1, writable: false, enumerable: false, configurable: true });",
+    );
+    validate_lowered(&program).expect("Date.prototype.setYear length should validate statically");
+}
+
 fn lowered_stmt_contains_runtime_call(stmt: &LoweredStmt, runtime: RuntimeFn) -> bool {
     match stmt {
         LoweredStmt::Let(_, expr, _)
