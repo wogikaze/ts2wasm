@@ -3,7 +3,7 @@ use ts2wasm_source::Span;
 use ts2wasm_syntax::{ArrayLiteralElement, BinaryOp, Expr, ObjectProp, Stmt, TypeRef, UnaryOp};
 
 use crate::binding_pattern::parse_binding_pattern;
-use crate::direct_eval_source::eval_var_and_function_names;
+use crate::direct_eval_source::{collect_keyword_bound_names, eval_var_and_function_names};
 
 pub const INTRINSIC_DIRECT_EVAL_CALLEE: &str = "__ts2wasm_intrinsic_direct_eval";
 pub const INTRINSIC_INDIRECT_EVAL_CALLEE: &str = "__ts2wasm_intrinsic_indirect_eval";
@@ -1922,6 +1922,11 @@ impl NameResolver {
                 Stmt::Block { statements, .. } => {
                     names.extend(Self::collect_block_fn_names(statements));
                 }
+                Stmt::Switch { cases, .. } => {
+                    for (_, case_stmts) in cases {
+                        names.extend(Self::collect_block_fn_names(case_stmts));
+                    }
+                }
                 Stmt::Function { name, .. } => {
                     names.push(name.as_str());
                 }
@@ -2955,6 +2960,11 @@ fn collect_static_direct_eval_declarations_from_expr(expr: &Expr, names: &mut Ve
         | Expr::New {
             expr: callee, args, ..
         } => {
+            if matches!(callee.as_ref(), Expr::Ident { name, .. } if name == "eval") {
+                for arg in args {
+                    collect_partial_direct_eval_names_from_expr(arg, names);
+                }
+            }
             collect_static_direct_eval_declarations_from_expr(callee, names);
             for arg in args {
                 collect_static_direct_eval_declarations_from_expr(arg, names);
@@ -3053,6 +3063,30 @@ fn collect_static_eval_var_function_names(source: &str, names: &mut Vec<String>)
         if !names.iter().any(|existing| existing == &name) {
             names.push(name);
         }
+    }
+}
+
+fn collect_partial_direct_eval_names_from_expr(expr: &Expr, names: &mut Vec<String>) {
+    match expr {
+        Expr::String { value, .. } => {
+            collect_keyword_bound_names(value, "var", names);
+            collect_keyword_bound_names(value, "function", names);
+        }
+        Expr::Binary {
+            left, op, right, ..
+        } if *op == BinaryOp::Add => {
+            collect_partial_direct_eval_names_from_expr(left, names);
+            collect_partial_direct_eval_names_from_expr(right, names);
+        }
+        Expr::Ternary {
+            then_expr,
+            else_expr,
+            ..
+        } => {
+            collect_partial_direct_eval_names_from_expr(then_expr, names);
+            collect_partial_direct_eval_names_from_expr(else_expr, names);
+        }
+        _ => {}
     }
 }
 

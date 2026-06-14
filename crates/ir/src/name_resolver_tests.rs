@@ -766,6 +766,34 @@ mod tests {
     }
 
     #[test]
+    fn resolver_predeclares_direct_eval_var_names_from_partial_string_source() {
+        let builtins = parse_resolve_builtins(
+            "function test(expr) { eval(\"for (var forInHead = \" + expr + \" in {}) {}\"); return forInHead; }",
+        );
+        let crate::ResolvedStmt::Function { body, .. } = &builtins[0] else {
+            panic!("expected function statement: {builtins:?}");
+        };
+        assert!(
+            matches!(body.last(), Some(crate::ResolvedStmt::Return(crate::ResolvedExpr::Ident(name))) if name == "forInHead"),
+            "expected partial eval string scan to predeclare forInHead: {body:?}"
+        );
+    }
+
+    #[test]
+    fn resolver_hoists_switch_case_function_declarations() {
+        let builtins = parse_resolve_builtins(
+            "function outer() { switch (1) { case 1: function f() {} } return f; }",
+        );
+        let crate::ResolvedStmt::Function { body, .. } = &builtins[0] else {
+            panic!("expected function statement: {builtins:?}");
+        };
+        assert!(
+            matches!(body.last(), Some(crate::ResolvedStmt::Return(crate::ResolvedExpr::Ident(name))) if name == "f"),
+            "expected switch-case function hoist to resolve f: {body:?}"
+        );
+    }
+
+    #[test]
     fn resolver_does_not_predeclare_shadowed_static_eval_var() {
         let tokens = ts2wasm_frontend::Lexer::new(
             "function run() { let eval = (source) => source; eval(\"var value = 2\"); return value; }",

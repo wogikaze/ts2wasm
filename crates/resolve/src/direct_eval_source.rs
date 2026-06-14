@@ -345,7 +345,7 @@ fn strip_top_level_type_annotation(binding: &str) -> &str {
     binding.trim()
 }
 
-fn collect_keyword_bound_names(source: &str, keyword: &str, names: &mut Vec<String>) {
+pub(crate) fn collect_keyword_bound_names(source: &str, keyword: &str, names: &mut Vec<String>) {
     let mut index = 0;
     while let Some(keyword_start) =
         find_keyword_outside_literals_and_function_bodies(source, keyword, index)

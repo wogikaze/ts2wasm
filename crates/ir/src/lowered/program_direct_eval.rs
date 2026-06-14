@@ -7,6 +7,7 @@ use crate::builtin_resolved::{
 };
 use std::collections::{HashMap, HashSet};
 use ts2wasm_resolve::direct_eval_source::{eval_function_names, eval_var_and_function_names};
+use ts2wasm_syntax::BinaryOp;
 
 #[path = "program_direct_eval/env.rs"]
 mod env;
@@ -234,6 +235,7 @@ fn collect_dynamic_direct_eval_created_function_names_from_expr(
     known_sources: &HashMap<String, String>,
     names: &mut HashSet<String>,
 ) {
+    collect_partial_direct_eval_names_from_expr(expr, names);
     if let Some(source) = dynamic_direct_eval_known_source(expr, known_sources) {
         collect_eval_function_names(source, names);
     }
@@ -559,6 +561,7 @@ fn collect_dynamic_direct_eval_created_binding_names_from_expr(
     known_sources: &HashMap<String, String>,
     names: &mut HashSet<String>,
 ) {
+    collect_partial_direct_eval_names_from_expr(expr, names);
     if let Some(source) = dynamic_direct_eval_known_source(expr, known_sources) {
         collect_eval_var_function_names(source, names);
     }
@@ -569,4 +572,38 @@ fn collect_dynamic_direct_eval_created_binding_names_from_expr(
         collect_dynamic_direct_eval_created_binding_names_from_stmts,
         collect_dynamic_direct_eval_created_binding_names_from_expr,
     );
+}
+
+fn collect_partial_direct_eval_names_from_expr(expr: &ResolvedExpr, names: &mut HashSet<String>) {
+    match expr {
+        ResolvedExpr::String(value) => {
+            collect_partial_keyword_names(value, "var", names);
+            collect_partial_keyword_names(value, "function", names);
+        }
+        ResolvedExpr::Binary {
+            left, op, right, ..
+        } if *op == BinaryOp::Add => {
+            collect_partial_direct_eval_names_from_expr(left, names);
+            collect_partial_direct_eval_names_from_expr(right, names);
+        }
+        _ => {}
+    }
+}
+
+fn collect_partial_keyword_names(fragment: &str, keyword: &str, names: &mut HashSet<String>) {
+    let mut index = 0usize;
+    while let Some(start) = fragment[index..].find(keyword) {
+        let keyword_start = index + start;
+        let after_keyword = keyword_start + keyword.len();
+        let rest = &fragment[after_keyword..];
+        let rest = rest.trim_start();
+        let ident_len = rest
+            .chars()
+            .take_while(|ch| ch.is_ascii_alphanumeric() || *ch == '_' || *ch == '$')
+            .count();
+        if ident_len > 0 {
+            names.insert(rest[..ident_len].to_owned());
+        }
+        index = after_keyword;
+    }
 }
