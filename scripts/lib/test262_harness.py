@@ -354,7 +354,12 @@ var $262 = {};
 function test262_gc() {}
 
 function test262_evalScript(source) {
-  throw new Error("$262.evalScript is not supported by this runner slice");
+  // indirect eval with globalThis.eval instead of (0, eval) to avoid
+  // triggering compiler-level indirect eval lowering, which adds a
+  // $host_eval_indirect import that WAMR/iwasm cannot satisfy. Tests
+  // that actually call $262.evalScript are blocked via BLOCKED_FEATURES,
+  // so this stub is never reached for passing tests.
+  return globalThis.eval(source);
 }
 
 function test262_createRealm() {
@@ -389,7 +394,12 @@ $262.agent.start = test262_agent_start;
 
 WASM_EVAL_SCRIPT_STUB = (
     "function test262_evalScript(source) {\n"
-    '  throw new Error("$262.evalScript is not supported by this runner slice");\n'
+    "  // indirect eval with globalThis.eval instead of (0, eval) to avoid\n"
+    "  // triggering compiler-level indirect eval lowering, which adds a\n"
+    "  // $host_eval_indirect import that WAMR/iwasm cannot satisfy. Tests\n"
+    "  // that actually call $262.evalScript are blocked via BLOCKED_FEATURES,\n"
+    "  // so this stub is never reached for passing tests.\n"
+    "  return globalThis.eval(source);\n"
     "}"
 )
 
