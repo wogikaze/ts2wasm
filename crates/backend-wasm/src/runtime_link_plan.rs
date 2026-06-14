@@ -246,7 +246,9 @@ fn collect_required_runtime_expr(plan: &mut RuntimeLinkPlan, expr: &LoweredExpr)
         LoweredExpr::Unary { op, expr, .. } => {
             collect_required_runtime_expr(plan, expr);
             match op {
-                LoweredUnaryOp::Not => plan.add_required_runtime(RuntimeFn::Not),
+                LoweredUnaryOp::Not => {
+                    // Handled by native binary path, no WAT runtime needed
+                }
                 LoweredUnaryOp::Plus => plan.add_required_runtime(RuntimeFn::EqualEqual),
                 LoweredUnaryOp::Negate => plan.add_required_runtime(RuntimeFn::Negate),
                 LoweredUnaryOp::TypeOf => plan.add_required_runtime(RuntimeFn::TypeOf),
