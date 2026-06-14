@@ -254,6 +254,255 @@ fn disable_test262_preprocessor_stubs() -> bool {
         .unwrap_or(false)
 }
 
+/// Find the index of the matching closing delimiter, accounting for nesting.
+/// Starts searching at `start` (the first character after the opening delimiter).
+fn find_matching_close(s: &str, start: usize, open: char, close: char) -> Option<usize> {
+    let bytes = s.as_bytes();
+    let mut depth = 1u32;
+    let mut i = start;
+    while i < bytes.len() {
+        let c = bytes[i] as char;
+        if c == open {
+            depth += 1;
+        } else if c == close {
+            depth -= 1;
+            if depth == 0 {
+                return Some(i);
+            }
+        } else if c == '"' || c == '\'' || c == '`' {
+            // Skip string literals to avoid false matches
+            let quote = c;
+            i += 1;
+            while i < bytes.len() {
+                let sc = bytes[i] as char;
+                if sc == '\\' {
+                    i += 2;
+                    continue;
+                }
+                if sc == quote {
+                    break;
+                }
+                i += 1;
+            }
+        }
+        i += 1;
+    }
+    None
+}
+
+/// Find the index of the matching closing paren for a `(` at position `open_pos`.
+fn find_matching_paren(s: &str, open_pos: usize) -> Option<usize> {
+    find_matching_close(s, open_pos + 1, '(', ')')
+}
+
+/// Skip whitespace in a string, returning the remaining slice.
+fn skip_ws(s: &str) -> &str {
+    s.trim_start()
+}
+
+/// Extract a JavaScript identifier (ErrorType) from the start of a string.
+fn parse_ident(s: &str) -> Option<(&str, &str)> {
+    let bytes = s.as_bytes();
+    let mut i = 0;
+    // Identifiers can contain dots for qualified names like "TypeError"
+    while i < bytes.len() {
+        let c = bytes[i] as char;
+        if c.is_alphanumeric() || c == '_' || c == '$' || c == '.' {
+            i += 1;
+        } else {
+            break;
+        }
+    }
+    if i == 0 {
+        return None;
+    }
+    Some((&s[..i], &s[i..]))
+}
+
+/// Rewrite `assert.throws(ErrorType, function() { BODY })` and similar patterns
+/// to inline try/catch blocks. This eliminates function expressions that would
+/// otherwise trigger `$host_eval_indirect` import requirements in WAT compilation.
+///
+/// Handles these patterns:
+/// - `assert.throws(ErrorType, function() { BODY }, opt_msg)`
+/// - `assert.throws(ErrorType, function () { BODY }, opt_msg)`
+/// - `assert.throws(ErrorType, () => { BODY }, opt_msg)`
+/// - `assert.throws(ErrorType, () => expr, opt_msg)`
+///
+/// Non-function-expression assert.throws calls are left unchanged (they will be
+/// handled by the existing `rewrite_assert_method_calls` -> `__assert_throws` path).
+fn rewrite_assert_throws_to_try_catch(source: &str) -> String {
+    let mut result = String::new();
+    let mut cursor = 0usize;
+
+    loop {
+        // Find the next `assert.throws(`
+        let Some(pos) = source[cursor..].find("assert.throws(") else {
+            result.push_str(&source[cursor..]);
+            break;
+        };
+        let abs_pos = cursor + pos;
+
+        // Copy everything before `assert.throws(`
+        result.push_str(&source[cursor..abs_pos]);
+
+        // Find the matching closing paren for assert.throws(...)
+        let Some(close_paren) = find_matching_paren(source, abs_pos + "assert.throws(".len() - 1)
+        else {
+            result.push_str(&source[abs_pos..]);
+            break;
+        };
+
+        // The arguments are between the open and close parens
+        let args_start = abs_pos + "assert.throws(".len();
+        let args = &source[args_start..close_paren];
+
+        // Try to parse: ErrorType, <second_arg>
+        let args_trimmed = skip_ws(args);
+        let Some((error_type, after_first_arg)) = parse_ident(args_trimmed) else {
+            result.push_str(&source[abs_pos..close_paren + 1]);
+            cursor = close_paren + 1;
+            continue;
+        };
+
+        let after_comma1 = skip_ws(after_first_arg);
+        if !after_comma1.starts_with(',') {
+            result.push_str(&source[abs_pos..close_paren + 1]);
+            cursor = close_paren + 1;
+            continue;
+        }
+        let second_arg = skip_ws(&after_comma1[1..]);
+
+        // Check if second argument is a function expression or arrow function
+        let (body_start, body_end) =
+            // Pattern: function() { BODY } or function () { BODY }
+            if let Some(rest) = second_arg.strip_prefix("function(")
+                .or_else(|| second_arg.strip_prefix("function ("))
+            {
+                let after_fn = skip_ws(rest);
+                // Skip function name and params: look for `)` then `{`
+                let Some(paren_end) = after_fn.find(')') else {
+                    result.push_str(&source[abs_pos..close_paren + 1]);
+                    cursor = close_paren + 1;
+                    continue;
+                };
+                let after_fn_brace = skip_ws(&after_fn[paren_end + 1..]);
+                if !after_fn_brace.starts_with('{') {
+                    result.push_str(&source[abs_pos..close_paren + 1]);
+                    cursor = close_paren + 1;
+                    continue;
+                }
+                let body_open = absolute_offset(source, after_fn_brace).unwrap_or(source.len());
+                let Some(body_close) = find_matching_close(source, body_open + 1, '{', '}') else {
+                    result.push_str(&source[abs_pos..close_paren + 1]);
+                    cursor = close_paren + 1;
+                    continue;
+                };
+                (body_open + 1, body_close)
+            }
+            // Pattern: () => { BODY } or () => expr
+            else if let Some(after_arrow) = second_arg.strip_prefix("() =>")
+                .or_else(|| second_arg.strip_prefix("()=>"))
+            {
+                let after_arrow = skip_ws(after_arrow);
+                if after_arrow.starts_with('{') {
+                    // () => { BODY }
+                    let body_open = absolute_offset(source, after_arrow).unwrap_or(source.len());
+                    let Some(body_close) = find_matching_close(source, body_open + 1, '{', '}') else {
+                        result.push_str(&source[abs_pos..close_paren + 1]);
+                        cursor = close_paren + 1;
+                        continue;
+                    };
+                    (body_open + 1, body_close)
+                } else {
+                    // () => expr — expression body, capture until ',' or ')'
+                    let offset = absolute_offset(source, after_arrow).unwrap_or(source.len());
+                    // Rest of args within the parens, starting from after_arrow
+                    let rest_in_parens = &source[offset..close_paren];
+                    // Use find_arg_end to locate the end of the expression
+                    // (it stops at comma at depth 0, or at the closing paren)
+                    let rel_end = find_arg_end(rest_in_parens);
+                    // rel_end is the position of comma or end-of-string
+                    (offset, offset + rel_end)
+                }
+            }
+            else {
+                // Not a function/arrow expression - keep unchanged
+                result.push_str(&source[abs_pos..close_paren + 1]);
+                cursor = close_paren + 1;
+                continue;
+            };
+
+        // We found a function expression. Rewrite to try/catch.
+        let body = &source[body_start..body_end];
+        result.push_str(&format!(
+            "try {{ {} }} catch (e) {{ if (!(e instanceof {})) console.log(\"__TS2WASM_TEST262_ASSERT_FAIL__\"); }}",
+            body, error_type
+        ));
+        cursor = close_paren + 1;
+    }
+
+    result
+}
+
+/// Find the absolute offset of a substring within the full string.
+/// Returns None if `subslice` is not a subslice of `full`.
+fn absolute_offset(full: &str, subslice: &str) -> Option<usize> {
+    let full_start = full.as_ptr() as usize;
+    let sub_start = subslice.as_ptr() as usize;
+    if sub_start >= full_start && sub_start < full_start + full.len() {
+        Some(sub_start - full_start)
+    } else {
+        None
+    }
+}
+
+/// Find the end of the second argument (expression body) in assert.throws calls.
+/// Searches from `s` for a comma or close paren, respecting nested parens and strings.
+fn find_arg_end(s: &str) -> usize {
+    let bytes = s.as_bytes();
+    let mut depth = 0u32;
+    let mut i = 0;
+    while i < bytes.len() {
+        let c = bytes[i] as char;
+        match c {
+            '(' => depth += 1,
+            ')' => {
+                if depth == 0 {
+                    // Unmatched close paren - this is the end of assert.throws
+                    return i;
+                }
+                depth -= 1;
+            }
+            ',' if depth == 0 => return i,
+            '"' | '\'' | '`' => {
+                let quote = c;
+                i += 1;
+                while i < bytes.len() {
+                    let sc = bytes[i] as char;
+                    if sc == '\\' {
+                        i += 2;
+                        continue;
+                    }
+                    if sc == quote {
+                        break;
+                    }
+                    i += 1;
+                }
+            }
+            _ => {}
+        }
+        i += 1;
+    }
+    s.len()
+}
+
+/// Run both assert.throws-to-try-catch rewriting and assert method call rewriting.
+fn rewrite_all_assert_patterns(source: &str) -> String {
+    let source = rewrite_assert_throws_to_try_catch(source);
+    rewrite_assert_method_calls(&source)
+}
+
 /// Rewrite `assert.method(...)` calls to `__assert_method(...)` standalone calls.
 ///
 /// This works around issue-211 where method calls on function-valued locals (`assert`)
@@ -370,9 +619,9 @@ pub fn process_test262_includes(input: &Path, source: &str) -> Result<String, Di
             stubs.push_str("function $DETACHBUFFER() {}\n");
         }
         if stubs.is_empty() {
-            return Ok(rewrite_assert_method_calls(source));
+            return Ok(rewrite_all_assert_patterns(source));
         }
-        return Ok(rewrite_assert_method_calls(&format!(
+        return Ok(rewrite_all_assert_patterns(&format!(
             "{}\n{}\n{}",
             frontmatter,
             stubs.trim(),
@@ -447,9 +696,9 @@ pub fn process_test262_includes(input: &Path, source: &str) -> Result<String, Di
             default_stubs.push_str("function verifyCallableProperty() {}\n");
         }
         if default_stubs.is_empty() {
-            return Ok(rewrite_assert_method_calls(source));
+            return Ok(rewrite_all_assert_patterns(source));
         }
-        return Ok(rewrite_assert_method_calls(&format!(
+        return Ok(rewrite_all_assert_patterns(&format!(
             "{}\n{}\n{}",
             frontmatter,
             default_stubs.trim(),
@@ -485,7 +734,7 @@ pub fn process_test262_includes(input: &Path, source: &str) -> Result<String, Di
     }
 
     let processed = format!("{}\n{}\n{}", frontmatter, all_injected, body.trim());
-    Ok(rewrite_assert_method_calls(&processed))
+    Ok(rewrite_all_assert_patterns(&processed))
 }
 
 /// Parsed test262 frontmatter directives used by preprocessor support.
@@ -615,7 +864,16 @@ fn build_feature_stubs(features: &[String], source: &str) -> Result<String, Diag
             "tail-call-optimization" => {
                 // feature marker currently used only for test262 metadata filtering.
             }
-            "regexp-lookbehind" | "regexp-duplicate-named-groups" | "regexp-dotall" | "regexp-named-groups" | "regexp-unicode-property-escapes" | "regexp-modifiers" | "regexp-v-flag" | "legacy-regexp" | "RegExp.escape" | "RegExp-v-flag" => {
+            "regexp-lookbehind"
+            | "regexp-duplicate-named-groups"
+            | "regexp-dotall"
+            | "regexp-named-groups"
+            | "regexp-unicode-property-escapes"
+            | "regexp-modifiers"
+            | "regexp-v-flag"
+            | "legacy-regexp"
+            | "RegExp.escape"
+            | "RegExp-v-flag" => {
                 // Regex feature markers — no stubs needed, just recognized.
             }
             "source-phase-imports" => {
