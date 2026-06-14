@@ -169,6 +169,41 @@ host_eval_direct(wasm_exec_env_t exec_env, uint32_t source_tag, uint32_t env_tag
 }
 
 /*
+ * host.eval.indirect — stub that returns undefined (tagged value 0).
+ * Same contract as eval.direct: prevents link failures for test262 code
+ * that references indirect eval, either through $262.evalScript or
+ * through the compiler's indirect eval lowering.
+ * WASM signature: (i32 source_tag, i32 env_tag) -> i32
+ */
+static uint32_t
+host_eval_indirect(wasm_exec_env_t exec_env, uint32_t source_tag, uint32_t env_tag)
+{
+    (void)exec_env;
+    (void)source_tag;
+    (void)env_tag;
+    /* Return undefined (tagged value 0) */
+    return 0;
+}
+
+/*
+ * host.stringNormalize — stub that returns undefined (tagged value 0).
+ * String.prototype.normalize is required by test262 but the WAMR runner
+ * does not implement actual Unicode normalization. Returning undefined
+ * from this stub will cause the test to fail with a semantic mismatch
+ * rather than a linker crash.
+ * WASM signature: (i32 source_tag, i32 form_tag) -> i32
+ */
+static uint32_t
+host_string_normalize(wasm_exec_env_t exec_env, uint32_t source_tag, uint32_t form_tag)
+{
+    (void)exec_env;
+    (void)source_tag;
+    (void)form_tag;
+    /* Return undefined (tagged value 0) */
+    return 0;
+}
+
+/*
  * host.dateGetLocalTimeField — return a local time field from epoch ms.
  * WASM signature: (i32 epoch_ms, i32 field) -> i32
  *
@@ -267,6 +302,18 @@ static NativeSymbol host_native_symbols[] = {
     {
         .symbol = "eval.direct",
         .func_ptr = (void *)host_eval_direct,
+        .signature = "(ii)i",
+        .attachment = NULL,
+    },
+    {
+        .symbol = "eval.indirect",
+        .func_ptr = (void *)host_eval_indirect,
+        .signature = "(ii)i",
+        .attachment = NULL,
+    },
+    {
+        .symbol = "stringNormalize",
+        .func_ptr = (void *)host_string_normalize,
         .signature = "(ii)i",
         .attachment = NULL,
     },

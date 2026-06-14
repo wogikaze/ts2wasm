@@ -5509,12 +5509,9 @@ pub(super) fn lower_binary_op(op: BinaryOp) -> Result<LoweredBinaryOp, Diagnosti
         BinaryOp::LeftShift => Ok(LoweredBinaryOp::Shl),
         BinaryOp::RightShift => Ok(LoweredBinaryOp::Shr),
         BinaryOp::UnsignedRightShift => Ok(LoweredBinaryOp::ShrU),
-        BinaryOp::In
-        | BinaryOp::InstanceOf
-        | BinaryOp::Pipeline => Err(Diagnostic::unsupported(format!(
-            "binary operator {:?} not yet supported",
-            op
-        ))),
+        BinaryOp::In | BinaryOp::InstanceOf | BinaryOp::Pipeline => Err(Diagnostic::unsupported(
+            format!("binary operator {:?} not yet supported", op),
+        )),
     }
 }
 
