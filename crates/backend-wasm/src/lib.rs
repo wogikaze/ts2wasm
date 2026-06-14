@@ -4571,8 +4571,7 @@ mod tests {
             functions: vec![],
             modules: vec![],
         };
-        let (v, _) =
-            Validated::new(program).expect("program should validate");
+        let (v, _) = Validated::new(program).expect("program should validate");
         let abi_metadata = AbiMetadata::default();
 
         emit_wasm_binary_with_abi(&v, &abi_metadata)

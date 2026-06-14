@@ -4031,9 +4031,7 @@ impl<'a> NativeLoweredEmitter<'a> {
                             out.push(WasmInstr::I32Const(ValueTag::UNDEFINED));
                         }
                         // Stack: [obj, properties] — call $object_define_properties(obj, properties)
-                        out.push(WasmInstr::Call(
-                            "$object_define_properties".to_owned(),
-                        ));
+                        out.push(WasmInstr::Call("$object_define_properties".to_owned()));
                         out.push(WasmInstr::Drop);
                         // Restore obj from local
                         out.push(WasmInstr::LocalGet(ctx.switch_value_local));
@@ -4120,9 +4118,7 @@ impl<'a> NativeLoweredEmitter<'a> {
                     if !expr_produces_value(&args[1], &self.function_results) {
                         out.push(WasmInstr::I32Const(ValueTag::UNDEFINED));
                     }
-                    out.push(WasmInstr::Call(
-                        "$object_define_properties".to_owned(),
-                    ));
+                    out.push(WasmInstr::Call("$object_define_properties".to_owned()));
                     return Ok(());
                 }
                 if *intrinsic == RuntimeFn::ObjectGetOwnPropertyDescriptor && args.len() == 2 {
