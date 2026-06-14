@@ -104,6 +104,16 @@ fn resolver_allows_later_parameter_reference_in_default() {
 }
 
 #[test]
+fn resolver_hoists_arrow_body_var_declarations() {
+    let stmts = resolve_names(&parse(
+        "assert.throws(TypeError, () => { var s1 = new String(); s1.toString = Boolean.prototype.toString; s1.toString(); });",
+    ))
+    .unwrap();
+
+    assert_eq!(stmts.len(), 1);
+}
+
+#[test]
 fn resolver_snapshot_null_undefined() {
     let stmts = resolve_names(&parse("let n = null; let u = undefined;")).unwrap();
     assert_eq!(stmts.len(), 2);

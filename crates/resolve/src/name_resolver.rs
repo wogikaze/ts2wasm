@@ -1228,6 +1228,9 @@ impl NameResolver {
                         }
                     }
                 }
+                for name in collect_var_names_in_stmts(body_stmts) {
+                    self.declare_variable(&name, Some(*span), true)?;
+                }
                 let previous_strict_context = self.strict_context;
                 self.strict_context =
                     previous_strict_context || block_has_use_strict_directive(body_stmts);
@@ -2396,6 +2399,95 @@ fn unwrapped_stmt(stmt: &Stmt) -> &Stmt {
     } else {
         stmt
     }
+}
+
+fn collect_var_names_in_stmts(stmts: &[Stmt]) -> Vec<String> {
+    let mut names = Vec::new();
+    for stmt in stmts {
+        match unwrapped_stmt(stmt) {
+            Stmt::Let {
+                name, is_var: true, ..
+            } => names.push(name.clone()),
+            Stmt::Let { is_var: false, .. } => {}
+            Stmt::Block { statements, .. } => {
+                names.extend(collect_var_names_in_stmts(statements));
+            }
+            Stmt::If {
+                then_body,
+                else_body,
+                ..
+            } => {
+                names.extend(collect_var_names_in_stmts(then_body));
+                names.extend(collect_var_names_in_stmts(else_body));
+            }
+            Stmt::While { body, .. }
+            | Stmt::DoWhile { body, .. }
+            | Stmt::ForIn { body, .. }
+            | Stmt::ForOf { body, .. }
+            | Stmt::ForAwaitOf { body, .. } => names.extend(collect_var_names_in_stmts(body)),
+            Stmt::For { init, body, .. } => {
+                if let Some(init) = init
+                    && let Stmt::Let {
+                        name, is_var: true, ..
+                    } = init.as_ref()
+                {
+                    names.push(name.clone());
+                }
+                names.extend(collect_var_names_in_stmts(body));
+            }
+            Stmt::TryCatch {
+                catch_param,
+                try_block,
+                catch_block,
+                finally_block,
+                ..
+            } => {
+                names.extend(collect_var_names_in_stmts(try_block));
+                if let Some(block) = catch_block {
+                    names.extend(collect_var_names_in_stmts(block));
+                }
+                if let Some(block) = finally_block {
+                    names.extend(collect_var_names_in_stmts(block));
+                }
+                if let Some(param) = catch_param {
+                    names.push(param.clone());
+                }
+            }
+            Stmt::Switch { cases, .. } => {
+                for (_, body) in cases {
+                    names.extend(collect_var_names_in_stmts(body));
+                }
+            }
+            Stmt::Function { .. }
+            | Stmt::ExportDecl { .. }
+            | Stmt::ClassDecl { .. }
+            | Stmt::EnumDecl { .. }
+            | Stmt::TypeAlias { .. }
+            | Stmt::InterfaceDecl { .. }
+            | Stmt::ImportSideEffect { .. }
+            | Stmt::ImportNamed { .. }
+            | Stmt::ImportDefault { .. }
+            | Stmt::ImportDefaultNamed { .. }
+            | Stmt::ImportNamespace { .. }
+            | Stmt::ImportDefaultNamespace { .. }
+            | Stmt::ExportNamed { .. }
+            | Stmt::ExportNamedFrom { .. }
+            | Stmt::ExportAllFrom { .. }
+            | Stmt::ExportNamespaceFrom { .. }
+            | Stmt::ExportDefault { .. }
+            | Stmt::ExportAssignment { .. }
+            | Stmt::AmbientValueDecl { .. }
+            | Stmt::Assign { .. }
+            | Stmt::Expr { .. }
+            | Stmt::Return { .. }
+            | Stmt::Throw { .. }
+            | Stmt::Break { .. }
+            | Stmt::Continue { .. }
+            | Stmt::Labeled { .. }
+            | Stmt::Using { .. } => {}
+        }
+    }
+    names
 }
 
 fn unsupported_arguments_outside_function(span: Span) -> Diagnostic {
