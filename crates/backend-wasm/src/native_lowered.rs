@@ -147,10 +147,7 @@ pub(crate) fn validate_native_final_module(module: &WasmModule) -> Result<(), Di
 fn validate_no_unlinked_default_host_imports(module: &WasmModule) -> Result<(), Diagnostic> {
     for import in &module.imports {
         if import.module == "host"
-            && matches!(
-                import.name.as_str(),
-                "function.callMethod" | "reflectApply" | "reflectConstruct"
-            )
+            && matches!(import.name.as_str(), "function.callMethod" | "reflectApply")
         {
             return Err(unsupported(&format!(
                 "native LoweredProgram emitter does not support unlinked host import {}.{}",
@@ -7066,13 +7063,13 @@ impl<'a> NativeLoweredEmitter<'a> {
             .modules
             .iter()
             .find(|module| module.id == module_id)?;
-        for stmt in &module_info.statements {
+        for stmt in module_info.statements.iter().rev() {
             match stmt {
-                LoweredStmt::Export { name, expr, .. } if name == key => return Some(expr),
                 LoweredStmt::ModuleExportsUpdate { name, local, .. } if name == key => {
                     return module_info
                         .statements
                         .iter()
+                        .rev()
                         .find_map(|candidate| match candidate {
                             LoweredStmt::Let(candidate_local, expr, _)
                             | LoweredStmt::Assign(candidate_local, expr, _)

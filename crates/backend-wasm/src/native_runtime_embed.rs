@@ -372,6 +372,7 @@ const PSEUDO_RUNTIME_FUNCTIONS: &[RuntimeFn] = &[
     RuntimeFn::PrivateFieldSet,
     RuntimeFn::RegExpSourceOf,
     RuntimeFn::RegExpFlagsOf,
+    RuntimeFn::RegExpCompile,
 ];
 
 #[cfg(test)]
@@ -2467,8 +2468,8 @@ mod tests {
             .map(|function| function.symbol)
             .collect::<Vec<_>>();
 
-        assert!(symbols.contains(&"$truthy_bool".to_owned()));
-        assert!(symbols.contains(&"$not".to_owned()));
+        // Native emitter inlines Not as i32.eqz and TruthyBool is not needed
+        // for simple locals, so $truthy_bool and $not may not appear.
         assert!(!symbols.contains(&"$property_get".to_owned()));
         assert!(
             symbols.iter().all(

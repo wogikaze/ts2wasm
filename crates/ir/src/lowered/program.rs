@@ -5513,9 +5513,7 @@ fn contains_yield_stmt(stmt: &LoweredStmt) -> bool {
         | LoweredStmt::ForOf { body, .. }
         | LoweredStmt::ForAwaitOfLower { body, .. } => contains_yield_slice(body),
         LoweredStmt::For { init, body, .. } => {
-            init.as_ref()
-                .map_or(false, |i| contains_yield_stmt(i))
-                || contains_yield_slice(body)
+            init.as_ref().map_or(false, |i| contains_yield_stmt(i)) || contains_yield_slice(body)
         }
         LoweredStmt::TryFinally {
             try_body,

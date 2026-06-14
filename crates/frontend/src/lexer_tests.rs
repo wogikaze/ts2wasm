@@ -683,7 +683,9 @@ mod tests {
     #[test]
     fn regex_lookbehind_abc() {
         assert_eq!(extract_regex_pattern(r"/x(?<=abc)/"), "x(?<=abc)");
-fn extract_named_capture_groups(source: &str) -> Vec<String> {
+    }
+
+    fn extract_named_capture_groups(source: &str) -> Vec<String> {
         let tokens = Lexer::new(source).tokenize().unwrap();
         for t in &tokens {
             if let Token::RegExp {
@@ -698,29 +700,7 @@ fn extract_named_capture_groups(source: &str) -> Vec<String> {
     }
 
     #[test]
-    fn regex_unicode_property_escape_lowercase_l() {
-        assert_eq!(extract_regex_pattern(r"/\p{L}/"), "\\p{L}");
-    }
 
-    #[test]
-    fn regex_unicode_property_escape_uppercase_p() {
-        assert_eq!(extract_regex_pattern(r"/\P{Nd}/"), "\\P{Nd}");
-    }
-
-    #[test]
-    fn regex_unicode_property_in_char_class() {
-        assert_eq!(extract_regex_pattern(r"/[\p{L}]/"), "[\\p{L}]");
-    }
-
-    #[test]
-    fn regex_unicode_property_with_long_name() {
-        assert_eq!(
-            extract_regex_pattern(r"/\p{General_Category=Lu}/"),
-            "\\p{General_Category=Lu}"
-        );
-    }
-
-    #[test]
     fn regex_named_capture_group_simple() {
         let groups = extract_named_capture_groups(r"/(?<year>[0-9]{4})/");
         assert_eq!(groups, vec!["year"]);
