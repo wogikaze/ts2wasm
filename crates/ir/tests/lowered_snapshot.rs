@@ -181,6 +181,16 @@ fn count_user_calls_in_expr(expr: &LoweredExpr) -> usize {
     }
 }
 
+#[test]
+fn date_prototype_set_year_length_is_static() {
+    let lowered = parse_resolve_lower("Date.prototype.setYear.length;");
+    assert_eq!(lowered.top_level_statements.len(), 1);
+    match &lowered.top_level_statements[0] {
+        LoweredStmt::Expr(LoweredExpr::Number(value, _), _) => assert_eq!(*value, 1),
+        other => panic!("unexpected lowering: {other:?}"),
+    }
+}
+
 fn lowered_stmt_contains_runtime_call(stmt: &LoweredStmt, runtime: RuntimeFn) -> bool {
     match stmt {
         LoweredStmt::Let(_, expr, _)

@@ -36,6 +36,26 @@ impl super::super::Resolver {
                 ResolvedExpr::Ident(name) if is_global_builtin_function_name(name) => {
                     lower_global_builtin_function_metadata_property(name, "length")
                 }
+                ResolvedExpr::PropertyAccess {
+                    object: prototype_object,
+                    key: method_name,
+                    ..
+                } if method_name == "setYear"
+                    && matches!(
+                            prototype_object.as_ref(),
+                            ResolvedExpr::PropertyAccess {
+                                object: date_object,
+                                key: prototype_key,
+                                ..
+                            } if prototype_key == "prototype"
+                        && matches!(date_object.as_ref(), ResolvedExpr::Ident(name) if name == "Date")
+                    ) =>
+                {
+                    Ok(LoweredExpr::Number(
+                        1,
+                        Span::generated("date_legacy_length"),
+                    ))
+                }
                 ResolvedExpr::Ident(name) => {
                     if let Some(length) = self.local_arrow_function_length(name) {
                         Ok(LoweredExpr::Number(length as i32, Span::generated("num")))
@@ -105,6 +125,30 @@ impl super::super::Resolver {
             && let Some(prototype) = static_builtin_prototype_object(name, span)
         {
             return Ok(prototype);
+        }
+        if matches!(key, "length" | "name")
+            && let ResolvedExpr::PropertyAccess {
+                object: prototype_object,
+                key: method_name,
+                ..
+            } = object
+            && method_name == "setYear"
+            && let ResolvedExpr::PropertyAccess {
+                object: date_object,
+                key: prototype_key,
+                ..
+            } = prototype_object.as_ref()
+            && prototype_key == "prototype"
+            && let ResolvedExpr::Ident(name) = date_object.as_ref()
+            && name == "Date"
+        {
+            return Ok(match key {
+                "length" => LoweredExpr::Number(1, Span::generated("date_legacy_length")),
+                "name" => {
+                    LoweredExpr::String("setYear".to_owned(), Span::generated("date_legacy_name"))
+                }
+                _ => unreachable!(),
+            });
         }
         if let ResolvedExpr::Ident(name) = object
             && name == "Number"
@@ -1453,7 +1497,11 @@ fn static_builtin_prototype_object(name: &str, span: Span) -> Option<LoweredExpr
     }
 }
 
-fn static_builtin_date_legacy_function_object(name: &str, length: usize, span: Span) -> LoweredExpr {
+fn static_builtin_date_legacy_function_object(
+    name: &str,
+    length: usize,
+    span: Span,
+) -> LoweredExpr {
     LoweredExpr::ObjectNew {
         props: vec![
             (
