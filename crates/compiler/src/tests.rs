@@ -329,7 +329,7 @@ fn compiler_records_function_constructor_length_metadata_on_generated_function()
 #[test]
 fn compiler_rejects_static_function_constructor_primitive_parameter_source() {
     let err = parse_resolve_and_expand_dynamic_code_err("let value = Function(1, \"return 1\");");
-    assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+    assert_eq!(err.code, DiagCode::SyntaxError);
     assert!(
         err.message
             .contains("Function constructor source parse error"),

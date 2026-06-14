@@ -44,13 +44,18 @@ pub(super) fn expand_function_constructor(
     let tokens = ts2wasm_frontend::Lexer::new(&function_source)
         .tokenize()
         .map_err(|e| {
-            Diagnostic::unsupported_at(span, format!("Function constructor source lex error: {e}"))
+            Diagnostic::source(
+                span,
+                DiagCode::SyntaxError,
+                format!("Function constructor source lex error: {e}"),
+            )
         })?;
     let program = ts2wasm_frontend::Parser::new(tokens, &function_source)
         .parse_program()
         .map_err(|e| {
-            Diagnostic::unsupported_at(
+            Diagnostic::source(
                 span,
+                DiagCode::SyntaxError,
                 format!("Function constructor source parse error: {e}"),
             )
         })?;
@@ -276,8 +281,9 @@ pub(super) fn function_constructor_syntax_error(
     message: &str,
     span: ts2wasm_source::Span,
 ) -> Diagnostic {
-    Diagnostic::unsupported_at(
+    Diagnostic::source(
         span,
+        DiagCode::SyntaxError,
         format!("Function constructor source parse error: SyntaxError: {message}"),
     )
 }
