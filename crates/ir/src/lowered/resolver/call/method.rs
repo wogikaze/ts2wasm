@@ -2824,7 +2824,10 @@ impl super::super::Resolver {
         {
             // fall through to class dispatch — Number.toString(value, radix)
         } else if method == "toString"
-            && matches!(self.infer_class_for_expr(object).as_deref(), Some("Boolean"))
+            && matches!(
+                self.infer_class_for_expr(object).as_deref(),
+                Some("Boolean")
+            )
         {
             // fall through to class dispatch — Boolean.toString → BooleanToString
         } else if let Some(intrinsic) = resolve_method_to_runtime_fn(object, method) {
@@ -3829,7 +3832,10 @@ impl super::super::Resolver {
 
         // Boolean non-ident receiver (e.g. (true).toString()) — route to BooleanToString
         if matches!(method, "toString" | "valueOf")
-            && matches!(self.infer_class_for_expr(object).as_deref(), Some("Boolean"))
+            && matches!(
+                self.infer_class_for_expr(object).as_deref(),
+                Some("Boolean")
+            )
         {
             let receiver = self.lower_expr(object)?;
             if method == "valueOf" {
@@ -4158,7 +4164,7 @@ impl super::super::Resolver {
             {
                 return self.lower_array_push_single_spread_arg(object, spread_expr.as_ref());
             }
-            if class_name == "RegExp" && args.len() > 1 {
+            if class_name == "RegExp" && method != "compile" && args.len() > 1 {
                 return Err(Diagnostic {
                     code: DiagCode::ArityMismatch,
                     message: format!(
@@ -4659,11 +4665,6 @@ impl super::super::Resolver {
         };
         let class_name = class_name_str.as_str();
 
-        // RegExp.prototype.compile — emit known-unsupported diagnostic
-        if class_name == "RegExp" && method == "compile" {
-            return Err(unsupported_regexp_compile_diagnostic(Some(span)));
-        }
-
         // BigInt.prototype.toString / valueOf
         if class_name == "BigInt" {
             match method {
@@ -4755,7 +4756,7 @@ impl super::super::Resolver {
             {
                 return self.lower_array_push_single_spread_arg(object, spread_expr.as_ref());
             }
-            if class_name == "RegExp" && args.len() > 1 {
+            if class_name == "RegExp" && method != "compile" && args.len() > 1 {
                 return Err(Diagnostic {
                     code: DiagCode::ArityMismatch,
                     message: format!(
@@ -5038,6 +5039,10 @@ impl super::super::Resolver {
             && (class_name == "Array" || is_typed_array_class(class_name))
         {
             lowered_args.push(LoweredExpr::String(",".to_owned(), Span::generated("str")));
+        }
+        // RegExp.prototype.compile expects (receiver, pattern, flags) — pad missing flags
+        if class_name == "RegExp" && method == "compile" && lowered_args.len() == 2 {
+            lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
         }
         Ok(lowered_args)
     }

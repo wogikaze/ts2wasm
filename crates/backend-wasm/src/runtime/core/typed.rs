@@ -33919,7 +33919,6 @@ pub fn build_property_set() -> WasmFunction {
         WasmInstr::I32Const(ValueTag::NUMBER_SHIFT),
         WasmInstr::I32ShrS,
         WasmInstr::LocalSet(7), // local 7 = new_length (reuse i)
-
         // Ensure new_length >= 0
         WasmInstr::LocalGet(7),
         WasmInstr::I32Const(0),
@@ -33931,7 +33930,6 @@ pub fn build_property_set() -> WasmFunction {
         WasmInstr::I32Const(ValueTag::UNDEFINED),
         WasmInstr::Return,
         WasmInstr::End,
-
         // Truncate presence bits if new_length < current_length
         WasmInstr::LocalGet(7),
         WasmInstr::LocalGet(5),

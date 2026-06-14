@@ -48,5 +48,6 @@ pub const STRING_FUNCTIONS: &[RuntimeFn] = &[
     RuntimeFn::RegexpParseFlags,
     RuntimeFn::RegExpTest,
     RuntimeFn::RegExpMatch,
+    RuntimeFn::RegExpCompile,
     RuntimeFn::RegExpSearch,
 ];

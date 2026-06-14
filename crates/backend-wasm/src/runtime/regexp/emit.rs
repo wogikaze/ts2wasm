@@ -962,4 +962,63 @@ impl WatEmitter<'_> {
             number_tag = ValueTag::NUMBER,
         ));
     }
+
+    pub(crate) fn emit_regexp_compile(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $regexp_compile (param $this i32) (param $pattern i32) (param $flags i32) (result i32)
+    (local $p_obj i32)
+    (local $p_len i32)
+    (local $f_obj i32)
+    (local $f_len i32)
+    (local $total_len i32)
+    (local $ptr i32)
+    (local $addr i32)
+    (if (i32.eqz (call $is_string (local.get $pattern)))
+      (then (return (local.get $this))))
+    (local.set $p_obj (i32.and (local.get $pattern) (i32.const {heap_mask})))
+    (local.set $p_len (i32.load (local.get $p_obj)))
+    (local.set $f_len (i32.const {zero}))
+    (if (i32.ne (local.get $flags) (i32.const {undefined}))
+      (then
+        (if (call $is_string (local.get $flags))
+          (then
+            (local.set $f_obj (i32.and (local.get $flags) (i32.const {heap_mask})))
+            (local.set $f_len (i32.load (local.get $f_obj)))))))
+    ;; total_len = 1 (leading /) + p_len + 1 (trailing /) + f_len
+    (local.set $total_len (i32.add (i32.const {one}) (local.get $p_len)))
+    (local.set $total_len (i32.add (local.get $total_len) (i32.const {one})))
+    (local.set $total_len (i32.add (local.get $total_len) (local.get $f_len)))
+    (local.set $ptr (call $alloc_heap (i32.add (i32.const {header}) (local.get $total_len))))
+    (local.set $addr (i32.add (local.get $ptr) (i32.const {header})))
+    (i32.store (local.get $ptr) (local.get $total_len))
+    ;; write leading '/'
+    (i32.store8 (local.get $addr) (i32.const {slash}))
+    ;; copy pattern bytes
+    (call $copy
+      (i32.add (local.get $p_obj) (i32.const {header}))
+      (i32.add (local.get $addr) (i32.const {one}))
+      (local.get $p_len))
+    ;; write trailing '/'
+    (i32.store8
+      (i32.add (local.get $addr) (i32.add (i32.const {one}) (local.get $p_len)))
+      (i32.const {slash}))
+    ;; copy flags bytes
+    (if (i32.gt_u (local.get $f_len) (i32.const {zero}))
+      (then
+        (call $copy
+          (i32.add (local.get $f_obj) (i32.const {header}))
+          (i32.add (local.get $addr) (i32.add (i32.const {one}) (i32.add (local.get $p_len) (i32.const {one}))))
+          (local.get $f_len))))
+    (i32.or (local.get $ptr) (i32.const {string_tag})))
+"#,
+            heap_mask = ValueTag::HEAP_MASK,
+            header = Layout::STRING_HEADER_SIZE,
+            undefined = ValueTag::UNDEFINED,
+            slash = b'/' as i32,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            string_tag = ValueTag::STRING,
+        ));
+    }
 }

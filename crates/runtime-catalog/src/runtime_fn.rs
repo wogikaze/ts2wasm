@@ -400,6 +400,8 @@ pub enum RuntimeFn {
     RegExpSourceOf,
     /// RegExp property access for source, flags, global, ignoreCase, multiline, lastIndex
     RegExpFlagsOf,
+    /// RegExp.prototype.compile — creates a new RegExp from pattern and flags strings
+    RegExpCompile,
     /// Issue 066: Shared helper for character-level pattern matching (dot, \d, \w, \s, literals).
     RegexpMatchInner,
     /// Issue 441: Parse regexp flags from trailing chars after closing `/` delimiter.
@@ -1386,6 +1388,8 @@ const REGEXP_SEARCH_DEPS: &[RuntimeFn] = &[
     RuntimeFn::RegexpMatchInner,
     RuntimeFn::RegexpParseFlags,
 ];
+const REGEXP_COMPILE_DEPS: &[RuntimeFn] =
+    &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString];
 const STRING_MATCH_DEPS: &[RuntimeFn] = &[RuntimeFn::RegExpMatch];
 const STRING_MATCH_ALL_DEPS: &[RuntimeFn] = &[
     RuntimeFn::AllocHeap,
@@ -1893,6 +1897,7 @@ pub fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "RegExpSearch" => Some(RuntimeFn::RegExpSearch),
         "RegExpSourceOf" => Some(RuntimeFn::RegExpSourceOf),
         "RegExpFlagsOf" => Some(RuntimeFn::RegExpFlagsOf),
+        "RegExpCompile" => Some(RuntimeFn::RegExpCompile),
         "RegexpParseFlags" => Some(RuntimeFn::RegexpParseFlags),
         "ArrayPush" => Some(RuntimeFn::ArrayPush),
         "ArrayPushGrow" => Some(RuntimeFn::ArrayPushGrow),
@@ -2640,6 +2645,7 @@ impl RuntimeFn {
             Self::RegExpTest
             | Self::RegExpMatch
             | Self::RegExpSearch
+            | Self::RegExpCompile
             | Self::RegexpMatchInner
             | Self::RegexpParseFlags => RuntimeDomain::RegExp,
             Self::StringEqual
@@ -3497,6 +3503,7 @@ impl RuntimeFn {
             Self::RegExpTest,
             Self::RegExpMatch,
             Self::RegExpSearch,
+            Self::RegExpCompile,
             Self::RegExpSourceOf,
             Self::RegExpFlagsOf,
             // Array methods
@@ -4019,6 +4026,7 @@ impl RuntimeFn {
             Self::RegExpTest,
             Self::RegExpMatch,
             Self::RegExpSearch,
+            Self::RegExpCompile,
             Self::RegExpSourceOf,
             Self::RegExpFlagsOf,
             // Array methods

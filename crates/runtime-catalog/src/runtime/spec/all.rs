@@ -2983,6 +2983,14 @@ match self {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::RegExpCompile => RuntimeSpec {
+                symbol: "$regexp_compile",
+                deps: REGEXP_COMPILE_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::RegexpMatchInner => RuntimeSpec {
                 symbol: "$regexp_match_inner",
                 deps: OBJECT_GET_OWN_PROPERTY_NAMES_DEPS,
