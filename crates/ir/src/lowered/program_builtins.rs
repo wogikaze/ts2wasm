@@ -724,8 +724,20 @@ pub(crate) fn collection_method_runtime_fn_arg(method: &str) -> Option<RuntimeFn
 pub(crate) fn is_identity_array_method(method: &str) -> bool {
     matches!(
         method,
-        "every" | "some" | "find" | "findIndex" | "findLast" | "findLastIndex" | "filter"
+        "some" | "find" | "findIndex" | "findLast" | "findLastIndex"
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::is_identity_array_method;
+
+    #[test]
+    fn every_and_filter_are_not_identity_array_methods() {
+        assert!(!is_identity_array_method("every"));
+        assert!(!is_identity_array_method("filter"));
+        assert!(is_identity_array_method("some"));
+    }
 }
 
 pub(crate) fn is_date_constructor_epoch_arg(arg: &ResolvedExpr) -> bool {
