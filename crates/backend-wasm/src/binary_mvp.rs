@@ -249,10 +249,9 @@ fn eval_binary_i32(op: LoweredBinaryOp, l: i32, r: i32) -> Result<i32, Diagnosti
 }
 
 fn unsupported(detail: &str) -> Diagnostic {
-    let message = format!("direct wasm binary MVP: {detail}");
     Diagnostic {
-        code: ts2wasm_diagnostic::resolve_diag_code(&message),
-        message,
+        code: DiagCode::UnsupportedSyntax,
+        message: format!("direct wasm binary MVP: {detail}"),
         span: None,
         phase: None,
     }
