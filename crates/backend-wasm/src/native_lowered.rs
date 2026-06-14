@@ -7066,11 +7066,8 @@ impl<'a> NativeLoweredEmitter<'a> {
         for stmt in module_info.statements.iter().rev() {
             match stmt {
                 LoweredStmt::ModuleExportsUpdate { name, local, .. } if name == key => {
-                    return module_info
-                        .statements
-                        .iter()
-                        .rev()
-                        .find_map(|candidate| match candidate {
+                    return module_info.statements.iter().rev().find_map(
+                        |candidate| match candidate {
                             LoweredStmt::Let(candidate_local, expr, _)
                             | LoweredStmt::Assign(candidate_local, expr, _)
                                 if candidate_local == local =>
@@ -7078,7 +7075,8 @@ impl<'a> NativeLoweredEmitter<'a> {
                                 Some(expr)
                             }
                             _ => None,
-                        });
+                        },
+                    );
                 }
                 _ => {}
             }

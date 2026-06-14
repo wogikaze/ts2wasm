@@ -714,8 +714,9 @@ mod tests {
 
     #[test]
     fn regex_named_capture_group_multiple() {
-        let groups =
-            extract_named_capture_groups(r"/(?<year>[0-9]{4})-(?<month>[0-9]{2})-(?<day>[0-9]{2})/");
+        let groups = extract_named_capture_groups(
+            r"/(?<year>[0-9]{4})-(?<month>[0-9]{2})-(?<day>[0-9]{2})/",
+        );
         assert_eq!(groups, vec!["year", "month", "day"]);
     }
 
@@ -733,16 +734,12 @@ mod tests {
 
     #[test]
     fn regex_named_capture_group_preserves_pattern() {
-        assert_eq!(
-            extract_regex_pattern(r"/(?<name>\w+)/"),
-            "(?<name>\\w+)"
-        );
+        assert_eq!(extract_regex_pattern(r"/(?<name>\w+)/"), "(?<name>\\w+)");
     }
 
     #[test]
     fn regex_named_capture_group_combined_with_unicode_property() {
-        let groups =
-            extract_named_capture_groups(r"/(?<letter>\p{L})/");
+        let groups = extract_named_capture_groups(r"/(?<letter>\p{L})/");
         assert_eq!(groups, vec!["letter"]);
         assert_eq!(
             extract_regex_pattern(r"/(?<letter>\p{L})/"),
