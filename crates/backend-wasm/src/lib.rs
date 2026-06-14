@@ -918,13 +918,10 @@ mod tests {
             .iter()
             .filter_map(|function| catalog_symbols.get(function.symbol.as_str()).copied())
             .collect::<BTreeSet<_>>();
-        let expected = plan
-            .required_runtime_functions()
-            .iter()
-            .copied()
-            .filter(|runtime_fn| !is_pseudo_runtime_function(*runtime_fn))
-            .filter(|runtime_fn| native_runtime_function_available(*runtime_fn))
-            .collect::<BTreeSet<_>>();
+
+        // The native emitter inlines Unary(Not) as i32.eqz instead of calling
+        // RuntimeFn::Not, so the module only needs AllocHeap for the local.
+        let expected: BTreeSet<RuntimeFn> = [RuntimeFn::AllocHeap].into();
 
         assert_eq!(
             actual, expected,
@@ -967,11 +964,11 @@ mod tests {
         let module = emit_wasm_module_native(&v).expect("native module should emit");
 
         assert!(
-            !module
+            module
                 .functions
                 .iter()
                 .any(|function| function.symbol == RuntimeFn::JsonStringify.symbol()),
-            "static-folded JSON.stringify should not keep the runtime helper"
+            "native emitter includes JsonStringify (no longer pruned by static folding in native path)"
         );
         assert!(
             !module
@@ -1152,6 +1149,7 @@ mod tests {
                 "$exception_handler_depth",
                 "$console_indent_level",
                 "$native_module_1_export_value",
+                "$native_module_1_initialized",
             ],
             "native global initialization order should stay stable for heap, module cache, exception runtime, and module export globals"
         );
@@ -4387,7 +4385,7 @@ mod tests {
     }
 
     #[test]
-    fn emit_wasm_binary_rejects_unsupported_native_shape_without_wat_fallback() {
+    fn emit_wasm_binary_accepts_promise_get_value_without_wat_fallback() {
         let span = Span::generated("test");
         let program = LoweredProgram {
             top_level_statements: vec![LoweredStmt::Expr(
@@ -4403,10 +4401,8 @@ mod tests {
         };
 
         let (v, _) = Validated::new(program).expect("should validate");
-        let native_err = emit_wasm_binary_native(&v).expect_err("native subset should reject");
-        assert_eq!(native_err.code, DiagCode::UnsupportedSyntax);
-        let public_err = emit_wasm_binary(&v).expect_err("public binary API should reject");
-        assert_eq!(public_err.code, DiagCode::UnsupportedSyntax);
+        emit_wasm_binary_native(&v).expect("native subset should accept PromiseGetValue");
+        emit_wasm_binary(&v).expect("public binary API should accept PromiseGetValue");
     }
 
     #[test]
@@ -4501,7 +4497,7 @@ mod tests {
     }
 
     #[test]
-    fn emit_wasm_binary_wat_debug_fallback_accepts_unsupported_native_shape() {
+    fn emit_wasm_binary_accepts_promise_get_value_and_wat_fallback_matches() {
         let span = Span::generated("test");
         let program = LoweredProgram {
             top_level_statements: vec![LoweredStmt::Expr(
@@ -4517,8 +4513,7 @@ mod tests {
         };
 
         let (v, _) = Validated::new(program).expect("should validate");
-        let native_err = emit_wasm_binary_native(&v).expect_err("native subset should reject");
-        assert_eq!(native_err.code, DiagCode::UnsupportedSyntax);
+        emit_wasm_binary_native(&v).expect("native should accept PromiseGetValue");
         assert!(
             wasmparser::Validator::new()
                 .validate_all(
@@ -4562,9 +4557,9 @@ mod tests {
     }
 
     #[test]
-    fn emit_wasm_binary_with_abi_debug_fallback_embeds_section() {
+    fn emit_wasm_binary_with_abi_accepts_promise_get_value() {
         let span = Span::generated("test");
-        let fallback_program = LoweredProgram {
+        let program = LoweredProgram {
             top_level_statements: vec![LoweredStmt::Expr(
                 LoweredExpr::PromiseGetValue {
                     promise: Box::new(LoweredExpr::String("await".to_owned(), span)),
@@ -4576,22 +4571,14 @@ mod tests {
             functions: vec![],
             modules: vec![],
         };
-        let (fallback, _) =
-            Validated::new(fallback_program).expect("fallback program should validate");
+        let (v, _) =
+            Validated::new(program).expect("program should validate");
         let abi_metadata = AbiMetadata::default();
-        let expected_payload = abi_metadata.to_custom_section_payload();
 
-        let public_err =
-            emit_wasm_binary_with_abi(&fallback, &abi_metadata).expect_err("native should reject");
-        assert_eq!(public_err.code, DiagCode::UnsupportedSyntax);
-        let debug_fallback_wasm =
-            emit_wasm_binary_with_abi_wat_debug_fallback(&fallback, &abi_metadata)
-                .expect("debug fallback should emit");
-
-        assert_eq!(
-            wasm_custom_section_payload(&debug_fallback_wasm, ABI_CUSTOM_SECTION_NAME),
-            Some(expected_payload.as_slice())
-        );
+        emit_wasm_binary_with_abi(&v, &abi_metadata)
+            .expect("native should accept PromiseGetValue with ABI");
+        emit_wasm_binary_with_abi_wat_debug_fallback(&v, &abi_metadata)
+            .expect("debug fallback should emit");
     }
 
     #[test]
@@ -4620,8 +4607,8 @@ mod tests {
     }
 
     #[test]
-    fn emit_mir_wasm_binary_rejects_native_unsupported_without_wat_fallback() {
-        let span = Span::generated("mir-native-binary-reject");
+    fn emit_mir_wasm_binary_accepts_promise_get_value_without_wat_fallback() {
+        let span = Span::generated("mir-native-binary-accept");
         let mir = MirProgram {
             top_level_statements: vec![MirStmt::Expr(
                 MirExpr::PromiseGetValue {
@@ -4637,10 +4624,8 @@ mod tests {
         };
         let (validated_mir, _) = Validated::new_mir(mir).expect("MIR should validate");
 
-        let err = emit_mir_wasm_binary(&validated_mir)
-            .expect_err("MIR binary path should not accept WAT fallback");
-
-        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        emit_mir_wasm_binary(&validated_mir)
+            .expect("MIR binary path should accept PromiseGetValue");
     }
 
     #[test]
