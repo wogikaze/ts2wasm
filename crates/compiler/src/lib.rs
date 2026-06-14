@@ -6,7 +6,7 @@ pub mod server;
 #[cfg(feature = "source-profiler")]
 pub mod source_profiler;
 pub mod stages;
-mod test262_preprocessor;
+pub mod test262_preprocessor;
 
 #[cfg(not(feature = "source-profiler"))]
 #[macro_export]
