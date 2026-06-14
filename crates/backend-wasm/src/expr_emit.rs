@@ -58,7 +58,7 @@ pub(super) const CLOSURE_CAPTURE_SLOTS_OFFSET: u32 = 16;
 pub(super) const CLOSURE_CAPTURE_SLOT_SIZE: u32 = 4;
 const ENV_CELL_SLOT_COUNT: u32 = 1;
 const ENV_CELL_VALUE_OFFSET: u32 = Layout::ARRAY_HEADER_SIZE;
-const MAX_SUPPORTED_HEAP_CLOSURE_USER_ARGS: usize = 3;
+const MAX_SUPPORTED_HEAP_CLOSURE_USER_ARGS: usize = 4;
 const CLASS_INSTANCE_PUBLIC_SLOT_CAPACITY: u32 = 16;
 const PRIVATE_FIELD_SLOT_SIZE: u32 = 4;
 const PRIVATE_FIELD_COUNT_MASK: u32 = 0xffff;
@@ -499,6 +499,7 @@ impl WatEmitter<'_> {
             arg_frame.heap_base_tmp(),
             arg_frame.heap_value_tmp(),
             arg_frame.switch_value_tmp(),
+            arg_frame.call_arg_tmp(),
         ];
 
         writer.line_fmt(

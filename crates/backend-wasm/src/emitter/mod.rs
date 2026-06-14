@@ -50,7 +50,7 @@ pub(super) enum GcRootStorage {
 }
 
 impl LocalFrame {
-    const BACKEND_TEMP_GROUP_SIZE: usize = 3;
+    const BACKEND_TEMP_GROUP_SIZE: usize = 4;
     const BACKEND_TEMP_GROUP_COUNT: usize = 4;
     /// Number of additional locals for Completion Record fields
     /// (cr_status, cr_value, cr_target, cr_saved_status, cr_saved_value).
@@ -113,6 +113,10 @@ impl LocalFrame {
 
     pub(super) const fn switch_value_tmp(self) -> usize {
         self.backend_base + 2
+    }
+
+    pub(super) const fn call_arg_tmp(self) -> usize {
+        self.backend_base + 3
     }
 
     pub(super) fn child_temp_frame(self) -> Self {
