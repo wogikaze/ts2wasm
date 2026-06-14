@@ -4012,19 +4012,29 @@ impl<'a> NativeLoweredEmitter<'a> {
                     return Ok(());
                 }
                 if *intrinsic == RuntimeFn::ObjectCreate && args.len() == 2 {
+                    // Emit proto argument and call $object_create(proto)
                     self.emit_expr(&args[0], ctx, out)?;
-                    if expr_produces_value(&args[0], &self.function_results) {
-                        local_set_with_gc_mirror(out, ctx, ctx.switch_value_local);
-                    } else {
+                    if !expr_produces_value(&args[0], &self.function_results) {
                         out.push(WasmInstr::I32Const(ValueTag::UNDEFINED));
-                        local_set_with_gc_mirror(out, ctx, ctx.switch_value_local);
                     }
-                    self.emit_expr(&args[1], ctx, out)?;
-                    if expr_produces_value(&args[1], &self.function_results) {
-                        out.push(WasmInstr::Drop);
-                    }
-                    out.push(WasmInstr::LocalGet(ctx.switch_value_local));
                     out.push(WasmInstr::Call(intrinsic.symbol().to_owned()));
+                    // Save created object using LocalTee (duplicates stack top into local)
+                    local_tee_with_gc_mirror(out, ctx, ctx.switch_value_local);
+                    // If properties is provided (not compile-time Undefined),
+                    // call $object_define_properties(obj, properties)
+                    if !matches!(args[1], LoweredExpr::Undefined(_)) {
+                        self.emit_expr(&args[1], ctx, out)?;
+                        if !expr_produces_value(&args[1], &self.function_results) {
+                            out.push(WasmInstr::I32Const(ValueTag::UNDEFINED));
+                        }
+                        // Stack: [obj, properties] — call $object_define_properties(obj, properties)
+                        out.push(WasmInstr::Call(
+                            "$object_define_properties".to_owned(),
+                        ));
+                        out.push(WasmInstr::Drop);
+                        // Restore obj from local
+                        out.push(WasmInstr::LocalGet(ctx.switch_value_local));
+                    }
                     return Ok(());
                 }
                 if *intrinsic == RuntimeFn::ArrayFill && args.len() >= 2 {
@@ -4100,17 +4110,16 @@ impl<'a> NativeLoweredEmitter<'a> {
                 }
                 if *intrinsic == RuntimeFn::ObjectDefineProperties && args.len() == 2 {
                     self.emit_expr(&args[0], ctx, out)?;
-                    if expr_produces_value(&args[0], &self.function_results) {
-                        local_set_with_gc_mirror(out, ctx, ctx.switch_value_local);
-                    } else {
+                    if !expr_produces_value(&args[0], &self.function_results) {
                         out.push(WasmInstr::I32Const(ValueTag::UNDEFINED));
-                        local_set_with_gc_mirror(out, ctx, ctx.switch_value_local);
                     }
                     self.emit_expr(&args[1], ctx, out)?;
-                    if expr_produces_value(&args[1], &self.function_results) {
-                        out.push(WasmInstr::Drop);
+                    if !expr_produces_value(&args[1], &self.function_results) {
+                        out.push(WasmInstr::I32Const(ValueTag::UNDEFINED));
                     }
-                    out.push(WasmInstr::LocalGet(ctx.switch_value_local));
+                    out.push(WasmInstr::Call(
+                        "$object_define_properties".to_owned(),
+                    ));
                     return Ok(());
                 }
                 if *intrinsic == RuntimeFn::ObjectGetOwnPropertyDescriptor && args.len() == 2 {

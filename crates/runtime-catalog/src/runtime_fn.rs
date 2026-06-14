@@ -1563,7 +1563,10 @@ const OBJECT_ASSIGN_DEPS: &[RuntimeFn] = &[
     RuntimeFn::PropertyGet,
     RuntimeFn::PropertySet,
 ];
-const OBJECT_CREATE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
+const OBJECT_CREATE_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::AllocHeap,
+    RuntimeFn::ObjectDefineProperties,
+];
 const OBJECT_TO_OBJECT_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const OBJECT_PROTOTYPE_OBJECT_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const PROPERTY_IS_ENUMERABLE_DEPS: &[RuntimeFn] =
