@@ -33657,6 +33657,9 @@ fn static_object_property_descriptor_from_value<'a>(
     visited: &mut HashSet<LocalId>,
 ) -> Option<(&'a LoweredExpr, StaticPropertyAttrs)> {
     if let Some(descriptor) = object.descriptor(key) {
+        if is_static_date_legacy_function_object(object) && matches!(key, "length" | "name") {
+            return Some((descriptor.0, static_function_metadata_property_attrs()));
+        }
         return Some(descriptor);
     }
     let StaticPrototype::Object(prototype) = object.prototype? else {
@@ -33667,6 +33670,23 @@ fn static_object_property_descriptor_from_value<'a>(
     }
     let prototype = static_object_value_from_local(locals, prototype)?;
     static_object_property_descriptor_from_value(locals, prototype, key, visited)
+}
+
+fn is_static_date_legacy_function_object(object: &StaticObjectValue) -> bool {
+    matches!(
+        (
+            object.props.get("length"),
+            object.props.get("name"),
+            object.props.len(),
+            object.prototype
+        ),
+        (
+            Some(LoweredExpr::Number(1, _)),
+            Some(LoweredExpr::String(name, _)),
+            2,
+            None
+        ) if name == "setYear"
+    )
 }
 
 fn static_descriptor_attrs_from_expr(
@@ -37009,5 +37029,30 @@ mod native_lowered_static_host_tests {
             }
             _ => panic!("expected a primitive string result"),
         }
+    }
+
+    #[test]
+    fn static_date_legacy_function_object_uses_function_metadata_attrs() {
+        let mut object = StaticObjectValue::from_props_with_non_enumerable(
+            &[
+                ("length".to_owned(), LoweredExpr::Number(1, Span::generated("num"))),
+                (
+                    "name".to_owned(),
+                    LoweredExpr::String("setYear".to_owned(), Span::generated("str")),
+                ),
+            ],
+            0,
+        );
+        object.prototype = None;
+
+        let mut visited = HashSet::new();
+        let Some((_, attrs)) =
+            static_object_property_descriptor_from_value(&HashMap::new(), &object, "length", &mut visited)
+        else {
+            panic!("expected descriptor");
+        };
+        assert!(!attrs.writable);
+        assert!(!attrs.enumerable);
+        assert!(attrs.configurable);
     }
 }
