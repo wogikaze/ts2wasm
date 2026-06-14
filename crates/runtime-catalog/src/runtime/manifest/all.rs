@@ -504,4 +504,5 @@ match self {
             Self::SuperCallExternal => "super_call_external",
             Self::RegExpSourceOf => "regexp_source_of",
             Self::RegExpFlagsOf => "regexp_flags_of",
+            Self::RegExpCompile => "regexp_compile",
         }

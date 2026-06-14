@@ -4198,7 +4198,7 @@ impl super::super::Resolver {
             {
                 return self.lower_array_push_single_spread_arg(object, spread_expr.as_ref());
             }
-            if class_name == "RegExp" && args.len() > 1 {
+            if class_name == "RegExp" && method != "compile" && args.len() > 1 {
                 return Err(Diagnostic {
                     code: DiagCode::ArityMismatch,
                     message: format!(
@@ -4780,7 +4780,7 @@ impl super::super::Resolver {
             {
                 return self.lower_array_push_single_spread_arg(object, spread_expr.as_ref());
             }
-            if class_name == "RegExp" && args.len() > 1 {
+            if class_name == "RegExp" && method != "compile" && args.len() > 1 {
                 return Err(Diagnostic {
                     code: DiagCode::ArityMismatch,
                     message: format!(
@@ -5063,6 +5063,10 @@ impl super::super::Resolver {
             && (class_name == "Array" || is_typed_array_class(class_name))
         {
             lowered_args.push(LoweredExpr::String(",".to_owned(), Span::generated("str")));
+        }
+        // RegExp.prototype.compile expects (receiver, pattern, flags) — pad missing flags
+        if class_name == "RegExp" && method == "compile" && lowered_args.len() == 2 {
+            lowered_args.push(LoweredExpr::Undefined(Span::generated("undef")));
         }
         Ok(lowered_args)
     }

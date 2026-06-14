@@ -446,6 +446,7 @@ pub(crate) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("FinalizationRegistry", "unregister") => Some(RuntimeFn::FinalizationRegistryUnregister),
         ("RegExp", "test") => Some(RuntimeFn::RegExpTest),
         ("RegExp", "exec") => Some(RuntimeFn::RegExpMatch),
+        ("RegExp", "compile") => Some(RuntimeFn::RegExpCompile),
         ("Array", "reduce") => Some(RuntimeFn::ArrayReduce),
         ("Array", "reduceRight") => Some(RuntimeFn::ArrayReduceRight),
         ("Array", "lastIndexOf") => Some(RuntimeFn::ArrayLastIndexOf),

@@ -44,6 +44,7 @@ impl WatEmitter<'_> {
             RuntimeFn::RegexpMatchInner => self.emit_regexp_match_inner(wat),
             RuntimeFn::RegexpParseFlags => self.emit_regexp_parse_flags(wat),
             RuntimeFn::RegExpTest => self.emit_regexp_test(wat),
+            RuntimeFn::RegExpCompile => self.emit_regexp_compile(wat),
             RuntimeFn::RegExpMatch => self.emit_regexp_match(wat),
             RuntimeFn::RegExpSearch => self.emit_regexp_search(wat),
             _ => unreachable!("non-string RuntimeFn routed to string dispatch"),
