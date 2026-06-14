@@ -4,23 +4,186 @@
 //! results as cargo-nextest test cases.  Each test262 subcategory (e.g.
 //! `built-ins/Array`, `built-ins/JSON`) is a single `#[test]` function.
 //!
+//! ## Architecture
+//!
+//! ```text
+//! test262 .js file
+//!   → process_test262_includes()  (Rust, harness stub injection)
+//!   → compile_source_text()       (Rust in-process, no IPC)
+//!   → [wasm binary]
+//!       → iwasm subprocess (WAMR execution)
+//!       → Node.js persistent oracle (vm.createContext, ~0 startup)
+//!   → Compare stdout → semantic_pass or semantic_mismatch
+//! ```
+//!
 //! ## Usage
 //!
 //! ```sh
-//! # Run a single category
 //! cargo nextest run -p ts2wasm-cli --test reference_coverage -- t262_builtins_json
-//!
-//! # Run all test262 categories (compile-only)
-//! cargo nextest run -p ts2wasm-cli --test reference_coverage
 //! ```
 
 use std::fs;
+use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::path::{Path, PathBuf};
+use std::process::{Child, Command, Stdio};
 use std::sync::OnceLock;
 
 use ts2wasm_compiler::server::compile_source_text;
 use ts2wasm_compiler::test262_preprocessor::process_test262_includes;
 use ts2wasm_shared::test_helpers::unique_temp_dir;
+
+// ---------------------------------------------------------------------------
+// Persistent Node.js oracle — evaluates JS in a fresh VM context per file,
+// avoiding ~35ms startup overhead of spawning `node` per invocation.
+// ---------------------------------------------------------------------------
+
+/// Inline Node.js script for the persistent oracle server.
+/// Reads JSON lines from stdin, each `{id, source}`, evaluates `source` in a
+/// fresh `vm.createContext` with standard ECMAScript globals, and returns a
+/// JSON line `{id, stdout, stderr, exit_code}`.  Each evaluation is wrapped
+/// in a top-level try-catch so one crashing test never kills the server.
+const NODE_ORACLE_SCRIPT: &str = r##"
+const rl=require('readline'),vm=require('vm');
+const I=rl.createInterface({input:process.stdin,terminal:false});
+I.on('line',l=>{
+  let id=0,source='',chunks=[];
+  try{
+    const p=JSON.parse(l);id=p.id;source=p.source;
+    const ctx=vm.createContext({
+      console:{log:(...a)=>chunks.push(a.join(' ')+'\n')},
+      setTimeout,clearTimeout,setInterval,clearInterval,
+      Math,Date,JSON,Array,Object,String,Number,Boolean,
+      RegExp,Map,Set,WeakMap,WeakSet,Promise,Symbol,
+      Error,TypeError,RangeError,SyntaxError,ReferenceError,
+      URIError,EvalError,
+      Int8Array,Uint8Array,Uint8ClampedArray,Int16Array,Uint16Array,
+      Int32Array,Uint32Array,Float32Array,Float64Array,
+      BigInt64Array,BigUint64Array,DataView,ArrayBuffer,
+      SharedArrayBuffer,Atomics,BigInt,
+      decodeURI,decodeURIComponent,encodeURI,encodeURIComponent,
+      isFinite,isNaN,parseFloat,parseInt,
+      Infinity,NaN,undefined,
+    });
+    Object.assign(ctx,{globalThis:ctx});
+    vm.runInNewContext(source,ctx,{timeout:5000});
+  }catch(e){
+    // Error goes to stderr field.
+    process.stdout.write(JSON.stringify({id,stdout:chunks.join(''),stderr:e.message,exit_code:1})+'\n');
+    return;
+  }
+  process.stdout.write(JSON.stringify({id,stdout:chunks.join(''),stderr:'',exit_code:0})+'\n');
+});
+"##;
+
+/// A persistent Node.js subprocess that evaluates JS source text in isolated
+/// VM contexts.  Created once per test category; destroyed on Drop.
+///
+/// Stores the child handle and accesses piped stdin/stdout through `unsafe`
+/// (the pipes outlive the child handle conceptually and are managed manually).
+struct NodeOracle {
+    child: Child,
+    /// The child's stdin, wrapped for buffered writes.  `None` after the
+    /// writer handle has been moved out.
+    stdin: Option<BufWriter<std::process::ChildStdin>>,
+    next_id: u64,
+}
+
+impl NodeOracle {
+    fn start() -> Result<Self, String> {
+        let mut child = Command::new("node")
+            .arg("-e")
+            .arg(NODE_ORACLE_SCRIPT)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::null())
+            .spawn()
+            .map_err(|e| format!("node spawn failed: {e}"))?;
+
+        let stdin = BufWriter::new(child.stdin.take().ok_or("no stdin")?);
+        Ok(NodeOracle {
+            child,
+            stdin: Some(stdin),
+            next_id: 0,
+        })
+    }
+
+    /// Evaluate `source` in an isolated VM context.  Returns `(stdout, stderr)`.
+    /// Automatically restarts the Node.js process if it crashes.
+    fn evaluate(&mut self, source: &str) -> Result<(String, String), String> {
+        let mut last_error = String::new();
+        for attempt in 0..2 {
+            match self.evaluate_once(source) {
+                Ok(result) => return Ok(result),
+                Err(e) => {
+                    last_error = e;
+                    if attempt == 0 {
+                        // Process likely crashed — restart.
+                        self.restart().map_err(|r| format!("restart failed: {r}"))?;
+                    }
+                }
+            }
+        }
+        Err(format!("node oracle crashed twice: {last_error}"))
+    }
+
+    fn evaluate_once(&mut self, source: &str) -> Result<(String, String), String> {
+        let id = self.next_id;
+        self.next_id += 1;
+
+        // Send request.
+        let json = serde_json::json!({"id": id, "source": source});
+        let line = serde_json::to_string(&json).map_err(|e| format!("serialize: {e}"))?;
+        let stdin = self.stdin.as_mut().ok_or("stdin consumed")?;
+        writeln!(stdin, "{line}").map_err(|e| format!("write: {e}"))?;
+        stdin.flush().map_err(|e| format!("flush: {e}"))?;
+
+        // Read response (one JSON line from stdout).
+        let stdout = self.child.stdout.as_mut().ok_or("no stdout")?;
+        let mut reader = BufReader::new(stdout);
+        let mut line = String::new();
+        reader
+            .read_line(&mut line)
+            .map_err(|e| format!("read: {e}"))?;
+
+        let resp: serde_json::Value =
+            serde_json::from_str(&line).map_err(|e| format!("parse: {e} — raw: {line:?}"))?;
+
+        Ok((
+            resp["stdout"].as_str().unwrap_or("").to_owned(),
+            resp["stderr"].as_str().unwrap_or("").to_owned(),
+        ))
+    }
+
+    fn restart(&mut self) -> Result<(), String> {
+        // Kill old process.
+        let _ = self.child.kill();
+        let _ = self.child.wait();
+        self.stdin = None;
+
+        // Start new.
+        let mut child = Command::new("node")
+            .arg("-e")
+            .arg(NODE_ORACLE_SCRIPT)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::null())
+            .spawn()
+            .map_err(|e| format!("node spawn failed: {e}"))?;
+
+        self.stdin = Some(BufWriter::new(child.stdin.take().ok_or("no stdin")?));
+        self.child = child;
+        self.next_id = 0;
+        Ok(())
+    }
+}
+
+impl Drop for NodeOracle {
+    fn drop(&mut self) {
+        // Signal shutdown by closing stdin.
+        drop(self.stdin.take());
+        let _ = self.child.wait();
+    }
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -60,9 +223,10 @@ fn collect_js_files(dir: &Path, files: &mut Vec<PathBuf>) {
     }
 }
 
-/// Run a single test262 file through the in-process compiler and classify the
-/// outcome.
-fn classify_file(abs_path: &Path) -> Outcome {
+/// Run a single test262 file through the in-process compiler, optionally run
+/// the wasm through iwasm and the source through the Node.js oracle for
+/// semantic comparison, and classify the outcome.
+fn classify_file(abs_path: &Path, node: Option<&mut NodeOracle>) -> Outcome {
     let source = match fs::read_to_string(abs_path) {
         Ok(s) => s,
         Err(e) => return Outcome::blocked(format!("read failed: {e}")),
@@ -80,36 +244,84 @@ fn classify_file(abs_path: &Path) -> Outcome {
     let tmpdir = unique_temp_dir("refcov");
     let placeholder = Path::new(&tmpdir).join("entry.js");
     // 3. In-process compilation.
-    match compile_source_text(&processed, &placeholder, Path::new(&tmpdir)) {
-        Ok(wasm_path) => {
-            // 4. (Optional future step) Run via iwasm for semantic comparison.
-            // Success — wasm binary was produced.
-            let _wasm_bytes = fs::read(&wasm_path).unwrap_or_default();
-            Outcome::pass()
-        }
+    let wasm_path = match compile_source_text(&processed, &placeholder, Path::new(&tmpdir)) {
+        Ok(path) => path,
         Err(d) => {
-            // Classify by diagnostic code.
-            let code = format!("{:?}", d.code);
-            let msg = d.message;
-
-            // InvariantViolation is always a compiler bug.
-            if code == "InvariantViolation" {
-                return Outcome::internal_failure(format!("InvariantViolation: {msg}"));
-            }
-
-            // "Unsupported*" and related codes are expected diagnostic codes
-            // that indicate a known limitation, not a regression.
-            if code.starts_with("Unsupported") || code.starts_with("Unresolved")
-                || code == "SyntaxError" || code == "ArityMismatch"
-                || code == "BackendIo"
-            {
-                return Outcome::unsupported(format!("{code}: {msg}"));
-            }
-
-            // Everything else is an unexpected failure.
-            Outcome::fail(format!("{code}: {msg}"))
+            return classify_diagnostic(d);
         }
+    };
+
+    // 4. (Optional) Semantic comparison via iwasm + Node.js oracle.
+    if let Some(node) = node {
+        return match semantic_check(&wasm_path, &processed, node) {
+            Ok(true) => Outcome::pass(),
+            Ok(false) => Outcome::semantic_mismatch("iwasm output != Node.js output"),
+            Err(e) => Outcome::fail(format!("semantic check error: {e}")),
+        };
     }
+
+    // Compile-only mode — wasm binary produced.
+    let _wasm_bytes = fs::read(&wasm_path).unwrap_or_default();
+    Outcome::pass()
+}
+
+/// Classify a compiler diagnostic into an outcome.
+fn classify_diagnostic(d: ts2wasm_compiler::Diagnostic) -> Outcome {
+    let code = format!("{:?}", d.code);
+    let msg = d.message;
+
+    if code == "InvariantViolation" {
+        return Outcome::internal_failure(format!("InvariantViolation: {msg}"));
+    }
+
+    if code.starts_with("Unsupported")
+        || code.starts_with("Unresolved")
+        || code == "SyntaxError"
+        || code == "ArityMismatch"
+        || code == "BackendIo"
+    {
+        return Outcome::unsupported(format!("{code}: {msg}"));
+    }
+
+    Outcome::fail(format!("{code}: {msg}"))
+}
+
+/// Run iwasm on the compiled wasm and Node.js on the source, and return
+/// `true` if outputs match (semantic pass).
+fn semantic_check(wasm_path: &Path, source: &str, node: &mut NodeOracle) -> Result<bool, String> {
+    // Run via iwasm.
+    let iwasm_output = run_iwasm(wasm_path)?;
+
+    // Run via Node.js oracle.
+    let (node_stdout, node_stderr) = node.evaluate(source).map_err(|e| format!("node: {e}"))?;
+    let node_output = if node_stderr.is_empty() {
+        node_stdout
+    } else {
+        // Test262 assertions may produce stderr output; include it.
+        node_stdout + &node_stderr
+    };
+
+    Ok(iwasm_output.trim() == node_output.trim())
+}
+
+/// Run `iwasm` on a wasm file and return its combined stdout+stderr.
+fn run_iwasm(wasm_path: &Path) -> Result<String, String> {
+    let output = Command::new("iwasm")
+        .arg(wasm_path)
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .map_err(|e| format!("iwasm spawn: {e}"))?
+        .wait_with_output()
+        .map_err(|e| format!("iwasm wait: {e}"))?;
+
+    let stdout = String::from_utf8_lossy(&output.stdout).to_string();
+    let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+    Ok(if stderr.is_empty() {
+        stdout
+    } else {
+        stdout + &stderr
+    })
 }
 
 // ---------------------------------------------------------------------------
@@ -124,19 +336,40 @@ struct Outcome {
 
 impl Outcome {
     fn pass() -> Self {
-        Outcome { status: "pass", reason: None }
+        Outcome {
+            status: "pass",
+            reason: None,
+        }
     }
     fn unsupported(reason: impl Into<String>) -> Self {
-        Outcome { status: "unsupported", reason: Some(reason.into()) }
+        Outcome {
+            status: "unsupported",
+            reason: Some(reason.into()),
+        }
     }
     fn fail(reason: impl Into<String>) -> Self {
-        Outcome { status: "fail", reason: Some(reason.into()) }
+        Outcome {
+            status: "fail",
+            reason: Some(reason.into()),
+        }
     }
     fn internal_failure(reason: impl Into<String>) -> Self {
-        Outcome { status: "internal_failure", reason: Some(reason.into()) }
+        Outcome {
+            status: "internal_failure",
+            reason: Some(reason.into()),
+        }
+    }
+    fn semantic_mismatch(reason: impl Into<String>) -> Self {
+        Outcome {
+            status: "semantic_mismatch",
+            reason: Some(reason.into()),
+        }
     }
     fn blocked(reason: impl Into<String>) -> Self {
-        Outcome { status: "blocked", reason: Some(reason.into()) }
+        Outcome {
+            status: "blocked",
+            reason: Some(reason.into()),
+        }
     }
 }
 
@@ -145,15 +378,18 @@ impl Outcome {
 // ---------------------------------------------------------------------------
 
 /// Run a whole test262 category: discover all `.js` files, compile each
-/// in-process, and assert no **unexpected** failures.
+/// in-process, run semantic checks (iwasm + Node.js oracle), and assert no
+/// **unexpected** failures.
 ///
-/// "Expected" failures:
+/// "Expected" outcomes:
+/// - `pass` — compiled + wasm output matches Node.js output.
 /// - `unsupported` — the compiler issued a controlled diagnostic.
 /// - `blocked` — missing files, I/O errors.
 ///
-/// "Unexpected" failures:
+/// "Unexpected" outcomes:
 /// - `internal_failure` — `InvariantViolation` / compiler bug.
-/// - `fail` — any other error that should not happen.
+/// - `semantic_mismatch` — wasm output differs from Node.js output.
+/// - `fail` — any other error.
 fn run_category(category: &str) {
     let files = discover_files(category);
     if files.is_empty() {
@@ -161,22 +397,35 @@ fn run_category(category: &str) {
         return;
     }
 
+    // Start a Node.js oracle for the duration of this category.
+    let mut node = match NodeOracle::start() {
+        Ok(n) => Some(n),
+        Err(e) => {
+            eprintln!("[WARN] Node.js oracle unavailable, skipping semantic checks: {e}");
+            None
+        }
+    };
+
     let mut unexpected: Vec<(PathBuf, Outcome)> = Vec::new();
     let mut pass_count = 0u32;
     let mut unsupported_count = 0u32;
     let mut blocked_count = 0u32;
+    let mut mismatch_count = 0u32;
 
     for file in &files {
-        let outcome = classify_file(file);
+        let outcome = classify_file(file, node.as_mut());
         match outcome.status {
             "pass" => pass_count += 1,
+            "semantic_mismatch" => {
+                mismatch_count += 1;
+                unexpected.push((file.clone(), outcome));
+            }
             "unsupported" | "blocked" => {
                 if outcome.status == "unsupported" {
                     unsupported_count += 1;
                 } else {
                     blocked_count += 1;
                 }
-                // Accepted — these are known constraints.
             }
             _ => {
                 unexpected.push((file.clone(), outcome));
@@ -185,9 +434,13 @@ fn run_category(category: &str) {
     }
 
     let total = files.len();
+    let semantic_label = if node.is_some() {
+        " semantic"
+    } else {
+        " (compile-only)"
+    };
     eprintln!(
-        "[{category}] pass={pass_count} unsupported={unsupported_count} blocked={blocked_count} fail={} / {total}",
-        unexpected.len(),
+        "[{category}]{semantic_label} pass={pass_count} mismatch={mismatch_count} unsupported={unsupported_count} blocked={blocked_count} / {total}"
     );
 
     if !unexpected.is_empty() {
@@ -230,7 +483,10 @@ t262_category!(t262_builtins_aggregate_error, "built-ins/AggregateError");
 t262_category!(t262_builtins_array, "built-ins/Array");
 t262_category!(t262_builtins_array_buffer, "built-ins/ArrayBuffer");
 t262_category!(t262_builtins_async_function, "built-ins/AsyncFunction");
-t262_category!(t262_builtins_async_iterator, "built-ins/AsyncIteratorPrototype");
+t262_category!(
+    t262_builtins_async_iterator,
+    "built-ins/AsyncIteratorPrototype"
+);
 t262_category!(t262_builtins_atomics, "built-ins/Atomics");
 t262_category!(t262_builtins_bigint, "built-ins/BigInt");
 t262_category!(t262_builtins_boolean, "built-ins/Boolean");
