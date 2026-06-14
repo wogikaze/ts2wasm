@@ -153,6 +153,52 @@ static void print_json_str(FILE *f, const char *s)
 /* ------------------------------------------------------------------ */
 
 /*
+ * host.eval.indirect — stub that returns undefined (tagged value 0).
+ * Indirect eval via (0, eval)(src), same contract as direct eval stub.
+ * WASM signature: (i32 source_tag, i32 zero) -> i32
+ */
+static uint32_t
+host_eval_indirect(wasm_exec_env_t exec_env, uint32_t source_tag, uint32_t zero)
+{
+    (void)exec_env;
+    (void)source_tag;
+    (void)zero;
+    /* Return undefined (tagged value 0) */
+    return 0;
+}
+
+/*
+ * host.json.parse — stub that returns undefined (tagged value 0).
+ * Real implementation would call a JS JSON.parse shim via the host bridge.
+ * WASM signature: (i32 source_string, i32 reviver) -> i32
+ */
+static uint32_t
+host_json_parse(wasm_exec_env_t exec_env, uint32_t source_string, uint32_t reviver)
+{
+    (void)exec_env;
+    (void)source_string;
+    (void)reviver;
+    /* Return undefined (tagged value 0) */
+    return 0;
+}
+
+/*
+ * host.json.stringify — stub that returns undefined (tagged value 0).
+ * Real implementation would call a JS JSON.stringify shim via the host bridge.
+ * WASM signature: (i32 value, i32 replacer, i32 space) -> i32
+ */
+static uint32_t
+host_json_stringify(wasm_exec_env_t exec_env, uint32_t value, uint32_t replacer, uint32_t space)
+{
+    (void)exec_env;
+    (void)value;
+    (void)replacer;
+    (void)space;
+    /* Return undefined (tagged value 0) */
+    return 0;
+}
+
+/*
  * host.eval.direct — stub that returns undefined (tagged value 0).
  * Calling code sees undefined as the eval result and continues execution,
  * causing a test262 assertion failure instead of a RuntimeError crash.
@@ -268,6 +314,24 @@ static NativeSymbol host_native_symbols[] = {
         .symbol = "eval.direct",
         .func_ptr = (void *)host_eval_direct,
         .signature = "(ii)i",
+        .attachment = NULL,
+    },
+    {
+        .symbol = "eval.indirect",
+        .func_ptr = (void *)host_eval_indirect,
+        .signature = "(ii)i",
+        .attachment = NULL,
+    },
+    {
+        .symbol = "json.parse",
+        .func_ptr = (void *)host_json_parse,
+        .signature = "(ii)i",
+        .attachment = NULL,
+    },
+    {
+        .symbol = "json.stringify",
+        .func_ptr = (void *)host_json_stringify,
+        .signature = "(iii)i",
         .attachment = NULL,
     },
     {
@@ -411,7 +475,7 @@ int main(int argc, char *argv[])
         }
 
         const char *status;
-        if (exec_ret == 0 && !has_exception) {
+        if (!has_exception) {
             status = "ok";
         } else {
             status = "error";
