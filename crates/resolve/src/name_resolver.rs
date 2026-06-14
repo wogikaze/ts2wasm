@@ -516,12 +516,17 @@ impl NameResolver {
                 is_var: *is_var,
             }),
             Stmt::Assign { name, expr, span } => {
-                self.resolve_identifier(name, *span)?;
                 // Reject assignment to class bindings (TS2588 equivalent)
                 if self.is_class_only(name) {
-                                        return Err(Diagnostic::unsupported_at(*span, format!(
-"cannot assign to `{name}` because it is a class declaration"
-)));
+                    return Err(Diagnostic::unsupported_at(
+                        *span,
+                        format!("cannot assign to `{name}` because it is a class declaration"),
+                    ));
+                }
+                if !self.is_declared(name) && !self.strict_context {
+                    self.declare_variable(name, Some(*span), true)?;
+                } else {
+                    self.resolve_identifier(name, *span)?;
                 }
                 Ok(Stmt::Assign {
                     name: name.clone(),
@@ -1361,13 +1366,17 @@ impl NameResolver {
                 })
             }
             Expr::Assign { name, expr, span } => {
-                self.resolve_identifier(name, *span)?;
                 // Reject assignment to class bindings
                 if self.classes.contains_key(name) {
                     return Err(Diagnostic::unsupported_at(
                         *span,
                         format!("cannot assign to `{name}` because it is a class declaration"),
                     ));
+                }
+                if !self.is_declared(name) && !self.strict_context {
+                    self.declare_variable(name, Some(*span), true)?;
+                } else {
+                    self.resolve_identifier(name, *span)?;
                 }
                 Ok(Expr::Assign {
                     name: name.clone(),
@@ -1381,13 +1390,17 @@ impl NameResolver {
                 expr,
                 span,
             } => {
-                self.resolve_identifier(name, *span)?;
                 // Reject assignment to class bindings
                 if self.classes.contains_key(name) {
                     return Err(Diagnostic::unsupported_at(
                         *span,
                         format!("cannot assign to `{name}` because it is a class declaration"),
                     ));
+                }
+                if !self.is_declared(name) && !self.strict_context {
+                    self.declare_variable(name, Some(*span), true)?;
+                } else {
+                    self.resolve_identifier(name, *span)?;
                 }
                 Ok(Expr::LogicalAssign {
                     name: name.clone(),
