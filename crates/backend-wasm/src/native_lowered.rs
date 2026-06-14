@@ -36994,4 +36994,20 @@ mod native_lowered_static_host_tests {
             .is_none()
         );
     }
+
+    #[test]
+    fn static_eval_host_value_preserves_regexp_source_escapes() {
+        let span = Span::generated("static-regexp-eval-test");
+        let locals = HashMap::new();
+        let functions = [];
+        let source = LoweredExpr::String(r#"/\u2028/.source"#.to_owned(), span);
+        let value = static_eval_host_value(&[source], span, &locals, &functions)
+            .expect("static eval should succeed");
+        match value {
+            StaticValue::Primitive(LoweredExpr::String(text, _)) => {
+                assert_eq!(text, r#"\u2028"#);
+            }
+            _ => panic!("expected a primitive string result"),
+        }
+    }
 }

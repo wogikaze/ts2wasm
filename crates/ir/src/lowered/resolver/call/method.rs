@@ -1504,6 +1504,13 @@ impl super::super::Resolver {
                 ));
             }
         }
+        if method == "match" && args.len() == 1 {
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::StringMatch,
+                args: vec![self.lower_expr(object)?, self.lower_expr(&args[0])?],
+                span: Span::generated("runtime_call"),
+            }));
+        }
         if method == "compile"
             && let Some(result) = self.try_lower_regexp_compile(object, args, span)?
         {
