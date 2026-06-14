@@ -4672,16 +4672,6 @@ impl super::super::Resolver {
                     });
                 }
 
-                // RegExp.prototype.compile — emit known-unsupported diagnostic
-                if method == "compile" {
-                    return Err(unsupported_regexp_compile_diagnostic(Some(span)));
-                }
-
-                // RegExp.prototype.compile — emit known-unsupported diagnostic
-                if method == "compile" {
-                    return Err(unsupported_regexp_compile_diagnostic(Some(span)));
-                }
-
                 let error_msg =
                     format!("Cannot read properties of undefined (reading '{}')", method);
                 let recv_temp = self.alloc_temp();
@@ -4737,11 +4727,6 @@ impl super::super::Resolver {
             }
         };
         let class_name = class_name_str.as_str();
-
-        // RegExp.prototype.compile — emit known-unsupported diagnostic
-        if class_name == "RegExp" && method == "compile" {
-            return Err(unsupported_regexp_compile_diagnostic(Some(span)));
-        }
 
         // BigInt.prototype.toString / valueOf
         if class_name == "BigInt" {

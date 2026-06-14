@@ -15408,14 +15408,8 @@ fn static_eval_host_thrown_value_from_expr(
         }
         LoweredExpr::RuntimeCall {
             intrinsic: RuntimeFn::FunctionCompileHost,
-            args,
-            span,
             ..
-        } => {
-            let (_, body) =
-                static_function_compile_host_object_parts(args, *span, locals, functions)?;
-            static_function_constructor_syntax_error_value(&body, *span, locals, functions)
-        }
+        } => None,
         LoweredExpr::RuntimeCall {
             intrinsic: RuntimeFn::FunctionCallHost | RuntimeFn::FunctionConstructHost,
             args,
@@ -21105,12 +21099,8 @@ fn static_value_for_local_expr_with_functions(
         )?)),
         LoweredExpr::RuntimeCall {
             intrinsic: RuntimeFn::FunctionCompileHost,
-            args,
-            span,
             ..
-        } => Some(StaticValue::Object(
-            static_function_compile_host_object_for_local(args, *span, local, locals, functions)?,
-        )),
+        } => None,
         LoweredExpr::RuntimeCall {
             intrinsic:
                 RuntimeFn::StringFromCharCode
@@ -21360,6 +21350,15 @@ fn static_value_from_expr_with_functions(
             span,
             ..
         } => static_eval_host_value(args, *span, locals, functions),
+        LoweredExpr::RuntimeCall {
+            intrinsic: intrinsic @ (RuntimeFn::RegExpSourceOf | RuntimeFn::RegExpFlagsOf),
+            args,
+            span,
+            ..
+        } if args.len() == 1 => {
+            static_regexp_property_value(*intrinsic, &args[0], *span, locals, functions)
+                .map(StaticValue::Primitive)
+        }
         LoweredExpr::RuntimeCall {
             intrinsic: RuntimeFn::FunctionCompileHost,
             args,
@@ -26985,6 +26984,23 @@ fn static_regexp_runtime_value(
         _ => return None,
     };
     Some(StaticValue::Primitive(expr))
+}
+
+fn static_regexp_property_value(
+    intrinsic: RuntimeFn,
+    expr: &LoweredExpr,
+    span: Span,
+    locals: &HashMap<LocalId, StaticValue>,
+    functions: &[LoweredFunction],
+) -> Option<LoweredExpr> {
+    let raw = static_string_value_from_expr_with_functions(expr, locals, functions)?;
+    let (pattern, flags) = static_regexp_literal_parts(&raw)?;
+    let value = match intrinsic {
+        RuntimeFn::RegExpSourceOf => pattern.to_owned(),
+        RuntimeFn::RegExpFlagsOf => flags.to_owned(),
+        _ => return None,
+    };
+    Some(LoweredExpr::String(value, span))
 }
 
 fn static_string_regexp_replace_value(
