@@ -1449,8 +1449,8 @@ mod tests {
     fn rejects_legacy_octal_escape_in_template_text() {
         let err = parse_program("let message = `\\07`;").unwrap_err();
 
-        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-        assert!(err.message.contains("Legacy octal escape"));
+        assert_eq!(err.code, DiagCode::SyntaxError);
+        assert!(err.message.contains("legacy octal escape"));
     }
 
     #[test]
@@ -5160,7 +5160,7 @@ b /* parameter b */,
     #[test]
     fn parses_regexp_with_unicode_property_escapes() {
         let program = parse_program(
-            "let a = /\\p{L}/; let b = /\\p{Letter}/; let c = /\\p{General_Category=Lu}/; let d = /\\P{Nd}/;",
+            "let a = /\p{L}/; let b = /\p{Letter}/; let c = /\p{General_Category=Lu}/; let d = /\P{Nd}/;",
         )
         .unwrap();
         assert_eq!(program.len(), 4);
@@ -5169,14 +5169,14 @@ b /* parameter b */,
     #[test]
     fn parses_regexp_with_named_capture_group() {
         let program =
-            parse_program("let a = /(?<name>.)/; let b = /(?<year>\\d{4})-(?<month>\\d{2})/;")
+            parse_program("let a = /(?<name>.)/; let b = /(?<year>\d{4})-(?<month>\d{2})/;")
                 .unwrap();
         assert_eq!(program.len(), 2);
     }
 
     #[test]
     fn parses_regexp_with_named_backreference() {
-        let program = parse_program("let a = /(?<word>\\w+)\\s+\\k<word>/;").unwrap();
+        let program = parse_program("let a = /(?<word>\w+)\s+\k<word>/;").unwrap();
         assert_eq!(program.len(), 1);
     }
 
@@ -5263,4 +5263,59 @@ b /* parameter b */,
         assert_eq!(err.code, DiagCode::SyntaxError);
         assert!(err.message.contains("Legacy octal escape"));
     }
+
+    // === Phase C SyntaxError edge cases (duplicate __proto__, delete strict, template octal) ===
+
+    #[test]
+    fn rejects_duplicate_proto_in_strict_mode() {
+        let err = parse_program(
+            "\"use strict\"; var obj = { __proto__: 1, __proto__: 2 };",
+        )
+        .unwrap_err();
+        assert_eq!(err.code, DiagCode::SyntaxError);
+        assert!(err.message.contains("__proto__"));
+        assert_eq!(err.phase, Some("parser"));
+    }
+
+    #[test]
+    fn accepts_duplicate_proto_in_non_strict_mode() {
+        let program = parse_program("var obj = { __proto__: 1, __proto__: 2 };").unwrap();
+        assert_eq!(program.len(), 1);
+    }
+
+    #[test]
+    fn accepts_single_proto_in_strict_mode() {
+        let program = parse_program(
+            "\"use strict\"; var obj = { __proto__: 1 };",
+        )
+        .unwrap();
+        assert!(program.len() >= 1);
+    }
+
+    #[test]
+    fn rejects_delete_unqualified_identifier_in_strict_mode() {
+        let err = parse_program("\"use strict\"; delete x;").unwrap_err();
+        assert_eq!(err.code, DiagCode::SyntaxError);
+        assert!(err.message.contains("delete"));
+        assert!(err.message.contains("identifier"));
+        assert_eq!(err.phase, Some("parser"));
+    }
+
+    #[test]
+    fn accepts_delete_unqualified_identifier_in_non_strict_mode() {
+        let program = parse_program("delete x;").unwrap();
+        assert_eq!(program.len(), 1);
+    }
+
+    #[test]
+    fn accepts_delete_member_expression_in_strict_mode() {
+        let program = parse_program("\"use strict\"; delete obj.prop;").unwrap();
+        assert!(!program.is_empty());
+        if let Some(Stmt::Expr { expr, .. }) = program.last() {
+            assert!(matches!(expr, Expr::Unary { op: UnaryOp::Delete, .. }));
+        } else {
+            panic!("expected delete expression as last statement");
+        }
+    }
+
 }
