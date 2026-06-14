@@ -1145,7 +1145,9 @@ impl super::super::Resolver {
         else {
             return false;
         };
-        if method_name != "setYear" || !matches!(key, "name" | "length") {
+        if !matches!(method_name.as_str(), "getYear" | "setYear" | "toGMTString")
+            || !matches!(key, "name" | "length")
+        {
             return false;
         }
         let ResolvedExpr::PropertyAccess {
@@ -1162,8 +1164,15 @@ impl super::super::Resolver {
             return false;
         }
         match key {
-            "name" => resolved_object_string_prop(desc, "value") == Some("setYear"),
-            "length" => resolved_object_number_prop(desc, "value") == Some(1),
+            "name" => resolved_object_string_prop(desc, "value") == Some(method_name.as_str()),
+            "length" => {
+                let expected_length = match method_name.as_str() {
+                    "setYear" => 1,
+                    "getYear" | "toGMTString" => 0,
+                    _ => unreachable!("checked above"),
+                };
+                resolved_object_number_prop(desc, "value") == Some(expected_length)
+            }
             _ => false,
         }
     }
