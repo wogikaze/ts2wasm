@@ -240,13 +240,19 @@ pub(crate) fn resolve_method_to_runtime_fn(
                 "isSafeInteger" => Some(RuntimeFn::NumberIsSafeInteger),
                 "parseInt" => Some(RuntimeFn::GlobalParseInt),
                 "parseFloat" => Some(RuntimeFn::GlobalParseFloat),
-                _ => None,
-            };
-        }
-        if name == "globalThis" {
-            return match method {
-                "parseInt" => Some(RuntimeFn::GlobalParseInt),
-                "parseFloat" => Some(RuntimeFn::GlobalParseFloat),
+
+
+
+
+
+
+
+
+
+
+
+
+
                 _ => None,
             };
         }
