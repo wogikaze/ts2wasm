@@ -476,6 +476,15 @@ fn compile_source_with_emit(
     compile_source_text_with_emit(&source, path, tmpdir, id, emit_mode)
 }
 
+pub fn compile_source_text(
+    source: &str,
+    path: &Path,
+    tmpdir: &Path,
+) -> Result<PathBuf, Diagnostic> {
+    compile_source_text_with_emit(source, path, tmpdir, 0, EmitMode::Wasm)
+        .map(|opt| opt.expect("EmitMode::Wasm always returns Some"))
+}
+
 fn compile_source_text_with_emit(
     source: &str,
     path: &Path,
