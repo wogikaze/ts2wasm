@@ -26969,6 +26969,9 @@ fn static_regexp_runtime_value(
 ) -> Option<StaticValue> {
     let pattern = static_string_value_from_expr_with_functions(&args[0], locals, functions)?;
     let input = static_string_value_from_expr_with_functions(&args[1], locals, functions)?;
+    if !pattern.is_ascii() || !input.is_ascii() {
+        return None;
+    }
     let result = static_regexp_find(&pattern, &input);
     let expr = match intrinsic {
         RuntimeFn::RegExpTest => LoweredExpr::Bool(result.is_some(), span),
@@ -26994,6 +26997,9 @@ fn static_string_regexp_replace_value(
     let input = static_string_value_from_expr_with_functions(&args[0], locals, functions)?;
     let pattern = static_string_value_from_expr_with_functions(&args[1], locals, functions)?;
     let replacement = static_string_value_from_expr_with_functions(&args[2], locals, functions)?;
+    if !input.is_ascii() || !pattern.is_ascii() {
+        return None;
+    }
     let regexp = static_regexp_literal(&pattern)?;
     let replace_all = intrinsic == RuntimeFn::StringReplaceAll || regexp.flags.global;
     let mut cursor = 0;
@@ -36938,6 +36944,38 @@ mod native_lowered_static_host_tests {
             .unwrap()
             .get("e")
             .is_some()
+        );
+    }
+
+    #[test]
+    fn static_regexp_helpers_reject_non_ascii_input_without_panicking() {
+        let span = Span::generated("static-regexp-test");
+        let args = [
+            LoweredExpr::String("🐸BC".to_owned(), span),
+            LoweredExpr::String(".".to_owned(), span),
+            LoweredExpr::String("x".to_owned(), span),
+        ];
+
+        assert!(
+            static_regexp_runtime_value(
+                RuntimeFn::StringReplaceAll,
+                &args[..2],
+                span,
+                &HashMap::new(),
+                &[],
+            )
+            .is_none()
+        );
+
+        assert!(
+            static_string_regexp_replace_value(
+                RuntimeFn::StringReplaceAll,
+                &args,
+                span,
+                &HashMap::new(),
+                &[],
+            )
+            .is_none()
         );
     }
 }
