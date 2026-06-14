@@ -9,8 +9,8 @@ use ts2wasm_frontend::{Lexer, Parser};
 use ts2wasm_ir::builtin_resolver::resolve_builtins;
 use ts2wasm_ir::lowered::validate::validate_lowered;
 use ts2wasm_ir::lowered::{
-    ClosureRepresentation, FunctionCallKind, LocalId, LoweredBinaryOp, LoweredExpr, LoweredProgram,
-    LoweredStmt, ModuleLoadKind, RuntimeFn,
+    BuiltinErrorConstructor, ClosureRepresentation, FunctionCallKind, LocalId, LoweredBinaryOp,
+    LoweredExpr, LoweredProgram, LoweredStmt, ModuleLoadKind, RuntimeFn,
 };
 use ts2wasm_ir::lowered::{lower_program, lower_program_with_module_url};
 
@@ -1510,4 +1510,35 @@ fn lowered_snapshot_try_catch() {
         }
         other => panic!("expected LoweredStmt::TryCatch, got: {other:?}"),
     }
+}
+
+#[test]
+fn lowered_snapshot_regexp_compile_invalid_flags_throw_syntax_error() {
+    let program = parse_resolve_lower("var subject = /abcd/ig; subject.compile('', 'igi');");
+    assert_eq!(program.top_level_statements.len(), 2);
+    match &program.top_level_statements[1] {
+        LoweredStmt::Expr(LoweredExpr::Block { stmts, .. }, _) => {
+            assert!(matches!(
+                stmts.first(),
+                Some(LoweredStmt::Throw(
+                    LoweredExpr::ErrorNew {
+                        constructor: BuiltinErrorConstructor::SyntaxError,
+                        ..
+                    },
+                    _
+                ))
+            ));
+        }
+        other => panic!("expected compile invalid flags to lower to a throw block, got: {other:?}"),
+    }
+}
+
+#[test]
+fn lowered_snapshot_regexp_compile_invalid_flags_program_resolves() {
+    let result = parse_resolve_lower_result("var subject = /abcd/ig; subject.compile('', 'igi');");
+    assert!(
+        result.is_ok(),
+        "lowering should succeed: {:?}",
+        result.err()
+    );
 }

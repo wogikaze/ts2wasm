@@ -1137,10 +1137,13 @@ impl super::super::Resolver {
         if !self.is_unsupported_regexp_compile_receiver(object, "compile") {
             return Ok(None);
         }
-        let compiled = LoweredExpr::String(
-            crate::lowered::program_builtins::regexp_constructor_literal(&self.ctx, args)?,
-            Span::generated("regexp_compile"),
-        );
+        if let Some(err) = self.regexp_compile_static_flags_error(args, span)? {
+            return Ok(Some(err));
+        }
+        let Some(compiled) = self.lower_regexp_compile_literal(args, span)? else {
+            return Ok(None);
+        };
+        let compiled = LoweredExpr::String(compiled, Span::generated("regexp_compile"));
         if let ResolvedExpr::Ident(name) = object
             && let Ok(local_id) = self.resolve_local(name)
         {
@@ -1155,6 +1158,76 @@ impl super::super::Resolver {
             }));
         }
         Ok(Some(compiled))
+    }
+
+    fn lower_regexp_compile_literal(
+        &self,
+        args: &[ResolvedExpr],
+        _span: Span,
+    ) -> Result<Option<String>, Diagnostic> {
+        if args.is_empty() {
+            return Ok(Some("//".to_owned()));
+        }
+        let Some(pattern) = crate::lowered::resolver::string::resolved_expr_static_string_value(
+            &self.ctx, &args[0],
+        ) else {
+            return Err(Diagnostic::unsupported_at(
+                Span::generated("issue-051"),
+                "issue-051: RegExp.prototype.compile requires a static string pattern in this subset",
+            ));
+        };
+        let flags = match args.get(1) {
+            Some(flags) => crate::lowered::resolver::string::resolved_expr_static_string_value(
+                &self.ctx, flags,
+            )
+            .ok_or_else(|| {
+                Diagnostic::unsupported_at(
+                    Span::generated("issue-051"),
+                    "issue-051: RegExp.prototype.compile flags must be a string literal in this subset",
+                )
+            })?,
+            None => String::new(),
+        };
+        Ok(Some(format!("/{pattern}/{flags}")))
+    }
+
+    fn regexp_compile_static_flags_error(
+        &self,
+        args: &[ResolvedExpr],
+        span: Span,
+    ) -> Result<Option<LoweredExpr>, Diagnostic> {
+        let Some(flags) = args.get(1) else {
+            return Ok(None);
+        };
+        let Some(flags) =
+            crate::lowered::resolver::string::resolved_expr_static_string_value(&self.ctx, flags)
+        else {
+            return Ok(None);
+        };
+        let valid = ['d', 'g', 'i', 'm', 's', 'u', 'y'];
+        let mut seen = std::collections::HashSet::new();
+        for ch in flags.chars() {
+            if !valid.contains(&ch) || !seen.insert(ch) {
+                return Ok(Some(LoweredExpr::Block {
+                    stmts: vec![LoweredStmt::Throw(
+                        LoweredExpr::ErrorNew {
+                            constructor: BuiltinErrorConstructor::SyntaxError,
+                            message: Box::new(LoweredExpr::String(
+                                "Invalid regular expression flags".to_owned(),
+                                Span::generated("str"),
+                            )),
+                            cause: None,
+                            errors: None,
+                            span: Span::generated("error_new"),
+                        },
+                        Span::generated("throw"),
+                    )],
+                    result: Box::new(LoweredExpr::Undefined(Span::generated("undef"))),
+                    span,
+                }));
+            }
+        }
+        Ok(None)
     }
 
     fn lower_mcall_arraybuffer(
