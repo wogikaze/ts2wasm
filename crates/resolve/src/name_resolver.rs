@@ -814,24 +814,19 @@ impl NameResolver {
                 body,
                 span,
             } => {
-                // Hoist var declarations from for-init to the enclosing scope,
-                // matching ES spec var hoisting semantics (§13.7.4.3).
-                if let Some(i) = init
-                    && let Stmt::Let { name, .. } = i.as_ref()
-                    && matches!(i.as_ref(), Stmt::Let { is_var: true, .. })
-                {
-                    self.declare_binding(name, Some(*span), true)?;
-                }
                 self.enter_scope();
                 // Declare for-loop init variables before resolving condition/update
                 // so let/var i = 0 is visible to i < 4 and ++i.
                 let resolved_init = if let Some(i) = init {
                     if let Stmt::Let { name, .. } = i.as_ref() {
-                        self.declare_binding(
-                            name,
-                            Some(*span),
-                            matches!(i.as_ref(), Stmt::Let { is_var: true, .. }),
-                        )?;
+                        let is_var = matches!(i.as_ref(), Stmt::Let { is_var: true, .. });
+                        self.declare_binding(name, Some(*span), is_var)?;
+                        if is_var && self.scopes.len() >= 2 {
+                            let parent_idx = self.scopes.len() - 2;
+                            if let Some(parent) = self.scopes.get_mut(parent_idx) {
+                                parent.entry(name.clone()).or_insert(Some(*span));
+                            }
+                        }
                     }
                     Some(Box::new(self.resolve_stmt(i)?))
                 } else {

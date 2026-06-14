@@ -130,6 +130,16 @@ fn resolver_snapshot_var_declaration() {
     }
 }
 
+#[test]
+fn resolver_snapshot_for_var_is_hoisted_within_function_scope() {
+    let stmts = resolve_names(&parse(
+        "function f() { for (var alpha = 1; alpha < 2; alpha++) {} alpha; }",
+    ))
+    .unwrap();
+
+    assert_eq!(stmts.len(), 1);
+}
+
 // ---------------------------------------------------------------------------
 // Function declarations
 // ---------------------------------------------------------------------------
