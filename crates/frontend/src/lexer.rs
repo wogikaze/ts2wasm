@@ -91,6 +91,176 @@ impl<'a> Lexer<'a> {
         }
     }
 
+    fn regexp(&mut self, start: usize) -> Result<SpannedToken, Diagnostic> {
+        // Skip the opening '/'
+        self.advance_char();
+
+        let mut pattern = String::new();
+        let mut escaped = false;
+        let mut in_class = false;
+        let mut terminated = false;
+        let mut named_capture_groups: Vec<String> = Vec::new();
+
+        while let Some(ch) = self.peek_char() {
+            if escaped {
+                pattern.push(ch);
+                escaped = false;
+
+                // After \\p or \\P, consume {...} as a Unicode property escape
+                if matches!(ch, 'p' | 'P') && self.peek_char() == Some('{') {
+                    pattern.push('{');
+                    self.advance_char();
+                    loop {
+                        match self.peek_char() {
+                            Some('}') => {
+                                pattern.push('}');
+                                self.advance_char();
+                                break;
+                            }
+                            Some(c) => {
+                                pattern.push(c);
+                                self.advance_char();
+                            }
+                            None => break,
+                        }
+                    }
+                    continue;
+                }
+            } else if ch == '\\' {
+                pattern.push(ch);
+                escaped = true;
+            } else if ch == '[' {
+                pattern.push(ch);
+                in_class = true;
+            } else if ch == ']' {
+                pattern.push(ch);
+                in_class = false;
+            } else if ch == '\n' || ch == '\r' {
+                return Err(Diagnostic {
+                    code: DiagCode::SyntaxError,
+                    message: "issue-202: unterminated RegExp literal".to_owned(),
+                    span: Some(Span {
+                        start,
+                        end: self.cursor,
+                    }),
+
+                    phase: None,
+                });
+            } else if ch == '/' {
+                if in_class {
+                    pattern.push(ch);
+                } else {
+                    self.advance_char();
+                    terminated = true;
+                    break;
+                }
+            } else if ch == '(' && !in_class && self.starts_with("(?<") {
+                // Named capture group (?<name>...) or lookbehind (?<=...)/(?<!...)
+                pattern.push('(');
+                self.advance_char();
+                pattern.push('?');
+                self.advance_char();
+                pattern.push('<');
+                self.advance_char();
+                if let Some(next) = self.peek_char() {
+                    if matches!(next, '=' | '!') {
+                        pattern.push(next);
+                        self.advance_char();
+                    } else {
+                        let mut name = String::new();
+                        loop {
+                            match self.peek_char() {
+                                Some('>') => {
+                                    pattern.push('>');
+                                    self.advance_char();
+                                    break;
+                                }
+                                Some(c) => {
+                                    name.push(c);
+                                    pattern.push(c);
+                                    self.advance_char();
+                                }
+                                None => break,
+                            }
+                        }
+                        named_capture_groups.push(name);
+                    }
+                }
+                continue;
+            } else {
+                pattern.push(ch);
+            }
+            self.advance_char();
+        }
+
+        if !terminated {
+            return Err(Diagnostic {
+                code: DiagCode::SyntaxError,
+                message: "issue-202: unterminated RegExp literal".to_owned(),
+                span: Some(Span {
+                    start,
+                    end: self.cursor,
+                }),
+
+                phase: None,
+            });
+        }
+
+        // Parse flags (if any)
+        let mut flags = String::new();
+        while let Some(ch) = self.peek_char() {
+            if !ch.is_ascii_alphabetic() {
+                break;
+            }
+
+            if !matches!(ch, 'd' | 'g' | 'i' | 'm' | 's' | 'u' | 'y') {
+                return Err(Diagnostic {
+                    code: DiagCode::SyntaxError,
+                    message: format!("issue-202: unsupported RegExp flag `{ch}`"),
+                    span: Some(Span {
+                        start: self.cursor,
+                        end: self.cursor + ch.len_utf8(),
+                    }),
+
+                    phase: None,
+                });
+            }
+            if flags.contains(ch) {
+                return Err(Diagnostic {
+                    code: DiagCode::SyntaxError,
+                    message: format!("issue-202: duplicate RegExp flag `{ch}`"),
+                    span: Some(Span {
+                        start: self.cursor,
+                        end: self.cursor + ch.len_utf8(),
+                    }),
+
+                    phase: None,
+                });
+            }
+            flags.push(ch);
+            self.advance_char();
+        }
+
+        let mut raw = String::from("/");
+        raw.push_str(&pattern);
+        raw.push('/');
+        if !flags.is_empty() {
+            raw.push_str(&flags);
+        }
+
+        Ok(SpannedToken {
+            kind: Token::RegExp {
+                pattern,
+                flags,
+                raw,
+                named_capture_groups,
+            },
+            span: Span {
+                start,
+                end: self.cursor,
+            },
+        })
+    }
     fn template_literal(&mut self, start: usize) -> Result<SpannedToken, Diagnostic> {
         enum Mode {
             Template,
