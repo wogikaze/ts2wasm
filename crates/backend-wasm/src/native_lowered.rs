@@ -1068,6 +1068,12 @@ impl<'a> NativeLoweredEmitter<'a> {
         let property_get = if plan
             .required_runtime_functions()
             .contains(&RuntimeFn::PropertyGet)
+            || plan
+                .required_runtime_functions()
+                .contains(&RuntimeFn::ObjectGetOwnPropertyDescriptor)
+            || plan
+                .required_runtime_functions()
+                .contains(&RuntimeFn::ObjectGetPrototypeOf)
         {
             self.insert_runtime_string(&mut strings, "name");
             self.insert_runtime_string(&mut strings, "length");
@@ -1095,19 +1101,34 @@ impl<'a> NativeLoweredEmitter<'a> {
                 name_key: strings.get("name"),
                 length_key: strings.get("length"),
                 direct_functions,
-                native_error: if plan
+                native_errors: if plan
                     .required_runtime_functions()
                     .contains(&RuntimeFn::AggregateError)
+                    || plan
+                        .required_runtime_functions()
+                        .contains(&RuntimeFn::ObjectGetOwnPropertyDescriptor)
+                    || plan
+                        .required_runtime_functions()
+                        .contains(&RuntimeFn::ObjectGetPrototypeOf)
                 {
                     let ae_name = self.insert_dynamic_string_value("AggregateError");
-                    Some(NativeErrorPropertyData {
-                        payload: ValueTag::AGGREGATE_ERROR_PAYLOAD,
-                        name_value: ae_name,
-                        length_value: ValueTag::encode_number(2),
-                        prototype_global: "$error_proto_aggregate_error",
-                    })
+                    let error_name = self.insert_dynamic_string_value("Error");
+                    vec![
+                        NativeErrorPropertyData {
+                            payload: ValueTag::ERROR_PAYLOAD,
+                            name_value: error_name,
+                            length_value: ValueTag::encode_number(1),
+                            prototype_global: "$error_proto_error",
+                        },
+                        NativeErrorPropertyData {
+                            payload: ValueTag::AGGREGATE_ERROR_PAYLOAD,
+                            name_value: ae_name,
+                            length_value: ValueTag::encode_number(2),
+                            prototype_global: "$error_proto_aggregate_error",
+                        },
+                    ]
                 } else {
-                    None
+                    vec![]
                 },
             }
         } else {
@@ -22210,6 +22231,15 @@ fn static_value_from_expr_with_functions(
             ..
         } if args.len() == 2 => {
             let key = static_property_key_from_locals_with_functions(locals, &args[1], functions)?;
+            // If the object is a native error sentinel and the key is "prototype",
+            // the static descriptor lookup cannot represent the actual runtime prototype
+            // object (it would produce a STATIC_REF_TOKEN). Fall through to the runtime
+            // function call instead.
+            if let LoweredExpr::Number(value, _) = &args[0] {
+                if is_native_error_sentinel(*value) && key == "prototype" {
+                    return None;
+                }
+            }
             let Some((value, attrs)) = static_object_property_descriptor_owned_from_expr(
                 locals, &args[0], &key, functions,
             ) else {
@@ -33552,6 +33582,9 @@ fn static_object_property_descriptor_owned_from_expr(
             let value = static_function_metadata_property_expr(functions, func_id, key)?;
             Some((value, static_function_metadata_property_attrs()))
         }
+        StaticValue::Primitive(LoweredExpr::Number(value, span)) => {
+            static_native_error_descriptor(value, span, key)
+        }
         StaticValue::Object(object) => object
             .descriptor(key)
             .map(|(value, attrs)| (value.clone(), attrs)),
@@ -33572,6 +33605,61 @@ fn static_object_property_descriptor_owned_from_expr(
         | StaticValue::TaggedString
         | StaticValue::TaggedNumber
         | StaticValue::TaggedRuntimeValue => None,
+    }
+}
+
+/// Returns the property descriptor for a NativeError constructor sentinel
+/// (e.g., Error, AggregateError) when accessed via Object.getOwnPropertyDescriptor.
+fn static_native_error_descriptor(
+    value: i32,
+    span: Span,
+    key: &str,
+) -> Option<(LoweredExpr, StaticPropertyAttrs)> {
+    if !is_native_error_sentinel(value) {
+        return None;
+    }
+    match key {
+        "name" => {
+            // Use the pre-computed tagged string for the error constructor name.
+            // The display string is "[Function: Error]" or "[Function: AggregateError]".
+            let name = if value == ValueTag::ERROR_VALUE {
+                "Error"
+            } else if value == ValueTag::AGGREGATE_ERROR_VALUE {
+                "AggregateError"
+            } else {
+                return None;
+            };
+            Some((
+                LoweredExpr::String(name.to_owned(), span),
+                StaticPropertyAttrs {
+                    writable: false,
+                    enumerable: false,
+                    configurable: true,
+                },
+            ))
+        }
+        "length" => {
+            let len = if value == ValueTag::AGGREGATE_ERROR_VALUE {
+                2
+            } else {
+                1
+            };
+            Some((
+                LoweredExpr::Number(ValueTag::encode_number(len), span),
+                StaticPropertyAttrs {
+                    writable: false,
+                    enumerable: false,
+                    configurable: true,
+                },
+            ))
+        }
+        "prototype" => {
+            // prototype requires the actual prototype heap object at runtime,
+            // which the static ref token cannot represent. Let the runtime
+            // function handle this.
+            None
+        }
+        _ => None,
     }
 }
 

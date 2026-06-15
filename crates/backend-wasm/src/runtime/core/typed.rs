@@ -31966,9 +31966,9 @@ pub fn build_object_get_own_property_descriptor(data: PropertyGetData) -> WasmFu
     }
     body.extend([WasmInstr::End, WasmInstr::End]);
 
-    // NativeError constructor sentinel handling (AggregateError, etc.)
+    // NativeError constructor sentinel handling (Error, AggregateError, etc.)
     // Return data descriptors for "name", "length", and "prototype" properties.
-    if let Some(native_error) = &data.native_error {
+    for native_error in &data.native_errors {
         let native_error_global = &native_error.prototype_global;
         body.extend([
             WasmInstr::LocalGet(payload),
@@ -47812,7 +47812,7 @@ mod tests {
                 name_value: None,
                 length_value: ValueTag::encode_number(2),
             }],
-            native_error: None,
+            native_errors: vec![],
         });
         let descriptor_wasm = encode_and_validate_with_stubs(
             descriptor.clone(),
@@ -48049,7 +48049,7 @@ mod tests {
                 name_value: Some(ValueTag::STRING_TAG as i32 | 300),
                 length_value: ValueTag::encode_number(2),
             }],
-            native_error: None,
+            native_errors: vec![],
         });
         let wasm = encode_and_validate_with_stubs(
             f.clone(),

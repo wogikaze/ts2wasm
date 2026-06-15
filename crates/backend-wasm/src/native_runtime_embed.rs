@@ -355,10 +355,10 @@ pub(crate) struct PropertyGetData {
     pub(crate) name_key: RuntimeStringRef,
     pub(crate) length_key: RuntimeStringRef,
     pub(crate) direct_functions: Vec<DirectFunctionProperty>,
-    /// NativeError constructor property data (e.g., AggregateError).
+    /// NativeError constructor property data (Error, AggregateError, etc.).
     /// When the object is a NUMBER-tagged sentinel in the NATIVE_ERROR_PAYLOAD range,
     /// getOwnPropertyDescriptor returns descriptors for "name", "length", and "prototype".
-    pub(crate) native_error: Option<NativeErrorPropertyData>,
+    pub(crate) native_errors: Vec<NativeErrorPropertyData>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
