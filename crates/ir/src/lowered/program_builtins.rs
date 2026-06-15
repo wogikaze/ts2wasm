@@ -77,6 +77,7 @@ fn known_global_value_display_and_typeof(name: &str) -> Option<(&'static str, &'
         "Set" => "[Function: Set]",
         "Symbol" => "[Function: Symbol]",
         "Promise" => "[Function: Promise]",
+        "AggregateError" => "[Function: AggregateError]",
         "WeakMap" => "[Function: WeakMap]",
         "WeakSet" => "[Function: WeakSet]",
         "ArrayBuffer" => "[Function: ArrayBuffer]",

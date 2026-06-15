@@ -157,6 +157,20 @@ impl super::super::Resolver {
         {
             return Ok(token);
         }
+        // Builtin error constructor metadata: name and length.
+        // e.g. AggregateError.length → 2, Error.name → "Error"
+        if let ResolvedExpr::Ident(name) = object
+            && let Some(_) = crate::lowered::BuiltinErrorConstructor::from_name(name)
+            && matches!(key, "name" | "length")
+        {
+            return Ok(match key {
+                "length" => LoweredExpr::Number(
+                    if name == "AggregateError" { 2 } else { 1 },
+                    Span::generated("num"),
+                ),
+                _ => LoweredExpr::String(name.to_owned(), Span::generated("str")),
+            });
+        }
         if let ResolvedExpr::Ident(name) = object
             && let Some(value) =
                 crate::lowered::program_builtins::known_global_property_value_expr(name, key, span)
