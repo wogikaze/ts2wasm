@@ -26741,10 +26741,8 @@ pub fn build_object_get_prototype_of() -> WasmFunction {
                 result_ty: WasmBlockType::Empty,
             },
             WasmInstr::Then,
-            // Native error constructors have [[Prototype]] = Error.prototype
-            WasmInstr::GlobalGet("$error_proto_error".to_owned()),
-            WasmInstr::I32Const(ValueTag::OBJECT),
-            WasmInstr::I32Or,
+            // Native error constructors have [[Prototype]] = Error (the Error constructor)
+            WasmInstr::I32Const(ValueTag::ERROR_VALUE),
             WasmInstr::Return,
             WasmInstr::End,
             WasmInstr::End,

@@ -4150,16 +4150,6 @@ impl<'a> NativeLoweredEmitter<'a> {
                     out.push(WasmInstr::Call("$object_define_properties".to_owned()));
                     return Ok(());
                 }
-                if *intrinsic == RuntimeFn::ObjectGetOwnPropertyDescriptor && args.len() == 2 {
-                    for arg in args {
-                        self.emit_expr(arg, ctx, out)?;
-                        if expr_produces_value(arg, &self.function_results) {
-                            out.push(WasmInstr::Drop);
-                        }
-                    }
-                    out.push(WasmInstr::I32Const(STATIC_REF_TOKEN));
-                    return Ok(());
-                }
                 if *intrinsic == RuntimeFn::ObjectGetPrototypeOf && args.len() == 1 {
                     self.emit_expr(&args[0], ctx, out)?;
                     if expr_produces_value(&args[0], &self.function_results) {

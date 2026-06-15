@@ -836,7 +836,7 @@ impl WatEmitter<'_> {
     (local $proto i32)
     (local.set $tag (i32.and (local.get $obj) (i32.const {tag_mask})))
     ;; NativeError constructor sentinels (AggregateError, Error, etc.)
-    ;; are NUMBER-tagged. Their [[Prototype]] is Error.prototype.
+    ;; are NUMBER-tagged. Their [[Prototype]] is Error (the Error constructor sentinel).
     (if (i32.eq (local.get $tag) (i32.const {number_tag}))
       (then
         (local.set $payload (i32.shr_u (local.get $obj) (i32.const {number_shift})))
@@ -844,7 +844,7 @@ impl WatEmitter<'_> {
               (i32.ge_u (local.get $payload) (i32.const {native_error_payload_base}))
               (i32.lt_u (local.get $payload) (i32.const {direct_local_token_payload_base})))
           (then
-            (return (i32.or (global.get $error_proto_error) (i32.const {object_tag})))))))
+            (return (i32.const {error_value}))))))
     (if (i32.ne (local.get $tag) (i32.const {object_tag}))
       (then (return (i32.const {undefined}))))
     (local.set $base (i32.and (local.get $obj) (i32.const {heap_mask})))
@@ -863,6 +863,7 @@ impl WatEmitter<'_> {
             obj_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
             undefined = ValueTag::UNDEFINED,
             null = ValueTag::NULL,
+            error_value = ValueTag::ERROR_VALUE,
         ));
     }
 

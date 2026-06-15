@@ -79,8 +79,12 @@ impl ValueTag {
     /// Tagged value for the `parseFloat` builtin function identity token.
     pub const BUILTIN_PARSE_FLOAT_VALUE: i32 =
         Self::encode_reserved_number_payload(Self::BUILTIN_PARSE_FLOAT_PAYLOAD);
+    /// Reserved payload for the Error constructor identity token.
+    pub const ERROR_PAYLOAD: i32 = Self::NATIVE_ERROR_PAYLOAD_BASE;
+    /// Tagged value for the Error constructor identity token.
+    pub const ERROR_VALUE: i32 = Self::encode_reserved_number_payload(Self::ERROR_PAYLOAD);
     /// Reserved payload for the AggregateError constructor identity token.
-    pub const AGGREGATE_ERROR_PAYLOAD: i32 = Self::NATIVE_ERROR_PAYLOAD_BASE;
+    pub const AGGREGATE_ERROR_PAYLOAD: i32 = Self::NATIVE_ERROR_PAYLOAD_BASE + 1;
     /// Tagged value for the AggregateError constructor identity token.
     pub const AGGREGATE_ERROR_VALUE: i32 =
         Self::encode_reserved_number_payload(Self::AGGREGATE_ERROR_PAYLOAD);

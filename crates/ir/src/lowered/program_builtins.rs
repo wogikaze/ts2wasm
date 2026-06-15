@@ -35,11 +35,14 @@ pub(crate) fn builtin_function_data_descriptor(name: &str, span: Span) -> Option
 }
 
 pub(crate) fn known_global_value_expr(name: &str, span: Span) -> Option<LoweredExpr> {
-    // AggregateError uses a NATIVE_ERROR_PAYLOAD sentinel token so that
-    // runtime reflective operations (typeof, getPrototypeOf, getOwnPropertyDescriptor)
-    // can recognize it as a constructor function rather than a plain string.
+    // Builtin error constructors use NATIVE_ERROR_PAYLOAD sentinel tokens
+    // so that runtime reflective operations (typeof, getPrototypeOf,
+    // getOwnPropertyDescriptor, ===) can work correctly.
     if name == "AggregateError" {
         return Some(LoweredExpr::Number(ValueTag::AGGREGATE_ERROR_VALUE, span));
+    }
+    if name == "Error" {
+        return Some(LoweredExpr::Number(ValueTag::ERROR_VALUE, span));
     }
     let (display, typeof_name) = known_global_value_display_and_typeof(name)?;
     Some(global_marker_object_expr(display, typeof_name, span))
