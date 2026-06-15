@@ -7956,27 +7956,8 @@ impl<'a> NativeLoweredEmitter<'a> {
         if let Some(value) =
             static_value_from_expr_with_functions(expr, &ctx.static_locals, &self.program.functions)
         {
-            match value {
-                StaticValue::Primitive(value) => {
-                    return self.emit_static_primitive_as_tagged(&value, out);
-                }
-                StaticValue::Object(object) if static_object_is_global_this(&object) => {
-                    let value = self.insert_dynamic_string_value(NODE_GLOBAL_THIS_CONSOLE_DISPLAY);
-                    out.push(WasmInstr::I32Const(value));
-                    return Ok(());
-                }
-                StaticValue::Symbol(symbol) if symbol.console_bytes().is_some() => {
-                    let bytes = symbol.console_bytes().unwrap_or_default();
-                    let Ok(value) = String::from_utf8(bytes) else {
-                        return Err(Diagnostic::invariant(
-                            "static symbol console bytes should be valid UTF-8",
-                        ));
-                    };
-                    let value = self.insert_dynamic_string_value(&value);
-                    out.push(WasmInstr::I32Const(value));
-                    return Ok(());
-                }
-                _ => {}
+            if self.try_emit_static_value_as_tagged(&value, out)? {
+                return Ok(());
             }
         }
 
@@ -8153,6 +8134,38 @@ impl<'a> NativeLoweredEmitter<'a> {
             _ => Err(unsupported(
                 "native LoweredProgram emitter cannot tag this equality operand",
             )),
+        }
+    }
+
+    /// Try to emit a static value as a tagged runtime value.
+    /// Returns `Ok(true)` if the value was emitted, `Ok(false)` if it needs further processing.
+    fn try_emit_static_value_as_tagged(
+        &mut self,
+        value: &StaticValue,
+        out: &mut Vec<WasmInstr>,
+    ) -> Result<bool, Diagnostic> {
+        match value {
+            StaticValue::Primitive(value) => {
+                self.emit_static_primitive_as_tagged(&value, out)?;
+                return Ok(true);
+            }
+            StaticValue::Object(object) if static_object_is_global_this(&object) => {
+                let value = self.insert_dynamic_string_value(NODE_GLOBAL_THIS_CONSOLE_DISPLAY);
+                out.push(WasmInstr::I32Const(value));
+                return Ok(true);
+            }
+            StaticValue::Symbol(symbol) if symbol.console_bytes().is_some() => {
+                let bytes = symbol.console_bytes().unwrap_or_default();
+                let Ok(value) = String::from_utf8(bytes) else {
+                    return Err(Diagnostic::invariant(
+                        "static symbol console bytes should be valid UTF-8",
+                    ));
+                };
+                let value = self.insert_dynamic_string_value(&value);
+                out.push(WasmInstr::I32Const(value));
+                return Ok(true);
+            }
+            _ => Ok(false),
         }
     }
 
