@@ -1,5 +1,6 @@
-use crate::emitter::WatEmitter;
+use crate::emitter::{WatEmitter, builtin_error_prototype_global};
 use crate::runtime_fn::RuntimeGlobal;
+use ts2wasm_ir::lowered::BuiltinErrorConstructor;
 use ts2wasm_runtime_abi::{consts::RuntimeConst, layout::Layout, value::ValueTag};
 
 impl WatEmitter<'_> {
@@ -830,9 +831,20 @@ impl WatEmitter<'_> {
             r#"
   (func $object_get_prototype_of (param $obj i32) (result i32)
     (local $tag i32)
+    (local $payload i32)
     (local $base i32)
     (local $proto i32)
     (local.set $tag (i32.and (local.get $obj) (i32.const {tag_mask})))
+    ;; NativeError constructor sentinels (AggregateError, Error, etc.)
+    ;; are NUMBER-tagged. Their [[Prototype]] is Error.prototype.
+    (if (i32.eq (local.get $tag) (i32.const {number_tag}))
+      (then
+        (local.set $payload (i32.shr_u (local.get $obj) (i32.const {number_shift})))
+        (if (i32.and
+              (i32.ge_u (local.get $payload) (i32.const {native_error_payload_base}))
+              (i32.lt_u (local.get $payload) (i32.const {direct_local_token_payload_base})))
+          (then
+            (return (i32.or (global.get $error_proto_error) (i32.const {object_tag})))))))
     (if (i32.ne (local.get $tag) (i32.const {object_tag}))
       (then (return (i32.const {undefined}))))
     (local.set $base (i32.and (local.get $obj) (i32.const {heap_mask})))
@@ -843,6 +855,10 @@ impl WatEmitter<'_> {
 "#,
             tag_mask = ValueTag::TAG_MASK,
             object_tag = ValueTag::OBJECT,
+            number_tag = ValueTag::NUMBER,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            native_error_payload_base = ValueTag::NATIVE_ERROR_PAYLOAD_BASE,
+            direct_local_token_payload_base = ValueTag::DIRECT_LOCAL_TOKEN_PAYLOAD_BASE,
             heap_mask = ValueTag::HEAP_MASK,
             obj_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
             undefined = ValueTag::UNDEFINED,
@@ -1143,9 +1159,37 @@ impl WatEmitter<'_> {
         let str_array = self.string_value("[object Array]");
         let str_bigint = self.string_value("[object BigInt]");
         let str_symbol = self.string_value("[object Symbol]");
+        let str_error = self.string_value("[object Error]");
         let str_object = self.string_value("[object Object]");
         // CLOSURE_SENTINEL = -2, stored at offset 0 of the heap object payload
         const CLOSURE_SENTINEL: i32 = -2;
+
+        // Build [[ErrorData]] internal slot check: Error instances have prototypes
+        // matching one of the $error_proto_<Name> globals.
+        let error_proto_check: String = {
+            let enabled: Vec<BuiltinErrorConstructor> =
+                self.builtin_error_prototypes().into_iter().collect();
+            if enabled.is_empty() {
+                String::new()
+            } else {
+                let obj_proto = Layout::OBJECT_PROTOTYPE_OFFSET;
+                let checks: Vec<String> = enabled
+                    .iter()
+                    .map(|c| {
+                        let global = builtin_error_prototype_global(*c);
+                        format!(
+                            "(i32.eq (i32.load (i32.add (local.get $base) (i32.const {obj_proto}))) (global.get {global}))"
+                        )
+                    })
+                    .collect();
+                format!(
+                    ";; [[ErrorData]] — prototype matches an error prototype global
+        (if (i32.or\n              {}\n              (i32.const 0))\n          (then (return (i32.const {str_error}))))",
+                    checks.join("\n              "),
+                    str_error = str_error,
+                )
+            }
+        };
         wat.push_str(&format!(
             r#"
   (func $object_to_string (param $v i32) (result i32)
@@ -1207,7 +1251,7 @@ impl WatEmitter<'_> {
         ;; Heap number -> "[object Number]"
         (if (i32.eq (i32.load (local.get $base)) (i32.const {heap_number_sentinel}))
           (then (return (i32.const {str_number}))))
-        ;; Plain object -> "[object Object]"
+        {error_proto_check}        ;; Plain object -> "[object Object]"
         (return (i32.const {str_object}))))
     ;; Fallback (should not reach here)
     (i32.const {str_object}))
@@ -1233,6 +1277,7 @@ impl WatEmitter<'_> {
             symbol_sentinel = Layout::SYMBOL_SENTINEL,
             closure_sentinel = CLOSURE_SENTINEL,
             heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
+            error_proto_check = error_proto_check,
             str_undefined = str_undefined,
             str_null = str_null,
             str_boolean = str_boolean,

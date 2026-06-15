@@ -355,6 +355,22 @@ pub(crate) struct PropertyGetData {
     pub(crate) name_key: RuntimeStringRef,
     pub(crate) length_key: RuntimeStringRef,
     pub(crate) direct_functions: Vec<DirectFunctionProperty>,
+    /// NativeError constructor property data (e.g., AggregateError).
+    /// When the object is a NUMBER-tagged sentinel in the NATIVE_ERROR_PAYLOAD range,
+    /// getOwnPropertyDescriptor returns descriptors for "name", "length", and "prototype".
+    pub(crate) native_error: Option<NativeErrorPropertyData>,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) struct NativeErrorPropertyData {
+    /// The NATIVE_ERROR_PAYLOAD sentinel value for this error constructor.
+    pub(crate) payload: i32,
+    /// Tagged value for the error constructor's `.name` string (e.g., "AggregateError").
+    pub(crate) name_value: i32,
+    /// Encoded number for the error constructor's `.length` (e.g., 2 for AggregateError).
+    pub(crate) length_value: i32,
+    /// Global name for the error constructor's prototype object (e.g., "$error_proto_aggregate_error").
+    pub(crate) prototype_global: &'static str,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

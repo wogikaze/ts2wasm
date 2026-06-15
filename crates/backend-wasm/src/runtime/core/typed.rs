@@ -26701,12 +26701,14 @@ pub fn build_object_from_entries() -> WasmFunction {
 /// Remaining raw escape hatches: none.
 pub fn build_object_get_prototype_of() -> WasmFunction {
     let tag = 1;
-    let base = 2;
-    let proto = 3;
+    let payload = 2;
+    let base = 3;
+    let proto = 4;
 
     WasmFunction::new("$object_get_prototype_of")
         .param(WasmValType::I32)
         .result(WasmValType::I32)
+        .local(WasmValType::I32)
         .local(WasmValType::I32)
         .local(WasmValType::I32)
         .local(WasmValType::I32)
@@ -26715,6 +26717,37 @@ pub fn build_object_get_prototype_of() -> WasmFunction {
             WasmInstr::I32Const(ValueTag::TAG_MASK),
             WasmInstr::I32And,
             WasmInstr::LocalSet(tag),
+            // NativeError constructor sentinels (AggregateError, Error, etc.)
+            // are NUMBER-tagged. Their [[Prototype]] is Error.prototype.
+            WasmInstr::LocalGet(tag),
+            WasmInstr::I32Const(ValueTag::NUMBER),
+            WasmInstr::I32Eq,
+            WasmInstr::If {
+                result_ty: WasmBlockType::Empty,
+            },
+            WasmInstr::Then,
+            WasmInstr::LocalGet(0),
+            WasmInstr::I32Const(ValueTag::NUMBER_SHIFT),
+            WasmInstr::I32ShrU,
+            WasmInstr::LocalSet(payload),
+            WasmInstr::LocalGet(payload),
+            WasmInstr::I32Const(ValueTag::NATIVE_ERROR_PAYLOAD_BASE),
+            WasmInstr::I32GeU,
+            WasmInstr::LocalGet(payload),
+            WasmInstr::I32Const(ValueTag::DIRECT_LOCAL_TOKEN_PAYLOAD_BASE),
+            WasmInstr::I32LtU,
+            WasmInstr::I32And,
+            WasmInstr::If {
+                result_ty: WasmBlockType::Empty,
+            },
+            WasmInstr::Then,
+            // Native error constructors have [[Prototype]] = Error.prototype
+            WasmInstr::GlobalGet("$error_proto_error".to_owned()),
+            WasmInstr::I32Const(ValueTag::OBJECT),
+            WasmInstr::I32Or,
+            WasmInstr::Return,
+            WasmInstr::End,
+            WasmInstr::End,
             WasmInstr::LocalGet(tag),
             WasmInstr::I32Const(ValueTag::OBJECT),
             WasmInstr::I32Ne,
@@ -31933,9 +31966,140 @@ pub fn build_object_get_own_property_descriptor(data: PropertyGetData) -> WasmFu
         );
         body.push(WasmInstr::End);
     }
+    body.extend([WasmInstr::End, WasmInstr::End]);
+
+    // NativeError constructor sentinel handling (AggregateError, etc.)
+    // Return data descriptors for "name", "length", and "prototype" properties.
+    if let Some(native_error) = &data.native_error {
+        let native_error_global = &native_error.prototype_global;
+        body.extend([
+            WasmInstr::LocalGet(payload),
+            WasmInstr::I32Const(ValueTag::NATIVE_ERROR_PAYLOAD_BASE),
+            WasmInstr::I32GeU,
+            WasmInstr::LocalGet(payload),
+            WasmInstr::I32Const(ValueTag::DIRECT_LOCAL_TOKEN_PAYLOAD_BASE),
+            WasmInstr::I32LtU,
+            WasmInstr::I32And,
+            WasmInstr::LocalGet(payload),
+            WasmInstr::I32Const(native_error.payload),
+            WasmInstr::I32Eq,
+            WasmInstr::I32And,
+            WasmInstr::If {
+                result_ty: WasmBlockType::Empty,
+            },
+            WasmInstr::Then,
+            WasmInstr::I32Const(Layout::SCRATCH_OFFSET as i32),
+            WasmInstr::I32Const(64),
+            WasmInstr::I32Add,
+            WasmInstr::LocalSet(prop_offset),
+        ]);
+        push_store_ascii_bytes(&mut body, prop_offset, b"name");
+        body.extend([
+            // Check "name" key (length 4)
+            WasmInstr::LocalGet(key_len),
+            WasmInstr::I32Const(4),
+            WasmInstr::I32Eq,
+            WasmInstr::I32Const(Layout::SCRATCH_OFFSET as i32),
+            WasmInstr::LocalGet(prop_offset),
+            WasmInstr::LocalGet(key_len),
+            WasmInstr::Call("$mem_equal".to_owned()),
+            WasmInstr::I32And,
+            WasmInstr::If {
+                result_ty: WasmBlockType::Empty,
+            },
+            WasmInstr::Then,
+            WasmInstr::I32Const(native_error.name_value),
+            WasmInstr::LocalSet(entry_value),
+            WasmInstr::I32Const(ValueTag::FALSE),
+            WasmInstr::LocalSet(writable),
+            WasmInstr::I32Const(ValueTag::FALSE),
+            WasmInstr::LocalSet(enumerable),
+            WasmInstr::I32Const(ValueTag::TRUE),
+            WasmInstr::LocalSet(configurable),
+        ]);
+        push_return_data_descriptor(
+            &mut body,
+            desc,
+            prop_offset,
+            entry_value,
+            writable,
+            enumerable,
+            configurable,
+        );
+        push_store_ascii_bytes(&mut body, prop_offset, b"length");
+        body.extend([
+            WasmInstr::End,
+            // Check "length" key (length 6)
+            WasmInstr::LocalGet(key_len),
+            WasmInstr::I32Const(6),
+            WasmInstr::I32Eq,
+            WasmInstr::I32Const(Layout::SCRATCH_OFFSET as i32),
+            WasmInstr::LocalGet(prop_offset),
+            WasmInstr::LocalGet(key_len),
+            WasmInstr::Call("$mem_equal".to_owned()),
+            WasmInstr::I32And,
+            WasmInstr::If {
+                result_ty: WasmBlockType::Empty,
+            },
+            WasmInstr::Then,
+            WasmInstr::I32Const(native_error.length_value),
+            WasmInstr::LocalSet(entry_value),
+            WasmInstr::I32Const(ValueTag::FALSE),
+            WasmInstr::LocalSet(writable),
+            WasmInstr::I32Const(ValueTag::FALSE),
+            WasmInstr::LocalSet(enumerable),
+            WasmInstr::I32Const(ValueTag::TRUE),
+            WasmInstr::LocalSet(configurable),
+        ]);
+        push_return_data_descriptor(
+            &mut body,
+            desc,
+            prop_offset,
+            entry_value,
+            writable,
+            enumerable,
+            configurable,
+        );
+        push_store_ascii_bytes(&mut body, prop_offset, b"prototype");
+        body.extend([
+            WasmInstr::End,
+            // Check "prototype" key (length 9)
+            WasmInstr::LocalGet(key_len),
+            WasmInstr::I32Const(9),
+            WasmInstr::I32Eq,
+            WasmInstr::I32Const(Layout::SCRATCH_OFFSET as i32),
+            WasmInstr::LocalGet(prop_offset),
+            WasmInstr::LocalGet(key_len),
+            WasmInstr::Call("$mem_equal".to_owned()),
+            WasmInstr::I32And,
+            WasmInstr::If {
+                result_ty: WasmBlockType::Empty,
+            },
+            WasmInstr::Then,
+            WasmInstr::GlobalGet(native_error_global.to_string()),
+            WasmInstr::I32Const(ValueTag::OBJECT),
+            WasmInstr::I32Or,
+            WasmInstr::LocalSet(entry_value),
+            WasmInstr::I32Const(ValueTag::FALSE),
+            WasmInstr::LocalSet(writable),
+            WasmInstr::I32Const(ValueTag::FALSE),
+            WasmInstr::LocalSet(enumerable),
+            WasmInstr::I32Const(ValueTag::FALSE),
+            WasmInstr::LocalSet(configurable),
+        ]);
+        push_return_data_descriptor(
+            &mut body,
+            desc,
+            prop_offset,
+            entry_value,
+            writable,
+            enumerable,
+            configurable,
+        );
+        body.extend([WasmInstr::End, WasmInstr::End]);
+    }
+
     body.extend([
-        WasmInstr::End,
-        WasmInstr::End,
         WasmInstr::End,
         WasmInstr::LocalGet(0),
         WasmInstr::I32Const(ValueTag::TAG_MASK),
@@ -46071,7 +46235,14 @@ mod tests {
     #[test]
     fn typed_object_get_prototype_of_emits_valid_wasm() {
         let f = build_object_get_prototype_of();
-        let wasm = encode_and_validate_with_stubs(f.clone(), vec![]);
+        let module = WasmModule::new()
+            .memory(WasmMemory::new(1, 1))
+            .function(f.clone())
+            .global(WasmGlobal::i32_mut("$error_proto_error", 0));
+        let wasm = emit_wasm_module_binary(&module).expect("typed runtime module should encode");
+        wasmparser::Validator::new()
+            .validate_all(&wasm)
+            .expect("typed runtime function should validate through wasm-encoder");
 
         assert!(wasm.starts_with(b"\0asm"));
         assert!(
@@ -47643,6 +47814,7 @@ mod tests {
                 name_value: None,
                 length_value: ValueTag::encode_number(2),
             }],
+            native_error: None,
         });
         let descriptor_wasm = encode_and_validate_with_stubs(
             descriptor.clone(),
@@ -47879,6 +48051,7 @@ mod tests {
                 name_value: Some(ValueTag::STRING_TAG as i32 | 300),
                 length_value: ValueTag::encode_number(2),
             }],
+            native_error: None,
         });
         let wasm = encode_and_validate_with_stubs(
             f.clone(),

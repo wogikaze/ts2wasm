@@ -20,9 +20,9 @@ use ts2wasm_shared::Span;
 use ts2wasm_shared::abi::{ABI_CUSTOM_SECTION_NAME, AbiMetadata};
 
 use crate::native_runtime_embed::{
-    DirectFunctionProperty, NATIVE_MEMORY_MAX_PAGES, NativeRuntimeData, NativeRuntimeStringTable,
-    PropertyGetData, RuntimeStringRef, embed_native_runtime_functions_with_data_and_extra,
-    native_runtime_function_available,
+    DirectFunctionProperty, NATIVE_MEMORY_MAX_PAGES, NativeErrorPropertyData, NativeRuntimeData,
+    NativeRuntimeStringTable, PropertyGetData, RuntimeStringRef,
+    embed_native_runtime_functions_with_data_and_extra, native_runtime_function_available,
 };
 use crate::runtime_fn::{HostImport, NATIVE_SET_ADD_SENTINEL, RuntimeFn, runtime_fn_from_builtin};
 use crate::runtime_link_plan::{RuntimeLinkPlan, build_runtime_link_plan};
@@ -887,6 +887,24 @@ impl<'a> NativeLoweredEmitter<'a> {
             ));
         }
 
+        // Error prototype globals referenced by native builder functions for
+        // NativeError constructors (AggregateError). These globals are needed
+        // whenever Object.getPrototypeOf or Object.getOwnPropertyDescriptor
+        // native functions include NativeError sentinel handling.
+        // The native builder functions reference these globals unconditionally,
+        // so add them as permanent globals (initialized to 0).
+        // Note: builtin_error_prototype_global returns names WITHOUT the "$"
+        // prefix, but wasm globals use "$" prefix in their symbol names.
+        for base_name in &[
+            crate::emitter::builtin_error_prototype_global(BuiltinErrorConstructor::Error),
+            crate::emitter::builtin_error_prototype_global(BuiltinErrorConstructor::AggregateError),
+        ] {
+            let global_name = format!("${}", base_name);
+            if global_symbols.insert(global_name.clone()) {
+                module = module.global(WasmGlobal::i32_mut(global_name, 0));
+            }
+        }
+
         let native_runtime_symbols = native_runtime_functions
             .iter()
             .map(|function| function.symbol.clone())
@@ -1077,6 +1095,20 @@ impl<'a> NativeLoweredEmitter<'a> {
                 name_key: strings.get("name"),
                 length_key: strings.get("length"),
                 direct_functions,
+                native_error: if plan
+                    .required_runtime_functions()
+                    .contains(&RuntimeFn::AggregateError)
+                {
+                    let ae_name = self.insert_dynamic_string_value("AggregateError");
+                    Some(NativeErrorPropertyData {
+                        payload: ValueTag::AGGREGATE_ERROR_PAYLOAD,
+                        name_value: ae_name,
+                        length_value: ValueTag::encode_number(2),
+                        prototype_global: "$error_proto_aggregate_error",
+                    })
+                } else {
+                    None
+                },
             }
         } else {
             PropertyGetData::default()

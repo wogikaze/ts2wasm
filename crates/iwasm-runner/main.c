@@ -245,6 +245,21 @@ host_function_construct(wasm_exec_env_t exec_env,
 }
 
 /*
+ * host.reflectConstruct — stub for Reflect.construct that returns undefined.
+ * WASM signature: (i32 target_tag, i32 args_tag) -> i32
+ */
+static uint32_t
+host_reflect_construct(wasm_exec_env_t exec_env,
+                       uint32_t target_tag, uint32_t args_tag)
+{
+    (void)exec_env;
+    (void)target_tag;
+    (void)args_tag;
+    /* Return undefined (tagged value 0) */
+    return 0;
+}
+
+/*
  * host.dateGetLocalTimeField — return a local time field from epoch ms.
  * WASM signature: (i32 epoch_ms, i32 field) -> i32
  *
@@ -373,6 +388,12 @@ static NativeSymbol host_native_symbols[] = {
     {
         .symbol = "function.construct",
         .func_ptr = (void *)host_function_construct,
+        .signature = "(ii)i",
+        .attachment = NULL,
+    },
+    {
+        .symbol = "reflectConstruct",
+        .func_ptr = (void *)host_reflect_construct,
         .signature = "(ii)i",
         .attachment = NULL,
     },

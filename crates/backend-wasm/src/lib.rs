@@ -1150,6 +1150,8 @@ mod tests {
                 "$console_indent_level",
                 "$native_module_1_export_value",
                 "$native_module_1_initialized",
+                "$error_proto_error",
+                "$error_proto_aggregate_error",
             ],
             "native global initialization order should stay stable for heap, module cache, exception runtime, and module export globals"
         );

@@ -157,13 +157,14 @@ impl super::super::Resolver {
         {
             return Ok(token);
         }
-        // Builtin error constructor metadata: name and length.
-        // e.g. AggregateError.length → 2, Error.name → "Error"
+        // Builtin error constructor metadata: name, length, and prototype.
+        // e.g. AggregateError.length → 2, Error.name → "Error", AggregateError.prototype → prototype object
         if let ResolvedExpr::Ident(name) = object
-            && let Some(_) = crate::lowered::BuiltinErrorConstructor::from_name(name)
-            && matches!(key, "name" | "length")
+            && let Some(constructor) = crate::lowered::BuiltinErrorConstructor::from_name(name)
+            && matches!(key, "name" | "length" | "prototype")
         {
             return Ok(match key {
+                "prototype" => LoweredExpr::BuiltinErrorPrototype(constructor, span),
                 "length" => LoweredExpr::Number(
                     if name == "AggregateError" { 2 } else { 1 },
                     Span::generated("num"),

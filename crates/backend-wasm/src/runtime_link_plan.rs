@@ -1,6 +1,6 @@
 use ts2wasm_ir::lowered::{
-    ClosureRepresentation, FunctionCallKind, LoweredBinaryOp, LoweredExpr, LoweredLogicalAssignOp,
-    LoweredProgram, LoweredStmt, LoweredUnaryOp, ModuleLoadKind, Validated,
+    BuiltinErrorConstructor, ClosureRepresentation, FunctionCallKind, LoweredBinaryOp, LoweredExpr,
+    LoweredLogicalAssignOp, LoweredProgram, LoweredStmt, LoweredUnaryOp, ModuleLoadKind, Validated,
 };
 use ts2wasm_runtime_abi::ValueTag;
 use ts2wasm_runtime_abi::consts::RuntimeString;
@@ -504,6 +504,7 @@ fn collect_required_runtime_expr(plan: &mut RuntimeLinkPlan, expr: &LoweredExpr)
             }
         }
         LoweredExpr::ErrorNew {
+            constructor,
             message,
             cause,
             errors,
@@ -512,6 +513,11 @@ fn collect_required_runtime_expr(plan: &mut RuntimeLinkPlan, expr: &LoweredExpr)
             plan.add_required_runtime(RuntimeFn::AllocHeap);
             plan.add_required_runtime(RuntimeFn::Concat);
             plan.add_required_runtime(RuntimeFn::ObjectPrototype);
+            // NativeError constructors (AggregateError) use the native emitter path
+            // which needs the RuntimeFn registered in the link plan.
+            if *constructor == BuiltinErrorConstructor::AggregateError {
+                plan.add_required_runtime(RuntimeFn::AggregateError);
+            }
             collect_required_runtime_expr(plan, message);
             if let Some(cause) = cause {
                 collect_required_runtime_expr(plan, cause);

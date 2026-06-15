@@ -1426,6 +1426,13 @@ const imports = {
         return encodeHostException(error);
       }
     },
+    'reflectConstruct'(targetRaw, argsRaw) {
+      try {
+        return encodeHostValue(Reflect.construct(decodeValue(targetRaw), decodeArgs(argsRaw)));
+      } catch (error) {
+        return encodeHostException(error);
+      }
+    },
     getIterator(valueRaw) {
       try {
         return encodeHostValue(getIteratorFromRaw(valueRaw));

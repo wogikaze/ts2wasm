@@ -4,7 +4,7 @@ use crate::emitter::{self, WatEmitter};
 use crate::runtime_fn::RuntimeFn;
 use crate::wat_writer::WatWriter;
 use ts2wasm_ir::lowered::{BuiltinErrorConstructor, FuncId, LoweredExpr, LoweredStmt};
-use ts2wasm_runtime_abi::Layout;
+use ts2wasm_runtime_abi::{Layout, ValueTag};
 
 impl WatEmitter<'_> {
     pub(super) fn emit_class_prototype_globals(&self, writer: &mut WatWriter) {
@@ -70,7 +70,15 @@ impl WatEmitter<'_> {
         let pad = " ".repeat(indent);
         for constructor in self.builtin_error_prototypes() {
             let global = emitter::builtin_error_prototype_global(constructor);
-            let size = Layout::OBJECT_HEADER_SIZE + Layout::OBJECT_ENTRY_SIZE;
+            // AggregateError prototype needs 2 entries (name + constructor).
+            // Other error prototypes only need 1 entry (name) for now.
+            let entry_count = if constructor == BuiltinErrorConstructor::AggregateError {
+                2
+            } else {
+                1
+            };
+            let size =
+                Layout::OBJECT_HEADER_SIZE + (entry_count as u32) * Layout::OBJECT_ENTRY_SIZE;
             wat.push_str(&format!(
                 "{pad}(if (i32.eqz (global.get ${global}))\n{pad}  (then\n"
             ));
@@ -79,7 +87,7 @@ impl WatEmitter<'_> {
                 RuntimeFn::AllocHeap.symbol(),
             ));
             wat.push_str(&format!(
-                "{pad}    (i32.store (global.get ${global}) (i32.const 1))\n"
+                "{pad}    (i32.store (global.get ${global}) (i32.const {entry_count}))\n"
             ));
             wat.push_str(&format!(
                 "{pad}    (i32.store (i32.add (global.get ${global}) (i32.const {})) (i32.const 0))\n",
@@ -108,6 +116,20 @@ impl WatEmitter<'_> {
                 "{pad}    (i32.store (i32.add (global.get ${global}) (i32.const {})) (i32.const {name_value}))\n",
                 Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_VALUE_OFFSET,
             ));
+            // Add constructor property for AggregateError prototype.
+            if constructor == BuiltinErrorConstructor::AggregateError {
+                let constructor_key = self.string_value("constructor");
+                let constructor_entry_offset =
+                    Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_ENTRY_SIZE;
+                wat.push_str(&format!(
+                    "{pad}    (i32.store (i32.add (global.get ${global}) (i32.const {constructor_entry_offset})) (i32.const {constructor_key}))\n"
+                ));
+                wat.push_str(&format!(
+                    "{pad}    (i32.store (i32.add (global.get ${global}) (i32.const {})) (i32.const {}))\n",
+                    constructor_entry_offset + Layout::OBJECT_VALUE_OFFSET,
+                    ValueTag::AGGREGATE_ERROR_VALUE,
+                ));
+            }
             wat.push_str(&format!("{pad}  )\n{pad})\n"));
         }
     }
@@ -202,6 +224,17 @@ impl WatEmitter<'_> {
         }
         for module in &self.program.modules {
             Self::collect_builtin_error_prototypes_from_stmts(&module.statements, &mut prototypes);
+        }
+        // Ensure AggregateError prototype is available when AggregateError runtime fn is used.
+        if self
+            .link_plan
+            .required_runtime_functions()
+            .contains(&RuntimeFn::AggregateError)
+        {
+            emitter::add_builtin_error_prototype_ref(
+                BuiltinErrorConstructor::AggregateError,
+                &mut prototypes,
+            );
         }
         // Ensure Error parent prototype is available when AggregateError is used.
         if prototypes.contains(&BuiltinErrorConstructor::AggregateError) {

@@ -514,6 +514,16 @@ fn error_subclasses_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn error_tostring_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/error-tostring.ts");
+}
+
+#[test]
+fn aggregate_error_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/aggregate-error.ts");
+}
+
+#[test]
 fn native_error_types_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/native-error-types.ts");
 }
