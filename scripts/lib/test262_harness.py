@@ -354,12 +354,7 @@ var $262 = {};
 function test262_gc() {}
 
 function test262_evalScript(source) {
-  // indirect eval with globalThis.eval instead of (0, eval) to avoid
-  // triggering compiler-level indirect eval lowering, which adds a
-  // $host_eval_indirect import that WAMR/iwasm cannot satisfy. Tests
-  // that actually call $262.evalScript are blocked via BLOCKED_FEATURES,
-  // so this stub is never reached for passing tests.
-  return globalThis.eval(source);
+  throw new Error("$262.evalScript is not supported by this runner slice");
 }
 
 function test262_createRealm() {
@@ -392,29 +387,14 @@ $262.agent = {};
 $262.agent.start = test262_agent_start;
 """
 
-WASM_EVAL_SCRIPT_STUB = (
+NODE_HOST_PRELUDE = COMMON_HOST_PRELUDE.replace(
+    "function test262_evalScript(source) {\n  throw new Error(\"$262.evalScript is not supported by this runner slice\");\n}",
     "function test262_evalScript(source) {\n"
-    "  // indirect eval with globalThis.eval instead of (0, eval) to avoid\n"
-    "  // triggering compiler-level indirect eval lowering, which adds a\n"
-    "  // $host_eval_indirect import that WAMR/iwasm cannot satisfy. Tests\n"
-    "  // that actually call $262.evalScript are blocked via BLOCKED_FEATURES,\n"
-    "  // so this stub is never reached for passing tests.\n"
-    "  return globalThis.eval(source);\n"
-    "}"
-)
-
-NODE_EVAL_SCRIPT = (
-    "function test262_evalScript(source) {\n"
-    '  if (typeof globalThis.__ts2wasm_evalScript === "function") {\n'
+    "  if (typeof globalThis.__ts2wasm_evalScript === \"function\") {\n"
     "    return globalThis.__ts2wasm_evalScript(source);\n"
     "  }\n"
-    '  return require("node:vm").runInThisContext(source);\n'
-    "}"
-)
-
-NODE_HOST_PRELUDE = COMMON_HOST_PRELUDE.replace(
-    WASM_EVAL_SCRIPT_STUB,
-    NODE_EVAL_SCRIPT,
+    "  return require(\"node:vm\").runInThisContext(source);\n"
+    "}",
 )
 
 # JavaScript standard globals that the compiler may not resolve natively
