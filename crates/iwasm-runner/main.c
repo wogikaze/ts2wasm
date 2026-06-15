@@ -169,6 +169,82 @@ host_eval_direct(wasm_exec_env_t exec_env, uint32_t source_tag, uint32_t env_tag
 }
 
 /*
+ * host.eval.indirect — stub that returns undefined (tagged value 0).
+ * WASM signature: (i32 source_tag, i32 env_tag) -> i32
+ */
+static uint32_t
+host_eval_indirect(wasm_exec_env_t exec_env, uint32_t source_tag, uint32_t env_tag)
+{
+    (void)exec_env;
+    (void)source_tag;
+    (void)env_tag;
+    /* Return undefined (tagged value 0) */
+    return 0;
+}
+
+/*
+ * host.function.compile — stub that returns undefined (tagged value 0).
+ * Called when the Function/AsyncFunction/GeneratorFunction constructor is
+ * used with string arguments. A real implementation would parse and compile
+ * the function body; returning undefined causes a test262 assertion failure
+ * instead of a RuntimeError crash.
+ * WASM signature: (i32 source_tag) -> i32
+ */
+static uint32_t
+host_function_compile(wasm_exec_env_t exec_env, uint32_t source_tag)
+{
+    (void)exec_env;
+    (void)source_tag;
+    /* Return undefined (tagged value 0) */
+    return 0;
+}
+
+/*
+ * host.function.call — stub that returns undefined (tagged value 0).
+ * WASM signature: (i32 func_tag, i32 this_tag) -> i32
+ */
+static uint32_t
+host_function_call(wasm_exec_env_t exec_env, uint32_t func_tag, uint32_t this_tag)
+{
+    (void)exec_env;
+    (void)func_tag;
+    (void)this_tag;
+    /* Return undefined (tagged value 0) */
+    return 0;
+}
+
+/*
+ * host.function.callMethod — stub that returns undefined (tagged value 0).
+ * WASM signature: (i32 func_tag, i32 this_tag, i32 args_tag) -> i32
+ */
+static uint32_t
+host_function_call_method(wasm_exec_env_t exec_env,
+                          uint32_t func_tag, uint32_t this_tag, uint32_t args_tag)
+{
+    (void)exec_env;
+    (void)func_tag;
+    (void)this_tag;
+    (void)args_tag;
+    /* Return undefined (tagged value 0) */
+    return 0;
+}
+
+/*
+ * host.function.construct — stub that returns undefined (tagged value 0).
+ * WASM signature: (i32 func_tag, i32 args_tag) -> i32
+ */
+static uint32_t
+host_function_construct(wasm_exec_env_t exec_env,
+                        uint32_t func_tag, uint32_t args_tag)
+{
+    (void)exec_env;
+    (void)func_tag;
+    (void)args_tag;
+    /* Return undefined (tagged value 0) */
+    return 0;
+}
+
+/*
  * host.dateGetLocalTimeField — return a local time field from epoch ms.
  * WASM signature: (i32 epoch_ms, i32 field) -> i32
  *
@@ -267,6 +343,36 @@ static NativeSymbol host_native_symbols[] = {
     {
         .symbol = "eval.direct",
         .func_ptr = (void *)host_eval_direct,
+        .signature = "(ii)i",
+        .attachment = NULL,
+    },
+    {
+        .symbol = "eval.indirect",
+        .func_ptr = (void *)host_eval_indirect,
+        .signature = "(ii)i",
+        .attachment = NULL,
+    },
+    {
+        .symbol = "function.compile",
+        .func_ptr = (void *)host_function_compile,
+        .signature = "(i)i",
+        .attachment = NULL,
+    },
+    {
+        .symbol = "function.call",
+        .func_ptr = (void *)host_function_call,
+        .signature = "(ii)i",
+        .attachment = NULL,
+    },
+    {
+        .symbol = "function.callMethod",
+        .func_ptr = (void *)host_function_call_method,
+        .signature = "(iii)i",
+        .attachment = NULL,
+    },
+    {
+        .symbol = "function.construct",
+        .func_ptr = (void *)host_function_construct,
         .signature = "(ii)i",
         .attachment = NULL,
     },

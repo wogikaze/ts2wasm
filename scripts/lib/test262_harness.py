@@ -354,7 +354,7 @@ var $262 = {};
 function test262_gc() {}
 
 function test262_evalScript(source) {
-  return (0, eval)(source);
+  throw new Error("$262.evalScript is not supported by this runner slice");
 }
 
 function test262_createRealm() {
@@ -388,7 +388,7 @@ $262.agent.start = test262_agent_start;
 """
 
 NODE_HOST_PRELUDE = COMMON_HOST_PRELUDE.replace(
-    "function test262_evalScript(source) {\n  return (0, eval)(source);\n}",
+    "function test262_evalScript(source) {\n  throw new Error(\"$262.evalScript is not supported by this runner slice\");\n}",
     "function test262_evalScript(source) {\n"
     "  if (typeof globalThis.__ts2wasm_evalScript === \"function\") {\n"
     "    return globalThis.__ts2wasm_evalScript(source);\n"

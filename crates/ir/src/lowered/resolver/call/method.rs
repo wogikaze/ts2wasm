@@ -2824,7 +2824,10 @@ impl super::super::Resolver {
         {
             // fall through to class dispatch — Number.toString(value, radix)
         } else if method == "toString"
-            && matches!(self.infer_class_for_expr(object).as_deref(), Some("Boolean"))
+            && matches!(
+                self.infer_class_for_expr(object).as_deref(),
+                Some("Boolean")
+            )
         {
             // fall through to class dispatch — Boolean.toString → BooleanToString
         } else if let Some(intrinsic) = resolve_method_to_runtime_fn(object, method) {
@@ -3829,7 +3832,10 @@ impl super::super::Resolver {
 
         // Boolean non-ident receiver (e.g. (true).toString()) — route to BooleanToString
         if matches!(method, "toString" | "valueOf")
-            && matches!(self.infer_class_for_expr(object).as_deref(), Some("Boolean"))
+            && matches!(
+                self.infer_class_for_expr(object).as_deref(),
+                Some("Boolean")
+            )
         {
             let receiver = self.lower_expr(object)?;
             if method == "valueOf" {
