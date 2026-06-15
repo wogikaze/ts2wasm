@@ -31805,6 +31805,7 @@ fn static_typeof_static_value(
             {
                 Some("function")
             }
+            LoweredExpr::Number(value, _) if is_native_error_sentinel(*value) => Some("function"),
             LoweredExpr::Number(_, _) | LoweredExpr::DecimalNumber(_, _) => Some("number"),
             LoweredExpr::BigIntLiteral { .. } => Some("bigint"),
             LoweredExpr::String(value, _) if static_regexp_literal_parts(value).is_some() => {
@@ -36166,6 +36167,14 @@ fn native_expr_unsupported_reason(expr: &LoweredExpr) -> &'static str {
     }
 }
 
+/// Returns true when a compile-time i32 constant is a NativeError constructor
+/// sentinel (e.g., AggregateError) in the reserved NATIVE_ERROR_PAYLOAD range.
+fn is_native_error_sentinel(value: i32) -> bool {
+    let payload = (value as u32 >> ValueTag::NUMBER_SHIFT as u32) as i32;
+    payload >= ValueTag::NATIVE_ERROR_PAYLOAD_BASE
+        && payload < ValueTag::DIRECT_LOCAL_TOKEN_PAYLOAD_BASE
+}
+
 fn static_typeof_bytes(expr: &LoweredExpr) -> Option<&'static [u8]> {
     match expr {
         LoweredExpr::Number(value, _)
@@ -36174,6 +36183,7 @@ fn static_typeof_bytes(expr: &LoweredExpr) -> Option<&'static [u8]> {
         {
             Some(b"function")
         }
+        LoweredExpr::Number(value, _) if is_native_error_sentinel(*value) => Some(b"function"),
         LoweredExpr::Number(_, _) | LoweredExpr::DecimalNumber(_, _) => Some(b"number"),
         LoweredExpr::BigIntLiteral { .. } => Some(b"bigint"),
         LoweredExpr::String(value, _) if static_regexp_literal_parts(value).is_some() => {
