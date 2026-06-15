@@ -7,10 +7,75 @@ use ts2wasm_runtime_abi::{layout::Layout, value::ValueTag};
 
 impl WatEmitter<'_> {
     pub(super) fn emit_promise_constructor(&self, wat: &mut String) {
+        // Build dispatch tables for calling the executor (same pattern as emit_promise_then)
+        let pad = "            ";
+        let mut number_dispatch = String::new();
+        let mut object_dispatch = String::new();
+
+        let dir_local_token_payload_base = ValueTag::DIRECT_LOCAL_TOKEN_PAYLOAD_BASE;
+        for function in &self.program.functions {
+            let payload = dir_local_token_payload_base + function.id.0 as i32;
+            let func_sym = format!("${}", function_symbol(function.id));
+
+            // NUMBER-tagged dispatch arm (DirectLocalToken, no captures)
+            number_dispatch.push_str(&format!(
+                "{pad}(if (i32.eq (local.get $payload) (i32.const {payload}))
+{pad}  (then
+{pad}    (call {func_sym}
+"
+            ));
+            for _ in 0..function.params.len() {
+                number_dispatch.push_str(&format!(
+                    "{pad}      (i32.const {undefined})
+",
+                    undefined = ValueTag::UNDEFINED,
+                ));
+            }
+            number_dispatch.push_str(&format!(
+                "{pad}    )
+{pad}    (br $dispatch_done)))
+"
+            ));
+
+            // OBJECT-tagged dispatch arms (heap closures with captures)
+            for capture_count in 0..=function.params.len() {
+                let user_param_count = function.params.len() - capture_count;
+                let mut call_args = String::new();
+                for _ in 0..user_param_count {
+                    call_args
+                        .push_str(&format!("{pad}      (i32.const {})\n", ValueTag::UNDEFINED));
+                }
+                for cap_idx in 0..capture_count {
+                    let cap_off =
+                        CLOSURE_CAPTURE_SLOTS_OFFSET + cap_idx as u32 * CLOSURE_CAPTURE_SLOT_SIZE;
+                    call_args.push_str(&format!(
+                        "{pad}      (i32.load (i32.add (local.get $payload) (i32.const {cap_off})))\n"
+                    ));
+                }
+                object_dispatch.push_str(&format!(
+                    "{pad}(if (i32.and
+{pad}      (i32.eq (i32.load (i32.add (local.get $payload) (i32.const {code_id_off}))) (i32.const {func_id}))
+{pad}      (i32.eq (i32.load (i32.add (local.get $payload) (i32.const {cap_cnt_off}))) (i32.const {capture_count})))
+{pad}  (then
+{pad}    (call {func_sym}
+{call_args}{pad}    )
+{pad}    (br $dispatch_done)))
+",
+                    code_id_off = CLOSURE_CODE_ID_OFFSET,
+                    func_id = function.id.0,
+                    cap_cnt_off = CLOSURE_CAPTURE_COUNT_OFFSET,
+                    capture_count = capture_count,
+                    func_sym = func_sym,
+                    call_args = call_args,
+                ));
+            }
+        }
+
         wat.push_str(&format!(
             r#"
   (func $promise_constructor (param $executor i32) (result i32)
     (local $base i32)
+    (local $payload i32)
     ;; Allocate: ARRAY_HEADER (20) + 4 slots (16) = 36 bytes
     (local.set $base (call $alloc_heap (i32.const {promise_size})))
     ;; Array header: length = 4 (GC traces all 4 slots)
@@ -23,6 +88,20 @@ impl WatEmitter<'_> {
     (i32.store (i32.add (local.get $base) (i32.const {slot2_offset})) (i32.const {undefined}))
     ;; Slot 3: onRejected = undefined (0)
     (i32.store (i32.add (local.get $base) (i32.const {slot3_offset})) (i32.const {undefined}))
+    ;; Call executor with resolve/reject (undefined for now)
+    (if (i32.eq (i32.and (local.get $executor) (i32.const {tag_mask})) (i32.const {number_tag}))
+      (then
+        (local.set $payload (i32.shr_u (local.get $executor) (i32.const {num_shift})))
+        (block $dispatch_done
+{number_dispatch}        )))
+    (if (i32.ne (i32.and (local.get $executor) (i32.const {tag_mask})) (i32.const {object_tag}))
+      (then (nop))
+      (else
+        (local.set $payload (i32.and (local.get $executor) (i32.const {heap_mask})))
+        (if (i32.eq (i32.load (i32.add (local.get $payload) (i32.const {closure_subtype_offset}))) (i32.const {closure_sentinel}))
+          (then
+            (block $dispatch_done
+{object_dispatch}            )))))
     ;; Return tagged as ARRAY
     (i32.or (local.get $base) (i32.const {array_tag})))
 "#,
@@ -35,6 +114,13 @@ impl WatEmitter<'_> {
             pending = 0,
             undefined = ValueTag::UNDEFINED,
             array_tag = ValueTag::ARRAY,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            num_shift = ValueTag::NUMBER_SHIFT,
+            object_tag = ValueTag::OBJECT_TAG,
+            heap_mask = ValueTag::HEAP_MASK,
+            closure_subtype_offset = CLOSURE_SUBTYPE_OFFSET,
+            closure_sentinel = CLOSURE_SENTINEL,
         ));
     }
 
