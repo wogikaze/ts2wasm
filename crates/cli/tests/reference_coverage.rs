@@ -522,7 +522,269 @@ t262_category!(t262_language_continue, "language/continue-statement");
 t262_category!(t262_language_destructuring, "language/destructuring");
 t262_category!(t262_language_do, "language/do-while");
 t262_category!(t262_language_export, "language/export");
+<<<<<<< HEAD
 t262_category!(t262_language_expressions, "language/expressions");
+||||||| b4042bee9
+=======
+// language/expressions/ — split into sub-categories to avoid 240s timeout
+t262_category!(
+    t262_language_expressions_addition,
+    "language/expressions/addition"
+);
+t262_category!(
+    t262_language_expressions_array,
+    "language/expressions/array"
+);
+t262_category!(
+    t262_language_expressions_arrow_function,
+    "language/expressions/arrow-function"
+);
+t262_category!(
+    t262_language_expressions_assignment,
+    "language/expressions/assignment"
+);
+t262_category!(
+    t262_language_expressions_assignmenttargettype,
+    "language/expressions/assignmenttargettype"
+);
+t262_category!(
+    t262_language_expressions_async_arrow_function,
+    "language/expressions/async-arrow-function"
+);
+t262_category!(
+    t262_language_expressions_async_function,
+    "language/expressions/async-function"
+);
+t262_category!(
+    t262_language_expressions_async_generator,
+    "language/expressions/async-generator"
+);
+t262_category!(
+    t262_language_expressions_await,
+    "language/expressions/await"
+);
+t262_category!(
+    t262_language_expressions_bitwise_and,
+    "language/expressions/bitwise-and"
+);
+t262_category!(
+    t262_language_expressions_bitwise_not,
+    "language/expressions/bitwise-not"
+);
+t262_category!(
+    t262_language_expressions_bitwise_or,
+    "language/expressions/bitwise-or"
+);
+t262_category!(
+    t262_language_expressions_bitwise_xor,
+    "language/expressions/bitwise-xor"
+);
+t262_category!(t262_language_expressions_call, "language/expressions/call");
+t262_category!(
+    t262_language_expressions_class,
+    "language/expressions/class"
+);
+t262_category!(
+    t262_language_expressions_coalesce,
+    "language/expressions/coalesce"
+);
+t262_category!(
+    t262_language_expressions_comma,
+    "language/expressions/comma"
+);
+t262_category!(
+    t262_language_expressions_compound_assignment,
+    "language/expressions/compound-assignment"
+);
+t262_category!(
+    t262_language_expressions_concatenation,
+    "language/expressions/concatenation"
+);
+t262_category!(
+    t262_language_expressions_conditional,
+    "language/expressions/conditional"
+);
+t262_category!(
+    t262_language_expressions_delete,
+    "language/expressions/delete"
+);
+t262_category!(
+    t262_language_expressions_division,
+    "language/expressions/division"
+);
+t262_category!(
+    t262_language_expressions_does_not_equals,
+    "language/expressions/does-not-equals"
+);
+t262_category!(
+    t262_language_expressions_dynamic_import,
+    "language/expressions/dynamic-import"
+);
+t262_category!(
+    t262_language_expressions_equals,
+    "language/expressions/equals"
+);
+t262_category!(
+    t262_language_expressions_exponentiation,
+    "language/expressions/exponentiation"
+);
+t262_category!(
+    t262_language_expressions_function,
+    "language/expressions/function"
+);
+t262_category!(
+    t262_language_expressions_generators,
+    "language/expressions/generators"
+);
+t262_category!(
+    t262_language_expressions_greater_than,
+    "language/expressions/greater-than"
+);
+t262_category!(
+    t262_language_expressions_greater_than_or_equal,
+    "language/expressions/greater-than-or-equal"
+);
+t262_category!(
+    t262_language_expressions_grouping,
+    "language/expressions/grouping"
+);
+t262_category!(
+    t262_language_expressions_import_meta,
+    "language/expressions/import.meta"
+);
+t262_category!(t262_language_expressions_in, "language/expressions/in");
+t262_category!(
+    t262_language_expressions_instanceof,
+    "language/expressions/instanceof"
+);
+t262_category!(
+    t262_language_expressions_left_shift,
+    "language/expressions/left-shift"
+);
+t262_category!(
+    t262_language_expressions_less_than,
+    "language/expressions/less-than"
+);
+t262_category!(
+    t262_language_expressions_less_than_or_equal,
+    "language/expressions/less-than-or-equal"
+);
+t262_category!(
+    t262_language_expressions_logical_and,
+    "language/expressions/logical-and"
+);
+t262_category!(
+    t262_language_expressions_logical_assignment,
+    "language/expressions/logical-assignment"
+);
+t262_category!(
+    t262_language_expressions_logical_not,
+    "language/expressions/logical-not"
+);
+t262_category!(
+    t262_language_expressions_logical_or,
+    "language/expressions/logical-or"
+);
+t262_category!(
+    t262_language_expressions_member_expression,
+    "language/expressions/member-expression"
+);
+t262_category!(
+    t262_language_expressions_modulus,
+    "language/expressions/modulus"
+);
+t262_category!(
+    t262_language_expressions_multiplication,
+    "language/expressions/multiplication"
+);
+t262_category!(t262_language_expressions_new, "language/expressions/new");
+t262_category!(
+    t262_language_expressions_new_target,
+    "language/expressions/new.target"
+);
+t262_category!(
+    t262_language_expressions_object,
+    "language/expressions/object"
+);
+t262_category!(
+    t262_language_expressions_optional_chaining,
+    "language/expressions/optional-chaining"
+);
+t262_category!(
+    t262_language_expressions_postfix_decrement,
+    "language/expressions/postfix-decrement"
+);
+t262_category!(
+    t262_language_expressions_postfix_increment,
+    "language/expressions/postfix-increment"
+);
+t262_category!(
+    t262_language_expressions_prefix_decrement,
+    "language/expressions/prefix-decrement"
+);
+t262_category!(
+    t262_language_expressions_prefix_increment,
+    "language/expressions/prefix-increment"
+);
+t262_category!(
+    t262_language_expressions_property_accessors,
+    "language/expressions/property-accessors"
+);
+t262_category!(
+    t262_language_expressions_relational,
+    "language/expressions/relational"
+);
+t262_category!(
+    t262_language_expressions_right_shift,
+    "language/expressions/right-shift"
+);
+t262_category!(
+    t262_language_expressions_strict_does_not_equals,
+    "language/expressions/strict-does-not-equals"
+);
+t262_category!(
+    t262_language_expressions_strict_equals,
+    "language/expressions/strict-equals"
+);
+t262_category!(
+    t262_language_expressions_subtraction,
+    "language/expressions/subtraction"
+);
+t262_category!(
+    t262_language_expressions_super,
+    "language/expressions/super"
+);
+t262_category!(
+    t262_language_expressions_tagged_template,
+    "language/expressions/tagged-template"
+);
+t262_category!(
+    t262_language_expressions_template_literal,
+    "language/expressions/template-literal"
+);
+t262_category!(t262_language_expressions_this, "language/expressions/this");
+t262_category!(
+    t262_language_expressions_typeof,
+    "language/expressions/typeof"
+);
+t262_category!(
+    t262_language_expressions_unary_minus,
+    "language/expressions/unary-minus"
+);
+t262_category!(
+    t262_language_expressions_unary_plus,
+    "language/expressions/unary-plus"
+);
+t262_category!(
+    t262_language_expressions_unsigned_right_shift,
+    "language/expressions/unsigned-right-shift"
+);
+t262_category!(t262_language_expressions_void, "language/expressions/void");
+t262_category!(
+    t262_language_expressions_yield,
+    "language/expressions/yield"
+);
+>>>>>>> worktree-wf_354f816a-d3e-4
 t262_category!(t262_language_for, "language/for-statement");
 t262_category!(t262_language_function, "language/function");
 t262_category!(t262_language_if, "language/if-statement");
