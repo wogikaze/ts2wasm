@@ -1151,6 +1151,12 @@ mod tests {
                 "$native_module_1_export_value",
                 "$native_module_1_initialized",
                 "$error_proto_error",
+                "$error_proto_eval_error",
+                "$error_proto_range_error",
+                "$error_proto_reference_error",
+                "$error_proto_syntax_error",
+                "$error_proto_type_error",
+                "$error_proto_uri_error",
                 "$error_proto_aggregate_error",
             ],
             "native global initialization order should stay stable for heap, module cache, exception runtime, and module export globals"

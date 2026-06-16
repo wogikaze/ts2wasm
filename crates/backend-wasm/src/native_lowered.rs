@@ -887,19 +887,24 @@ impl<'a> NativeLoweredEmitter<'a> {
             ));
         }
 
-        // Error prototype globals referenced by native builder functions for
-        // NativeError constructors (AggregateError). These globals are needed
-        // whenever Object.getPrototypeOf or Object.getOwnPropertyDescriptor
-        // native functions include NativeError sentinel handling.
-        // The native builder functions reference these globals unconditionally,
-        // so add them as permanent globals (initialized to 0).
+        // All error prototype globals referenced by native builder functions.
+        // BuiltinErrorPrototype emissions (e.g. AggregateError.prototype,
+        // TypeError.prototype) access these globals unconditionally.  Declare
+        // all 8 so the validator does not reject an unresolved global symbol.
         // Note: builtin_error_prototype_global returns names WITHOUT the "$"
         // prefix, but wasm globals use "$" prefix in their symbol names.
-        for base_name in &[
-            crate::emitter::builtin_error_prototype_global(BuiltinErrorConstructor::Error),
-            crate::emitter::builtin_error_prototype_global(BuiltinErrorConstructor::AggregateError),
+        for constructor in [
+            BuiltinErrorConstructor::Error,
+            BuiltinErrorConstructor::EvalError,
+            BuiltinErrorConstructor::RangeError,
+            BuiltinErrorConstructor::ReferenceError,
+            BuiltinErrorConstructor::SyntaxError,
+            BuiltinErrorConstructor::TypeError,
+            BuiltinErrorConstructor::URIError,
+            BuiltinErrorConstructor::AggregateError,
         ] {
-            let global_name = format!("${}", base_name);
+            let global_name =
+                format!("${}", crate::emitter::builtin_error_prototype_global(constructor));
             if global_symbols.insert(global_name.clone()) {
                 module = module.global(WasmGlobal::i32_mut(global_name, 0));
             }
@@ -4554,9 +4559,10 @@ impl<'a> NativeLoweredEmitter<'a> {
                 Ok(())
             }
             LoweredExpr::BuiltinErrorPrototype(constructor, _) => {
-                out.push(WasmInstr::GlobalGet(
-                    crate::emitter::builtin_error_prototype_global(*constructor).to_owned(),
-                ));
+                out.push(WasmInstr::GlobalGet(format!(
+                    "${}",
+                    crate::emitter::builtin_error_prototype_global(*constructor)
+                )));
                 out.push(WasmInstr::I32Const(ValueTag::OBJECT));
                 out.push(WasmInstr::I32Or);
                 Ok(())
