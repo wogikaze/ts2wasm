@@ -903,8 +903,10 @@ impl<'a> NativeLoweredEmitter<'a> {
             BuiltinErrorConstructor::URIError,
             BuiltinErrorConstructor::AggregateError,
         ] {
-            let global_name =
-                format!("${}", crate::emitter::builtin_error_prototype_global(constructor));
+            let global_name = format!(
+                "${}",
+                crate::emitter::builtin_error_prototype_global(constructor)
+            );
             if global_symbols.insert(global_name.clone()) {
                 module = module.global(WasmGlobal::i32_mut(global_name, 0));
             }
@@ -1121,12 +1123,14 @@ impl<'a> NativeLoweredEmitter<'a> {
                     vec![
                         NativeErrorPropertyData {
                             payload: ValueTag::ERROR_PAYLOAD,
+                            sentinel_value: ValueTag::ERROR_VALUE,
                             name_value: error_name,
                             length_value: ValueTag::encode_number(1),
                             prototype_global: "$error_proto_error",
                         },
                         NativeErrorPropertyData {
                             payload: ValueTag::AGGREGATE_ERROR_PAYLOAD,
+                            sentinel_value: ValueTag::AGGREGATE_ERROR_VALUE,
                             name_value: ae_name,
                             length_value: ValueTag::encode_number(2),
                             prototype_global: "$error_proto_aggregate_error",
@@ -1374,15 +1378,24 @@ impl<'a> NativeLoweredEmitter<'a> {
         }
 
         for constructor in needed_prototypes {
-            let global_name = format!("${}", crate::emitter::builtin_error_prototype_global(constructor));
-            let entry_count = if constructor == BuiltinErrorConstructor::AggregateError { 2 } else { 1 };
+            let global_name = format!(
+                "${}",
+                crate::emitter::builtin_error_prototype_global(constructor)
+            );
+            let entry_count = if constructor == BuiltinErrorConstructor::AggregateError {
+                2
+            } else {
+                1
+            };
             let size = Layout::OBJECT_HEADER_SIZE + entry_count as u32 * Layout::OBJECT_ENTRY_SIZE;
 
             // if (global == 0) { ... }
             body.extend([
                 WasmInstr::GlobalGet(global_name.clone()),
                 WasmInstr::I32Eqz,
-                WasmInstr::If { result_ty: WasmBlockType::Empty },
+                WasmInstr::If {
+                    result_ty: WasmBlockType::Empty,
+                },
                 WasmInstr::Then,
                 // ptr = AllocHeap(size)
                 WasmInstr::I32Const(size as i32),
@@ -1391,28 +1404,43 @@ impl<'a> NativeLoweredEmitter<'a> {
                 // store count
                 WasmInstr::GlobalGet(global_name.clone()),
                 WasmInstr::I32Const(entry_count),
-                WasmInstr::I32Store { align: 2, offset: 0 },
+                WasmInstr::I32Store {
+                    align: 2,
+                    offset: 0,
+                },
                 // store flags = 0
                 WasmInstr::GlobalGet(global_name.clone()),
                 WasmInstr::I32Const(0),
-                WasmInstr::I32Store { align: 2, offset: Layout::OBJECT_FLAGS_OFFSET as u32 },
+                WasmInstr::I32Store {
+                    align: 2,
+                    offset: Layout::OBJECT_FLAGS_OFFSET as u32,
+                },
             ]);
 
             // store parent prototype (tagged OBJECT value)
             if let Some(parent) = constructor.parent() {
-                let parent_global = format!("${}", crate::emitter::builtin_error_prototype_global(parent));
+                let parent_global = format!(
+                    "${}",
+                    crate::emitter::builtin_error_prototype_global(parent)
+                );
                 body.extend([
                     WasmInstr::GlobalGet(global_name.clone()),
                     WasmInstr::GlobalGet(parent_global),
                     WasmInstr::I32Const(ValueTag::OBJECT),
                     WasmInstr::I32Or,
-                    WasmInstr::I32Store { align: 2, offset: Layout::OBJECT_PROTOTYPE_OFFSET as u32 },
+                    WasmInstr::I32Store {
+                        align: 2,
+                        offset: Layout::OBJECT_PROTOTYPE_OFFSET as u32,
+                    },
                 ]);
             } else {
                 body.extend([
                     WasmInstr::GlobalGet(global_name.clone()),
                     WasmInstr::I32Const(0),
-                    WasmInstr::I32Store { align: 2, offset: Layout::OBJECT_PROTOTYPE_OFFSET as u32 },
+                    WasmInstr::I32Store {
+                        align: 2,
+                        offset: Layout::OBJECT_PROTOTYPE_OFFSET as u32,
+                    },
                 ]);
             }
 
@@ -1422,24 +1450,37 @@ impl<'a> NativeLoweredEmitter<'a> {
             body.extend([
                 WasmInstr::GlobalGet(global_name.clone()),
                 WasmInstr::I32Const(name_key),
-                WasmInstr::I32Store { align: 2, offset: Layout::OBJECT_ENTRIES_OFFSET as u32 },
+                WasmInstr::I32Store {
+                    align: 2,
+                    offset: Layout::OBJECT_ENTRIES_OFFSET as u32,
+                },
                 WasmInstr::GlobalGet(global_name.clone()),
                 WasmInstr::I32Const(name_value),
-                WasmInstr::I32Store { align: 2, offset: (Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_VALUE_OFFSET) as u32 },
+                WasmInstr::I32Store {
+                    align: 2,
+                    offset: (Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_VALUE_OFFSET) as u32,
+                },
             ]);
 
             // constructor property (AggregateError only)
             if constructor == BuiltinErrorConstructor::AggregateError {
                 let constructor_key = self.insert_dynamic_string_value("constructor");
                 let constructor_value = ValueTag::AGGREGATE_ERROR_VALUE;
-                let constructor_entry_offset = Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_ENTRY_SIZE;
+                let constructor_entry_offset =
+                    Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_ENTRY_SIZE;
                 body.extend([
                     WasmInstr::GlobalGet(global_name.clone()),
                     WasmInstr::I32Const(constructor_key),
-                    WasmInstr::I32Store { align: 2, offset: constructor_entry_offset as u32 },
+                    WasmInstr::I32Store {
+                        align: 2,
+                        offset: constructor_entry_offset as u32,
+                    },
                     WasmInstr::GlobalGet(global_name.clone()),
                     WasmInstr::I32Const(constructor_value),
-                    WasmInstr::I32Store { align: 2, offset: (constructor_entry_offset + Layout::OBJECT_VALUE_OFFSET) as u32 },
+                    WasmInstr::I32Store {
+                        align: 2,
+                        offset: (constructor_entry_offset + Layout::OBJECT_VALUE_OFFSET) as u32,
+                    },
                 ]);
             }
 
@@ -4669,12 +4710,19 @@ impl<'a> NativeLoweredEmitter<'a> {
                 out.push(WasmInstr::Call(RuntimeFn::ArrayGet.symbol().to_owned()));
                 Ok(())
             }
-            LoweredExpr::ErrorNew { constructor, message, cause: _, errors, .. } => {
+            LoweredExpr::ErrorNew {
+                constructor,
+                message,
+                cause: _,
+                errors,
+                ..
+            } => {
                 // Use scratch[248..251] as temp storage for error object base pointer.
                 let stash_addr = (Layout::SCRATCH_OFFSET + 248) as u32;
 
                 let prop_capacity = 12u32;
-                let size = (Layout::OBJECT_HEADER_SIZE + prop_capacity * Layout::OBJECT_ENTRY_SIZE) as i32;
+                let size =
+                    (Layout::OBJECT_HEADER_SIZE + prop_capacity * Layout::OBJECT_ENTRY_SIZE) as i32;
 
                 // Stash base pointer in scratch memory so inner expressions
                 // can safely use switch_value_local.
@@ -4684,21 +4732,36 @@ impl<'a> NativeLoweredEmitter<'a> {
                 out.push(WasmInstr::LocalSet(ctx.switch_value_local));
                 out.push(WasmInstr::I32Const(stash_addr as i32));
                 out.push(WasmInstr::LocalGet(ctx.switch_value_local));
-                out.push(WasmInstr::I32Store { align: 2, offset: 0 });
+                out.push(WasmInstr::I32Store {
+                    align: 2,
+                    offset: 0,
+                });
 
                 // count = prop_count (actual number of properties we store below)
                 let prop_count = 2u32 + if errors.is_some() { 1u32 } else { 0u32 };
                 out.push(WasmInstr::LocalGet(ctx.switch_value_local));
                 out.push(WasmInstr::I32Const(prop_count as i32));
-                out.push(WasmInstr::I32Store { align: 2, offset: 0 });
+                out.push(WasmInstr::I32Store {
+                    align: 2,
+                    offset: 0,
+                });
                 // flags=0
                 out.push(WasmInstr::LocalGet(ctx.switch_value_local));
                 out.push(WasmInstr::I32Const(0));
-                out.push(WasmInstr::I32Store { align: 2, offset: Layout::OBJECT_FLAGS_OFFSET as u32 });
+                out.push(WasmInstr::I32Store {
+                    align: 2,
+                    offset: Layout::OBJECT_FLAGS_OFFSET as u32,
+                });
                 // prototype
                 out.push(WasmInstr::LocalGet(ctx.switch_value_local));
-                out.push(WasmInstr::GlobalGet(format!("${}", crate::emitter::builtin_error_prototype_global(*constructor))));
-                out.push(WasmInstr::I32Store { align: 2, offset: Layout::OBJECT_PROTOTYPE_OFFSET as u32 });
+                out.push(WasmInstr::GlobalGet(format!(
+                    "${}",
+                    crate::emitter::builtin_error_prototype_global(*constructor)
+                )));
+                out.push(WasmInstr::I32Store {
+                    align: 2,
+                    offset: Layout::OBJECT_PROTOTYPE_OFFSET as u32,
+                });
 
                 // Helper: load base from scratch[stash_addr], write key at entry_offset.
                 // Stack before: []
@@ -4706,12 +4769,21 @@ impl<'a> NativeLoweredEmitter<'a> {
                 let emit_key = |body: &mut Vec<WasmInstr>, entry_off: u32, key_val: i32| {
                     // I32Store pops: value=key_val(top), addr=base_ptr → memory[base_ptr+entry_off]=key_val
                     body.push(WasmInstr::I32Const(stash_addr as i32));
-                    body.push(WasmInstr::I32Load { align: 2, offset: 0 });
+                    body.push(WasmInstr::I32Load {
+                        align: 2,
+                        offset: 0,
+                    });
                     body.push(WasmInstr::I32Const(key_val));
-                    body.push(WasmInstr::I32Store { align: 2, offset: entry_off });
+                    body.push(WasmInstr::I32Store {
+                        align: 2,
+                        offset: entry_off,
+                    });
                     // Load base again for value write
                     body.push(WasmInstr::I32Const(stash_addr as i32));
-                    body.push(WasmInstr::I32Load { align: 2, offset: 0 });
+                    body.push(WasmInstr::I32Load {
+                        align: 2,
+                        offset: 0,
+                    });
                 };
 
                 // name (compile-time constant)
@@ -4722,7 +4794,10 @@ impl<'a> NativeLoweredEmitter<'a> {
                 out.push(WasmInstr::I32Const(name_v));
                 // Stack: [base_ptr, name_v]
                 // I32Store: memory[base_ptr + entries_off + value_off] = name_v
-                out.push(WasmInstr::I32Store { align: 2, offset: (Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_VALUE_OFFSET) as u32 });
+                out.push(WasmInstr::I32Store {
+                    align: 2,
+                    offset: (Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_VALUE_OFFSET) as u32,
+                });
 
                 // message (runtime expression)
                 let msg_k = self.insert_dynamic_string_value("message");
@@ -4734,7 +4809,10 @@ impl<'a> NativeLoweredEmitter<'a> {
                 // I32Store: memory[base_ptr + e1_off + value_off] = msg_val ... IF the stack is [addr, value]
                 // But emit_expr pushed msg_val on TOP of base_ptr.
                 // I32Store pops value(top) first, then addr. So addr=base_ptr, value=msg_val. Correct!
-                out.push(WasmInstr::I32Store { align: 2, offset: (e1_off + Layout::OBJECT_VALUE_OFFSET) as u32 });
+                out.push(WasmInstr::I32Store {
+                    align: 2,
+                    offset: (e1_off + Layout::OBJECT_VALUE_OFFSET) as u32,
+                });
 
                 // errors (optional runtime expression)
                 let mut ei = 2u32;
@@ -4743,13 +4821,19 @@ impl<'a> NativeLoweredEmitter<'a> {
                     let e_off = Layout::OBJECT_ENTRIES_OFFSET + ei * Layout::OBJECT_ENTRY_SIZE;
                     emit_key(out, e_off as u32, err_k);
                     self.emit_expr(errs, ctx, out)?;
-                    out.push(WasmInstr::I32Store { align: 2, offset: (e_off + Layout::OBJECT_VALUE_OFFSET) as u32 });
+                    out.push(WasmInstr::I32Store {
+                        align: 2,
+                        offset: (e_off + Layout::OBJECT_VALUE_OFFSET) as u32,
+                    });
                     ei += 1;
                 }
 
                 // Return tagged object
                 out.push(WasmInstr::I32Const(stash_addr as i32));
-                out.push(WasmInstr::I32Load { align: 2, offset: 0 });
+                out.push(WasmInstr::I32Load {
+                    align: 2,
+                    offset: 0,
+                });
                 out.push(WasmInstr::I32Const(ValueTag::OBJECT));
                 out.push(WasmInstr::I32Or);
                 Ok(())
@@ -22242,6 +22326,29 @@ fn static_value_from_expr_with_functions(
             Some(StaticValue::Primitive(LoweredExpr::Bool(is_array, *span)))
         }
         LoweredExpr::RuntimeCall {
+            intrinsic: RuntimeFn::ErrorToString,
+            args,
+            span,
+            ..
+        } if args.len() == 1 => {
+            let obj = static_value_from_expr_with_functions(&args[0], locals, functions)?;
+            let name = static_object_string_property(&obj, "name", locals, functions);
+            let message = static_object_string_property(&obj, "message", locals, functions);
+            let name = name.as_deref().unwrap_or("Error");
+            let message = message.as_deref().unwrap_or("");
+            if message.is_empty() {
+                Some(StaticValue::Primitive(LoweredExpr::String(
+                    name.to_owned(),
+                    *span,
+                )))
+            } else {
+                Some(StaticValue::Primitive(LoweredExpr::String(
+                    format!("{}: {}", name, message),
+                    *span,
+                )))
+            }
+        }
+        LoweredExpr::RuntimeCall {
             intrinsic: RuntimeFn::ObjectHasOwnProperty | RuntimeFn::ObjectHasOwn,
             args,
             span,
@@ -33831,6 +33938,26 @@ fn static_object_property_descriptor_owned_from_expr(
 
 /// Returns the property descriptor for a NativeError constructor sentinel
 /// (e.g., Error, AggregateError) when accessed via Object.getOwnPropertyDescriptor.
+/// Extract a string property from a StaticValue::Object.
+fn static_object_string_property<'a>(
+    value: &'a StaticValue,
+    key: &str,
+    _locals: &HashMap<LocalId, StaticValue>,
+    _functions: &[LoweredFunction],
+) -> Option<String> {
+    match value {
+        StaticValue::Primitive(LoweredExpr::String(s, _)) if key == "__self__" => Some(s.clone()),
+        StaticValue::Object(object) => {
+            let (expr, _) = object.descriptor(key)?;
+            match expr {
+                LoweredExpr::String(s, _) => Some(s.clone()),
+                _ => None,
+            }
+        }
+        _ => None,
+    }
+}
+
 fn static_native_error_descriptor(
     value: i32,
     span: Span,

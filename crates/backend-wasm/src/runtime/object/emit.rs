@@ -1045,17 +1045,71 @@ impl WatEmitter<'_> {
         ));
     }
 
-    pub(crate) fn emit_global_this(&self, wat: &mut String) {
+    pub(crate) fn emit_global_this(&mut self, wat: &mut String) {
+        let global_sym = RuntimeGlobal::GlobalThisObject.symbol();
+        let heap_mask = ValueTag::HEAP_MASK;
+        let obj_header = Layout::OBJECT_HEADER_SIZE;
+        let entry_size = Layout::OBJECT_ENTRY_SIZE;
+        let value_off = Layout::OBJECT_VALUE_OFFSET;
+
+        // Build the entry-insertion block for NativeError constructors.
+        // Ensure the key strings are interned before lookup.
+        self.intern_string("Error");
+        self.intern_string("AggregateError");
+        let mut entries = String::new();
+        let error_key = self.string_value("Error") as i32;
+        let ae_key = self.string_value("AggregateError") as i32;
+        if !error_key.is_negative() || !ae_key.is_negative() {
+            // Dummy check: the block is always emitted when either is present.
+        }
+        entries.push_str(&format!(
+            r#"
+    (local.set $base (i32.and (global.get {global}) (i32.const {heap_mask})))
+    (local.set $count (i32.load (local.get $base)))
+    (local.set $entry_base
+      (i32.add
+        (i32.add (local.get $base) (i32.const {obj_header}))
+        (i32.mul (local.get $count) (i32.const {entry_size}))))
+    (i32.store (local.get $entry_base) (i32.const {error_key}))
+    (i32.store
+      (i32.add (local.get $entry_base) (i32.const {value_off}))
+      (i32.const {error_value}))
+    (local.set $count (i32.add (local.get $count) (i32.const 1)))
+    (local.set $entry_base
+      (i32.add
+        (i32.add (local.get $base) (i32.const {obj_header}))
+        (i32.mul (local.get $count) (i32.const {entry_size}))))
+    (i32.store (local.get $entry_base) (i32.const {ae_key}))
+    (i32.store
+      (i32.add (local.get $entry_base) (i32.const {value_off}))
+      (i32.const {ae_value}))
+    (local.set $count (i32.add (local.get $count) (i32.const 1)))
+    (i32.store (local.get $base) (local.get $count))"#,
+            global = global_sym,
+            heap_mask = heap_mask,
+            obj_header = obj_header,
+            entry_size = entry_size,
+            value_off = value_off,
+            error_key = error_key,
+            error_value = ValueTag::ERROR_VALUE,
+            ae_key = ae_key,
+            ae_value = ValueTag::AGGREGATE_ERROR_VALUE,
+        ));
+
         wat.push_str(&format!(
             r#"
   (func $global_this (result i32)
-    (if (i32.eqz (global.get {global_this}))
+    (local $base i32)
+    (local $count i32)
+    (local $entry_base i32)
+    (if (i32.eqz (global.get {global}))
       (then
-        (global.set {global_this} (call $object_create (i32.const {null})))))
-    (global.get {global_this}))
+        (global.set {global} (call $object_create (i32.const {null}))){entries}))
+    (global.get {global}))
 "#,
-            global_this = RuntimeGlobal::GlobalThisObject.symbol(),
+            global = global_sym,
             null = ValueTag::NULL,
+            entries = entries,
         ));
     }
 

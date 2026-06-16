@@ -22,9 +22,9 @@ use ts2wasm_runtime_abi::{consts::RuntimeConst, layout::Layout, value::ValueTag}
 use crate::native_runtime_embed::{
     AggregateErrorData, ArrayIteratorNextData, ArrayIteratorStateData,
     BigIntMixedArithmeticErrorData, BooleanToStringValues, ErrorToStringData, GeneratorReturnData,
-    GeneratorYieldData, ObjectToStringValues, PromiseAllSettledData, PromiseAnyData,
-    PromiseWithResolversData, PropertyGetData, RuntimeCatchableErrorData, RuntimeStringRef,
-    StringMatchAllData, TypeOfStringValues, ValueToStringRefs,
+    GeneratorYieldData, NativeErrorPropertyData, ObjectToStringValues, PromiseAllSettledData,
+    PromiseAnyData, PromiseWithResolversData, PropertyGetData, RuntimeCatchableErrorData,
+    RuntimeStringRef, StringMatchAllData, TypeOfStringValues, ValueToStringRefs,
 };
 
 // ---------------------------------------------------------------------------
@@ -27380,25 +27380,98 @@ pub fn build_object_prototype() -> WasmFunction {
 
 /// Build the `$global_this` function.
 ///
+/// Populates the global object with NativeError constructor properties
+/// (AggregateError, Error, etc.) at initialization time so that property
+/// lookups against the global scope find them.
 /// Remaining raw escape hatches: none.
-pub fn build_global_this() -> WasmFunction {
+pub fn build_global_this(native_errors: &[NativeErrorPropertyData]) -> WasmFunction {
     let global = "$global_this_object";
+    let obj_header = Layout::OBJECT_HEADER_SIZE as i32;
+    let entry_size = Layout::OBJECT_ENTRY_SIZE as i32;
+    let value_off = Layout::OBJECT_VALUE_OFFSET as u32;
+    let heap_mask = ValueTag::HEAP_MASK;
 
-    WasmFunction::new("$global_this")
-        .result(WasmValType::I32)
-        .body(vec![
-            WasmInstr::GlobalGet(global.to_owned()),
-            WasmInstr::I32Eqz,
-            WasmInstr::If {
-                result_ty: WasmBlockType::Empty,
-            },
-            WasmInstr::Then,
-            WasmInstr::I32Const(ValueTag::NULL),
-            WasmInstr::Call("$object_create".to_owned()),
-            WasmInstr::GlobalSet(global.to_owned()),
-            WasmInstr::End,
-            WasmInstr::GlobalGet(global.to_owned()),
-        ])
+    let mut body = vec![
+        WasmInstr::GlobalGet(global.to_owned()),
+        WasmInstr::I32Eqz,
+        WasmInstr::If {
+            result_ty: WasmBlockType::Empty,
+        },
+        WasmInstr::Then,
+        WasmInstr::I32Const(ValueTag::NULL),
+        WasmInstr::Call("$object_create".to_owned()),
+        WasmInstr::GlobalSet(global.to_owned()),
+    ];
+
+    if !native_errors.is_empty() {
+        // Extract heap pointer from the tagged global object.
+        body.push(WasmInstr::GlobalGet(global.to_owned()));
+        body.push(WasmInstr::I32Const(heap_mask));
+        body.push(WasmInstr::I32And);
+        body.push(WasmInstr::LocalSet(1)); // local 1 = base ptr
+
+        // Load the current entry count from the object header.
+        body.push(WasmInstr::LocalGet(1));
+        body.push(WasmInstr::I32Load {
+            align: 2,
+            offset: 0,
+        });
+        body.push(WasmInstr::LocalSet(2)); // local 2 = count
+
+        for native_error in native_errors {
+            // entry_base = base + obj_header + count * entry_size
+            body.push(WasmInstr::LocalGet(1));
+            body.push(WasmInstr::I32Const(obj_header));
+            body.push(WasmInstr::I32Add);
+            body.push(WasmInstr::LocalGet(2));
+            body.push(WasmInstr::I32Const(entry_size));
+            body.push(WasmInstr::I32Mul);
+            body.push(WasmInstr::I32Add);
+            body.push(WasmInstr::LocalSet(3)); // local 3 = entry_base
+
+            // Store key (tagged string value) at entry_base.
+            body.push(WasmInstr::LocalGet(3));
+            body.push(WasmInstr::I32Const(native_error.name_value));
+            body.push(WasmInstr::I32Store {
+                align: 2,
+                offset: 0,
+            });
+
+            // Store value (NUMBER-tagged sentinel) at entry_base + value_off.
+            body.push(WasmInstr::LocalGet(3));
+            body.push(WasmInstr::I32Const(native_error.sentinel_value));
+            body.push(WasmInstr::I32Store {
+                align: 2,
+                offset: value_off,
+            });
+
+            // Increment count.
+            body.push(WasmInstr::LocalGet(2));
+            body.push(WasmInstr::I32Const(1));
+            body.push(WasmInstr::I32Add);
+            body.push(WasmInstr::LocalSet(2));
+        }
+
+        // Persist the updated entry count.
+        body.push(WasmInstr::LocalGet(1));
+        body.push(WasmInstr::LocalGet(2));
+        body.push(WasmInstr::I32Store {
+            align: 2,
+            offset: 0,
+        });
+    }
+
+    body.push(WasmInstr::End);
+    body.push(WasmInstr::GlobalGet(global.to_owned()));
+
+    let mut func = WasmFunction::new("$global_this").result(WasmValType::I32);
+    if !native_errors.is_empty() {
+        func = func
+            .local(WasmValType::I32) // local 1: base
+            .local(WasmValType::I32) // local 2: count
+            .local(WasmValType::I32); // local 3: entry_base
+    }
+    func.body(body)
 }
 
 /// Build the `$object_create` function.
@@ -33478,8 +33551,111 @@ pub fn build_property_get(data: PropertyGetData) -> WasmFunction {
         WasmInstr::I32Const(ValueTag::UNDEFINED),
         WasmInstr::Return,
         WasmInstr::End,
-        WasmInstr::End,
     ]);
+
+    // NativeError constructor sentinel handling (Error, AggregateError, etc.)
+    // Return "name", "length", or "prototype" values directly.
+    if !data.native_errors.is_empty() {
+        body.push(WasmInstr::LocalGet(17)); // payload
+        body.push(WasmInstr::I32Const(ValueTag::NATIVE_ERROR_PAYLOAD_BASE));
+        body.push(WasmInstr::I32GeU);
+        body.push(WasmInstr::LocalGet(17)); // payload
+        body.push(WasmInstr::I32Const(direct_local_token_payload_base));
+        body.push(WasmInstr::I32LtU);
+        body.push(WasmInstr::I32And);
+        body.push(WasmInstr::If {
+            result_ty: WasmBlockType::Empty,
+        });
+        body.push(WasmInstr::Then);
+
+        for native_error in &data.native_errors {
+            body.push(WasmInstr::LocalGet(17)); // payload
+            body.push(WasmInstr::I32Const(native_error.payload));
+            body.push(WasmInstr::I32Eq);
+            body.push(WasmInstr::If {
+                result_ty: WasmBlockType::Empty,
+            });
+            body.push(WasmInstr::Then);
+
+            // Check "name" key (length 4)
+            body.push(WasmInstr::LocalGet(2)); // key_len
+            body.push(WasmInstr::I32Const(data.name_key.len));
+            body.push(WasmInstr::I32Eq);
+            body.push(WasmInstr::LocalGet(1)); // key_ptr
+            body.push(WasmInstr::I32Const(data.name_key.ptr));
+            body.push(WasmInstr::LocalGet(2)); // key_len
+            body.push(WasmInstr::Call("$mem_equal".to_owned()));
+            body.push(WasmInstr::I32And);
+            body.push(WasmInstr::If {
+                result_ty: WasmBlockType::Empty,
+            });
+            body.push(WasmInstr::Then);
+            body.push(WasmInstr::I32Const(native_error.name_value));
+            body.push(WasmInstr::Return);
+            body.push(WasmInstr::End);
+
+            // Check "length" key (length 6)
+            body.push(WasmInstr::LocalGet(2)); // key_len
+            body.push(WasmInstr::I32Const(data.length_key.len));
+            body.push(WasmInstr::I32Eq);
+            body.push(WasmInstr::LocalGet(1)); // key_ptr
+            body.push(WasmInstr::I32Const(data.length_key.ptr));
+            body.push(WasmInstr::LocalGet(2)); // key_len
+            body.push(WasmInstr::Call("$mem_equal".to_owned()));
+            body.push(WasmInstr::I32And);
+            body.push(WasmInstr::If {
+                result_ty: WasmBlockType::Empty,
+            });
+            body.push(WasmInstr::Then);
+            body.push(WasmInstr::I32Const(native_error.length_value));
+            body.push(WasmInstr::Return);
+            body.push(WasmInstr::End);
+
+            // Check "prototype" key (length 9):
+            // Store "prototype" bytes in scratch space for comparison.
+            body.push(WasmInstr::I32Const((Layout::SCRATCH_OFFSET + 64) as i32));
+            let proto_scratch = (Layout::SCRATCH_OFFSET + 64) as i32;
+            for (i, &byte) in b"prototype".iter().enumerate() {
+                body.push(WasmInstr::I32Const(proto_scratch + i as i32));
+                body.push(WasmInstr::I32Const(byte as i32));
+                body.push(WasmInstr::I32Store8 {
+                    align: 0,
+                    offset: 0,
+                });
+            }
+            body.push(WasmInstr::LocalGet(2)); // key_len
+            body.push(WasmInstr::I32Const(9));
+            body.push(WasmInstr::I32Eq);
+            body.push(WasmInstr::I32Const(proto_scratch));
+            body.push(WasmInstr::LocalGet(1)); // key_ptr
+            body.push(WasmInstr::LocalGet(2)); // key_len
+            body.push(WasmInstr::Call("$mem_equal".to_owned()));
+            body.push(WasmInstr::I32And);
+            body.push(WasmInstr::If {
+                result_ty: WasmBlockType::Empty,
+            });
+            body.push(WasmInstr::Then);
+            body.push(WasmInstr::GlobalGet(
+                native_error.prototype_global.to_string(),
+            ));
+            body.push(WasmInstr::I32Const(ValueTag::OBJECT));
+            body.push(WasmInstr::I32Or);
+            body.push(WasmInstr::Return);
+            body.push(WasmInstr::End);
+
+            // Matched this native error but not a known property key.
+            body.push(WasmInstr::I32Const(ValueTag::UNDEFINED));
+            body.push(WasmInstr::Return);
+            body.push(WasmInstr::End);
+        }
+
+        // In native error range but no specific error matched.
+        body.push(WasmInstr::I32Const(ValueTag::UNDEFINED));
+        body.push(WasmInstr::Return);
+        body.push(WasmInstr::End);
+    }
+
+    body.push(WasmInstr::End);
 
     WasmFunction::new("$property_get")
         .param(WasmValType::I32) // local 0: object
@@ -46343,7 +46519,7 @@ mod tests {
             |instr| matches!(instr, WasmInstr::GlobalSet(symbol) if symbol == "$object_prototype_object")
         ));
 
-        let global_this = build_global_this();
+        let global_this = build_global_this(&[]);
         let global_module = WasmModule::new()
             .memory(WasmMemory::new(1, 1))
             .global(WasmGlobal::i32_mut("$global_this_object", 0))

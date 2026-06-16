@@ -289,10 +289,107 @@ impl WatEmitter<'_> {
     }
 
     pub(crate) fn emit_property_get(&self, wat: &mut String) {
+        use ts2wasm_ir::lowered::BuiltinErrorConstructor;
+
         let direct_function_name_gets = self.direct_function_property_get_branches("name");
         let direct_function_length_gets = self.direct_function_property_get_branches("length");
         let name_key_ptr = self.string_offset("name") + Layout::STRING_HEADER_SIZE;
         let length_key_ptr = self.string_offset("length") + Layout::STRING_HEADER_SIZE;
+        let error_protos = self.builtin_error_prototypes();
+
+        // Build native-error property branches only for error prototypes that exist.
+        let mut native_error_branches = String::new();
+        if !error_protos.is_empty() {
+            let scratch = Layout::SCRATCH_OFFSET as i32 + 64;
+            let native_error_payload_base = ValueTag::NATIVE_ERROR_PAYLOAD_BASE;
+            let dlt_payload_base = ValueTag::DIRECT_LOCAL_TOKEN_PAYLOAD_BASE;
+            let object_tag = ValueTag::OBJECT;
+            let error_name_value = self.string_value("Error") as i32;
+            let ae_name_value = self.string_value("AggregateError") as i32;
+            let error_length = ValueTag::encode_number(1);
+            let ae_length = ValueTag::encode_number(2);
+
+            // Store "prototype" (9 bytes) at scratch offset for comparison.
+            let mut store_proto = String::new();
+            for (i, &byte) in b"prototype".iter().enumerate() {
+                store_proto.push_str(&format!(
+                    "    (i32.store8 (i32.const {addr}) (i32.const {byte}))\n",
+                    addr = scratch + i as i32,
+                ));
+            }
+
+            native_error_branches.push_str(&format!(
+                r#"
+        ;; NativeError constructor sentinel handling (Error, AggregateError, etc.)
+        (if (i32.and
+              (i32.ge_u (local.get $payload) (i32.const {native_error_payload_base}))
+              (i32.lt_u (local.get $payload) (i32.const {dlt_payload_base})))
+          (then"#,
+            ));
+
+            if error_protos.contains(&BuiltinErrorConstructor::Error) {
+                native_error_branches.push_str(&format!(
+                    r#"
+            (if (i32.eq (local.get $payload) (i32.const {error_payload}))
+              (then
+                (if (i32.and (i32.eq (local.get $key_len) (i32.const 4))
+                      (call $mem_equal (local.get $key_ptr) (i32.const {name_key_ptr}) (local.get $key_len)))
+                  (then (return (i32.const {error_name_value}))))
+                (if (i32.and (i32.eq (local.get $key_len) (i32.const 6))
+                      (call $mem_equal (local.get $key_ptr) (i32.const {length_key_ptr}) (local.get $key_len)))
+                  (then (return (i32.const {error_length}))))
+                {store_proto}
+                (if (i32.and (i32.eq (local.get $key_len) (i32.const 9))
+                      (call $mem_equal (local.get $key_ptr) (i32.const {scratch}) (i32.const 9)))
+                  (then (return (i32.or (global.get $error_proto_error) (i32.const {object_tag})))))
+                (return (i32.const {undef}))))"#,
+                    error_payload = ValueTag::ERROR_PAYLOAD,
+                    name_key_ptr = name_key_ptr,
+                    length_key_ptr = length_key_ptr,
+                    error_name_value = error_name_value,
+                    error_length = error_length,
+                    store_proto = store_proto,
+                    scratch = scratch,
+                    object_tag = object_tag,
+                    undef = ValueTag::UNDEFINED,
+                ));
+            }
+
+            if error_protos.contains(&BuiltinErrorConstructor::AggregateError) {
+                native_error_branches.push_str(&format!(
+                    r#"
+            (if (i32.eq (local.get $payload) (i32.const {ae_payload}))
+              (then
+                (if (i32.and (i32.eq (local.get $key_len) (i32.const 4))
+                      (call $mem_equal (local.get $key_ptr) (i32.const {name_key_ptr}) (local.get $key_len)))
+                  (then (return (i32.const {ae_name_value}))))
+                (if (i32.and (i32.eq (local.get $key_len) (i32.const 6))
+                      (call $mem_equal (local.get $key_ptr) (i32.const {length_key_ptr}) (local.get $key_len)))
+                  (then (return (i32.const {ae_length}))))
+                {store_proto}
+                (if (i32.and (i32.eq (local.get $key_len) (i32.const 9))
+                      (call $mem_equal (local.get $key_ptr) (i32.const {scratch}) (i32.const 9)))
+                  (then (return (i32.or (global.get $error_proto_aggregate_error) (i32.const {object_tag})))))
+                (return (i32.const {undef}))))"#,
+                    ae_payload = ValueTag::AGGREGATE_ERROR_PAYLOAD,
+                    name_key_ptr = name_key_ptr,
+                    length_key_ptr = length_key_ptr,
+                    ae_name_value = ae_name_value,
+                    ae_length = ae_length,
+                    store_proto = store_proto,
+                    scratch = scratch,
+                    object_tag = object_tag,
+                    undef = ValueTag::UNDEFINED,
+                ));
+            }
+
+            native_error_branches.push_str(&format!(
+                r#"
+            (return (i32.const {undef}))))"#,
+                undef = ValueTag::UNDEFINED,
+            ));
+        }
+
         wat.push_str(&format!(
             r#"
   (func $property_get (param $obj i32) (param $key_ptr i32) (param $key_len i32) (result i32)
@@ -332,6 +429,7 @@ impl WatEmitter<'_> {
 {direct_function_length_gets}
               ))
             (return (i32.const {undefined}))))))
+{native_error_branches}
     ;; ARRAY tag: parse key as numeric index and read from array
     (if (i32.eq (local.get $tag) (i32.const {array_tag}))
       (then
@@ -460,6 +558,7 @@ impl WatEmitter<'_> {
             zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
             undefined = ValueTag::UNDEFINED,
+            native_error_branches = native_error_branches,
         ));
     }
 

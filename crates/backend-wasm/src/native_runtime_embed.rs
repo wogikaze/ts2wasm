@@ -365,6 +365,8 @@ pub(crate) struct PropertyGetData {
 pub(crate) struct NativeErrorPropertyData {
     /// The NATIVE_ERROR_PAYLOAD sentinel value for this error constructor.
     pub(crate) payload: i32,
+    /// Tagged value for the error constructor's identity sentinel (NUMBER-tagged).
+    pub(crate) sentinel_value: i32,
     /// Tagged value for the error constructor's `.name` string (e.g., "AggregateError").
     pub(crate) name_value: i32,
     /// Encoded number for the error constructor's `.length` (e.g., 2 for AggregateError).
@@ -1689,7 +1691,9 @@ fn build_native_runtime_function(
         RuntimeFn::ObjectIsSealed => Some(typed::build_object_is_sealed()),
         RuntimeFn::ObjectIsFrozen => Some(typed::build_object_is_frozen()),
         RuntimeFn::ObjectPrototype => Some(typed::build_object_prototype()),
-        RuntimeFn::GlobalThis => Some(typed::build_global_this()),
+        RuntimeFn::GlobalThis => Some(typed::build_global_this(
+            data.property_get.native_errors.as_slice(),
+        )),
         RuntimeFn::ObjectCreate => Some(typed::build_object_create()),
         RuntimeFn::ObjectToObject => Some(typed::build_object_to_object()),
         RuntimeFn::ObjectIs => Some(typed::build_object_is()),
