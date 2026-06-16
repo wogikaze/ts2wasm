@@ -4553,8 +4553,12 @@ impl<'a> NativeLoweredEmitter<'a> {
                 out.push(WasmInstr::I32Const(STATIC_REF_TOKEN));
                 Ok(())
             }
-            LoweredExpr::BuiltinErrorPrototype(_, _) => {
-                out.push(WasmInstr::I32Const(STATIC_REF_TOKEN));
+            LoweredExpr::BuiltinErrorPrototype(constructor, _) => {
+                out.push(WasmInstr::GlobalGet(
+                    crate::emitter::builtin_error_prototype_global(*constructor).to_owned(),
+                ));
+                out.push(WasmInstr::I32Const(ValueTag::OBJECT));
+                out.push(WasmInstr::I32Or);
                 Ok(())
             }
             LoweredExpr::ClassPrototype(_, _) => {
