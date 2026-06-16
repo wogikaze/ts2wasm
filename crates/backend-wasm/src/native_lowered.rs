@@ -4668,8 +4668,73 @@ impl<'a> NativeLoweredEmitter<'a> {
                 out.push(WasmInstr::Call(RuntimeFn::ArrayGet.symbol().to_owned()));
                 Ok(())
             }
-            LoweredExpr::ErrorNew { .. } => {
-                out.push(WasmInstr::I32Const(STATIC_REF_TOKEN));
+            LoweredExpr::ErrorNew { constructor, message, cause: _, errors, .. } => {
+                // Use scratch[248..251] as temp storage for error object base pointer.
+                let stash_addr = (Layout::SCRATCH_OFFSET + 248) as u32;
+
+                let prop_capacity = 12u32;
+                let size = (Layout::OBJECT_HEADER_SIZE + prop_capacity * Layout::OBJECT_ENTRY_SIZE) as i32;
+
+                // Allocate error object, stash base pointer in scratch.
+                out.push(WasmInstr::I32Const(size));
+                out.push(WasmInstr::Call(RuntimeFn::AllocHeap.symbol().to_owned()));
+                out.push(WasmInstr::LocalSet(ctx.switch_value_local));
+                out.push(WasmInstr::LocalGet(ctx.switch_value_local));
+                out.push(WasmInstr::I32Store { align: 2, offset: stash_addr });
+
+                // count = prop_count (actual number of properties we store below)
+                let prop_count = 2u32 + if errors.is_some() { 1u32 } else { 0u32 };
+                out.push(WasmInstr::LocalGet(ctx.switch_value_local));
+                out.push(WasmInstr::I32Const(prop_count as i32));
+                out.push(WasmInstr::I32Store { align: 2, offset: 0 });
+                // flags=0
+                out.push(WasmInstr::LocalGet(ctx.switch_value_local));
+                out.push(WasmInstr::I32Const(0));
+                out.push(WasmInstr::I32Store { align: 2, offset: Layout::OBJECT_FLAGS_OFFSET as u32 });
+                // prototype
+                out.push(WasmInstr::LocalGet(ctx.switch_value_local));
+                out.push(WasmInstr::GlobalGet(format!("${}", crate::emitter::builtin_error_prototype_global(*constructor))));
+                out.push(WasmInstr::I32Store { align: 2, offset: Layout::OBJECT_PROTOTYPE_OFFSET as u32 });
+
+                // Helper: write a property entry via direct memory store.
+                // Loads base from scratch[stash_addr], writes key at entry_offset,
+                // then loads base again and writes value at entry_offset+4.
+                let emit_entry = |body: &mut Vec<WasmInstr>, entry_off: u32, key_val: i32| {
+                    body.push(WasmInstr::I32Load { align: 2, offset: stash_addr });
+                    body.push(WasmInstr::I32Const(key_val));
+                    body.push(WasmInstr::I32Store { align: 2, offset: entry_off });
+                    body.push(WasmInstr::I32Load { align: 2, offset: stash_addr });
+                };
+
+                // name (compile-time constant)
+                let name_k = self.insert_dynamic_string_value("name");
+                let name_v = self.insert_dynamic_string_value(constructor.name());
+                emit_entry(out, Layout::OBJECT_ENTRIES_OFFSET as u32, name_k);
+                out.push(WasmInstr::I32Const(name_v));
+                out.push(WasmInstr::I32Store { align: 2, offset: (Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_VALUE_OFFSET) as u32 });
+
+                // message (runtime expression)
+                let msg_k = self.insert_dynamic_string_value("message");
+                let e1_off = Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_ENTRY_SIZE;
+                emit_entry(out, e1_off as u32, msg_k);
+                self.emit_expr(message, ctx, out)?;
+                out.push(WasmInstr::I32Store { align: 2, offset: (e1_off + Layout::OBJECT_VALUE_OFFSET) as u32 });
+
+                // errors (optional runtime expression)
+                let mut ei = 2u32;
+                if let Some(errs) = errors {
+                    let err_k = self.insert_dynamic_string_value("errors");
+                    let e_off = Layout::OBJECT_ENTRIES_OFFSET + ei * Layout::OBJECT_ENTRY_SIZE;
+                    emit_entry(out, e_off as u32, err_k);
+                    self.emit_expr(errs, ctx, out)?;
+                    out.push(WasmInstr::I32Store { align: 2, offset: (e_off + Layout::OBJECT_VALUE_OFFSET) as u32 });
+                    ei += 1;
+                }
+
+                // Return tagged object
+                out.push(WasmInstr::I32Load { align: 2, offset: stash_addr });
+                out.push(WasmInstr::I32Const(ValueTag::OBJECT));
+                out.push(WasmInstr::I32Or);
                 Ok(())
             }
             LoweredExpr::BuiltinErrorPrototype(constructor, _) => {
