@@ -2499,6 +2499,25 @@ pub(crate) fn is_array_prototype_push_expr(expr: &ResolvedExpr) -> bool {
     is_array_prototype_push_property(object, key)
 }
 
+pub(crate) fn is_error_prototype_to_string_call(expr: &ResolvedExpr) -> bool {
+    let ResolvedExpr::PropertyAccess { object, key, .. } = expr else {
+        return false;
+    };
+    if key != "toString" {
+        return false;
+    }
+    let ResolvedExpr::PropertyAccess {
+        object: proto_obj,
+        key: proto_key,
+        ..
+    } = object.as_ref()
+    else {
+        return false;
+    };
+    proto_key == "prototype"
+        && matches!(proto_obj.as_ref(), ResolvedExpr::Ident(name) if name == "Error")
+}
+
 pub(crate) fn matches_array_prototype_object(expr: &ResolvedExpr) -> bool {
     let ResolvedExpr::PropertyAccess { object, key, .. } = expr else {
         return false;

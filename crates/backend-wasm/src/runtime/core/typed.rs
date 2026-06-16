@@ -34642,6 +34642,108 @@ pub fn build_property_delete() -> WasmFunction {
             result_ty: WasmBlockType::Empty,
         },
         WasmInstr::Then,
+        // NATIVE_ERROR_PAYLOAD sentinel handling
+        WasmInstr::LocalGet(3),
+        WasmInstr::I32Const(ValueTag::NUMBER),
+        WasmInstr::I32Eq,
+        WasmInstr::If {
+            result_ty: WasmBlockType::Empty,
+        },
+        WasmInstr::Then,
+        WasmInstr::LocalGet(0),
+        WasmInstr::I32Const(ValueTag::NUMBER_SHIFT),
+        WasmInstr::I32ShrU,
+        WasmInstr::LocalSet(14),
+        WasmInstr::LocalGet(14),
+        WasmInstr::I32Const(ValueTag::NATIVE_ERROR_PAYLOAD_BASE),
+        WasmInstr::I32GeU,
+        WasmInstr::LocalGet(14),
+        WasmInstr::I32Const(ValueTag::DIRECT_LOCAL_TOKEN_PAYLOAD_BASE),
+        WasmInstr::I32LtU,
+        WasmInstr::I32And,
+        WasmInstr::If {
+            result_ty: WasmBlockType::Empty,
+        },
+        WasmInstr::Then,
+        WasmInstr::I32Const(Layout::SCRATCH_OFFSET as i32),
+        WasmInstr::I32Const(64),
+        WasmInstr::I32Add,
+        WasmInstr::LocalSet(15),
+        // Symbol key (key_len == -1) — no symbol properties, return TRUE
+        WasmInstr::LocalGet(2),
+        WasmInstr::I32Const(-1),
+        WasmInstr::I32Eq,
+        WasmInstr::If {
+            result_ty: WasmBlockType::Empty,
+        },
+        WasmInstr::Then,
+        WasmInstr::I32Const(ValueTag::TRUE),
+        WasmInstr::Return,
+        WasmInstr::End,
+    ];
+    // "prototype" (len 9) — non-configurable, return FALSE
+    push_store_ascii_bytes(&mut body, 15, b"prototype");
+    body.extend([
+        WasmInstr::LocalGet(2),
+        WasmInstr::I32Const(9),
+        WasmInstr::I32Eq,
+        WasmInstr::I32Const(Layout::SCRATCH_OFFSET as i32),
+        WasmInstr::LocalGet(15),
+        WasmInstr::LocalGet(2),
+        WasmInstr::Call("$mem_equal".to_owned()),
+        WasmInstr::I32And,
+        WasmInstr::If {
+            result_ty: WasmBlockType::Empty,
+        },
+        WasmInstr::Then,
+        WasmInstr::I32Const(ValueTag::FALSE),
+        WasmInstr::Return,
+        WasmInstr::End,
+    ]);
+    // "length" (len 6) — configurable, return TRUE
+    push_store_ascii_bytes(&mut body, 15, b"length");
+    body.extend([
+        WasmInstr::LocalGet(2),
+        WasmInstr::I32Const(6),
+        WasmInstr::I32Eq,
+        WasmInstr::I32Const(Layout::SCRATCH_OFFSET as i32),
+        WasmInstr::LocalGet(15),
+        WasmInstr::I32Const(6),
+        WasmInstr::Call("$mem_equal".to_owned()),
+        WasmInstr::I32And,
+        WasmInstr::If {
+            result_ty: WasmBlockType::Empty,
+        },
+        WasmInstr::Then,
+        WasmInstr::I32Const(ValueTag::TRUE),
+        WasmInstr::Return,
+        WasmInstr::End,
+    ]);
+    // "name" (len 4) — configurable, return TRUE
+    push_store_ascii_bytes(&mut body, 15, b"name");
+    body.extend([
+        WasmInstr::LocalGet(2),
+        WasmInstr::I32Const(4),
+        WasmInstr::I32Eq,
+        WasmInstr::I32Const(Layout::SCRATCH_OFFSET as i32),
+        WasmInstr::LocalGet(15),
+        WasmInstr::I32Const(4),
+        WasmInstr::Call("$mem_equal".to_owned()),
+        WasmInstr::I32And,
+        WasmInstr::If {
+            result_ty: WasmBlockType::Empty,
+        },
+        WasmInstr::Then,
+        WasmInstr::I32Const(ValueTag::TRUE),
+        WasmInstr::Return,
+        WasmInstr::End,
+    ]);
+    // Non-matching key on sentinel — return TRUE (no-op success)
+    body.extend([
+        WasmInstr::I32Const(ValueTag::TRUE),
+        WasmInstr::Return,
+        WasmInstr::End,
+        WasmInstr::End,
         WasmInstr::I32Const(ValueTag::FALSE),
         WasmInstr::Return,
         WasmInstr::End,
@@ -34711,7 +34813,7 @@ pub fn build_property_delete() -> WasmFunction {
             result_ty: WasmBlockType::Empty,
         },
         WasmInstr::Then,
-    ];
+    ]);
 
     push_non_configurable_property_delete_guard(
         &mut body,
@@ -34816,6 +34918,8 @@ pub fn build_property_delete() -> WasmFunction {
         .local(WasmValType::I32) // local 11: j
         .local(WasmValType::I32) // local 12: last_idx
         .local(WasmValType::I32) // local 13: flags
+        .local(WasmValType::I32) // local 14: payload
+        .local(WasmValType::I32) // local 15: prop_offset
         .body(body)
 }
 

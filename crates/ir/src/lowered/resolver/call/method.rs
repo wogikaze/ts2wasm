@@ -2,9 +2,10 @@ use super::super::super::program::is_error_class;
 use super::super::{
     bigint_runtime_fn_intrinsic, is_annex_b_date_method, is_array_callback_method,
     is_array_from_call_receiver, is_array_prototype_every_some_call_receiver,
-    is_array_prototype_map_call_receiver, is_array_prototype_push_expr, is_identity_arrow_callback,
-    is_set_prototype_property_expr, is_static_date_constructor_expr, is_string_split_result_expr,
-    is_typed_array_class, iterator_method_runtime_fn, numeric_ascending_sort_callback,
+    is_array_prototype_map_call_receiver, is_array_prototype_push_expr,
+    is_error_prototype_to_string_call, is_identity_arrow_callback, is_set_prototype_property_expr,
+    is_static_date_constructor_expr, is_string_split_result_expr, is_typed_array_class,
+    iterator_method_runtime_fn, numeric_ascending_sort_callback,
     private_storage_observable_access_diagnostic, string_constructor_arrow_callback,
     string_split_arrow_separator, unary_plus_arrow_callback,
     unsupported_annex_b_date_method_diagnostic, unsupported_array_map_diagnostic,
@@ -931,6 +932,21 @@ impl super::super::Resolver {
         if is_array_prototype_every_some_call_receiver(object, method) {
             return Some(self.lower_array_prototype_every_some_call(args, object, span))
                 .transpose();
+        }
+        if method == "call" && is_error_prototype_to_string_call(object) {
+            if args.is_empty() {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: "Error.prototype.toString.call expects a receiver argument".to_owned(),
+                    span: Some(span),
+                    phase: None,
+                });
+            }
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::ErrorToString,
+                args: vec![self.lower_expr(&args[0])?],
+                span: Span::generated("runtime_call"),
+            }));
         }
         if method == "call" && is_set_prototype_property_expr(object, "originalAdd") {
             return Some(self.lower_native_set_add_call(args, span)).transpose();
