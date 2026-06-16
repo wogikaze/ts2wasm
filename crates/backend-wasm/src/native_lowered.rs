@@ -3658,17 +3658,18 @@ impl<'a> NativeLoweredEmitter<'a> {
                 if key == "length" {
                     // For runtime arrays, always use the runtime GetLength so that
                     // prior length mutations (e.g. x.length = 2) are reflected.
+                    // Return the result as a tagged NUMBER so comparisons like
+                    // `.length === N` work correctly (N is a tagged literal).
                     let is_runtime_array = matches!(&**obj, LoweredExpr::Local(local, _)
                         if ctx.runtime_array_locals.contains(local));
                     if !is_runtime_array
                         && let Some(len) =
                             static_array_len_with_functions(ctx, obj, &self.program.functions)
                     {
-                        out.push(WasmInstr::I32Const(len as i32));
+                        out.push(WasmInstr::I32Const(ValueTag::encode_number(len as i32)));
                     } else {
                         self.emit_concat_arg_as_tagged(obj, ctx, out)?;
                         out.push(WasmInstr::Call(RuntimeFn::GetLength.symbol().to_owned()));
-                        out.push(WasmInstr::Call(RuntimeFn::NumberToI32.symbol().to_owned()));
                     }
                     return Ok(());
                 }
