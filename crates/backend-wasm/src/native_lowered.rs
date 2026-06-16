@@ -1334,6 +1334,119 @@ impl<'a> NativeLoweredEmitter<'a> {
         Ok(true)
     }
 
+    /// Emit lazy initializers for builtin error prototype globals.
+    /// Mirrors emit_builtin_error_prototype_initializers in class_prototypes.rs
+    /// but emits WasmInstr instead of WAT text.
+    fn emit_error_prototype_initializers(&mut self, body: &mut Vec<WasmInstr>) {
+        let plan = build_runtime_link_plan(self.program);
+        let required = plan.required_runtime_functions();
+        if !required.contains(&RuntimeFn::AggregateError)
+            && !required.contains(&RuntimeFn::ObjectGetOwnPropertyDescriptor)
+            && !required.contains(&RuntimeFn::ObjectGetPrototypeOf)
+        {
+            return;
+        }
+        // Need AllocHeap for the allocation itself.
+        if !required.contains(&RuntimeFn::AllocHeap) {
+            return;
+        }
+        // Expand to include parent chains of all referenced error prototypes.
+        let mut needed_prototypes: Vec<BuiltinErrorConstructor> = Vec::new();
+        for c in [
+            BuiltinErrorConstructor::Error,
+            BuiltinErrorConstructor::EvalError,
+            BuiltinErrorConstructor::RangeError,
+            BuiltinErrorConstructor::ReferenceError,
+            BuiltinErrorConstructor::SyntaxError,
+            BuiltinErrorConstructor::TypeError,
+            BuiltinErrorConstructor::URIError,
+            BuiltinErrorConstructor::AggregateError,
+        ] {
+            needed_prototypes.push(c);
+            // Also ensure parent chain is initialized (Error for all, etc.)
+            let mut parent = c.parent();
+            while let Some(p) = parent {
+                if !needed_prototypes.contains(&p) {
+                    needed_prototypes.push(p);
+                }
+                parent = p.parent();
+            }
+        }
+
+        for constructor in needed_prototypes {
+            let global_name = format!("${}", crate::emitter::builtin_error_prototype_global(constructor));
+            let entry_count = if constructor == BuiltinErrorConstructor::AggregateError { 2 } else { 1 };
+            let size = Layout::OBJECT_HEADER_SIZE + entry_count as u32 * Layout::OBJECT_ENTRY_SIZE;
+
+            // if (global == 0) { ... }
+            body.extend([
+                WasmInstr::GlobalGet(global_name.clone()),
+                WasmInstr::I32Eqz,
+                WasmInstr::If { result_ty: WasmBlockType::Empty },
+                WasmInstr::Then,
+                // ptr = AllocHeap(size)
+                WasmInstr::I32Const(size as i32),
+                WasmInstr::Call(RuntimeFn::AllocHeap.symbol().to_owned()),
+                WasmInstr::GlobalSet(global_name.clone()),
+                // store count
+                WasmInstr::GlobalGet(global_name.clone()),
+                WasmInstr::I32Const(entry_count),
+                WasmInstr::I32Store { align: 2, offset: 0 },
+                // store flags = 0
+                WasmInstr::GlobalGet(global_name.clone()),
+                WasmInstr::I32Const(0),
+                WasmInstr::I32Store { align: 2, offset: Layout::OBJECT_FLAGS_OFFSET as u32 },
+            ]);
+
+            // store parent prototype (tagged OBJECT value)
+            if let Some(parent) = constructor.parent() {
+                let parent_global = format!("${}", crate::emitter::builtin_error_prototype_global(parent));
+                body.extend([
+                    WasmInstr::GlobalGet(global_name.clone()),
+                    WasmInstr::GlobalGet(parent_global),
+                    WasmInstr::I32Const(ValueTag::OBJECT),
+                    WasmInstr::I32Or,
+                    WasmInstr::I32Store { align: 2, offset: Layout::OBJECT_PROTOTYPE_OFFSET as u32 },
+                ]);
+            } else {
+                body.extend([
+                    WasmInstr::GlobalGet(global_name.clone()),
+                    WasmInstr::I32Const(0),
+                    WasmInstr::I32Store { align: 2, offset: Layout::OBJECT_PROTOTYPE_OFFSET as u32 },
+                ]);
+            }
+
+            // name property
+            let name_key = self.insert_dynamic_string_value("name");
+            let name_value = self.insert_dynamic_string_value(constructor.name());
+            body.extend([
+                WasmInstr::GlobalGet(global_name.clone()),
+                WasmInstr::I32Const(name_key),
+                WasmInstr::I32Store { align: 2, offset: Layout::OBJECT_ENTRIES_OFFSET as u32 },
+                WasmInstr::GlobalGet(global_name.clone()),
+                WasmInstr::I32Const(name_value),
+                WasmInstr::I32Store { align: 2, offset: (Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_VALUE_OFFSET) as u32 },
+            ]);
+
+            // constructor property (AggregateError only)
+            if constructor == BuiltinErrorConstructor::AggregateError {
+                let constructor_key = self.insert_dynamic_string_value("constructor");
+                let constructor_value = ValueTag::AGGREGATE_ERROR_VALUE;
+                let constructor_entry_offset = Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_ENTRY_SIZE;
+                body.extend([
+                    WasmInstr::GlobalGet(global_name.clone()),
+                    WasmInstr::I32Const(constructor_key),
+                    WasmInstr::I32Store { align: 2, offset: constructor_entry_offset as u32 },
+                    WasmInstr::GlobalGet(global_name.clone()),
+                    WasmInstr::I32Const(constructor_value),
+                    WasmInstr::I32Store { align: 2, offset: (constructor_entry_offset + Layout::OBJECT_VALUE_OFFSET) as u32 },
+                ]);
+            }
+
+            body.push(WasmInstr::End); // end if/then
+        }
+    }
+
     fn emit_start(&mut self) -> Result<WasmFunction, Diagnostic> {
         let mut locals = HashMap::new();
         let mut wasm = WasmFunction::new(START_SYMBOL);
@@ -1389,6 +1502,7 @@ impl<'a> NativeLoweredEmitter<'a> {
             gc_root_count,
             gc_call_frame_roots,
         ));
+        self.emit_error_prototype_initializers(&mut body);
         for module_info in &self.program.modules {
             body.push(WasmInstr::Call(module_init_symbol(module_info.id)));
         }
