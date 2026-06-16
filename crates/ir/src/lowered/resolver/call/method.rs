@@ -2893,7 +2893,25 @@ impl super::super::Resolver {
                 ResolvedExpr::New { class_name, .. } => is_error_class(class_name),
                 _ => false,
             };
-        if is_class_dispatch_receiver || is_error_to_string {
+        if is_error_to_string {
+            if !args.is_empty() {
+                return Err(Diagnostic {
+                    code: DiagCode::ArityMismatch,
+                    message: format!(
+                        "Error.prototype.toString expects 0 arguments, got {}",
+                        args.len()
+                    ),
+                    span: Some(span),
+                    phase: None,
+                });
+            }
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                intrinsic: RuntimeFn::ErrorToString,
+                args: vec![self.lower_expr(object)?],
+                span: Span::generated("runtime_call"),
+            }));
+        }
+        if is_class_dispatch_receiver {
             // fall through to class dispatch
         } else if method == "toString"
             && crate::lowered::resolver::expr::facts::is_known_array_expr(&self.ctx, object)

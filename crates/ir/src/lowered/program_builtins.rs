@@ -606,6 +606,7 @@ pub(crate) fn is_error_class(class_name: &str) -> bool {
             | "ReferenceError"
             | "URIError"
             | "EvalError"
+            | "AggregateError"
     )
 }
 
