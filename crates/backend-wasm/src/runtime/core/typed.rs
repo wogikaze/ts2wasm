@@ -32024,9 +32024,9 @@ pub fn build_object_get_own_property_descriptor(data: PropertyGetData) -> WasmFu
             enumerable,
             configurable,
         );
+        body.extend([WasmInstr::End]);
         push_store_ascii_bytes(&mut body, prop_offset, b"length");
         body.extend([
-            WasmInstr::End,
             // Check "length" key (length 6)
             WasmInstr::LocalGet(key_len),
             WasmInstr::I32Const(6),
@@ -32058,9 +32058,9 @@ pub fn build_object_get_own_property_descriptor(data: PropertyGetData) -> WasmFu
             enumerable,
             configurable,
         );
+        body.extend([WasmInstr::End]);
         push_store_ascii_bytes(&mut body, prop_offset, b"prototype");
         body.extend([
-            WasmInstr::End,
             // Check "prototype" key (length 9)
             WasmInstr::LocalGet(key_len),
             WasmInstr::I32Const(9),
