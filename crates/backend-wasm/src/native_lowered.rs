@@ -4675,12 +4675,15 @@ impl<'a> NativeLoweredEmitter<'a> {
                 let prop_capacity = 12u32;
                 let size = (Layout::OBJECT_HEADER_SIZE + prop_capacity * Layout::OBJECT_ENTRY_SIZE) as i32;
 
-                // Allocate error object, stash base pointer in scratch.
+                // Stash base pointer in scratch memory so inner expressions
+                // can safely use switch_value_local.
+                // I32Store pops: value=base_ptr(top), addr=stash_addr → memory[stash_addr]=base_ptr
                 out.push(WasmInstr::I32Const(size));
                 out.push(WasmInstr::Call(RuntimeFn::AllocHeap.symbol().to_owned()));
                 out.push(WasmInstr::LocalSet(ctx.switch_value_local));
+                out.push(WasmInstr::I32Const(stash_addr as i32));
                 out.push(WasmInstr::LocalGet(ctx.switch_value_local));
-                out.push(WasmInstr::I32Store { align: 2, offset: stash_addr });
+                out.push(WasmInstr::I32Store { align: 2, offset: 0 });
 
                 // count = prop_count (actual number of properties we store below)
                 let prop_count = 2u32 + if errors.is_some() { 1u32 } else { 0u32 };
@@ -4696,28 +4699,40 @@ impl<'a> NativeLoweredEmitter<'a> {
                 out.push(WasmInstr::GlobalGet(format!("${}", crate::emitter::builtin_error_prototype_global(*constructor))));
                 out.push(WasmInstr::I32Store { align: 2, offset: Layout::OBJECT_PROTOTYPE_OFFSET as u32 });
 
-                // Helper: write a property entry via direct memory store.
-                // Loads base from scratch[stash_addr], writes key at entry_offset,
-                // then loads base again and writes value at entry_offset+4.
-                let emit_entry = |body: &mut Vec<WasmInstr>, entry_off: u32, key_val: i32| {
-                    body.push(WasmInstr::I32Load { align: 2, offset: stash_addr });
+                // Helper: load base from scratch[stash_addr], write key at entry_offset.
+                // Stack before: []
+                // Stack after: [base_ptr] (for writing value next)
+                let emit_key = |body: &mut Vec<WasmInstr>, entry_off: u32, key_val: i32| {
+                    // I32Store pops: value=key_val(top), addr=base_ptr → memory[base_ptr+entry_off]=key_val
+                    body.push(WasmInstr::I32Const(stash_addr as i32));
+                    body.push(WasmInstr::I32Load { align: 2, offset: 0 });
                     body.push(WasmInstr::I32Const(key_val));
                     body.push(WasmInstr::I32Store { align: 2, offset: entry_off });
-                    body.push(WasmInstr::I32Load { align: 2, offset: stash_addr });
+                    // Load base again for value write
+                    body.push(WasmInstr::I32Const(stash_addr as i32));
+                    body.push(WasmInstr::I32Load { align: 2, offset: 0 });
                 };
 
                 // name (compile-time constant)
                 let name_k = self.insert_dynamic_string_value("name");
                 let name_v = self.insert_dynamic_string_value(constructor.name());
-                emit_entry(out, Layout::OBJECT_ENTRIES_OFFSET as u32, name_k);
+                emit_key(out, Layout::OBJECT_ENTRIES_OFFSET as u32, name_k);
+                // Stack: [base_ptr]
                 out.push(WasmInstr::I32Const(name_v));
+                // Stack: [base_ptr, name_v]
+                // I32Store: memory[base_ptr + entries_off + value_off] = name_v
                 out.push(WasmInstr::I32Store { align: 2, offset: (Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_VALUE_OFFSET) as u32 });
 
                 // message (runtime expression)
                 let msg_k = self.insert_dynamic_string_value("message");
                 let e1_off = Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_ENTRY_SIZE;
-                emit_entry(out, e1_off as u32, msg_k);
+                emit_key(out, e1_off as u32, msg_k);
+                // Stack: [base_ptr]
                 self.emit_expr(message, ctx, out)?;
+                // Stack: [base_ptr, msg_val]
+                // I32Store: memory[base_ptr + e1_off + value_off] = msg_val ... IF the stack is [addr, value]
+                // But emit_expr pushed msg_val on TOP of base_ptr.
+                // I32Store pops value(top) first, then addr. So addr=base_ptr, value=msg_val. Correct!
                 out.push(WasmInstr::I32Store { align: 2, offset: (e1_off + Layout::OBJECT_VALUE_OFFSET) as u32 });
 
                 // errors (optional runtime expression)
@@ -4725,14 +4740,15 @@ impl<'a> NativeLoweredEmitter<'a> {
                 if let Some(errs) = errors {
                     let err_k = self.insert_dynamic_string_value("errors");
                     let e_off = Layout::OBJECT_ENTRIES_OFFSET + ei * Layout::OBJECT_ENTRY_SIZE;
-                    emit_entry(out, e_off as u32, err_k);
+                    emit_key(out, e_off as u32, err_k);
                     self.emit_expr(errs, ctx, out)?;
                     out.push(WasmInstr::I32Store { align: 2, offset: (e_off + Layout::OBJECT_VALUE_OFFSET) as u32 });
                     ei += 1;
                 }
 
                 // Return tagged object
-                out.push(WasmInstr::I32Load { align: 2, offset: stash_addr });
+                out.push(WasmInstr::I32Const(stash_addr as i32));
+                out.push(WasmInstr::I32Load { align: 2, offset: 0 });
                 out.push(WasmInstr::I32Const(ValueTag::OBJECT));
                 out.push(WasmInstr::I32Or);
                 Ok(())

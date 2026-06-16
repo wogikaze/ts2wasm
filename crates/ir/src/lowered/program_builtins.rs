@@ -38,11 +38,10 @@ pub(crate) fn known_global_value_expr(name: &str, span: Span) -> Option<LoweredE
     // Builtin error constructors use NATIVE_ERROR_PAYLOAD sentinel tokens
     // so that runtime reflective operations (typeof, getPrototypeOf,
     // getOwnPropertyDescriptor, ===) can work correctly.
+    // Only AggregateError uses the sentinel for now — Error is kept as
+    // a string to avoid regressions in Error method resolution.
     if name == "AggregateError" {
         return Some(LoweredExpr::Number(ValueTag::AGGREGATE_ERROR_VALUE, span));
-    }
-    if name == "Error" {
-        return Some(LoweredExpr::Number(ValueTag::ERROR_VALUE, span));
     }
     let (display, typeof_name) = known_global_value_display_and_typeof(name)?;
     Some(global_marker_object_expr(display, typeof_name, span))
