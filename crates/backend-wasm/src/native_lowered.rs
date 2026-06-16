@@ -4093,6 +4093,21 @@ impl<'a> NativeLoweredEmitter<'a> {
                         return Ok(());
                     }
                 }
+                if *intrinsic == RuntimeFn::ObjectGetOwnPropertyDescriptor && args.len() == 2 {
+                    // The second arg (key) must be passed as a tagged JS value
+                    // so string keys preserve their STRING tag bits. The generic
+                    // emit_expr strips the string tag, which $value_to_string_into
+                    // would misinterpret (e.g. as UNDEFINED or NUMBER).
+                    self.emit_expr(&args[0], ctx, out)?;
+                    if let LoweredExpr::String(value, _) = &args[1] {
+                        let tagged = self.insert_dynamic_string_value(value);
+                        out.push(WasmInstr::I32Const(tagged));
+                    } else {
+                        self.emit_expr(&args[1], ctx, out)?;
+                    }
+                    out.push(WasmInstr::Call(intrinsic.symbol().to_owned()));
+                    return Ok(());
+                }
                 if native_runtime_function_available(*intrinsic) {
                     let signature = intrinsic.stack_effect();
                     for arg in args.iter().take(signature.params) {
