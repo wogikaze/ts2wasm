@@ -21491,7 +21491,9 @@ fn static_utc_ms_from_parts(
 ) -> i64 {
     let year = year + month.div_euclid(12);
     let month = month.rem_euclid(12) + 1;
-    static_days_from_civil(year, month, date) * STATIC_DATE_MS_PER_DAY
+    static_days_from_civil(year, month, date)
+        .checked_mul(STATIC_DATE_MS_PER_DAY)
+        .unwrap_or(0)
         + hours * STATIC_DATE_MS_PER_HOUR
         + minutes * STATIC_DATE_MS_PER_MINUTE
         + seconds * STATIC_DATE_MS_PER_SECOND
