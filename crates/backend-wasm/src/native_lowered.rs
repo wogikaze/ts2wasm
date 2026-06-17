@@ -8643,6 +8643,7 @@ impl<'a> NativeLoweredEmitter<'a> {
             }
             LoweredExpr::ArrayNew { .. } | LoweredExpr::ArrayNewSparse { .. } => true,
             LoweredExpr::ArrayGet { .. } => true,
+            LoweredExpr::PropertyGet { .. } => true,
             LoweredExpr::Binary {
                 left, op, right, ..
             } if native_numeric_binary_runtime_fn(*op).is_some()
