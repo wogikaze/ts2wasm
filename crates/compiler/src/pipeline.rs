@@ -361,9 +361,9 @@ fn emit_legacy_wat_for_resolved(
     }
 
     let wasm_bytes = if let Some(abi_metadata) = abi_metadata {
-        backend::emit_wasm_binary_with_abi(&validated, abi_metadata)
+        backend::emit_wasm_binary_with_abi_wat_debug_fallback(&validated, abi_metadata)
     } else {
-        backend::emit_wasm_binary(&validated)
+        backend::emit_wasm_binary_with_wat_debug_fallback(&validated)
     }
     .map_err(|d| d.with_phase("backend"))?;
     let debug_wat = if emit_debug_wat {

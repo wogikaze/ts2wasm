@@ -524,7 +524,7 @@ fn compile_source_text_with_emit(
             let output = tmpdir.join(format!("{}.wasm", id));
             let wasm_bytes = {
                 crate::source_profile_scope!("server.backend_emit_wasm_binary");
-                ts2wasm_backend_wasm::emit_wasm_binary(&validated)
+                ts2wasm_backend_wasm::emit_wasm_binary_with_wat_debug_fallback(&validated)
                     .map_err(|d| d.with_phase("backend"))?
             };
             {
