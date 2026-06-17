@@ -543,7 +543,11 @@ fn rewrite_assert_method_calls(source: &str) -> String {
         match stub_name {
             "__assert_sameValue" => {
                 stubs.push_str("function __assert_sameValue(actual, expected) {\n");
-                stubs.push_str("  if (actual !== expected) {\n");
+                stubs.push_str("  var same = actual === expected;\n");
+                stubs.push_str("  if (!same && typeof actual === \"number\" && typeof expected === \"number\") {\n");
+                stubs.push_str("    same = actual !== actual && expected !== expected;\n");
+                stubs.push_str("  }\n");
+                stubs.push_str("  if (!same) {\n");
                 stubs.push_str("    console.log(\"__TS2WASM_TEST262_ASSERT_FAIL__\");\n");
                 stubs.push_str("  }\n");
                 stubs.push_str("}\n");
