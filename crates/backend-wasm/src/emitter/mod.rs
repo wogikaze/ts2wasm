@@ -192,6 +192,8 @@ impl<'a> WatEmitter<'a> {
         // Used by $property_get for NativeError sentinel name/length/prototype resolution.
         emitter.intern_string("Error");
         emitter.intern_string("AggregateError");
+        emitter.intern_string("constructor");
+        emitter.intern_string("[object Error]");
         emitter.collect_program_strings(&program.top_level_statements);
         for function in &program.functions {
             if let Some(name) = &function.metadata_name {
