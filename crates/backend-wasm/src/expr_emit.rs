@@ -2319,6 +2319,16 @@ impl WatEmitter<'_> {
                 self.emit_expr(writer, arg, indent, frame);
             }
             writer.push_str(&format!("{pad}(i32.const 0)\n")); // undefined end
+        } else if *intrinsic == RuntimeFn::StringSplit && (1..=3).contains(&args.len()) {
+            for arg in args {
+                self.emit_expr(writer, arg, indent, frame);
+            }
+            if args.len() == 1 {
+                writer.i32_const(indent, ValueTag::UNDEFINED);
+            }
+            if args.len() <= 2 {
+                writer.i32_const(indent, ValueTag::UNDEFINED);
+            }
         } else {
             for arg in args {
                 self.emit_expr(writer, arg, indent, frame);

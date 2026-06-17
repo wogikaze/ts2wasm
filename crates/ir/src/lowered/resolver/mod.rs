@@ -1895,9 +1895,21 @@ impl Resolver {
             }
             ResolvedStmt::ForIn { var, iter, body } => {
                 let var_id = self.declare_local(var)?;
+                let lowered_iter =
+                    if crate::lowered::program_builtins::builtin_prototype_method_enumerable_own_keys_expr(iter)
+                        .is_some()
+                    {
+                        LoweredExpr::ObjectNew {
+                            props: Vec::new(),
+                            non_enumerable: 0,
+                            span: Span::generated("builtin_prototype_method_keys"),
+                        }
+                    } else {
+                        self.lower_expr(iter)?
+                    };
                 Ok(LoweredStmt::ForIn {
                     var: var_id,
-                    iter: self.lower_expr(iter)?,
+                    iter: lowered_iter,
                     iter_local: self.alloc_temp(),
                     index_local: self.alloc_temp(),
                     len_local: self.alloc_temp(),

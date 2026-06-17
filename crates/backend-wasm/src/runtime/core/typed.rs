@@ -5223,6 +5223,7 @@ pub fn build_array_map_string_split() -> WasmFunction {
         WasmInstr::LocalSet(elem),
         WasmInstr::LocalGet(elem),
         WasmInstr::LocalGet(sep),
+        WasmInstr::I32Const(ValueTag::UNDEFINED),
         WasmInstr::Call("$string_split".to_owned()),
         WasmInstr::LocalSet(mapped),
     ]);
@@ -10265,18 +10266,20 @@ fn push_string_split_singleton_return(
 pub fn build_string_split() -> WasmFunction {
     let s = 0;
     let sep = 1;
-    let s_obj = 2;
-    let sep_obj = 3;
-    let s_len = 4;
-    let sep_len = 5;
-    let count = 6;
-    let i = 7;
-    let part_start = 8;
-    let result_ptr = 9;
-    let part_ptr = 10;
-    let part_len = 11;
-    let result_idx = 12;
-    let part_value = 13;
+    let limit = 2;
+    let s_obj = 3;
+    let sep_obj = 4;
+    let s_len = 5;
+    let sep_len = 6;
+    let count = 7;
+    let i = 8;
+    let part_start = 9;
+    let result_ptr = 10;
+    let part_ptr = 11;
+    let part_len = 12;
+    let result_idx = 13;
+    let part_value = 14;
+    let limit_count = 15;
 
     let mut body = vec![
         WasmInstr::LocalGet(s),
@@ -10289,6 +10292,52 @@ pub fn build_string_split() -> WasmFunction {
         WasmInstr::I32Const(ValueTag::UNDEFINED),
         WasmInstr::Return,
         WasmInstr::End,
+        // limit === undefined means "unbounded" for the current in-memory array size.
+        WasmInstr::LocalGet(limit),
+        WasmInstr::I32Const(ValueTag::UNDEFINED),
+        WasmInstr::I32Eq,
+        WasmInstr::If {
+            result_ty: WasmBlockType::Empty,
+        },
+        WasmInstr::Then,
+        WasmInstr::I32Const(i32::MAX),
+        WasmInstr::LocalSet(limit_count),
+        WasmInstr::Else,
+        // Small-int numeric limits cover the supported non-coercive fast path.
+        WasmInstr::LocalGet(limit),
+        WasmInstr::I32Const(ValueTag::TAG_MASK),
+        WasmInstr::I32And,
+        WasmInstr::I32Const(ValueTag::NUMBER),
+        WasmInstr::I32Eq,
+        WasmInstr::If {
+            result_ty: WasmBlockType::Empty,
+        },
+        WasmInstr::Then,
+        WasmInstr::LocalGet(limit),
+        WasmInstr::I32Const(ValueTag::NUMBER_SHIFT),
+        WasmInstr::I32ShrS,
+        WasmInstr::LocalSet(limit_count),
+        WasmInstr::Else,
+        WasmInstr::I32Const(i32::MAX),
+        WasmInstr::LocalSet(limit_count),
+        WasmInstr::End,
+        WasmInstr::End,
+        WasmInstr::LocalGet(limit_count),
+        WasmInstr::I32Eqz,
+        WasmInstr::If {
+            result_ty: WasmBlockType::Empty,
+        },
+        WasmInstr::Then,
+        WasmInstr::I32Const(RuntimeConst::ZERO),
+        WasmInstr::LocalSet(count),
+    ];
+    push_array_header_init(&mut body, result_ptr, count);
+    body.extend([
+        WasmInstr::LocalGet(result_ptr),
+        WasmInstr::I32Const(ValueTag::ARRAY),
+        WasmInstr::I32Or,
+        WasmInstr::Return,
+        WasmInstr::End,
         WasmInstr::LocalGet(sep),
         WasmInstr::Call("$is_string".to_owned()),
         WasmInstr::I32Eqz,
@@ -10296,7 +10345,7 @@ pub fn build_string_split() -> WasmFunction {
             result_ty: WasmBlockType::Empty,
         },
         WasmInstr::Then,
-    ];
+    ]);
     push_string_split_singleton_return(&mut body, result_ptr, count, s);
     body.extend([
         WasmInstr::End,
@@ -10328,6 +10377,16 @@ pub fn build_string_split() -> WasmFunction {
         WasmInstr::Then,
         WasmInstr::LocalGet(s_len),
         WasmInstr::LocalSet(count),
+        WasmInstr::LocalGet(count),
+        WasmInstr::LocalGet(limit_count),
+        WasmInstr::I32GtU,
+        WasmInstr::If {
+            result_ty: WasmBlockType::Empty,
+        },
+        WasmInstr::Then,
+        WasmInstr::LocalGet(limit_count),
+        WasmInstr::LocalSet(count),
+        WasmInstr::End,
     ]);
     push_array_header_init(&mut body, result_ptr, count);
     body.extend([
@@ -10336,7 +10395,7 @@ pub fn build_string_split() -> WasmFunction {
         WasmInstr::Block("$split_empty_sep_done".to_owned()),
         WasmInstr::Loop("$split_empty_sep_loop".to_owned()),
         WasmInstr::LocalGet(i),
-        WasmInstr::LocalGet(s_len),
+        WasmInstr::LocalGet(count),
         WasmInstr::I32GeU,
         WasmInstr::BrIf("$split_empty_sep_done".to_owned()),
         WasmInstr::I32Const(Layout::STRING_HEADER_SIZE as i32),
@@ -10427,6 +10486,10 @@ pub fn build_string_split() -> WasmFunction {
             result_ty: WasmBlockType::Empty,
         },
         WasmInstr::Then,
+        WasmInstr::LocalGet(count),
+        WasmInstr::LocalGet(limit_count),
+        WasmInstr::I32GeU,
+        WasmInstr::BrIf("$split_count_done".to_owned()),
         WasmInstr::LocalGet(count),
         WasmInstr::I32Const(RuntimeConst::ONE),
         WasmInstr::I32Add,
@@ -10523,6 +10586,10 @@ pub fn build_string_split() -> WasmFunction {
         WasmInstr::I32Const(RuntimeConst::ONE),
         WasmInstr::I32Add,
         WasmInstr::LocalSet(result_idx),
+        WasmInstr::LocalGet(result_idx),
+        WasmInstr::LocalGet(limit_count),
+        WasmInstr::I32GeU,
+        WasmInstr::BrIf("$split_extract_done".to_owned()),
         WasmInstr::LocalGet(i),
         WasmInstr::LocalGet(sep_len),
         WasmInstr::I32Add,
@@ -10584,8 +10651,9 @@ pub fn build_string_split() -> WasmFunction {
     let mut function = WasmFunction::new("$string_split")
         .param(WasmValType::I32)
         .param(WasmValType::I32)
+        .param(WasmValType::I32)
         .result(WasmValType::I32);
-    for _ in 0..12 {
+    for _ in 0..13 {
         function = function.local(WasmValType::I32);
     }
     function.body(body)
@@ -43216,7 +43284,7 @@ mod tests {
         );
 
         assert!(wasm.starts_with(b"\0asm"));
-        assert_eq!(f.params.len(), 2);
+        assert_eq!(f.params.len(), 3);
         assert_eq!(f.results.len(), 1);
         assert!(
             f.body
@@ -43244,7 +43312,7 @@ mod tests {
                 stub_function("$alloc_heap", &[WasmValType::I32], &[WasmValType::I32]),
                 stub_function(
                     "$string_split",
-                    &[WasmValType::I32, WasmValType::I32],
+                    &[WasmValType::I32, WasmValType::I32, WasmValType::I32],
                     &[WasmValType::I32],
                 ),
             ],

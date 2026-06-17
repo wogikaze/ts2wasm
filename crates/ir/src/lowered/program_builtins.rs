@@ -34,6 +34,83 @@ pub(crate) fn builtin_function_data_descriptor(name: &str, span: Span) -> Option
     })
 }
 
+pub(crate) fn builtin_prototype_method_metadata_property(
+    class_name: &str,
+    method_name: &str,
+    key: &str,
+    span: Span,
+) -> Option<LoweredExpr> {
+    let length = match (class_name, method_name) {
+        ("String", "split") => 2,
+        _ => return None,
+    };
+    match key {
+        "length" => Some(LoweredExpr::Number(length, Span::generated("num"))),
+        "name" => Some(LoweredExpr::String(method_name.to_owned(), span)),
+        _ => None,
+    }
+}
+
+pub(crate) fn builtin_prototype_method_has_own_property(
+    class_name: &str,
+    method_name: &str,
+    key: &str,
+) -> Option<bool> {
+    match (class_name, method_name, key) {
+        ("String", "split", "length" | "name") => Some(true),
+        ("String", "split", _) => Some(false),
+        _ => None,
+    }
+}
+
+pub(crate) fn builtin_prototype_method_property_is_enumerable(
+    class_name: &str,
+    method_name: &str,
+    key: &str,
+) -> Option<bool> {
+    match (class_name, method_name, key) {
+        ("String", "split", "length" | "name") => Some(false),
+        ("String", "split", _) => Some(false),
+        _ => None,
+    }
+}
+
+pub(crate) fn builtin_prototype_method_enumerable_own_keys_expr(
+    expr: &ResolvedExpr,
+) -> Option<Vec<String>> {
+    let (class_name, method_name) = resolved_builtin_prototype_method_name(expr)?;
+    match (class_name, method_name) {
+        ("String", "split") => Some(Vec::new()),
+        _ => None,
+    }
+}
+
+fn resolved_builtin_prototype_method_name(expr: &ResolvedExpr) -> Option<(&str, &str)> {
+    let ResolvedExpr::PropertyAccess {
+        object,
+        key: method_name,
+        ..
+    } = expr
+    else {
+        return None;
+    };
+    let ResolvedExpr::PropertyAccess {
+        object: class_expr,
+        key: prototype_key,
+        ..
+    } = object.as_ref()
+    else {
+        return None;
+    };
+    if prototype_key != "prototype" {
+        return None;
+    }
+    let ResolvedExpr::Ident(class_name) = class_expr.as_ref() else {
+        return None;
+    };
+    Some((class_name, method_name))
+}
+
 pub(crate) fn known_global_value_expr(name: &str, span: Span) -> Option<LoweredExpr> {
     if let Some(kind) = ts2wasm_runtime_catalog::BuiltinConstructorKind::from_global_name(name) {
         return Some(LoweredExpr::BuiltinConstructor(kind, span));

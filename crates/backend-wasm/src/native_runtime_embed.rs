@@ -1761,7 +1761,7 @@ fn build_native_runtime_function(
         RuntimeFn::ReflectHas => Some(typed::build_reflect_has()),
         RuntimeFn::ReflectOwnKeys => Some(typed::build_reflect_own_keys()),
         RuntimeFn::ReflectApply => Some(typed::build_reflect_apply()),
-        RuntimeFn::ReflectConstruct => None,
+        RuntimeFn::ReflectConstruct => Some(typed::build_reflect_construct()),
         RuntimeFn::ProcessArgv => Some(typed::build_process_argv()),
         RuntimeFn::ProcessEnv => Some(typed::build_process_env()),
         RuntimeFn::ProcessExit => Some(typed::build_process_exit()),

@@ -148,6 +148,78 @@ static void print_json_str(FILE *f, const char *s)
     fputc('"', f);
 }
 
+#define TAG_UNDEFINED 0u
+#define TAG_STRING 6u
+#define TAG_MASK 7u
+#define HEAP_MASK (~(uint32_t)TAG_MASK)
+#define STRING_HEADER_SIZE 4u
+
+static uint32_t raw_tag(uint32_t raw)
+{
+    return raw & TAG_MASK;
+}
+
+static uint32_t raw_ptr(uint32_t raw)
+{
+    return raw & HEAP_MASK;
+}
+
+static const uint8_t *
+tagged_string_bytes(wasm_exec_env_t exec_env, uint32_t raw, uint32_t *len_out)
+{
+    wasm_module_inst_t module_inst = wasm_runtime_get_module_inst(exec_env);
+    uint32_t ptr = raw_ptr(raw);
+    uint32_t *len_ptr = (uint32_t *)wasm_runtime_addr_app_to_native(module_inst, ptr);
+    if (!len_ptr) {
+        return NULL;
+    }
+    uint32_t len = *len_ptr;
+    const uint8_t *data =
+        (const uint8_t *)wasm_runtime_addr_app_to_native(module_inst, ptr + STRING_HEADER_SIZE);
+    if (!data) {
+        return NULL;
+    }
+    *len_out = len;
+    return data;
+}
+
+static int tagged_string_equals(wasm_exec_env_t exec_env, uint32_t raw, const char *expected)
+{
+    uint32_t len = 0;
+    const uint8_t *data = tagged_string_bytes(exec_env, raw, &len);
+    size_t expected_len = strlen(expected);
+    return data && len == expected_len && memcmp(data, expected, expected_len) == 0;
+}
+
+static int tagged_string_is_ascii(wasm_exec_env_t exec_env, uint32_t raw)
+{
+    uint32_t len = 0;
+    const uint8_t *data = tagged_string_bytes(exec_env, raw, &len);
+    if (!data) {
+        return 0;
+    }
+    for (uint32_t i = 0; i < len; i++) {
+        if (data[i] >= 0x80) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+static int string_normalize_form_is_valid(wasm_exec_env_t exec_env, uint32_t form_tag)
+{
+    if (form_tag == TAG_UNDEFINED) {
+        return 1;
+    }
+    if (raw_tag(form_tag) != TAG_STRING) {
+        return 0;
+    }
+    return tagged_string_equals(exec_env, form_tag, "NFC")
+        || tagged_string_equals(exec_env, form_tag, "NFD")
+        || tagged_string_equals(exec_env, form_tag, "NFKC")
+        || tagged_string_equals(exec_env, form_tag, "NFKD");
+}
+
 /* ------------------------------------------------------------------ */
 /* Native host functions                                               */
 /* ------------------------------------------------------------------ */
@@ -257,6 +329,36 @@ host_reflect_construct(wasm_exec_env_t exec_env,
     (void)args_tag;
     /* Return undefined (tagged value 0) */
     return 0;
+}
+
+/*
+ * host.stringNormalize — dependency-free bridge for String.prototype.normalize.
+ * ASCII strings are already normalized in all four supported Unicode forms, so
+ * the runner can safely return the original tagged string without allocation.
+ * Non-ASCII normalization needs a Unicode normalization implementation and is
+ * reported as an explicit runner exception instead of returning a wrong value.
+ * WASM signature: (i32 receiver_tag, i32 form_tag) -> i32
+ */
+static uint32_t
+host_string_normalize(wasm_exec_env_t exec_env,
+                      uint32_t receiver_tag, uint32_t form_tag)
+{
+    wasm_module_inst_t module_inst = wasm_runtime_get_module_inst(exec_env);
+
+    if (raw_tag(receiver_tag) != TAG_STRING) {
+        wasm_runtime_set_exception(module_inst, "String.normalize receiver is not a string");
+        return TAG_UNDEFINED;
+    }
+    if (!string_normalize_form_is_valid(exec_env, form_tag)) {
+        wasm_runtime_set_exception(module_inst, "String.normalize form is not supported");
+        return TAG_UNDEFINED;
+    }
+    if (!tagged_string_is_ascii(exec_env, receiver_tag)) {
+        wasm_runtime_set_exception(module_inst, "String.normalize non-ASCII input is not supported by iwasm runner");
+        return TAG_UNDEFINED;
+    }
+
+    return receiver_tag;
 }
 
 /*
@@ -394,6 +496,12 @@ static NativeSymbol host_native_symbols[] = {
     {
         .symbol = "reflectConstruct",
         .func_ptr = (void *)host_reflect_construct,
+        .signature = "(ii)i",
+        .attachment = NULL,
+    },
+    {
+        .symbol = "stringNormalize",
+        .func_ptr = (void *)host_string_normalize,
         .signature = "(ii)i",
         .attachment = NULL,
     },

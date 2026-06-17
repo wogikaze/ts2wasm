@@ -2960,7 +2960,6 @@ impl RuntimeFn {
             | Self::StringEqual
             | Self::StringLocaleCompare
             | Self::StringRepeat
-            | Self::StringSplit
             | Self::Less
             | Self::LessFast
             | Self::LessEqual
@@ -3075,6 +3074,7 @@ impl RuntimeFn {
 
             // 3 params, 1 result
             Self::MemEqual
+            | Self::StringSplit
             | Self::PropertyGet
             | Self::PropertyDelete
             | Self::PropertyHas

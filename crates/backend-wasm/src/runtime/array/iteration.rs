@@ -165,7 +165,7 @@ impl WatEmitter<'_> {
               (i32.add
                 (i32.const {array_header})
                 (i32.shl (local.get $i) (i32.const {elem_shift}))))))
-        (local.set $mapped (call $string_split (local.get $elem) (local.get $sep)))
+        (local.set $mapped (call $string_split (local.get $elem) (local.get $sep) (i32.const {undefined})))
         (i32.store
           (i32.add
             (local.get $result_ptr)

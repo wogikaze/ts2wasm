@@ -899,6 +899,28 @@ impl super::super::Resolver {
         args: &[ResolvedExpr],
         span: Span,
     ) -> Result<Option<LoweredExpr>, Diagnostic> {
+        if let Some((class_name, method_name)) = extract_prototype_method_name(object)
+            && let Some(property_key) = args.first().and_then(static_string_expr)
+        {
+            let static_result = match method {
+                "hasOwnProperty" => crate::lowered::program_builtins::
+                    builtin_prototype_method_has_own_property(
+                        class_name,
+                        method_name,
+                        property_key,
+                    ),
+                "propertyIsEnumerable" => crate::lowered::program_builtins::
+                    builtin_prototype_method_property_is_enumerable(
+                        class_name,
+                        method_name,
+                        property_key,
+                    ),
+                _ => None,
+            };
+            if let Some(value) = static_result {
+                return Ok(Some(LoweredExpr::Bool(value, span)));
+            }
+        }
         if method == "call" && is_array_prototype_push_expr(object) {
             let Some((receiver, values)) = args.split_first() else {
                 return Err(Diagnostic {

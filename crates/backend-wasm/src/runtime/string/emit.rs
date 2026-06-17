@@ -483,7 +483,7 @@ impl WatEmitter<'_> {
         self.emit_string_split_regexp(wat);
         wat.push_str(&format!(
             r#"
-  (func $string_split (param $s i32) (param $sep i32) (result i32)
+  (func $string_split (param $s i32) (param $sep i32) (param $limit i32) (result i32)
     (local $s_obj i32)
     (local $sep_obj i32)
     (local $s_len i32)
@@ -498,7 +498,23 @@ impl WatEmitter<'_> {
     (local $result_idx i32)
     (local $part_value i32)
     (local $first_byte i32)
+    (local $limit_count i32)
     (if (i32.eqz (call $is_string (local.get $s))) (then (return (i32.const {undefined}))))
+    (if (i32.eq (local.get $limit) (i32.const {undefined}))
+      (then (local.set $limit_count (i32.const 2147483647)))
+      (else
+        (if (i32.eq (i32.and (local.get $limit) (i32.const {tag_mask})) (i32.const {number_tag}))
+          (then (local.set $limit_count (i32.shr_s (local.get $limit) (i32.const {number_shift}))))
+          (else (local.set $limit_count (i32.const 2147483647))))))
+    (if (i32.eqz (local.get $limit_count))
+      (then
+        (local.set $result_ptr (call $alloc_heap (i32.const {array_header})))
+        (i32.store (local.get $result_ptr) (i32.const 0))
+        (i32.store (i32.add (local.get $result_ptr) (i32.const 4)) (i32.const 0))
+        (i32.store (i32.add (local.get $result_ptr) (i32.const 8)) (i32.const 1))
+        (i32.store (i32.add (local.get $result_ptr) (i32.const 12)) (i32.const {array_header}))
+        (i32.store (i32.add (local.get $result_ptr) (i32.const 16)) (i32.const 0))
+        (return (i32.or (local.get $result_ptr) (i32.const {array_tag})))))
     (if (i32.eqz (call $is_string (local.get $sep)))
       (then
         (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {array_header}) (i32.const 4))))
@@ -523,6 +539,8 @@ impl WatEmitter<'_> {
       (then
         ;; Empty separator: split into individual bytes
         (local.set $count (local.get $s_len))
+        (if (i32.gt_u (local.get $count) (local.get $limit_count))
+          (then (local.set $count (local.get $limit_count))))
         (local.set $result_ptr
           (call $alloc_heap
             (i32.add (i32.const {array_header})
@@ -537,7 +555,7 @@ impl WatEmitter<'_> {
         (local.set $i (i32.const {zero}))
         (block $empty_sep_done
           (loop $empty_sep_loop
-            (br_if $empty_sep_done (i32.ge_u (local.get $i) (local.get $s_len)))
+            (br_if $empty_sep_done (i32.ge_u (local.get $i) (local.get $count)))
             (local.set $part_ptr
               (call $alloc_heap (i32.add (i32.const {str_header}) (i32.const 1))))
             (i32.store (local.get $part_ptr) (i32.const 1))
@@ -565,6 +583,7 @@ impl WatEmitter<'_> {
               (i32.add (local.get $sep_obj) (i32.const {str_header}))
               (local.get $sep_len))
           (then
+            (br_if $count_done (i32.ge_u (local.get $count) (local.get $limit_count)))
             (local.set $count (i32.add (local.get $count) (i32.const {one})))
             (local.set $i (i32.add (local.get $i) (local.get $sep_len)))
             (br $count_loop)))
@@ -604,12 +623,15 @@ impl WatEmitter<'_> {
                 (local.set $part_value (i32.or (local.get $part_ptr) (i32.const {string_tag})))
                 (i32.store (i32.add (local.get $result_ptr) (i32.add (i32.const {array_header}) (i32.shl (local.get $result_idx) (i32.const {elem_shift})))) (local.get $part_value))
                 (local.set $result_idx (i32.add (local.get $result_idx) (i32.const {one})))
+                (br_if $split_done (i32.ge_u (local.get $result_idx) (local.get $limit_count)))
                 (local.set $i (i32.add (local.get $i) (local.get $sep_len)))
                 (local.set $part_start (local.get $i))
                 (br $split_loop)))))
         (local.set $i (i32.add (local.get $i) (i32.const {one})))
         (br $split_loop)))
     ;; Handle final part
+    (if (i32.ge_u (local.get $result_idx) (local.get $limit_count))
+      (then (return (i32.or (local.get $result_ptr) (i32.const {array_tag})))))
     (local.set $part_len (i32.sub (local.get $s_len) (local.get $part_start)))
     (local.set $part_ptr (call $alloc_heap (i32.add (i32.const {str_header}) (local.get $part_len))))
     (i32.store (local.get $part_ptr) (local.get $part_len))
@@ -622,6 +644,9 @@ impl WatEmitter<'_> {
     (i32.or (local.get $result_ptr) (i32.const {array_tag})))
 "#,
             undefined = ValueTag::UNDEFINED,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            number_shift = ValueTag::NUMBER_SHIFT,
             heap_mask = ValueTag::HEAP_MASK,
             string_tag = ValueTag::STRING,
             array_tag = ValueTag::ARRAY,

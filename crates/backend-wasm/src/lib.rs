@@ -776,6 +776,42 @@ mod tests {
     }
 
     #[test]
+    fn native_lowered_static_console_multiple_strings_encodes() {
+        let span = Span::generated("test");
+        let statement = || {
+            LoweredStmt::Expr(
+                LoweredExpr::Call {
+                    kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                    args: vec![LoweredExpr::String("Cafe".to_owned(), span)],
+                    span,
+                },
+                span,
+            )
+        };
+        let program = LoweredProgram {
+            top_level_statements: vec![
+                statement(),
+                statement(),
+                statement(),
+                statement(),
+                statement(),
+            ],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let (v, _) = Validated::new(program).expect("should validate");
+        let module = emit_wasm_module_native(&v).expect("native module should emit");
+
+        assert!(
+            !emit_wasm_module_binary(&module)
+                .expect("static console module should encode")
+                .is_empty()
+        );
+    }
+
+    #[test]
     fn native_runtime_string_segments_are_link_plan_gated() {
         let span = Span::generated("test");
         let program = LoweredProgram {

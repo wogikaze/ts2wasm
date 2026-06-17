@@ -24,65 +24,79 @@ impl super::super::Resolver {
         span: Span,
     ) -> Result<LoweredExpr, Diagnostic> {
         match builtin {
-            BuiltinPropertyId::Length => match object {
-                ResolvedExpr::NewTarget { .. } => Ok(object_kernel::ordinary_get(
-                    self.lower_expr(object)?,
-                    "length",
-                    Span::generated("new_target_length"),
-                )),
-                ResolvedExpr::Ident(name) if self.resolve_func(name.as_str()).is_ok() => {
-                    self.lower_function_metadata_property(name.as_str(), "length", span)
-                }
-                ResolvedExpr::Ident(name) if is_global_builtin_function_name(name) => {
-                    lower_global_builtin_function_metadata_property(name, "length")
-                }
-                ResolvedExpr::PropertyAccess {
-                    object: prototype_object,
-                    key: method_name,
-                    ..
-                } if method_name == "setYear"
-                    && matches!(
-                            prototype_object.as_ref(),
-                            ResolvedExpr::PropertyAccess {
-                                object: date_object,
-                                key: prototype_key,
-                                ..
-                            } if prototype_key == "prototype"
-                        && matches!(date_object.as_ref(), ResolvedExpr::Ident(name) if name == "Date")
-                    ) =>
+            BuiltinPropertyId::Length => {
+                if let Some((class_name, method_name)) =
+                    extract_builtin_prototype_method_name(object)
+                    && let Some(metadata) =
+                        crate::lowered::program_builtins::builtin_prototype_method_metadata_property(
+                            class_name,
+                            method_name,
+                            "length",
+                            span,
+                        )
                 {
-                    Ok(LoweredExpr::Number(
-                        1,
-                        Span::generated("date_legacy_length"),
-                    ))
+                    return Ok(metadata);
                 }
-                ResolvedExpr::Ident(name) => {
-                    if let Some(length) = self.local_arrow_function_length(name) {
-                        Ok(LoweredExpr::Number(length as i32, Span::generated("num")))
-                    } else {
-                        Ok(LoweredExpr::GetLength(
-                            Box::new(self.lower_expr(object)?),
-                            Span::generated("get_length"),
+                match object {
+                    ResolvedExpr::NewTarget { .. } => Ok(object_kernel::ordinary_get(
+                        self.lower_expr(object)?,
+                        "length",
+                        Span::generated("new_target_length"),
+                    )),
+                    ResolvedExpr::Ident(name) if self.resolve_func(name.as_str()).is_ok() => {
+                        self.lower_function_metadata_property(name.as_str(), "length", span)
+                    }
+                    ResolvedExpr::Ident(name) if is_global_builtin_function_name(name) => {
+                        lower_global_builtin_function_metadata_property(name, "length")
+                    }
+                    ResolvedExpr::PropertyAccess {
+                        object: prototype_object,
+                        key: method_name,
+                        ..
+                    } if method_name == "setYear"
+                        && matches!(
+                                prototype_object.as_ref(),
+                                ResolvedExpr::PropertyAccess {
+                                    object: date_object,
+                                    key: prototype_key,
+                                    ..
+                                } if prototype_key == "prototype"
+                            && matches!(date_object.as_ref(), ResolvedExpr::Ident(name) if name == "Date")
+                        ) =>
+                    {
+                        Ok(LoweredExpr::Number(
+                            1,
+                            Span::generated("date_legacy_length"),
                         ))
                     }
+                    ResolvedExpr::Ident(name) => {
+                        if let Some(length) = self.local_arrow_function_length(name) {
+                            Ok(LoweredExpr::Number(length as i32, Span::generated("num")))
+                        } else {
+                            Ok(LoweredExpr::GetLength(
+                                Box::new(self.lower_expr(object)?),
+                                Span::generated("get_length"),
+                            ))
+                        }
+                    }
+                    ResolvedExpr::PropertyAccess {
+                        object: inner_object,
+                        key: builtin_name,
+                        ..
+                    } if matches!(inner_object.as_ref(), ResolvedExpr::Ident(name) if name == "Number")
+                        && crate::lowered::program_builtins::builtin_function_token_value(
+                            builtin_name,
+                        )
+                        .is_some() =>
+                    {
+                        lower_global_builtin_function_metadata_property(builtin_name, "length")
+                    }
+                    _ => Ok(LoweredExpr::GetLength(
+                        Box::new(self.lower_expr(object)?),
+                        Span::generated("get_length"),
+                    )),
                 }
-                ResolvedExpr::PropertyAccess {
-                    object: inner_object,
-                    key: builtin_name,
-                    ..
-                } if matches!(inner_object.as_ref(), ResolvedExpr::Ident(name) if name == "Number")
-                    && crate::lowered::program_builtins::builtin_function_token_value(
-                        builtin_name,
-                    )
-                    .is_some() =>
-                {
-                    lower_global_builtin_function_metadata_property(builtin_name, "length")
-                }
-                _ => Ok(LoweredExpr::GetLength(
-                    Box::new(self.lower_expr(object)?),
-                    Span::generated("get_length"),
-                )),
-            },
+            }
         }
     }
 
@@ -153,6 +167,18 @@ impl super::super::Resolver {
                 non_enumerable: 0b11,
                 span,
             });
+        }
+        if matches!(key, "length" | "name")
+            && let Some((class_name, method_name)) = extract_builtin_prototype_method_name(object)
+            && let Some(metadata) =
+                crate::lowered::program_builtins::builtin_prototype_method_metadata_property(
+                    class_name,
+                    method_name,
+                    key,
+                    span,
+                )
+        {
+            return Ok(metadata);
         }
         if matches!(key, "length" | "name")
             && let ResolvedExpr::PropertyAccess {
@@ -1513,6 +1539,32 @@ impl super::super::Resolver {
             span: Span::generated("runtime_call"),
         })
     }
+}
+
+fn extract_builtin_prototype_method_name(expr: &ResolvedExpr) -> Option<(&str, &str)> {
+    let ResolvedExpr::PropertyAccess {
+        object,
+        key: method_name,
+        ..
+    } = expr
+    else {
+        return None;
+    };
+    let ResolvedExpr::PropertyAccess {
+        object: class_expr,
+        key: prototype_key,
+        ..
+    } = object.as_ref()
+    else {
+        return None;
+    };
+    if prototype_key != "prototype" {
+        return None;
+    }
+    let ResolvedExpr::Ident(class_name) = class_expr.as_ref() else {
+        return None;
+    };
+    Some((class_name, method_name))
 }
 
 fn static_builtin_prototype_object(name: &str, span: Span) -> Option<LoweredExpr> {
