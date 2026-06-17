@@ -179,6 +179,16 @@ fn reflect_apply_construct_matches_node_output() {
 }
 
 #[test]
+fn builtin_constructor_descriptors_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/builtin-constructor-descriptors.ts");
+}
+
+#[test]
+fn reflect_construct_is_constructor_matches_node_output() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/reflect-construct-is-constructor.ts");
+}
+
+#[test]
 fn dynamic_eval_host_path_matches_node_output() {
     assert_fixture_matches_node("fixtures/builtins-and-io/dynamic-eval-host-path.ts");
 }

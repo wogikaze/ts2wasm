@@ -609,6 +609,9 @@ fn dump_mir_expr(expr: &LoweredExpr, out: &mut String, indent: usize) {
         LoweredExpr::BuiltinErrorPrototype(ctor, _) => {
             out.push_str(&format!("{}BuiltinErrorPrototype({:?})\n", prefix, ctor));
         }
+        LoweredExpr::BuiltinConstructor(kind, _) => {
+            out.push_str(&format!("{}BuiltinConstructor({:?})\n", prefix, kind));
+        }
         LoweredExpr::ModuleLoad { module_id, .. } => {
             out.push_str(&format!("{}ModuleLoad({})\n", prefix, module_id));
         }

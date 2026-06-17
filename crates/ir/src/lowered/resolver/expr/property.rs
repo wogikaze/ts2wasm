@@ -126,6 +126,34 @@ impl super::super::Resolver {
         {
             return Ok(prototype);
         }
+        if key == "toString"
+            && let ResolvedExpr::PropertyAccess {
+                object: ctor_obj,
+                key: proto_key,
+                ..
+            } = object
+            && proto_key == "prototype"
+            && let ResolvedExpr::Ident(name) = ctor_obj.as_ref()
+            && BuiltinErrorConstructor::from_name(name).is_some()
+        {
+            return Ok(LoweredExpr::ObjectNew {
+                props: vec![
+                    (
+                        "length".to_owned(),
+                        LoweredExpr::Number(0, Span::generated("error_proto_to_string_length")),
+                    ),
+                    (
+                        "name".to_owned(),
+                        LoweredExpr::String(
+                            "toString".to_owned(),
+                            Span::generated("error_proto_to_string_name"),
+                        ),
+                    ),
+                ],
+                non_enumerable: 0b11,
+                span,
+            });
+        }
         if matches!(key, "length" | "name")
             && let ResolvedExpr::PropertyAccess {
                 object: prototype_object,
@@ -157,19 +185,37 @@ impl super::super::Resolver {
         {
             return Ok(token);
         }
-        // Builtin error constructor metadata: name, length, and prototype.
-        // e.g. AggregateError.length → 2, Error.name → "Error", AggregateError.prototype → prototype object
+        // Builtin constructor metadata: name, length, and prototype.
         if let ResolvedExpr::Ident(name) = object
-            && let Some(constructor) = crate::lowered::BuiltinErrorConstructor::from_name(name)
+            && let Some(kind) =
+                ts2wasm_runtime_catalog::BuiltinConstructorKind::from_global_name(name)
             && matches!(key, "name" | "length" | "prototype")
         {
+            let spec = ts2wasm_runtime_catalog::spec(kind);
             return Ok(match key {
-                "prototype" => LoweredExpr::BuiltinErrorPrototype(constructor, span),
-                "length" => LoweredExpr::Number(
-                    if name == "AggregateError" { 2 } else { 1 },
-                    Span::generated("num"),
-                ),
-                _ => LoweredExpr::String(name.to_owned(), Span::generated("str")),
+                "prototype" => {
+                    if let Some(constructor) =
+                        crate::lowered::BuiltinErrorConstructor::from_name(name)
+                    {
+                        LoweredExpr::BuiltinErrorPrototype(constructor, span)
+                    } else if kind == ts2wasm_runtime_catalog::BuiltinConstructorKind::Object {
+                        LoweredExpr::RuntimeCall {
+                            intrinsic: RuntimeFn::ObjectPrototype,
+                            args: Vec::new(),
+                            span: Span::generated("object_prototype"),
+                        }
+                    } else if let Some(prototype) = static_builtin_prototype_object(name, span) {
+                        prototype
+                    } else {
+                        LoweredExpr::PropertyGet {
+                            obj: Box::new(LoweredExpr::BuiltinConstructor(kind, span)),
+                            key: "prototype".to_owned(),
+                            span,
+                        }
+                    }
+                }
+                "length" => LoweredExpr::Number(spec.length as i32, Span::generated("num")),
+                _ => LoweredExpr::String(spec.name.to_owned(), Span::generated("str")),
             });
         }
         if let ResolvedExpr::Ident(name) = object

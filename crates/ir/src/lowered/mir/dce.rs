@@ -954,10 +954,11 @@ fn expr_has_side_effects(expr: &MirExpr) -> bool {
         // Local read — no side effects
         MirExpr::Local(..) => false,
 
-        // This, ClassPrototype, BuiltinErrorPrototype, ModuleLoad, ArrowFn — no side effects
+        // This, ClassPrototype, BuiltinErrorPrototype, BuiltinConstructor, ModuleLoad, ArrowFn — no side effects
         MirExpr::This(_)
         | MirExpr::ClassPrototype(..)
         | MirExpr::BuiltinErrorPrototype(..)
+        | MirExpr::BuiltinConstructor(..)
         | MirExpr::ModuleLoad { .. }
         | MirExpr::ArrowFn { .. } => false,
 
@@ -1151,6 +1152,7 @@ fn collect_local_reads_in_expr_impl(expr: &MirExpr, reads: &mut Vec<LocalId>) {
         | MirExpr::This(_)
         | MirExpr::ClassPrototype(..)
         | MirExpr::BuiltinErrorPrototype(..)
+        | MirExpr::BuiltinConstructor(..)
         | MirExpr::ModuleLoad { .. }
         | MirExpr::EnvCellGet(..) => {}
 

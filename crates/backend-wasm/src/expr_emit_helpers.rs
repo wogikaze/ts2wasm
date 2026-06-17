@@ -102,7 +102,8 @@ pub(super) fn expr_may_collect(expr: &LoweredExpr) -> bool {
         | LoweredExpr::ModuleLoad { .. }
         | LoweredExpr::This(..)
         | LoweredExpr::ClassPrototype(_, _)
-        | LoweredExpr::BuiltinErrorPrototype(_, _) => false,
+        | LoweredExpr::BuiltinErrorPrototype(_, _)
+        | LoweredExpr::BuiltinConstructor(_, _) => false,
         LoweredExpr::ArrowFn { representation, .. } => {
             matches!(representation, ClosureRepresentation::HeapObject)
         }
@@ -247,7 +248,8 @@ pub(super) fn expr_uses_caller_backend_tmp(expr: &LoweredExpr) -> bool {
         | LoweredExpr::ModuleLoad { .. }
         | LoweredExpr::This(..)
         | LoweredExpr::ClassPrototype(_, _)
-        | LoweredExpr::BuiltinErrorPrototype(_, _) => false,
+        | LoweredExpr::BuiltinErrorPrototype(_, _)
+        | LoweredExpr::BuiltinConstructor(_, _) => false,
         LoweredExpr::ArrowFn { representation, .. } => {
             matches!(representation, ClosureRepresentation::HeapObject)
         }

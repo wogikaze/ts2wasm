@@ -574,6 +574,7 @@ fn expr_span(expr: &MirExpr) -> Option<ts2wasm_source::Span> {
         | MirExpr::New { span, .. }
         | MirExpr::ClassPrototype(_, span)
         | MirExpr::BuiltinErrorPrototype(_, span)
+        | MirExpr::BuiltinConstructor(_, span)
         | MirExpr::ModuleLoad { span, .. }
         | MirExpr::Block { span, .. }
         | MirExpr::This(span)

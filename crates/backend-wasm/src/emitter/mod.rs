@@ -527,6 +527,12 @@ pub(super) fn builtin_error_prototype_global(constructor: BuiltinErrorConstructo
     }
 }
 
+pub(super) fn builtin_constructor_global(
+    kind: ts2wasm_runtime_catalog::BuiltinConstructorKind,
+) -> &'static str {
+    kind.constructor_global()
+}
+
 pub(super) fn builtin_error_stack_prefix(constructor: BuiltinErrorConstructor) -> &'static str {
     match constructor {
         BuiltinErrorConstructor::Error => "Error: ",

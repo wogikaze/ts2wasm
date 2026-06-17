@@ -471,6 +471,7 @@ pub enum LoweredExpr {
     },
     ClassPrototype(ClassPrototypeRef, Span),
     BuiltinErrorPrototype(BuiltinErrorConstructor, Span),
+    BuiltinConstructor(ts2wasm_runtime_catalog::BuiltinConstructorKind, Span),
     ModuleLoad {
         module_id: usize,
         kind: ModuleLoadKind,

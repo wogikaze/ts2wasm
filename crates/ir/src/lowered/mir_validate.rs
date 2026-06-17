@@ -376,7 +376,8 @@ fn validate_expr(
         | MirExpr::Bool(_, _)
         | MirExpr::Null(_)
         | MirExpr::Undefined(_)
-        | MirExpr::BuiltinErrorPrototype(_, _) => {}
+        | MirExpr::BuiltinErrorPrototype(_, _)
+        | MirExpr::BuiltinConstructor(_, _) => {}
         MirExpr::String(s, _) => {
             for pat in MIR_FORBIDDEN_HOST_IMPORT_STRINGS {
                 if s.contains(pat) {

@@ -250,7 +250,10 @@ fn collect_required_runtime_expr(plan: &mut RuntimeLinkPlan, expr: &LoweredExpr)
                     // Handled by native binary path, no WAT runtime needed
                 }
                 LoweredUnaryOp::Plus => plan.add_required_runtime(RuntimeFn::EqualEqual),
-                LoweredUnaryOp::Negate => plan.add_required_runtime(RuntimeFn::Negate),
+                LoweredUnaryOp::Negate => {
+                    plan.add_required_runtime(RuntimeFn::Negate);
+                    plan.add_required_runtime(RuntimeFn::EqualEqual);
+                }
                 LoweredUnaryOp::TypeOf => plan.add_required_runtime(RuntimeFn::TypeOf),
                 LoweredUnaryOp::Delete => {
                     // Delete is handled specially, no runtime function needed
@@ -591,6 +594,9 @@ fn collect_required_runtime_expr(plan: &mut RuntimeLinkPlan, expr: &LoweredExpr)
         LoweredExpr::BuiltinErrorPrototype(_, _) => {
             plan.add_required_runtime(RuntimeFn::AllocHeap);
             plan.add_required_runtime(RuntimeFn::ObjectPrototype);
+        }
+        LoweredExpr::BuiltinConstructor(_, _) => {
+            plan.add_required_runtime(RuntimeFn::AllocHeap);
         }
         LoweredExpr::Block { stmts, result, .. } => {
             for stmt in stmts {

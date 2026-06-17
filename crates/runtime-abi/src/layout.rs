@@ -100,6 +100,10 @@ impl Layout {
     pub const OBJECT_VALUE_OFFSET: u32 = 4;
     /// Size of one property entry in bytes.
     pub const OBJECT_ENTRY_SIZE: u32 = 8;
+    /// Object property-count sentinel marking heap-backed builtin constructor objects.
+    /// Builtin constructor identity is resolved by comparing the tagged object
+    /// pointer against registered `$builtin_ctor_*` globals.
+    pub const OBJECT_BUILTIN_CTOR_SENTINEL: i32 = -2;
     /// Bit 0 of flags: object is frozen (all properties non-writable, non-configurable).
     pub const OBJECT_FLAG_FROZEN: u32 = 1;
     /// Bit 1 of flags: object is non-extensible. Object.seal also marks existing

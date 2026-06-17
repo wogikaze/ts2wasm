@@ -318,7 +318,9 @@ impl WatEmitter<'_> {
                     self.collect_expr_strings(arg);
                 }
             }
-            LoweredExpr::ClassPrototype(_, _) | LoweredExpr::BuiltinErrorPrototype(_, _) => {}
+            LoweredExpr::ClassPrototype(_, _)
+            | LoweredExpr::BuiltinErrorPrototype(_, _)
+            | LoweredExpr::BuiltinConstructor(_, _) => {}
             LoweredExpr::Block { stmts, result, .. } => {
                 for stmt in stmts {
                     self.collect_statement_strings(stmt);

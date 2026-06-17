@@ -1426,9 +1426,17 @@ const imports = {
         return encodeHostException(error);
       }
     },
-    'reflectConstruct'(targetRaw, argsRaw) {
+    'reflectConstruct'(targetRaw, argsRaw, newTargetRaw) {
       try {
-        return encodeHostValue(Reflect.construct(decodeValue(targetRaw), decodeArgs(argsRaw)));
+        return encodeHostValue(
+          Reflect.construct(
+            decodeValue(targetRaw),
+            decodeArgs(argsRaw),
+            newTargetRaw === undefined
+              ? decodeValue(targetRaw)
+              : decodeValue(newTargetRaw),
+          ),
+        );
       } catch (error) {
         return encodeHostException(error);
       }

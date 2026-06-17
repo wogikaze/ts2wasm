@@ -32,4 +32,6 @@ impl RuntimeString {
     pub const PRIVATE_BRAND_TYPE_ERROR: &'static str =
         "TypeError: Cannot read private member from an object whose class did not declare it\n";
     pub const NOT_CALLABLE_TYPE_ERROR: &'static str = "TypeError: not a function\n";
+    pub const REFLECT_CONSTRUCT_NOT_CONSTRUCTOR_TYPE_ERROR: &'static str =
+        "TypeError: #<Object> is not a constructor\n";
 }

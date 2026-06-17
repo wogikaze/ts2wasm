@@ -1,3 +1,4 @@
+mod builtin_constructor;
 mod capability;
 mod domain;
 mod host_import;
@@ -5,6 +6,9 @@ pub mod link_plan;
 mod runtime_fn;
 pub mod signature;
 
+pub use builtin_constructor::{
+    BuiltinConstructorKind, BuiltinConstructorSpec, error_kind_from_sentinel_payload, spec,
+};
 pub use capability::Capability;
 pub use domain::RuntimeDomain;
 pub use host_import::{HostAbi, HostImport, HostImportSpec};

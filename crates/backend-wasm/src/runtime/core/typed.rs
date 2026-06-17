@@ -35247,18 +35247,169 @@ pub fn build_reflect_apply() -> WasmFunction {
         ])
 }
 
+fn append_is_constructor_number_checks(body: &mut Vec<WasmInstr>, payload_local: usize) {
+    body.extend([
+        WasmInstr::LocalGet(payload_local),
+        WasmInstr::I32Const(ValueTag::DIRECT_LOCAL_TOKEN_PAYLOAD_BASE),
+        WasmInstr::I32GeS,
+        WasmInstr::If {
+            result_ty: WasmBlockType::Empty,
+        },
+        WasmInstr::Then,
+        WasmInstr::I32Const(ValueTag::TRUE),
+        WasmInstr::Return,
+        WasmInstr::End,
+        WasmInstr::LocalGet(payload_local),
+        WasmInstr::I32Const(ValueTag::NATIVE_ERROR_PAYLOAD_BASE),
+        WasmInstr::I32GeS,
+        WasmInstr::LocalGet(payload_local),
+        WasmInstr::I32Const(ValueTag::DIRECT_LOCAL_TOKEN_PAYLOAD_BASE),
+        WasmInstr::I32LtS,
+        WasmInstr::I32And,
+        WasmInstr::If {
+            result_ty: WasmBlockType::Empty,
+        },
+        WasmInstr::Then,
+        WasmInstr::I32Const(ValueTag::TRUE),
+        WasmInstr::Return,
+        WasmInstr::End,
+        WasmInstr::I32Const(ValueTag::FALSE),
+        WasmInstr::Return,
+    ]);
+}
+
+fn append_is_constructor_object_checks(body: &mut Vec<WasmInstr>, heap_ptr_local: usize) {
+    use ts2wasm_runtime_catalog::{BuiltinConstructorKind, spec as builtin_ctor_spec};
+
+    for kind in BuiltinConstructorKind::ALL {
+        let ctor_spec = builtin_ctor_spec(*kind);
+        if ctor_spec.sentinel_payload.is_some() {
+            continue;
+        }
+        body.extend([
+            WasmInstr::LocalGet(heap_ptr_local),
+            WasmInstr::GlobalGet(format!("${}", kind.constructor_global())),
+            WasmInstr::I32Eq,
+            WasmInstr::If {
+                result_ty: WasmBlockType::Empty,
+            },
+            WasmInstr::Then,
+            WasmInstr::I32Const(if ctor_spec.is_constructable {
+                ValueTag::TRUE
+            } else {
+                ValueTag::FALSE
+            }),
+            WasmInstr::Return,
+            WasmInstr::End,
+        ]);
+    }
+
+    body.extend([WasmInstr::I32Const(ValueTag::FALSE), WasmInstr::Return]);
+}
+
+/// Build the `$is_constructor` helper.
+///
+/// Remaining raw escape hatches: none.
+pub fn build_is_constructor() -> WasmFunction {
+    let tag = 1;
+    let payload = 2;
+    let heap_ptr = 3;
+    let mut body = vec![
+        WasmInstr::LocalGet(0),
+        WasmInstr::I32Const(ValueTag::TAG_MASK),
+        WasmInstr::I32And,
+        WasmInstr::LocalSet(tag),
+    ];
+
+    body.extend([
+        WasmInstr::LocalGet(tag),
+        WasmInstr::I32Const(ValueTag::NUMBER),
+        WasmInstr::I32Eq,
+        WasmInstr::If {
+            result_ty: WasmBlockType::Empty,
+        },
+        WasmInstr::Then,
+        WasmInstr::LocalGet(0),
+        WasmInstr::I32Const(ValueTag::NUMBER_SHIFT),
+        WasmInstr::I32ShrS,
+        WasmInstr::LocalSet(payload),
+    ]);
+    append_is_constructor_number_checks(&mut body, payload);
+    body.push(WasmInstr::End);
+
+    body.extend([
+        WasmInstr::LocalGet(tag),
+        WasmInstr::I32Const(ValueTag::OBJECT),
+        WasmInstr::I32Eq,
+        WasmInstr::If {
+            result_ty: WasmBlockType::Empty,
+        },
+        WasmInstr::Then,
+        WasmInstr::LocalGet(0),
+        WasmInstr::I32Const(ValueTag::HEAP_MASK),
+        WasmInstr::I32And,
+        WasmInstr::LocalSet(heap_ptr),
+    ]);
+    append_is_constructor_object_checks(&mut body, heap_ptr);
+    body.push(WasmInstr::End);
+
+    body.extend([WasmInstr::I32Const(ValueTag::FALSE), WasmInstr::Return]);
+
+    WasmFunction::new("$is_constructor")
+        .param(WasmValType::I32)
+        .result(WasmValType::I32)
+        .local(WasmValType::I32)
+        .local(WasmValType::I32)
+        .local(WasmValType::I32)
+        .body(body)
+}
+
+/// Build the catchable TypeError helper used by native `Reflect.construct`.
+pub(crate) fn build_reflect_construct_type_error(data: RuntimeCatchableErrorData) -> WasmFunction {
+    build_runtime_catchable_error("$reflect_construct_type_error", 0, data)
+}
+
 /// Build the `$reflect_construct` function.
 ///
 /// Remaining raw escape hatches: none.
 pub fn build_reflect_construct() -> WasmFunction {
+    let effective_new_target = 3;
+    let is_ctor = 4;
+
     WasmFunction::new("$reflect_construct")
         .param(WasmValType::I32)
         .param(WasmValType::I32)
+        .param(WasmValType::I32)
         .result(WasmValType::I32)
+        .local(WasmValType::I32)
+        .local(WasmValType::I32)
         .body(vec![
+            WasmInstr::LocalGet(2),
+            WasmInstr::LocalSet(effective_new_target),
+            WasmInstr::LocalGet(effective_new_target),
+            WasmInstr::I32Const(ValueTag::UNDEFINED),
+            WasmInstr::I32Eq,
+            WasmInstr::If {
+                result_ty: WasmBlockType::Empty,
+            },
+            WasmInstr::Then,
             WasmInstr::LocalGet(0),
-            WasmInstr::LocalGet(1),
-            WasmInstr::Call("$host_reflect_construct".to_owned()),
+            WasmInstr::LocalSet(effective_new_target),
+            WasmInstr::End,
+            WasmInstr::LocalGet(effective_new_target),
+            WasmInstr::Call("$is_constructor".to_owned()),
+            WasmInstr::LocalSet(is_ctor),
+            WasmInstr::LocalGet(is_ctor),
+            WasmInstr::I32Eqz,
+            WasmInstr::If {
+                result_ty: WasmBlockType::Empty,
+            },
+            WasmInstr::Then,
+            WasmInstr::Call("$reflect_construct_type_error".to_owned()),
+            WasmInstr::Return,
+            WasmInstr::End,
+            WasmInstr::I32Const(ValueTag::NULL),
+            WasmInstr::Call("$object_create".to_owned()),
         ])
 }
 
@@ -35683,6 +35834,26 @@ pub fn build_number_to_i32() -> WasmFunction {
                 result_ty: WasmBlockType::Empty,
             },
             WasmInstr::Then,
+            // Check for sentinel encoded values (NaN, +Inf, -Inf, -0).
+            // These all have bit 31 set and bits 28-30 clear (pattern 0x8...) with NUMBER tag (4):
+            //   NaN:     0x80000004
+            //   +Inf:    0x8000000C
+            //   -Inf:    0x80000014
+            //   -0:      0x8000001C
+            // The mask 0xF0000007 checks bits 31-28 and the low-3 tag bits.
+            WasmInstr::LocalGet(0),
+            WasmInstr::I32Const(0xF0000007u32 as i32),
+            WasmInstr::I32And,
+            WasmInstr::I32Const(0x80000004u32 as i32),
+            WasmInstr::I32Eq,
+            WasmInstr::If {
+                result_ty: WasmBlockType::Empty,
+            },
+            WasmInstr::Then,
+            // ToInt32(NaN) = ToInt32(+Inf) = ToInt32(-Inf) = ToInt32(-0) = +0
+            WasmInstr::I32Const(RuntimeConst::ZERO),
+            WasmInstr::Return,
+            WasmInstr::End,
             WasmInstr::LocalGet(0),
             WasmInstr::I32Const(ValueTag::NUMBER_SHIFT),
             WasmInstr::I32ShrS,
@@ -48674,15 +48845,25 @@ mod tests {
         let construct = build_reflect_construct();
         let construct_wasm = encode_and_validate_with_stubs(
             construct.clone(),
-            vec![stub_function(
-                "$host_reflect_construct",
-                &[WasmValType::I32, WasmValType::I32],
-                &[WasmValType::I32],
-            )],
+            vec![
+                stub_function("$is_constructor", &[WasmValType::I32], &[WasmValType::I32]),
+                stub_function("$reflect_construct_type_error", &[], &[WasmValType::I32]),
+                stub_function("$object_create", &[WasmValType::I32], &[WasmValType::I32]),
+            ],
         );
         assert!(construct_wasm.starts_with(b"\0asm"));
-        assert!(construct.body.iter().any(
-            |instr| matches!(instr, WasmInstr::Call(symbol) if symbol == "$host_reflect_construct")
+        assert!(
+            construct.body.iter().any(
+                |instr| matches!(instr, WasmInstr::Call(symbol) if symbol == "$is_constructor")
+            )
+        );
+        assert!(
+            construct.body.iter().any(
+                |instr| matches!(instr, WasmInstr::Call(symbol) if symbol == "$object_create")
+            )
+        );
+        assert!(construct.body.iter().all(
+            |instr| !matches!(instr, WasmInstr::Call(symbol) if symbol == "$host_reflect_construct")
         ));
 
         for f in [apply, construct] {

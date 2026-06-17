@@ -34,7 +34,7 @@ pub use mir_validate::validate_mir;
 pub(crate) use program::*;
 pub use program::{lower_program, lower_program_with_module_specs, lower_program_with_module_url};
 pub(crate) use symbols::FunctionSignature;
-pub use ts2wasm_runtime_catalog::RuntimeFn;
+pub use ts2wasm_runtime_catalog::{BuiltinConstructorKind, RuntimeFn};
 pub(crate) use types::*;
 pub use types::{
     BuiltinErrorConstructor, ClassPrototypeRef, ClosureRepresentation, FuncId, FunctionCallKind,

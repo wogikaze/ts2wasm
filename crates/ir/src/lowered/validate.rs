@@ -681,6 +681,7 @@ fn validate_expr(
             }
         }
         LoweredExpr::BuiltinErrorPrototype(_, _) => {}
+        LoweredExpr::BuiltinConstructor(_, _) => {}
         LoweredExpr::This(..) => {
             errors.push(Diagnostic {
                 code: DiagCode::InvariantViolation,

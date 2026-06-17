@@ -479,7 +479,9 @@ impl WatEmitter<'_> {
             LoweredExpr::ClassPrototype(prototype, _) => {
                 emitter::add_class_prototype_ref(prototype, prototypes);
             }
-            LoweredExpr::BuiltinErrorPrototype(_, _) | LoweredExpr::ErrorNew { .. } => {}
+            LoweredExpr::BuiltinErrorPrototype(_, _)
+            | LoweredExpr::BuiltinConstructor(_, _)
+            | LoweredExpr::ErrorNew { .. } => {}
             LoweredExpr::Block { stmts, result, .. } => {
                 Self::collect_class_prototypes_from_stmts(stmts, prototypes);
                 Self::collect_class_prototypes_from_expr(result, prototypes);
@@ -624,6 +626,7 @@ impl WatEmitter<'_> {
             LoweredExpr::BuiltinErrorPrototype(constructor, _) => {
                 emitter::add_builtin_error_prototype_ref(*constructor, prototypes);
             }
+            LoweredExpr::BuiltinConstructor(_, _) => {}
             LoweredExpr::Block { stmts, result, .. } => {
                 Self::collect_builtin_error_prototypes_from_stmts(stmts, prototypes);
                 Self::collect_builtin_error_prototypes_from_expr(result, prototypes);

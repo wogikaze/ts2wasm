@@ -912,6 +912,26 @@ impl<'a> NativeLoweredEmitter<'a> {
             }
         }
 
+        use ts2wasm_runtime_catalog::{BuiltinConstructorKind, spec};
+        for kind in BuiltinConstructorKind::ALL {
+            let ctor_spec = spec(*kind);
+            if ctor_spec.sentinel_payload.is_some() {
+                continue;
+            }
+            let ctor_global = format!("${}", kind.constructor_global());
+            if global_symbols.insert(ctor_global.clone()) {
+                module = module.global(WasmGlobal::i32_mut(ctor_global, 0));
+            }
+            if let Some(proto_global) = ctor_spec.prototype_global
+                && !proto_global.starts_with("error_proto_")
+            {
+                let proto_name = format!("${proto_global}");
+                if global_symbols.insert(proto_name.clone()) {
+                    module = module.global(WasmGlobal::i32_mut(proto_name, 0));
+                }
+            }
+        }
+
         let native_runtime_symbols = native_runtime_functions
             .iter()
             .map(|function| function.symbol.clone())
@@ -1488,6 +1508,232 @@ impl<'a> NativeLoweredEmitter<'a> {
         }
     }
 
+    /// Flags for builtin constructor objects: `name`/`length`/`prototype` are
+    /// non-enumerable and non-writable; `prototype` is non-configurable.
+    const BUILTIN_CTOR_OBJECT_FLAGS: i32 = (1 << Layout::OBJECT_NON_ENUM_SHIFT)
+        | (1 << (Layout::OBJECT_NON_ENUM_SHIFT + 1))
+        | (1 << (Layout::OBJECT_NON_ENUM_SHIFT + 2))
+        | (1 << Layout::OBJECT_NON_WRITABLE_SHIFT)
+        | (1 << (Layout::OBJECT_NON_WRITABLE_SHIFT + 1))
+        | (1 << (Layout::OBJECT_NON_WRITABLE_SHIFT + 2))
+        | (1 << (Layout::OBJECT_NON_CONFIGURABLE_SHIFT + 2));
+
+    fn emit_builtin_constructor_initializers(&mut self, body: &mut Vec<WasmInstr>) {
+        use ts2wasm_runtime_catalog::{BuiltinConstructorKind, spec};
+
+        for kind in BuiltinConstructorKind::ALL {
+            if spec(*kind).sentinel_payload.is_some() {
+                continue;
+            }
+            self.emit_lazy_builtin_prototype_shell_initializer(body, *kind);
+        }
+        for kind in BuiltinConstructorKind::ALL {
+            if spec(*kind).sentinel_payload.is_some() {
+                continue;
+            }
+            self.emit_lazy_builtin_constructor_initializer(body, *kind);
+        }
+        for kind in BuiltinConstructorKind::ALL {
+            if spec(*kind).sentinel_payload.is_some() {
+                continue;
+            }
+            self.emit_lazy_builtin_prototype_constructor_link(body, *kind);
+        }
+    }
+
+    fn emit_lazy_builtin_prototype_shell_initializer(
+        &mut self,
+        body: &mut Vec<WasmInstr>,
+        kind: ts2wasm_runtime_catalog::BuiltinConstructorKind,
+    ) {
+        let ctor_spec = ts2wasm_runtime_catalog::spec(kind);
+        let Some(proto_global) = ctor_spec.prototype_global else {
+            return;
+        };
+        if proto_global.starts_with("error_proto_") {
+            return;
+        }
+        let global_name = format!("${proto_global}");
+        let entry_count = 1;
+        let size = Layout::OBJECT_HEADER_SIZE + entry_count as u32 * Layout::OBJECT_ENTRY_SIZE;
+
+        body.extend([
+            WasmInstr::GlobalGet(global_name.clone()),
+            WasmInstr::I32Eqz,
+            WasmInstr::If {
+                result_ty: WasmBlockType::Empty,
+            },
+            WasmInstr::Then,
+            WasmInstr::I32Const(size as i32),
+            WasmInstr::Call(RuntimeFn::AllocHeap.symbol().to_owned()),
+            WasmInstr::GlobalSet(global_name.clone()),
+            WasmInstr::GlobalGet(global_name.clone()),
+            WasmInstr::I32Const(entry_count),
+            WasmInstr::I32Store {
+                align: 2,
+                offset: 0,
+            },
+            WasmInstr::GlobalGet(global_name.clone()),
+            WasmInstr::I32Const(1 << Layout::OBJECT_NON_ENUM_SHIFT),
+            WasmInstr::I32Store {
+                align: 2,
+                offset: Layout::OBJECT_FLAGS_OFFSET as u32,
+            },
+            WasmInstr::GlobalGet(global_name.clone()),
+            WasmInstr::I32Const(0),
+            WasmInstr::I32Store {
+                align: 2,
+                offset: Layout::OBJECT_PROTOTYPE_OFFSET as u32,
+            },
+            WasmInstr::End,
+        ]);
+    }
+
+    fn emit_lazy_builtin_prototype_constructor_link(
+        &mut self,
+        body: &mut Vec<WasmInstr>,
+        kind: ts2wasm_runtime_catalog::BuiltinConstructorKind,
+    ) {
+        let ctor_spec = ts2wasm_runtime_catalog::spec(kind);
+        let Some(proto_global) = ctor_spec.prototype_global else {
+            return;
+        };
+        if proto_global.starts_with("error_proto_") {
+            return;
+        }
+        let global_name = format!("${proto_global}");
+        let ctor_global = format!("${}", crate::emitter::builtin_constructor_global(kind));
+        let constructor_key = self.insert_dynamic_string_value("constructor");
+
+        body.extend([
+            WasmInstr::GlobalGet(global_name.clone()),
+            WasmInstr::I32Const(constructor_key),
+            WasmInstr::I32Store {
+                align: 2,
+                offset: Layout::OBJECT_ENTRIES_OFFSET as u32,
+            },
+            WasmInstr::GlobalGet(global_name.clone()),
+            WasmInstr::GlobalGet(ctor_global),
+            WasmInstr::I32Const(ValueTag::OBJECT),
+            WasmInstr::I32Or,
+            WasmInstr::I32Store {
+                align: 2,
+                offset: (Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_VALUE_OFFSET) as u32,
+            },
+        ]);
+    }
+
+    fn emit_lazy_builtin_constructor_initializer(
+        &mut self,
+        body: &mut Vec<WasmInstr>,
+        kind: ts2wasm_runtime_catalog::BuiltinConstructorKind,
+    ) {
+        let ctor_spec = ts2wasm_runtime_catalog::spec(kind);
+        let global_name = format!("${}", crate::emitter::builtin_constructor_global(kind));
+        let entry_count = 3;
+        let size = Layout::OBJECT_HEADER_SIZE + entry_count as u32 * Layout::OBJECT_ENTRY_SIZE;
+
+        let name_key = self.insert_dynamic_string_value("name");
+        let length_key = self.insert_dynamic_string_value("length");
+        let prototype_key = self.insert_dynamic_string_value("prototype");
+        let name_value = self.insert_dynamic_string_value(ctor_spec.name);
+        let length_value = ValueTag::encode_number(ctor_spec.length as i32);
+
+        body.extend([
+            WasmInstr::GlobalGet(global_name.clone()),
+            WasmInstr::I32Eqz,
+            WasmInstr::If {
+                result_ty: WasmBlockType::Empty,
+            },
+            WasmInstr::Then,
+            WasmInstr::I32Const(size as i32),
+            WasmInstr::Call(RuntimeFn::AllocHeap.symbol().to_owned()),
+            WasmInstr::GlobalSet(global_name.clone()),
+            WasmInstr::GlobalGet(global_name.clone()),
+            WasmInstr::I32Const(entry_count),
+            WasmInstr::I32Store {
+                align: 2,
+                offset: 0,
+            },
+            WasmInstr::GlobalGet(global_name.clone()),
+            WasmInstr::I32Const(Self::BUILTIN_CTOR_OBJECT_FLAGS),
+            WasmInstr::I32Store {
+                align: 2,
+                offset: Layout::OBJECT_FLAGS_OFFSET as u32,
+            },
+            WasmInstr::GlobalGet(global_name.clone()),
+            WasmInstr::I32Const(0),
+            WasmInstr::I32Store {
+                align: 2,
+                offset: Layout::OBJECT_PROTOTYPE_OFFSET as u32,
+            },
+        ]);
+
+        body.extend([
+            WasmInstr::GlobalGet(global_name.clone()),
+            WasmInstr::I32Const(name_key),
+            WasmInstr::I32Store {
+                align: 2,
+                offset: Layout::OBJECT_ENTRIES_OFFSET as u32,
+            },
+            WasmInstr::GlobalGet(global_name.clone()),
+            WasmInstr::I32Const(name_value),
+            WasmInstr::I32Store {
+                align: 2,
+                offset: (Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_VALUE_OFFSET) as u32,
+            },
+        ]);
+
+        let length_entry = Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_ENTRY_SIZE;
+        body.extend([
+            WasmInstr::GlobalGet(global_name.clone()),
+            WasmInstr::I32Const(length_key),
+            WasmInstr::I32Store {
+                align: 2,
+                offset: length_entry as u32,
+            },
+            WasmInstr::GlobalGet(global_name.clone()),
+            WasmInstr::I32Const(length_value),
+            WasmInstr::I32Store {
+                align: 2,
+                offset: (length_entry + Layout::OBJECT_VALUE_OFFSET) as u32,
+            },
+        ]);
+
+        let proto_entry = Layout::OBJECT_ENTRIES_OFFSET + 2 * Layout::OBJECT_ENTRY_SIZE;
+        body.extend([
+            WasmInstr::GlobalGet(global_name.clone()),
+            WasmInstr::I32Const(prototype_key),
+            WasmInstr::I32Store {
+                align: 2,
+                offset: proto_entry as u32,
+            },
+        ]);
+        if let Some(proto_global) = ctor_spec.prototype_global {
+            body.extend([
+                WasmInstr::GlobalGet(global_name.clone()),
+                WasmInstr::GlobalGet(format!("${proto_global}")),
+                WasmInstr::I32Const(ValueTag::OBJECT),
+                WasmInstr::I32Or,
+                WasmInstr::I32Store {
+                    align: 2,
+                    offset: (proto_entry + Layout::OBJECT_VALUE_OFFSET) as u32,
+                },
+            ]);
+        } else {
+            body.extend([
+                WasmInstr::GlobalGet(global_name.clone()),
+                WasmInstr::I32Const(ValueTag::UNDEFINED),
+                WasmInstr::I32Store {
+                    align: 2,
+                    offset: (proto_entry + Layout::OBJECT_VALUE_OFFSET) as u32,
+                },
+            ]);
+        }
+
+        body.push(WasmInstr::End);
+    }
+
     fn emit_start(&mut self) -> Result<WasmFunction, Diagnostic> {
         let mut locals = HashMap::new();
         let mut wasm = WasmFunction::new(START_SYMBOL);
@@ -1544,6 +1790,7 @@ impl<'a> NativeLoweredEmitter<'a> {
             gc_call_frame_roots,
         ));
         self.emit_error_prototype_initializers(&mut body);
+        self.emit_builtin_constructor_initializers(&mut body);
         for module_info in &self.program.modules {
             body.push(WasmInstr::Call(module_init_symbol(module_info.id)));
         }
@@ -3549,12 +3796,20 @@ impl<'a> NativeLoweredEmitter<'a> {
                 }
                 self.emit_expr(expr, ctx, out)?;
                 match op {
-                    LoweredUnaryOp::Plus => Ok(()),
+                    LoweredUnaryOp::Plus => {
+                        out.push(WasmInstr::Call(
+                            "$primitive_to_number_for_equality".to_owned(),
+                        ));
+                        Ok(())
+                    }
                     LoweredUnaryOp::Not => {
                         out.push(WasmInstr::I32Eqz);
                         Ok(())
                     }
                     LoweredUnaryOp::Negate => {
+                        out.push(WasmInstr::Call(
+                            "$primitive_to_number_for_equality".to_owned(),
+                        ));
                         out.push(WasmInstr::I32Const(-1));
                         out.push(WasmInstr::I32Mul);
                         Ok(())
@@ -3626,8 +3881,15 @@ impl<'a> NativeLoweredEmitter<'a> {
             LoweredExpr::ArrayNew { elements, .. } => {
                 self.emit_runtime_rest_array(elements, ctx, out)
             }
-            LoweredExpr::ObjectNew { .. } => {
-                out.push(WasmInstr::I32Const(STATIC_REF_TOKEN));
+            LoweredExpr::ObjectNew {
+                props,
+                non_enumerable,
+                ..
+            } => {
+                if self.try_emit_static_value_expr(expr, ctx, out)? {
+                    return Ok(());
+                }
+                self.emit_runtime_object_new(props, *non_enumerable, ctx, out)?;
                 Ok(())
             }
             LoweredExpr::PropertyGet { obj, key, .. } => {
@@ -4284,7 +4546,10 @@ impl<'a> NativeLoweredEmitter<'a> {
                         }
                     }
                     out.push(WasmInstr::Call(intrinsic.symbol().to_owned()));
-                    if matches!(intrinsic, RuntimeFn::BigIntDiv | RuntimeFn::BigIntRem) {
+                    if matches!(
+                        intrinsic,
+                        RuntimeFn::BigIntDiv | RuntimeFn::BigIntRem | RuntimeFn::ReflectConstruct
+                    ) {
                         self.emit_branch_if_exception_pending_preserving_value(ctx, out);
                     }
                     return Ok(());
@@ -4847,6 +5112,19 @@ impl<'a> NativeLoweredEmitter<'a> {
                 out.push(WasmInstr::I32Or);
                 Ok(())
             }
+            LoweredExpr::BuiltinConstructor(kind, _) => {
+                if let Some(sentinel) = kind.tagged_sentinel() {
+                    out.push(WasmInstr::I32Const(sentinel));
+                } else {
+                    out.push(WasmInstr::GlobalGet(format!(
+                        "${}",
+                        kind.constructor_global()
+                    )));
+                    out.push(WasmInstr::I32Const(ValueTag::OBJECT));
+                    out.push(WasmInstr::I32Or);
+                }
+                Ok(())
+            }
             LoweredExpr::ClassPrototype(_, _) => {
                 out.push(WasmInstr::I32Const(STATIC_REF_TOKEN));
                 Ok(())
@@ -4981,6 +5259,72 @@ impl<'a> NativeLoweredEmitter<'a> {
         self.emit_concat_arg_as_tagged(arg, ctx, out)?;
         out.push(WasmInstr::I32Const(-8));
         out.push(WasmInstr::I32And);
+        Ok(())
+    }
+
+    fn emit_runtime_object_new(
+        &mut self,
+        props: &[(String, LoweredExpr)],
+        non_enumerable: u32,
+        ctx: &FunctionCtx,
+        out: &mut Vec<WasmInstr>,
+    ) -> Result<(), Diagnostic> {
+        let prop_count = props.len() as u32;
+        let size = Layout::OBJECT_HEADER_SIZE + prop_count * Layout::OBJECT_ENTRY_SIZE;
+
+        out.push(WasmInstr::I32Const(size as i32));
+        out.push(WasmInstr::Call(RuntimeFn::AllocHeap.symbol().to_owned()));
+        local_set_with_gc_mirror(out, ctx, ctx.switch_value_local);
+
+        out.push(WasmInstr::LocalGet(ctx.switch_value_local));
+        out.push(WasmInstr::I32Const(prop_count as i32));
+        out.push(WasmInstr::I32Store {
+            align: 2,
+            offset: 0,
+        });
+
+        let flags = non_enumerable << Layout::OBJECT_NON_ENUM_SHIFT;
+        out.push(WasmInstr::LocalGet(ctx.switch_value_local));
+        out.push(WasmInstr::I32Const(flags as i32));
+        out.push(WasmInstr::I32Store {
+            align: 2,
+            offset: Layout::OBJECT_FLAGS_OFFSET as u32,
+        });
+
+        out.push(WasmInstr::LocalGet(ctx.switch_value_local));
+        out.push(WasmInstr::Call(
+            RuntimeFn::ObjectPrototype.symbol().to_owned(),
+        ));
+        out.push(WasmInstr::I32Const(ValueTag::HEAP_MASK));
+        out.push(WasmInstr::I32And);
+        out.push(WasmInstr::I32Store {
+            align: 2,
+            offset: Layout::OBJECT_PROTOTYPE_OFFSET as u32,
+        });
+
+        for (index, (key, value)) in props.iter().enumerate() {
+            let entry_offset =
+                Layout::OBJECT_ENTRIES_OFFSET + index as u32 * Layout::OBJECT_ENTRY_SIZE;
+            let key_tagged = self.insert_dynamic_string_value(key);
+
+            out.push(WasmInstr::LocalGet(ctx.switch_value_local));
+            out.push(WasmInstr::I32Const(key_tagged));
+            out.push(WasmInstr::I32Store {
+                align: 2,
+                offset: entry_offset,
+            });
+
+            out.push(WasmInstr::LocalGet(ctx.switch_value_local));
+            self.emit_concat_arg_as_tagged(value, ctx, out)?;
+            out.push(WasmInstr::I32Store {
+                align: 2,
+                offset: entry_offset + Layout::OBJECT_VALUE_OFFSET,
+            });
+        }
+
+        out.push(WasmInstr::LocalGet(ctx.switch_value_local));
+        out.push(WasmInstr::I32Const(ValueTag::OBJECT));
+        out.push(WasmInstr::I32Or);
         Ok(())
     }
 
@@ -8055,17 +8399,28 @@ impl<'a> NativeLoweredEmitter<'a> {
         let Some(intrinsic) = native_numeric_binary_runtime_fn(op) else {
             return Ok(false);
         };
-        if !self.native_raw_number_operand_in_ctx(left, ctx)
-            || !self.native_raw_number_operand_in_ctx(right, ctx)
+        if self.native_raw_number_operand_in_ctx(left, ctx)
+            && self.native_raw_number_operand_in_ctx(right, ctx)
         {
-            return Ok(false);
+            // Fast path: both operands are raw numbers.
+            self.emit_raw_number_expr_as_tagged(left, ctx, out)?;
+            self.emit_raw_number_expr_as_tagged(right, ctx, out)?;
+            out.push(WasmInstr::Call(intrinsic.symbol().to_owned()));
+            out.push(WasmInstr::Call(RuntimeFn::NumberToI32.symbol().to_owned()));
+            return Ok(true);
         }
-
-        self.emit_raw_number_expr_as_tagged(left, ctx, out)?;
-        self.emit_raw_number_expr_as_tagged(right, ctx, out)?;
-        out.push(WasmInstr::Call(intrinsic.symbol().to_owned()));
-        out.push(WasmInstr::Call(RuntimeFn::NumberToI32.symbol().to_owned()));
-        Ok(true)
+        // Tagged path: at least one operand is a tagged value.
+        // Emit both as tagged values, call the runtime function,
+        // and keep the result as tagged (no NumberToI32 conversion).
+        if self.can_emit_js_value_expr_as_tagged(left, ctx)
+            && self.can_emit_js_value_expr_as_tagged(right, ctx)
+        {
+            self.emit_js_value_expr_as_tagged(left, ctx, out)?;
+            self.emit_js_value_expr_as_tagged(right, ctx, out)?;
+            out.push(WasmInstr::Call(intrinsic.symbol().to_owned()));
+            return Ok(true);
+        }
+        Ok(false)
     }
 
     fn try_emit_bitwise_runtime_call(
@@ -8148,9 +8503,9 @@ impl<'a> NativeLoweredEmitter<'a> {
             out.push(WasmInstr::I32Const(i32::from(value)));
             return Ok(true);
         }
-        if !self.can_emit_js_value_expr_as_tagged(left, ctx)
-            || !self.can_emit_js_value_expr_as_tagged(right, ctx)
-        {
+        let can_left = self.can_emit_js_value_expr_as_tagged(left, ctx);
+        let can_right = self.can_emit_js_value_expr_as_tagged(right, ctx);
+        if !can_left || !can_right {
             return Ok(false);
         }
 
@@ -8287,6 +8642,15 @@ impl<'a> NativeLoweredEmitter<'a> {
                 )
             }
             LoweredExpr::ArrayNew { .. } | LoweredExpr::ArrayNewSparse { .. } => true,
+            LoweredExpr::ArrayGet { .. } => true,
+            LoweredExpr::Binary {
+                left, op, right, ..
+            } if native_numeric_binary_runtime_fn(*op).is_some()
+                && !matches!(op, LoweredBinaryOp::Add) =>
+            {
+                self.can_emit_js_value_expr_as_tagged(left, ctx)
+                    && self.can_emit_js_value_expr_as_tagged(right, ctx)
+            }
             _ => false,
         }
     }
@@ -8452,37 +8816,59 @@ impl<'a> NativeLoweredEmitter<'a> {
             LoweredExpr::Call {
                 kind: FunctionCallKind::User(func_id),
                 ..
-            } => {
-                let return_ty = user_function_return_type(&self.program.functions, *func_id);
-                let returns_tagged = user_function_returns_tagged_runtime_value(
-                    &self.program.functions,
-                    *func_id,
-                    &mut HashSet::new(),
-                );
-                self.emit_expr(expr, ctx, out)?;
-                if returns_tagged {
-                    return Ok(());
-                }
-                match return_ty {
-                    InferredType::Number => out.push(WasmInstr::Call(
-                        RuntimeFn::NumberFromI32.symbol().to_owned(),
-                    )),
-                    InferredType::Boolean => emit_raw_bool_to_tagged(out),
-                    InferredType::String | InferredType::Unknown => {
-                        return Err(unsupported(
-                            "native LoweredProgram emitter cannot tag this function call operand",
-                        ));
-                    }
-                }
-                Ok(())
-            }
+            } => self.emit_user_function_call_as_tagged(expr, *func_id, ctx, out),
             LoweredExpr::ArrayNew { .. } | LoweredExpr::ArrayNewSparse { .. } => {
                 self.emit_expr(expr, ctx, out)
+            }
+            LoweredExpr::ArrayGet { .. } => self.emit_expr(expr, ctx, out),
+            LoweredExpr::Binary {
+                left, op, right, ..
+            } if native_numeric_binary_runtime_fn(*op).is_some()
+                && !matches!(op, LoweredBinaryOp::Add) =>
+            {
+                self.emit_js_value_expr_as_tagged(left, ctx, out)?;
+                self.emit_js_value_expr_as_tagged(right, ctx, out)?;
+                let intrinsic = native_numeric_binary_runtime_fn(*op).unwrap();
+                out.push(WasmInstr::Call(intrinsic.symbol().to_owned()));
+                Ok(())
             }
             _ => Err(unsupported(
                 "native LoweredProgram emitter cannot tag this equality operand",
             )),
         }
+    }
+
+    fn emit_user_function_call_as_tagged(
+        &mut self,
+        expr: &LoweredExpr,
+        func_id: FuncId,
+        ctx: &FunctionCtx,
+        out: &mut Vec<WasmInstr>,
+    ) -> Result<(), Diagnostic> {
+        let return_ty = user_function_return_type(&self.program.functions, func_id);
+        let returns_tagged = user_function_returns_tagged_runtime_value(
+            &self.program.functions,
+            func_id,
+            &mut HashSet::new(),
+        );
+        self.emit_expr(expr, ctx, out)?;
+        if returns_tagged {
+            return Ok(());
+        }
+        match return_ty {
+            InferredType::Number => {
+                out.push(WasmInstr::Call(
+                    RuntimeFn::NumberFromI32.symbol().to_owned(),
+                ));
+            }
+            InferredType::Boolean => emit_raw_bool_to_tagged(out),
+            InferredType::String | InferredType::Unknown => {
+                return Err(unsupported(
+                    "native LoweredProgram emitter cannot tag this function call operand",
+                ));
+            }
+        }
+        Ok(())
     }
 
     /// Try to emit a static value as a tagged runtime value.
@@ -14666,6 +15052,20 @@ fn static_exception_completion_from_expr(
         span,
         ..
     } = expr
+        && args.len() == 3
+        && !static_reflect_construct_three_arg_is_constructor(args, locals, functions)
+    {
+        return Some(Some(StaticExceptionCompletion::Throw(
+            static_reflect_construct_nonconstructor_type_error_value(*span, locals, functions)?,
+        )));
+    }
+
+    if let LoweredExpr::RuntimeCall {
+        intrinsic: RuntimeFn::ReflectConstruct,
+        args,
+        span,
+        ..
+    } = expr
         && args.len() == 2
         && let Some(value) =
             static_reflect_construct_nonconstructor_type_error(args, *span, locals, functions)
@@ -14742,6 +15142,98 @@ fn static_reflect_construct_nonconstructor_type_error(
         )?)),
         _ => None,
     }
+}
+
+fn static_reflect_construct_nonconstructor_type_error_value(
+    span: Span,
+    locals: &HashMap<LocalId, StaticValue>,
+    functions: &[LoweredFunction],
+) -> Option<StaticValue> {
+    Some(StaticValue::Object(static_error_object_value(
+        BuiltinErrorConstructor::TypeError,
+        &LoweredExpr::String("#<Object> is not a constructor".to_owned(), span),
+        None,
+        None,
+        span,
+        locals,
+        functions,
+    )?))
+}
+
+fn static_reflect_construct_three_arg_is_constructor(
+    args: &[LoweredExpr],
+    locals: &HashMap<LocalId, StaticValue>,
+    functions: &[LoweredFunction],
+) -> bool {
+    let [target, _arg_array, new_target] = args else {
+        return false;
+    };
+    let effective_new_target = if matches!(new_target, LoweredExpr::Undefined(_)) {
+        target
+    } else {
+        new_target
+    };
+    static_expr_is_reflect_construct_constructor(effective_new_target, locals, functions)
+}
+
+fn static_expr_is_reflect_construct_constructor(
+    expr: &LoweredExpr,
+    locals: &HashMap<LocalId, StaticValue>,
+    functions: &[LoweredFunction],
+) -> bool {
+    if let LoweredExpr::BuiltinConstructor(kind, _) = expr {
+        return ts2wasm_runtime_catalog::spec(*kind).is_constructable;
+    }
+    if let LoweredExpr::ArrowFn { .. } = expr {
+        return true;
+    }
+    if let LoweredExpr::ObjectNew { .. } = expr {
+        return false;
+    }
+    if matches!(expr, LoweredExpr::Null(_) | LoweredExpr::Undefined(_)) {
+        return false;
+    }
+    if let LoweredExpr::Number(payload, _) = expr {
+        let payload = if payload & ValueTag::TAG_MASK == ValueTag::NUMBER {
+            payload >> ValueTag::NUMBER_SHIFT
+        } else {
+            *payload
+        };
+        return (payload >= ValueTag::NATIVE_ERROR_PAYLOAD_BASE
+            && payload < ValueTag::DIRECT_LOCAL_TOKEN_PAYLOAD_BASE)
+            || payload >= ValueTag::DIRECT_LOCAL_TOKEN_PAYLOAD_BASE;
+    }
+    if let Some(value) = static_value_from_expr_with_functions(expr, locals, functions) {
+        return match value {
+            StaticValue::Primitive(inner) => {
+                static_expr_is_reflect_construct_constructor(&inner, locals, functions)
+            }
+            StaticValue::Object(_) | StaticValue::ObjectAlias(_) => false,
+            StaticValue::Closure { .. } => true,
+            _ => false,
+        };
+    }
+    false
+}
+
+fn static_try_reflect_construct_only(
+    try_body: &[LoweredStmt],
+    locals: &HashMap<LocalId, StaticValue>,
+    functions: &[LoweredFunction],
+) -> Option<bool> {
+    let [LoweredStmt::Expr(expr, _)] = try_body else {
+        return None;
+    };
+    let LoweredExpr::RuntimeCall {
+        intrinsic: RuntimeFn::ReflectConstruct,
+        args,
+        ..
+    } = expr
+    else {
+        return None;
+    };
+    (args.len() == 3)
+        .then(|| static_reflect_construct_three_arg_is_constructor(args, locals, functions))
 }
 
 fn stmts_contain_try_finally(stmts: &[LoweredStmt]) -> bool {
@@ -25733,8 +26225,63 @@ fn static_user_function_eval_stmts(
                     return Some(Some(value));
                 }
             }
+            LoweredStmt::TryCatch {
+                try_body,
+                catch_var,
+                catch_body,
+                finally_body,
+                ..
+            } => {
+                if let Some(value) = static_user_function_eval_try_catch(
+                    try_body,
+                    catch_var.as_ref(),
+                    catch_body.as_deref(),
+                    finally_body.as_deref(),
+                    locals,
+                    functions,
+                )? {
+                    return Some(Some(value));
+                }
+            }
             _ => return None,
         }
+    }
+    Some(None)
+}
+
+fn static_user_function_eval_try_catch(
+    try_body: &[LoweredStmt],
+    catch_var: Option<&LocalId>,
+    catch_body: Option<&[LoweredStmt]>,
+    finally_body: Option<&[LoweredStmt]>,
+    locals: &mut HashMap<LocalId, StaticValue>,
+    functions: &[LoweredFunction],
+) -> Option<Option<StaticValue>> {
+    let is_ctor = static_try_reflect_construct_only(try_body, locals, functions)?;
+    if !is_ctor {
+        let mut catch_locals = locals.clone();
+        if let Some(catch_var) = catch_var {
+            if let Some(value) = static_reflect_construct_nonconstructor_type_error_value(
+                Span::generated("reflect_construct_type_error"),
+                locals,
+                functions,
+            ) {
+                insert_static_local_value(&mut catch_locals, *catch_var, value);
+            }
+        }
+        if let Some(catch_body) = catch_body
+            && let Some(value) =
+                static_user_function_eval_stmts(catch_body, &mut catch_locals, functions)?
+        {
+            return Some(Some(value));
+        }
+        return Some(Some(StaticValue::Primitive(LoweredExpr::Bool(
+            false,
+            Span::generated("reflect_construct_false"),
+        ))));
+    }
+    if let Some(finally_body) = finally_body {
+        collect_static_locals_with_functions(finally_body, locals, functions);
     }
     Some(None)
 }
@@ -31406,6 +31953,7 @@ fn collect_synthetic_runtime_functions_from_expr(
         | LoweredExpr::EnvCellGet(..)
         | LoweredExpr::ClassPrototype(..)
         | LoweredExpr::BuiltinErrorPrototype(..)
+        | LoweredExpr::BuiltinConstructor(..)
         | LoweredExpr::ModuleLoad { .. }
         | LoweredExpr::This(..)
         | LoweredExpr::ArrowFn { .. } => {}
@@ -36585,6 +37133,7 @@ fn native_expr_unsupported_reason(expr: &LoweredExpr) -> &'static str {
         | LoweredExpr::New { .. }
         | LoweredExpr::ClassPrototype(_, _)
         | LoweredExpr::BuiltinErrorPrototype(_, _)
+        | LoweredExpr::BuiltinConstructor(_, _)
         | LoweredExpr::ModuleLoad { .. }
         | LoweredExpr::Block { .. } => {
             "native LoweredProgram emitter does not support this expression variant"
@@ -36672,7 +37221,9 @@ fn native_typeof_bytes(expr: &LoweredExpr, ctx: &FunctionCtx) -> Option<&'static
         | LoweredExpr::ArrayNewSparse { .. }
         | LoweredExpr::ErrorNew { .. }
         | LoweredExpr::ClassPrototype(_, _) => Some(b"object"),
-        LoweredExpr::BuiltinErrorPrototype(_, _) => Some(b"function"),
+        LoweredExpr::BuiltinErrorPrototype(_, _) | LoweredExpr::BuiltinConstructor(_, _) => {
+            Some(b"function")
+        }
         LoweredExpr::RuntimeCall {
             intrinsic: RuntimeFn::SymbolWellKnown,
             ..
@@ -36973,6 +37524,7 @@ fn native_expr_can_run_in_catchable_try(
         | LoweredExpr::Local(_, _)
         | LoweredExpr::ClassPrototype(_, _)
         | LoweredExpr::BuiltinErrorPrototype(_, _)
+        | LoweredExpr::BuiltinConstructor(_, _)
         | LoweredExpr::ModuleLoad { .. }
         | LoweredExpr::ArrowFn { .. }
         | LoweredExpr::This(_) => true,
@@ -37201,6 +37753,7 @@ fn native_expr_may_throw(
         | LoweredExpr::Local(_, _)
         | LoweredExpr::ClassPrototype(_, _)
         | LoweredExpr::BuiltinErrorPrototype(_, _)
+        | LoweredExpr::BuiltinConstructor(_, _)
         | LoweredExpr::ModuleLoad { .. }
         | LoweredExpr::ArrowFn { .. }
         | LoweredExpr::This(_) => false,

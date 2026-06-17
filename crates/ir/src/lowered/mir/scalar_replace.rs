@@ -745,6 +745,7 @@ fn expr_has_dynamic_access(expr: &MirExpr, obj_local: LocalId) -> bool {
         | MirExpr::This(..)
         | MirExpr::ClassPrototype(..)
         | MirExpr::BuiltinErrorPrototype(..)
+        | MirExpr::BuiltinConstructor(..)
         | MirExpr::ModuleLoad { .. }
         | MirExpr::ArrowFn { .. } => false,
     }
@@ -1088,6 +1089,7 @@ fn expr_has_direct_intermediate_access(
         | MirExpr::EnvCellGet(..)
         | MirExpr::ClassPrototype(..)
         | MirExpr::BuiltinErrorPrototype(..)
+        | MirExpr::BuiltinConstructor(..)
         | MirExpr::ModuleLoad { .. }
         | MirExpr::ArrowFn { .. } => false,
     }
@@ -1340,6 +1342,7 @@ fn expr_has_variable_index_access(expr: &MirExpr, arr_local: LocalId) -> bool {
         | MirExpr::EnvCellGet(..)
         | MirExpr::ClassPrototype(..)
         | MirExpr::BuiltinErrorPrototype(..)
+        | MirExpr::BuiltinConstructor(..)
         | MirExpr::ModuleLoad { .. }
         | MirExpr::ArrowFn { .. } => false,
     }
@@ -1941,6 +1944,7 @@ fn rewrite_expr(
         | MirExpr::EnvCellGet(..)
         | MirExpr::ClassPrototype(..)
         | MirExpr::BuiltinErrorPrototype(..)
+        | MirExpr::BuiltinConstructor(..)
         | MirExpr::ModuleLoad { .. }
         | MirExpr::ArrowFn { .. } => expr.clone(),
 
@@ -2340,7 +2344,8 @@ fn span_of(expr: &MirExpr) -> ts2wasm_source::Span {
         | MirExpr::This(s)
         | MirExpr::EnvCellGet(_, s)
         | MirExpr::ClassPrototype(_, s)
-        | MirExpr::BuiltinErrorPrototype(_, s) => *s,
+        | MirExpr::BuiltinErrorPrototype(_, s)
+        | MirExpr::BuiltinConstructor(_, s) => *s,
         MirExpr::BigIntLiteral { span: s, .. }
         | MirExpr::EnvCellNew(_, s)
         | MirExpr::Unary { span: s, .. }

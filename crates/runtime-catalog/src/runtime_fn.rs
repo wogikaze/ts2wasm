@@ -1138,7 +1138,6 @@ const IMPORT_STRING_NORMALIZE: &[HostImport] = &[HostImport::StringNormalize];
 const IMPORT_INTL_NUMBER_FORMAT_FORMAT: &[HostImport] = &[HostImport::IntlNumberFormatFormat];
 const IMPORT_INTL_DATE_TIME_FORMAT_FORMAT: &[HostImport] = &[HostImport::IntlDateTimeFormatFormat];
 const IMPORT_REFLECT_APPLY: &[HostImport] = &[HostImport::ReflectApply];
-const IMPORT_REFLECT_CONSTRUCT: &[HostImport] = &[HostImport::ReflectConstruct];
 const IMPORT_GET_ITERATOR: &[HostImport] = &[HostImport::GetIterator];
 const IMPORT_ITERATOR_NEXT: &[HostImport] = &[HostImport::IteratorNext];
 const IMPORT_ITERATOR_MAP: &[HostImport] = &[HostImport::IteratorMap];
@@ -1206,7 +1205,6 @@ const CAP_HOST_MATH_TANH: &[Capability] = &[Capability::HostMathTanh];
 const CAP_HOST_MATH_ATAN2: &[Capability] = &[Capability::HostMathAtan2];
 const CAP_HOST_MATH_HYPOT: &[Capability] = &[Capability::HostMathHypot];
 const CAP_HOST_REFLECT_APPLY: &[Capability] = &[Capability::HostReflectApply];
-const CAP_HOST_REFLECT_CONSTRUCT: &[Capability] = &[Capability::HostReflectConstruct];
 const CAP_HOST_GET_ITERATOR: &[Capability] = &[Capability::HostGetIterator];
 const CAP_HOST_ITERATOR_NEXT: &[Capability] = &[Capability::HostIteratorNext];
 const CAP_HOST_ITERATOR_MAP: &[Capability] = &[Capability::HostIteratorMap];
@@ -1287,6 +1285,16 @@ const BIGINT_STRING_COMPARISON_BOUNDARY_ERROR_RUNTIME_STRINGS: &[&str] =
 const PRIVATE_BRAND_TYPE_ERROR_RUNTIME_STRINGS: &[&str] = &[
     RuntimeString::PRIVATE_BRAND_TYPE_ERROR,
     "Cannot read private member from an object whose class did not declare it",
+    "message",
+];
+const REFLECT_CONSTRUCT_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::ObjectCreate,
+    RuntimeFn::AllocHeap,
+    RuntimeFn::Write,
+];
+const REFLECT_CONSTRUCT_RUNTIME_STRINGS: &[&str] = &[
+    RuntimeString::REFLECT_CONSTRUCT_NOT_CONSTRUCTOR_TYPE_ERROR,
+    "#<Object> is not a constructor",
     "message",
 ];
 const HEAP_CLOSURE_CALL_RUNTIME_STRINGS: &[&str] = &[RuntimeString::NOT_CALLABLE_TYPE_ERROR];
@@ -2905,7 +2913,6 @@ impl RuntimeFn {
             | Self::Index
             | Self::ReflectDeleteProperty
             | Self::ReflectHas
-            | Self::ReflectConstruct
             | Self::ReflectSetPrototypeOf
             | Self::IteratorMap
             | Self::IteratorFilter
@@ -3073,6 +3080,7 @@ impl RuntimeFn {
             | Self::PropertyHas
             | Self::ObjectDefineProperty
             | Self::ReflectApply
+            | Self::ReflectConstruct
             | Self::ReflectDefineProperty
             | Self::ReflectGet
             | Self::DateSetUTCMonth

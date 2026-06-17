@@ -16,8 +16,8 @@ use ts2wasm_runtime_abi::ValueTag;
 use ts2wasm_runtime_abi::consts::{RuntimeConst, RuntimeString};
 
 use super::emitter::{
-    builtin_error_prototype_global, builtin_error_stack_prefix, class_prototype_global,
-    function_symbol,
+    builtin_constructor_global, builtin_error_prototype_global, builtin_error_stack_prefix,
+    class_prototype_global, function_symbol,
 };
 use super::stmt_emit::LoopContext;
 
@@ -305,6 +305,9 @@ impl WatEmitter<'_> {
                 }
             }
             LoweredExpr::New { .. } => self.emit_new_expr(writer, expr, indent, frame),
+            LoweredExpr::BuiltinConstructor(kind, _) => {
+                self.emit_builtin_constructor_expr(writer, *kind, indent);
+            }
             LoweredExpr::ClassPrototype(..) | LoweredExpr::BuiltinErrorPrototype(..) => {
                 self.emit_prototype_expr(writer, expr, indent)
             }
@@ -2558,6 +2561,24 @@ impl WatEmitter<'_> {
             local_index(*base_local),
             ValueTag::OBJECT,
         ));
+    }
+
+    fn emit_builtin_constructor_expr(
+        &self,
+        writer: &mut WatWriter,
+        kind: ts2wasm_runtime_catalog::BuiltinConstructorKind,
+        indent: usize,
+    ) {
+        let pad = " ".repeat(indent);
+        if let Some(sentinel) = kind.tagged_sentinel() {
+            writer.i32_const(indent, sentinel);
+        } else {
+            writer.push_str(&format!(
+                "{pad}(i32.or (global.get ${}) (i32.const {}))\n",
+                builtin_constructor_global(kind),
+                ValueTag::OBJECT,
+            ));
+        }
     }
 
     fn emit_prototype_expr(&self, writer: &mut WatWriter, expr: &LoweredExpr, indent: usize) {

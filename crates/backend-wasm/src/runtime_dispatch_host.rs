@@ -36,6 +36,34 @@ impl WatEmitter<'_> {
             RuntimeFn::SymbolToString => self.emit_symbol_to_string(wat),
             RuntimeFn::SymbolDescription => self.emit_symbol_description(wat),
             RuntimeFn::SymbolWellKnown => self.emit_symbol_well_known(wat),
+            RuntimeFn::GetIterator
+            | RuntimeFn::IteratorNext
+            | RuntimeFn::IteratorFrom
+            | RuntimeFn::IteratorMap
+            | RuntimeFn::IteratorFilter
+            | RuntimeFn::IteratorTake
+            | RuntimeFn::IteratorDrop
+            | RuntimeFn::IteratorToArray
+            | RuntimeFn::IteratorReduce
+            | RuntimeFn::IteratorForEach
+            | RuntimeFn::IteratorSome
+            | RuntimeFn::IteratorEvery
+            | RuntimeFn::IteratorFind
+            | RuntimeFn::GeneratorYield => self.emit_dispatch_host_iterator(f, wat),
+            RuntimeFn::EvalDirectHost => self.emit_eval_direct_host(wat),
+            RuntimeFn::EvalIndirectHost => self.emit_eval_indirect_host(wat),
+            RuntimeFn::FunctionCompileHost => self.emit_function_compile_host(wat),
+            RuntimeFn::FunctionCallHost => self.emit_function_call_host(wat),
+            RuntimeFn::FunctionCallMethodHost => self.emit_function_call_method_host(wat),
+            RuntimeFn::FunctionConstructHost => self.emit_function_construct_host(wat),
+            RuntimeFn::GeneratorReturn => self.emit_generator_return(wat),
+            RuntimeFn::GeneratorNext => self.emit_generator_next(wat),
+            _ => unreachable!("non-host RuntimeFn routed to host dispatch"),
+        }
+    }
+
+    fn emit_dispatch_host_iterator(&mut self, f: RuntimeFn, wat: &mut String) {
+        match f {
             RuntimeFn::GetIterator => self.emit_get_iterator(wat),
             RuntimeFn::IteratorNext => self.emit_iterator_next(wat),
             RuntimeFn::IteratorFrom => self.emit_iterator_from(wat),
@@ -50,15 +78,7 @@ impl WatEmitter<'_> {
             RuntimeFn::IteratorEvery => self.emit_iterator_every(wat),
             RuntimeFn::IteratorFind => self.emit_iterator_find(wat),
             RuntimeFn::GeneratorYield => self.emit_generator_yield(wat),
-            RuntimeFn::EvalDirectHost => self.emit_eval_direct_host(wat),
-            RuntimeFn::EvalIndirectHost => self.emit_eval_indirect_host(wat),
-            RuntimeFn::FunctionCompileHost => self.emit_function_compile_host(wat),
-            RuntimeFn::FunctionCallHost => self.emit_function_call_host(wat),
-            RuntimeFn::FunctionCallMethodHost => self.emit_function_call_method_host(wat),
-            RuntimeFn::FunctionConstructHost => self.emit_function_construct_host(wat),
-            RuntimeFn::GeneratorReturn => self.emit_generator_return(wat),
-            RuntimeFn::GeneratorNext => self.emit_generator_next(wat),
-            _ => unreachable!("non-host RuntimeFn routed to host dispatch"),
+            _ => unreachable!("non-iterator RuntimeFn routed to iterator dispatch"),
         }
     }
 }

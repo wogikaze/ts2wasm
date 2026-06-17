@@ -394,6 +394,7 @@ directories:
     - object-freeze.ts
     - object-get-own-property-descriptor-unsupported.ts
     - object-get-own-property-descriptor.ts
+    - builtin-constructor-descriptors.ts
     - object-get-own-property-names.ts
     - object-get-prototype-of.ts
     - object-has-own.ts
@@ -534,6 +535,7 @@ directories:
     - promise-job-order.ts
     - proxy-traps-comprehensive.ts
     - reflect-apply-construct.ts
+    - reflect-construct-is-constructor.ts
     - reflect-basic.ts
     - regexp-advanced.ts
     - set-entries.ts

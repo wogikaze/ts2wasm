@@ -157,40 +157,8 @@ fn fold_constants_in_stmts(stmts: &mut Vec<MirStmt>) -> bool {
 /// Returns `true` if any replacement was made.
 fn fold_constants_in_expr(expr: &mut MirExpr) -> bool {
     match expr {
-        // Phi folding: if all values are the same constant, fold to that constant.
-        MirExpr::Phi { values, span } => {
-            if let Some(constant) = try_fold_phi(values) {
-                *expr = constant;
-                return true;
-            }
-            // Recurse into values even if Phi didn't fold.
-            let mut changed = false;
-            for v in values.iter_mut() {
-                changed |= fold_constants_in_expr(v);
-            }
-            changed
-        }
-
-        // Select folding: if condition is known bool, fold to appropriate branch.
-        MirExpr::Select {
-            condition,
-            true_value,
-            false_value,
-            span,
-        } => {
-            // First, recurse into sub-expressions.
-            let cond_changed = fold_constants_in_expr(condition);
-            let true_changed = fold_constants_in_expr(true_value);
-            let false_changed = fold_constants_in_expr(false_value);
-
-            // Now try folding the Select itself.
-            if let Some(constant) = try_fold_select(condition, true_value, false_value) {
-                *expr = constant;
-                return true;
-            }
-
-            cond_changed || true_changed || false_changed
-        }
+        MirExpr::Phi { .. } => fold_constants_in_phi(expr),
+        MirExpr::Select { .. } => fold_constants_in_select(expr),
 
         // Recurse into other compound expressions.
         MirExpr::Unary { expr: inner, .. } => fold_constants_in_expr(inner),
@@ -351,9 +319,45 @@ fn fold_constants_in_expr(expr: &mut MirExpr) -> bool {
         | MirExpr::This(_)
         | MirExpr::ClassPrototype(..)
         | MirExpr::BuiltinErrorPrototype(..)
+        | MirExpr::BuiltinConstructor(..)
         | MirExpr::ModuleLoad { .. }
         | MirExpr::ArrowFn { .. } => false,
     }
+}
+
+fn fold_constants_in_phi(expr: &mut MirExpr) -> bool {
+    let MirExpr::Phi { values, .. } = expr else {
+        return false;
+    };
+    if let Some(constant) = try_fold_phi(values) {
+        *expr = constant;
+        return true;
+    }
+    let mut changed = false;
+    for v in values.iter_mut() {
+        changed |= fold_constants_in_expr(v);
+    }
+    changed
+}
+
+fn fold_constants_in_select(expr: &mut MirExpr) -> bool {
+    let MirExpr::Select {
+        condition,
+        true_value,
+        false_value,
+        ..
+    } = expr
+    else {
+        return false;
+    };
+    let cond_changed = fold_constants_in_expr(condition);
+    let true_changed = fold_constants_in_expr(true_value);
+    let false_changed = fold_constants_in_expr(false_value);
+    if let Some(constant) = try_fold_select(condition, true_value, false_value) {
+        *expr = constant;
+        return true;
+    }
+    cond_changed || true_changed || false_changed
 }
 
 // ---------------------------------------------------------------------------

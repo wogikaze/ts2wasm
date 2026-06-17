@@ -2601,10 +2601,10 @@ match self {
             },
             Self::ReflectConstruct => RuntimeSpec {
                 symbol: "$reflect_construct",
-                deps: &[RuntimeFn::AllocHeap, RuntimeFn::Copy],
-                imports: IMPORT_REFLECT_CONSTRUCT,
-                capability: CAP_HOST_REFLECT_CONSTRUCT,
-                runtime_strings: NO_RUNTIME_STRINGS,
+                deps: REFLECT_CONSTRUCT_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: REFLECT_CONSTRUCT_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
             Self::Add => RuntimeSpec {

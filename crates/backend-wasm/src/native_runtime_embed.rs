@@ -220,6 +220,14 @@ impl NativeRuntimeStringTable {
         }
     }
 
+    fn reflect_construct_type_error_data(&self) -> RuntimeCatchableErrorData {
+        RuntimeCatchableErrorData {
+            diagnostic: self.reference(RuntimeString::REFLECT_CONSTRUCT_NOT_CONSTRUCTOR_TYPE_ERROR),
+            message_key: self.value("message"),
+            message_value: self.value("#<Object> is not a constructor"),
+        }
+    }
+
     pub(crate) fn get(&self, value: &'static str) -> RuntimeStringRef {
         self.reference(value)
     }
@@ -763,6 +771,7 @@ fn expr_contains_runtime_call_matching(
         | LoweredExpr::EnvCellGet(..)
         | LoweredExpr::ClassPrototype(..)
         | LoweredExpr::BuiltinErrorPrototype(..)
+        | LoweredExpr::BuiltinConstructor(..)
         | LoweredExpr::ModuleLoad { .. }
         | LoweredExpr::This(..)
         | LoweredExpr::ArrowFn { .. } => false,
@@ -1752,7 +1761,7 @@ fn build_native_runtime_function(
         RuntimeFn::ReflectHas => Some(typed::build_reflect_has()),
         RuntimeFn::ReflectOwnKeys => Some(typed::build_reflect_own_keys()),
         RuntimeFn::ReflectApply => Some(typed::build_reflect_apply()),
-        RuntimeFn::ReflectConstruct => Some(typed::build_reflect_construct()),
+        RuntimeFn::ReflectConstruct => None,
         RuntimeFn::ProcessArgv => Some(typed::build_process_argv()),
         RuntimeFn::ProcessEnv => Some(typed::build_process_env()),
         RuntimeFn::ProcessExit => Some(typed::build_process_exit()),
@@ -2406,6 +2415,13 @@ fn build_native_runtime_functions_for(
         ],
         RuntimeFn::IsFinite => vec![typed::build_is_finite_string(), typed::build_is_finite()],
         RuntimeFn::IsNaN => vec![typed::build_is_nan_string(), typed::build_is_nan()],
+        RuntimeFn::ReflectConstruct => vec![
+            typed::build_is_constructor(),
+            typed::build_reflect_construct_type_error(
+                data.strings.reflect_construct_type_error_data(),
+            ),
+            typed::build_reflect_construct(),
+        ],
         _ => build_native_runtime_function(runtime_fn, data)
             .into_iter()
             .collect(),
@@ -2446,6 +2462,7 @@ fn native_helper_symbols_for(runtime_fn: RuntimeFn) -> &'static [&'static str] {
             "$bigint_string_to_small_int_for_comparison",
             "$is_bigint",
         ],
+        RuntimeFn::ReflectConstruct => &["$is_constructor", "$reflect_construct_type_error"],
         _ => &[],
     }
 }
@@ -5492,7 +5509,7 @@ mod tests {
             module
                 .imports
                 .iter()
-                .any(|import| import.func_symbol == "$host_reflect_construct")
+                .all(|import| import.func_symbol != "$host_reflect_construct")
         );
 
         let wasm = emit_wasm_module_binary(&module).expect("reflect host helpers should encode");
@@ -6350,15 +6367,21 @@ mod tests {
             .expect("three-arg Reflect.construct should emit");
         assert!(
             module
-                .imports
+                .functions
                 .iter()
-                .any(|import| import.func_symbol == "$host_reflect_construct")
+                .any(|function| function.symbol == RuntimeFn::ReflectConstruct.symbol())
         );
         assert!(
             module
                 .functions
                 .iter()
-                .any(|function| function.symbol == RuntimeFn::ReflectConstruct.symbol())
+                .any(|function| function.symbol == "$is_constructor")
+        );
+        assert!(
+            module
+                .imports
+                .iter()
+                .all(|import| import.func_symbol != "$host_reflect_construct")
         );
     }
 

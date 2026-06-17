@@ -26,6 +26,7 @@ pub enum EscapeStatus {
 }
 
 pub type MirBinaryOp = LoweredBinaryOp;
+pub type MirBuiltinConstructorKind = ts2wasm_runtime_catalog::BuiltinConstructorKind;
 pub type MirBuiltinErrorConstructor = BuiltinErrorConstructor;
 pub type MirClassPrototypeRef = ClassPrototypeRef;
 pub type MirClosureRepresentation = ClosureRepresentation;
@@ -334,6 +335,7 @@ pub enum MirExpr {
     },
     ClassPrototype(ClassPrototypeRef, Span),
     BuiltinErrorPrototype(BuiltinErrorConstructor, Span),
+    BuiltinConstructor(MirBuiltinConstructorKind, Span),
     ModuleLoad {
         module_id: usize,
         kind: ModuleLoadKind,

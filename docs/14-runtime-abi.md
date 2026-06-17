@@ -84,6 +84,8 @@ Object payloads use:
 
 Each property entry is `(key_raw_value, value)` and uses `OBJECT_ENTRY_SIZE`. Property attribute masks currently cover bounded small-object slices; broader descriptor storage must extend the ABI explicitly.
 
+Builtin constructor globals are heap objects with `name`, `length`, and `prototype` data properties. They are registered during module start and referenced by `$builtin_ctor_*` globals. Error-family constructors may additionally use reserved NUMBER-tagged sentinel payloads (`ERROR_PAYLOAD`, `AGGREGATE_ERROR_PAYLOAD`) for backward-compatible reflective operations.
+
 ### BigInt And Heap Number
 
 BigInt payload stores sign, limb count, first-limb low/high words, and a cached decimal spelling. Current dynamic BigInt support is a signed-i64/small multi-limb slice, not a complete arbitrary-precision engine.

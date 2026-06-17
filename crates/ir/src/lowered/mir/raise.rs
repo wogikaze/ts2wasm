@@ -291,6 +291,7 @@ pub(super) fn mir_expr_to_lower(expr: &MirExpr) -> LoweredExpr {
         MirExpr::BuiltinErrorPrototype(ctor, span) => {
             LoweredExpr::BuiltinErrorPrototype(*ctor, *span)
         }
+        MirExpr::BuiltinConstructor(kind, span) => LoweredExpr::BuiltinConstructor(*kind, *span),
         MirExpr::ModuleLoad {
             module_id,
             kind,

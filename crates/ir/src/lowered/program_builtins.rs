@@ -35,13 +35,8 @@ pub(crate) fn builtin_function_data_descriptor(name: &str, span: Span) -> Option
 }
 
 pub(crate) fn known_global_value_expr(name: &str, span: Span) -> Option<LoweredExpr> {
-    // Builtin error constructors use NATIVE_ERROR_PAYLOAD sentinel tokens
-    // so that runtime reflective operations (typeof, getPrototypeOf,
-    // getOwnPropertyDescriptor, ===) can work correctly.
-    // Only AggregateError uses the sentinel for now — Error is kept as
-    // a string to avoid regressions in Error method resolution.
-    if name == "AggregateError" {
-        return Some(LoweredExpr::Number(ValueTag::AGGREGATE_ERROR_VALUE, span));
+    if let Some(kind) = ts2wasm_runtime_catalog::BuiltinConstructorKind::from_global_name(name) {
+        return Some(LoweredExpr::BuiltinConstructor(kind, span));
     }
     let (display, typeof_name) = known_global_value_display_and_typeof(name)?;
     Some(global_marker_object_expr(display, typeof_name, span))

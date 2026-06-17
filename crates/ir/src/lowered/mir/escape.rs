@@ -419,7 +419,9 @@ fn mark_expr(expr: &MirExpr, status: &mut [Option<EscapeStatus>]) {
             mark_expr(object, status);
         }
 
-        MirExpr::ClassPrototype(_, _) | MirExpr::BuiltinErrorPrototype(_, _) => {}
+        MirExpr::ClassPrototype(_, _)
+        | MirExpr::BuiltinErrorPrototype(_, _)
+        | MirExpr::BuiltinConstructor(_, _) => {}
 
         MirExpr::ModuleLoad { .. } => {}
 
@@ -636,6 +638,7 @@ fn collect_alias_edges_in_expr(dest: LocalId, expr: &MirExpr, edges: &mut Vec<(L
         | MirExpr::This(_)
         | MirExpr::ClassPrototype(_, _)
         | MirExpr::BuiltinErrorPrototype(_, _)
+        | MirExpr::BuiltinConstructor(_, _)
         | MirExpr::ModuleLoad { .. }
         | MirExpr::ArrowFn { .. }
         | MirExpr::PropertySet { .. }
@@ -681,6 +684,7 @@ fn mark_locals_in_expr(expr: &MirExpr, status: &mut [Option<EscapeStatus>]) {
         | MirExpr::This(_)
         | MirExpr::ClassPrototype(_, _)
         | MirExpr::BuiltinErrorPrototype(_, _)
+        | MirExpr::BuiltinConstructor(_, _)
         | MirExpr::ModuleLoad { .. }
         | MirExpr::ArrowFn { .. } => {}
 
