@@ -39,6 +39,20 @@ def load_exceptions() -> dict:
         return tomllib.load(f)
 
 
+def validate_exception_ids(ids: set[str]) -> list[str]:
+    """Check that all provided exception IDs correspond to real files in the exceptions file."""
+    violations = []
+    exc = load_exceptions()
+    legacy = exc.get("legacy_files", {})
+    valid_ids = set(legacy.keys())
+    for eid in ids:
+        if eid not in valid_ids:
+            violations.append(
+                f"ERROR --allow-exception '{eid}' not found in architecture-exceptions.toml legacy_files"
+            )
+    return violations
+
+
 def get_file_exception(rel_path: str) -> dict | None:
     exc = load_exceptions()
     for fpath, info in exc.get("legacy_files", {}).items():
@@ -124,7 +138,10 @@ def main():
         else:
             i += 1
 
-    violations = check_touched_files()
+    violations = []
+    # Validate that --allow-exception IDs actually exist in the exceptions file
+    violations.extend(validate_exception_ids(ALLOWED_EXCEPTION_IDS))
+    violations.extend(check_touched_files())
     for v in violations:
         print(f"legacy_freeze: {v}", file=sys.stderr)
 
