@@ -74,23 +74,22 @@ def check_dispatch_coverage() -> list[str]:
     # Check for wildcard matches in dispatch functions
     for fpath in get_dispatch_files():
         text = fpath.read_text()
-        # Find match blocks that might use wildcards
-        match_blocks = re.finditer(
-            r"match\s+.*?\{(.*?)\n\s+\}",
-            text,
-            re.MULTILINE | re.DOTALL,
-        )
-        for mb in match_blocks:
-            body = mb.group(1)
-            if re.search(r"^\s+_\s*=>", body, re.MULTILINE):
-                rel = fpath.relative_to(REPO_ROOT)
-                # Only flag if it's covering SpecOp variants
-                if "SpecOp" in body or "self" in mb.group(0):
-                    # Check if the wildcard is truly a catch-all
-                    violations.append(
-                        f"WARN {rel}: wildcard match in SpecOp dispatch — "
-                        f"new variants may be silently ignored"
-                    )
+        lines = text.splitlines()
+        rel = fpath.relative_to(REPO_ROOT)
+        in_dispatch_fn = False
+        for i, line in enumerate(lines):
+            # Track if we're inside a fn that looks like dispatch
+            stripped = line.strip()
+            if re.match(r'^\s*(pub\s+)?fn\s+(dispatch|emit|execute|run|apply|call)', stripped):
+                in_dispatch_fn = True
+            elif stripped.startswith('fn ') or stripped.startswith('pub fn '):
+                in_dispatch_fn = False
+            if in_dispatch_fn and re.match(r'^\s+_\s*=>', stripped):
+                violations.append(
+                    f"ERROR {rel}:{i+1}: wildcard match in SpecOp dispatch function — "
+                    f"new variants may be silently ignored"
+                )
+                in_dispatch_fn = False
 
     return violations
 
@@ -101,10 +100,25 @@ def run_self_test():
     if not variants:
         print("FAIL: cannot parse SpecOp enum", file=sys.stderr)
         errors += 1
+
+    # Negative test: fake variant not found in dispatch
+    fake_called = get_called_variants()
+    if "FakeNewOp" in fake_called:
+        print("FAIL: FakeNewOp found in dispatch (should not exist)", file=sys.stderr)
+        errors += 1
+
+    # Negative test: check wildcard detection works
+    # The actual spec_kernel has a wildcard match in spec_op.rs - verify it's reported
+    dispatch_violations = check_dispatch_coverage()
+    wildcard_errors = [v for v in dispatch_violations if "wildcard" in v]
+    if not wildcard_errors:
+        # This is expected to be found since spec_op.rs has wildcard
+        print("WARN: no wildcard matches found (may be clean or may indicate false pass)", file=sys.stderr)
+
     if errors:
         print(f"self-test: FAILED ({errors} errors)", file=sys.stderr)
         sys.exit(1)
-    print(f"self-test: OK ({len(variants)} SpecOp variants found)", file=sys.stderr)
+    print(f"self-test: OK ({len(variants)} SpecOp variants, {len(wildcard_errors)} wildcard hits)", file=sys.stderr)
 
 
 def main():

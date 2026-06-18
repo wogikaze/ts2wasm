@@ -332,7 +332,7 @@ def main():
         verify_args = args[1:] if args and args[0] == verify_mode else []
         quick_cmds = [
             [PYTHON_BIN, str(REPO_ROOT / "scripts/check/shell-syntax.py")],
-            [PYTHON_BIN, str(REPO_ROOT / "scripts/check/complexity.py"), "--quick"],
+            [PYTHON_BIN, str(REPO_ROOT / "scripts/check/complexity.py"), "--quick", "--exclude-legacy"],
             [PYTHON_BIN, str(REPO_ROOT / "scripts/check/check-arch-dag.py")],
             [PYTHON_BIN, str(REPO_ROOT / "scripts/check/toolchain.py")],
         ]

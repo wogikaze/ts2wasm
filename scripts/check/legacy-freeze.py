@@ -48,11 +48,24 @@ def get_file_exception(rel_path: str) -> dict | None:
 
 def check_touched_files() -> list[str]:
     violations = []
-    result = subprocess.run(
-        ["git", "diff", "--name-only", "HEAD"],
-        capture_output=True, text=True, cwd=REPO_ROOT,
-    )
-    changed = result.stdout.strip().splitlines()
+    try:
+        result = subprocess.run(
+            ["git", "diff", "--name-only", "HEAD"],
+            capture_output=True, text=True, cwd=REPO_ROOT, timeout=10,
+        )
+        if result.returncode != 0:
+            violations.append(
+                "ERROR git diff failed — cannot verify legacy freeze. "
+                "Run in a git repository."
+            )
+            return violations
+        changed = result.stdout.strip().splitlines()
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        violations.append(
+            "ERROR git not available — cannot verify legacy freeze. "
+            "Run in a git repository."
+        )
+        return violations
 
     for fname in FROZEN_FILES:
         if fname not in changed:

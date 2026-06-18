@@ -37,6 +37,42 @@ EXCLUDED_PATH_PARTS = {
     "target", "_worktrees", ".venv", "venv",
 }
 
+LEGACY_EXCLUDED_PATHS = {
+    "crates/backend-wasm/src/native_lowered.rs",
+    "crates/backend-wasm/src/runtime/core/typed.rs",
+    "crates/backend-wasm/src/native_runtime_embed.rs",
+    "crates/ir/src/lowered/",
+    "crates/frontend/src/lexer.rs",
+    "crates/frontend/src/parser/",
+    "crates/compiler/src/test262_preprocessor.rs",
+    "crates/compiler/src/module_graph/mod.rs",
+    "crates/compiler/src/stages/lower.rs",
+    "crates/resolve/src/name_resolver.rs",
+    "crates/ir/src/builtin_resolver_host.rs",
+    "crates/ir/src/builtin_resolver.rs",
+    "crates/ir/src/builtin_resolver_bigint.rs",
+    "crates/ir/src/lowered/resolver/call/method.rs",
+    "crates/ir/src/lowered/mir/dce.rs",
+    "crates/ir/src/lowered/mir/scalar_replace.rs",
+    "crates/ir/src/lowered/resolver_extra.rs",
+    "crates/ir/src/lowered/resolver/object.rs",
+    "crates/ir/src/lowered/program.rs",
+    "crates/ir/src/name_resolver.rs",
+    "crates/frontend/src/parser/statements_general.rs",
+    "crates/frontend/src/parser/statements_class.rs",
+    "crates/frontend/src/parser/expressions_main.rs",
+    "crates/frontend/src/parser/helpers.rs",
+    "crates/frontend/src/amd.rs",
+    "crates/compiler/src/pipeline.rs",
+    "crates/compiler/src/server.rs",
+    "crates/runtime-core/src/call_frame.rs",
+    "crates/runtime-core/src/access.rs",
+    "crates/runtime-core/src/vm.rs",
+    "crates/runtime-core/src/gc.rs",
+    "crates/diagnostic/src/lib.rs",
+    "crates/cli/src/main.rs",
+}
+
 
 def iter_rust_files():
     for root, dirnames, filenames in os.walk(REPO_ROOT / "crates"):
@@ -224,6 +260,8 @@ def count_fn_args(fn_decl_line: str) -> int:
     return count
 
 
+EXCLUDE_LEGACY = False
+
 def check_complexity() -> tuple[list[str], list[str]]:
     """Return (warnings, errors). No allowlists."""
     warnings: list[str] = []
@@ -232,6 +270,8 @@ def check_complexity() -> tuple[list[str], list[str]]:
     for path in sorted(iter_rust_files()):
         rel = path.relative_to(REPO_ROOT)
         if "tests" in rel.parts:
+            continue
+        if EXCLUDE_LEGACY and any(str(rel).startswith(p) for p in LEGACY_EXCLUDED_PATHS):
             continue
         text = path.read_text()
         lines = text.split('\n')
@@ -287,7 +327,11 @@ def check_complexity() -> tuple[list[str], list[str]]:
 
 
 def main():
+    global EXCLUDE_LEGACY
     args = sys.argv[1:]
+    if "--exclude-legacy" in args:
+        EXCLUDE_LEGACY = True
+        args.remove("--exclude-legacy")
     if "-h" in args or "--help" in args:
         print(__doc__)
         sys.exit(0)

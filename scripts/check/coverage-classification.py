@@ -65,7 +65,7 @@ def validate_record(record: dict, index: int) -> list[str]:
     return errors
 
 
-def validate_file(path: str) -> list[str]:
+def validate_file(path: str, strict: bool = False) -> list[str]:
     text = Path(path).read_text()
     records = json.loads(text)
     if not isinstance(records, list):
@@ -74,7 +74,64 @@ def validate_file(path: str) -> list[str]:
     errors = []
     for i, record in enumerate(records):
         errors.extend(validate_record(record, i))
+        if strict:
+            kind = record.get("failure_kind", "")
+            if kind == "Unclassified":
+                errors.append(f"record[{i}]: Unclassified is STRICT REJECT — classify properly")
+            status = record.get("status", "")
+            if status == "unclassified":
+                errors.append(f"record[{i}]: status=unclassified is STRICT REJECT")
+            if not record.get("expected_trace", ""):
+                errors.append(f"record[{i}]: missing expected_trace (STRICT)")
+            if not record.get("actual_trace", ""):
+                errors.append(f"record[{i}]: missing actual_trace (STRICT)")
+            if kind == "OptimizationGap":
+                errors.append(
+                    f"record[{i}]: OptimizationGap is not a coverage blocker — "
+                    f"use performance tracking instead"
+                )
     return errors
+
+
+def run_self_test():
+    errors = 0
+
+    # Test: Unclassified reject
+    bad = [{"suite": "test262", "case": "x.js", "failure_kind": "Unclassified",
+            "owning_layer": "??", "first_missing_capability": "??",
+            "required_change": "??", "expected_trace": "??", "actual_trace": "??",
+            "status": "unclassified"}]
+    r = validate_file.__wrapped__ if hasattr(validate_file, '__wrapped__') else validate_file
+    # Direct test
+    import tempfile, json
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+        json.dump(bad, f)
+        fname = f.name
+    errs = validate_file(fname, strict=True)
+    import os
+    os.unlink(fname)
+    if not any("Unclassified" in e for e in errs):
+        print("FAIL: Unclassified not rejected in strict mode", file=sys.stderr)
+        errors += 1
+
+    # Test: empty trace reject
+    bad2 = [{"suite": "test262", "case": "y.js", "failure_kind": "SpecOpGap",
+             "owning_layer": "spec-kernel", "first_missing_capability": "Get",
+             "required_change": "impl Get", "expected_trace": "", "actual_trace": "",
+             "status": "classified"}]
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+        json.dump(bad2, f)
+        fname = f.name
+    errs2 = validate_file(fname, strict=True)
+    os.unlink(fname)
+    if not any("expected_trace" in e for e in errs2):
+        print("FAIL: empty trace not rejected in strict mode", file=sys.stderr)
+        errors += 1
+
+    if errors:
+        print(f"self-test: FAILED ({errors} errors)", file=sys.stderr)
+        sys.exit(1)
+    print("self-test: OK", file=sys.stderr)
 
 
 def print_schema():
@@ -113,18 +170,24 @@ def print_schema():
 
 def main():
     args = sys.argv[1:]
+    strict = "--strict" in args
+    if "--strict" in args:
+        args.remove("--strict")
     if "-h" in args or "--help" in args:
         print(__doc__.strip())
         sys.exit(0)
     if "--schema" in args:
         print_schema()
         return
+    if "--self-test" in args:
+        run_self_test()
+        return
 
     if not args:
-        print("Usage: python scripts/check/coverage-classification.py <file.json>", file=sys.stderr)
+        print("Usage: python scripts/check/coverage-classification.py [--strict] <file.json>", file=sys.stderr)
         sys.exit(1)
 
-    errors = validate_file(args[0])
+    errors = validate_file(args[0], strict=strict)
     for e in errors:
         print(f"coverage_classification: {e}", file=sys.stderr)
 
