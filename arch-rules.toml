@@ -26,9 +26,9 @@ semantics = { allowed_deps = ["source", "syntax", "diagnostic", "resolve", "runt
 
 runtime-abi = { allowed_deps = [], description = "Tagged value layout, ABI constants" }
 runtime-core = { allowed_deps = ["runtime-abi"], description = "JS engine substrate" }
-runtime-catalog = { allowed_deps = ["runtime-abi", "shared", "spec-kernel"], description = "RuntimeFn registry, migration" }
+runtime-catalog = { allowed_deps = ["runtime-abi"], description = "RuntimeFn registry, migration — shared and spec-kernel via ARCH-EXC-015, ARCH-EXC-014" }
 
-semantic-ir = { allowed_deps = ["resolved-types", "runtime-core", "source"], description = "ECMAScript semantic IR" }
+semantic-ir = { allowed_deps = ["resolved-types", "runtime-core"], description = "ECMAScript semantic IR — source via ARCH-EXC-012" }
 spec-kernel = { allowed_deps = ["runtime-core"], description = "SpecOp, internal method dispatch" }
 backend-correctness = { allowed_deps = ["backend-core", "runtime-abi", "runtime-core", "semantic-ir", "spec-kernel", "source"], description = "SemIR → SpecOp → wasm module (spec_emit)" }
 opt-mir = { allowed_deps = ["runtime-core", "spec-kernel"], description = "Guard/deopt IR" }
@@ -39,8 +39,8 @@ ir = { allowed_deps = ["source", "syntax", "diagnostic", "frontend", "resolve", 
 backend-wasm = { allowed_deps = ["source", "diagnostic", "shared", "runtime-abi", "backend-core", "spec-kernel"], description = "LEGACY + spec_emit (transitional). LEGACY deps via ARCH-EXC-001..005. DO NOT add JS semantics. DO NOT extend old emitter. migration_issue: P3 split spec_emit to dedicated crate" }
 backend-core = { allowed_deps = [], description = "Wasm IR types" }
 
-compiler = { allowed_deps = ["frontend", "source", "diagnostic", "syntax", "shared", "ir", "backend-wasm", "backend-core", "semantic-ir", "backend-correctness", "runtime-abi"], description = "Pipeline orchestration" }
-cli = { allowed_deps = ["compiler", "diagnostic", "frontend", "ir", "shared", "backend-wasm", "runtime-abi"], description = "CLI entry point" }
+compiler = { allowed_deps = ["frontend", "source", "diagnostic", "syntax", "shared", "backend-wasm", "backend-core", "semantic-ir", "backend-correctness"], description = "Pipeline orchestration — ir and runtime-abi via ARCH-EXC-006, ARCH-EXC-007" }
+cli = { allowed_deps = ["compiler", "diagnostic", "frontend", "shared"], description = "CLI entry point — ir, backend-wasm, runtime-abi via ARCH-EXC-008, ARCH-EXC-009, ARCH-EXC-010" }
 
 # ── Forbidden patterns ───────────────────────────────────────────────────────
 [forbidden]

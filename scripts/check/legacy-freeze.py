@@ -25,6 +25,8 @@ FROZEN_FILES = [
     "crates/backend-wasm/src/runtime/core/typed.rs",
     "crates/backend-wasm/src/native_runtime_embed.rs",
     "crates/runtime-catalog/src/runtime_fn.rs",
+    # Entire crates/ir/src/lowered/ directory — legacy MIR, DO NOT touch
+    "crates/ir/src/lowered/*",
 ]
 
 ALLOWED_CHANGES = {"delete", "move", "bugfix"}
@@ -87,15 +89,28 @@ def check_touched_files() -> list[str]:
         )
         return violations
 
-    for fname in FROZEN_FILES:
-        if fname not in changed:
+    def is_frozen(changed_path: str) -> str | None:
+        """Return the frozen-file pattern that matches changed_path, or None."""
+        for fname in FROZEN_FILES:
+            if fname.endswith("/*"):
+                # Directory prefix pattern: check if changed_path starts with the prefix
+                prefix = fname[:-1]  # remove trailing '*'
+                if changed_path.startswith(prefix):
+                    return fname
+            elif fname == changed_path:
+                return fname
+        return None
+
+    for changed_path in changed:
+        match = is_frozen(changed_path)
+        if match is None:
             continue
         # Exception only applies if --allow-exception <id> was explicitly passed
         # AND the exception's allowed_change matches AND the exception's file matches
         exc_allowed = False
         for eid in ALLOWED_EXCEPTION_IDS:
-            exc = get_file_exception(fname)
-            if exc and exception_id_matches_file(eid, fname):
+            exc = get_file_exception(changed_path)
+            if exc and exception_id_matches_file(eid, changed_path):
                 allowed = exc.get("allowed_change", "")
                 parts = allowed.split("|")
                 exc_allowed = any(a.strip() in ALLOWED_CHANGES for a in parts)
@@ -104,7 +119,7 @@ def check_touched_files() -> list[str]:
         if exc_allowed:
             continue
         violations.append(
-            f"ERROR {fname} is LEGACY FROZEN — "
+            f"ERROR {changed_path} is LEGACY FROZEN (matches {match}) — "
             f"use --allow-exception <id> to acknowledge the change"
         )
     return violations

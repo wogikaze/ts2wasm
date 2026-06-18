@@ -18,6 +18,7 @@
 | CLI/target/output | `docs/02-execution-model-and-targets.md` | `crates/cli/src/main.rs`, `crates/shared/src/abi.rs` |
 | Capability/host import | `docs/03-api-and-host-capability.md` | `crates/shared/src/capability.rs`, `crates/runtime-catalog/src/link_plan.rs` |
 | 設計判断の背景 | `docs/adr/INDEX.md` | `docs/adr/records/` |
+| Architecture audit | `docs/29-architecture-audit-procedure.md` | `arch-rules.toml`, `architecture-exceptions.toml`, `scripts/check/*` |
 | Compiler pipeline | `docs/04-compiler-architecture-and-runtime.md` | `crates/compiler/src/pipeline.rs` |
 | Semantics/support status | `docs/05-compatibility-and-semantics.md`, `docs/26-semantic-feature-matrix.md`, `docs/language-reference/INDEX.md` | `fixtures/catalog.yaml`, `fixtures/feature-matrix.yaml` |
 | Tests/gates | `docs/06-testing-and-coverage.md`, `docs/15-coverage-matrix.md` | `scripts/manager.py`, `crates/*/tests` |
@@ -62,6 +63,7 @@
 | `27-coverage-expansion-epics.md` | coverage wave grouping |
 | `27-ir-layer-completion.md` | HIR/MIR completion contract |
 | `28-frontend-syntax-ownership.md` | syntax ownership table |
+| `29-architecture-audit-procedure.md` | architecture audit and best-practice alignment procedure |
 
 ## Subdirectory maps
 
