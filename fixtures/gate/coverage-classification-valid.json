@@ -1,0 +1,15 @@
+[
+  {
+    "suite": "test262",
+    "case": "built-ins/Object/getOwnPropertyDescriptor/basic.js",
+    "failure_kind": "SpecOpGap",
+    "owning_layer": "spec-kernel",
+    "first_missing_capability": "OrdinaryGetOwnProperty",
+    "required_change": "Implement SpecOp::GetOwnProperty with OrdinaryGetOwnProperty dispatch",
+    "expected_trace": "ToPropertyKey -> GetOwnProperty -> OrdinaryGetOwnProperty",
+    "actual_trace": "ToPropertyKey -> GetOwnProperty -> stub(returns undefined)",
+    "status": "classified",
+    "evidence": "reports/runs/2026-06-18/specop-trace.jsonl",
+    "linked_issue": "issues/open/123-example.md"
+  }
+]

@@ -26,6 +26,10 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
 
+# Baseline count of exception edges (excepted legacy deps).
+# Increase beyond this baseline is a hard error — it means new legacy edges are being added.
+EXCEPTION_EDGE_BASELINE = 6
+
 
 def load_rules() -> dict:
     path = REPO_ROOT / "arch-rules.toml"
@@ -125,8 +129,9 @@ def check_dag(rules: dict, deps: dict) -> list[str]:
             dep_crate = pkg_to_crate.get(dep, dep)
             if is_excepted_dependency(crate_name, dep_crate, exceptions):
                 violations.append(
-                    f"check_arch_dag: WARN {crate_name} depends on {dep_crate} "
-                    f"only via architecture-exceptions.toml"
+                    f"check_arch_dag: ERROR {crate_name} depends on {dep_crate} "
+                    f"only via architecture-exceptions.toml — "
+                    f"exception edges require documented migration plan"
                 )
                 continue
             violations.append(
@@ -222,6 +227,12 @@ def check_runtimefn_count(rules: dict) -> list[str]:
 
 
 def main():
+    args = sys.argv[1:]
+    reject_increase = "--reject-increase" in args
+    if "-h" in args or "--help" in args:
+        print(__doc__.strip())
+        sys.exit(0)
+
     rules = load_rules()
     metadata = load_cargo_metadata()
     deps = build_dep_map(metadata)
@@ -232,12 +243,38 @@ def main():
     all_violations.extend(check_file_sizes(rules))
     all_violations.extend(check_runtimefn_count(rules))
 
-    for v in all_violations:
-        print(v, file=sys.stderr)
+    # Separate exception-edge errors from other errors
+    exception_errors = [v for v in all_violations if "only via architecture-exceptions.toml" in v]
+    real_errors = [v for v in all_violations if "ERROR" in v and v not in exception_errors]
 
-    if any("ERROR" in v for v in all_violations):
+    for v in all_violations:
+        # With --reject-increase, downgrade baseline exception errors to INFO
+        if reject_increase and v in exception_errors:
+            print(v.replace("ERROR", "INFO"), file=sys.stderr)
+        else:
+            print(v, file=sys.stderr)
+
+    if reject_increase:
+        exception_count = len(exception_errors)
+        if exception_count > EXCEPTION_EDGE_BASELINE:
+            print(
+                f"check_arch_dag: FAILED — exception edge count {exception_count} "
+                f"exceeds baseline {EXCEPTION_EDGE_BASELINE}",
+                file=sys.stderr,
+            )
+            sys.exit(1)
         print(
-            f"check_arch_dag: FAILED ({sum(1 for v in all_violations if 'ERROR' in v)} errors)",
+            f"check_arch_dag: OK ({exception_count} exception edges at baseline, "
+            f"{len(real_errors)} other errors)",
+            file=sys.stderr,
+        )
+        if real_errors:
+            sys.exit(1)
+        sys.exit(0)
+
+    if real_errors or exception_errors:
+        print(
+            f"check_arch_dag: FAILED ({len(real_errors) + len(exception_errors)} errors)",
             file=sys.stderr,
         )
         sys.exit(1)

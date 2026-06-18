@@ -26,6 +26,10 @@ REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
 # RuntimeFn variants that have direct SpecOp equivalents.
 # These should NOT be required by new pipeline output.
 # If any of these appear in emission_order(), something is still using old path.
+# Baseline count of deprecated RuntimeFn variants in emission_order().
+# Any increase beyond this must be prevented — use SpecOp instead.
+DEPRECATED_EMISSION_BASELINE = 24
+
 DEPRECATED_VARIANTS = {
     "PropertyGet",
     "PropertySet",
@@ -54,6 +58,21 @@ DEPRECATED_VARIANTS = {
 }
 
 
+def count_deprecated_in_emission_order() -> int:
+    path = REPO_ROOT / "crates" / "runtime-catalog" / "src" / "runtime_fn.rs"
+    text = path.read_text()
+    fn_match = re.search(
+        r"pub const fn emission_order\(\)\s*->\s*&'static \[RuntimeFn\]\s*\{(.*?)^\}",
+        text,
+        re.MULTILINE | re.DOTALL,
+    )
+    if not fn_match:
+        return 0
+    body = fn_match.group(1)
+    used = set(re.findall(r"Self::(\w+)", body))
+    return len(used & DEPRECATED_VARIANTS)
+
+
 def check_emission_order() -> list[str]:
     path = REPO_ROOT / "crates" / "runtime-catalog" / "src" / "runtime_fn.rs"
     text = path.read_text()
@@ -78,6 +97,17 @@ def check_emission_order() -> list[str]:
             f"but has a SpecOp equivalent — migrate new-path output away from RuntimeFn"
         )
     return violations
+
+
+def check_emission_increase() -> list[str]:
+    count = count_deprecated_in_emission_order()
+    if count > DEPRECATED_EMISSION_BASELINE:
+        return [
+            f"check_runtimefn_deprecation: ERROR deprecated RuntimeFn count increased "
+            f"from {DEPRECATED_EMISSION_BASELINE} to {count} — "
+            f"use SpecOp instead of adding deprecated RuntimeFn to emission_order"
+        ]
+    return []
 
 
 def check_added_deprecated_emission_order() -> list[str]:
@@ -125,19 +155,42 @@ def check_runtimefn_enum() -> list[str]:
     return violations
 
 
+def run_self_test():
+    errors = 0
+    current = count_deprecated_in_emission_order()
+    if current != DEPRECATED_EMISSION_BASELINE:
+        print(f"FAIL: expected {DEPRECATED_EMISSION_BASELINE} deprecated in emission_order, got {current}", file=sys.stderr)
+        errors += 1
+    violations = check_emission_increase()
+    if violations:
+        print(f"FAIL: emission increase check failed at baseline: {violations}", file=sys.stderr)
+        errors += 1
+    if errors:
+        print(f"self-test: FAILED ({errors} errors)", file=sys.stderr)
+        sys.exit(1)
+    print(f"self-test: OK ({current} deprecated in emission_order, at baseline {DEPRECATED_EMISSION_BASELINE})", file=sys.stderr)
+
+
 def main():
     args = sys.argv[1:]
+    reject_increase = "--reject-increase" in args
     migration_complete = "--migration-complete" in args
+    self_test = "--self-test" in args
     if "-h" in args or "--help" in args:
         print(__doc__.strip())
         return
-    unknown = [arg for arg in args if arg not in {"--migration-complete"}]
+    if self_test:
+        run_self_test()
+        return
+    unknown = [arg for arg in args if arg not in {"--reject-increase", "--migration-complete", "--self-test"}]
     if unknown:
         print(f"check_runtimefn_deprecation: unknown arguments: {' '.join(unknown)}", file=sys.stderr)
         sys.exit(2)
 
     violations = []
     violations.extend(check_runtimefn_enum())
+    if reject_increase:
+        violations.extend(check_emission_increase())
     if migration_complete:
         violations.extend(check_emission_order())
     else:
@@ -152,8 +205,10 @@ def main():
             file=sys.stderr,
         )
         sys.exit(1)
+    current_count = count_deprecated_in_emission_order()
     print(
         f"check_runtimefn_deprecation: OK ({len(DEPRECATED_VARIANTS)} tracked, "
+        f"{current_count} in emission_order, "
         f"{'migration complete' if migration_complete else 'no new deprecated emission_order entries'})",
         file=sys.stderr,
     )

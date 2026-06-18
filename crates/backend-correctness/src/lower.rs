@@ -170,10 +170,11 @@ impl CorrectnessLowering {
             SemExpr::Unary { .. } | SemExpr::Binary { .. } => {}
             SemExpr::PropertyGet { object, key, span } => {
                 let object = Self::expr_local(object, locals);
+                let key = Self::materialize_string_key_local(key, ops, locals, *span);
                 ops.push((
                     SpecOp::Get {
                         object,
-                        key: Self::materialize_string_key_local(key, locals),
+                        key,
                         receiver: object,
                     },
                     *span,
@@ -227,11 +228,13 @@ impl CorrectnessLowering {
                 span,
             } => {
                 let object = Self::expr_local(object, locals);
+                let key = Self::materialize_string_key_local(key, ops, locals, *span);
+                let value = Self::expr_local(value, locals);
                 ops.push((
                     SpecOp::Set {
                         object,
-                        key: Self::materialize_string_key_local(key, locals),
-                        value: Self::expr_local(value, locals),
+                        key,
+                        value,
                         receiver: object,
                     },
                     *span,
@@ -256,15 +259,17 @@ impl CorrectnessLowering {
         match &reference.base {
             RefBase::Value(base) | RefBase::Super(base) => {
                 let object = Self::value_ref_local(base, locals);
+                let key = Self::reference_name_local(&reference.name, ops, locals, span);
+                let receiver = reference
+                    .this_value
+                    .as_ref()
+                    .map(|value| Self::value_ref_local(value, locals))
+                    .unwrap_or(object);
                 ops.push((
                     SpecOp::Get {
                         object,
-                        key: Self::reference_name_local(&reference.name, locals),
-                        receiver: reference
-                            .this_value
-                            .as_ref()
-                            .map(|value| Self::value_ref_local(value, locals))
-                            .unwrap_or(object),
+                        key,
+                        receiver,
                     },
                     span,
                 ));
@@ -300,16 +305,19 @@ impl CorrectnessLowering {
         match &reference.base {
             RefBase::Value(base) | RefBase::Super(base) => {
                 let object = Self::value_ref_local(base, locals);
+                let key = Self::reference_name_local(&reference.name, ops, locals, span);
+                let val = Self::value_ref_local(value, locals);
+                let receiver = reference
+                    .this_value
+                    .as_ref()
+                    .map(|this_value| Self::value_ref_local(this_value, locals))
+                    .unwrap_or(object);
                 ops.push((
                     SpecOp::Set {
                         object,
-                        key: Self::reference_name_local(&reference.name, locals),
-                        value: Self::value_ref_local(value, locals),
-                        receiver: reference
-                            .this_value
-                            .as_ref()
-                            .map(|this_value| Self::value_ref_local(this_value, locals))
-                            .unwrap_or(object),
+                        key,
+                        value: val,
+                        receiver,
                     },
                     span,
                 ));
@@ -344,10 +352,15 @@ impl CorrectnessLowering {
         }
     }
 
-    fn reference_name_local(name: &RefName, locals: &mut usize) -> u32 {
+    fn reference_name_local(
+        name: &RefName,
+        ops: &mut Vec<(SpecOp, ts2wasm_source::Span)>,
+        locals: &mut usize,
+        span: ts2wasm_source::Span,
+    ) -> u32 {
         match name {
             RefName::Id(name) | RefName::PrivateName(name) => {
-                Self::materialize_string_key_local(name, locals)
+                Self::materialize_string_key_local(name, ops, locals, span)
             }
             RefName::Key(value) => Self::value_ref_local(value, locals),
         }
@@ -367,8 +380,21 @@ impl CorrectnessLowering {
         }
     }
 
-    fn materialize_string_key_local(_key: &str, locals: &mut usize) -> u32 {
-        Self::allocate_synthetic_local(locals)
+    fn materialize_string_key_local(
+        key: &str,
+        ops: &mut Vec<(SpecOp, ts2wasm_source::Span)>,
+        locals: &mut usize,
+        span: ts2wasm_source::Span,
+    ) -> u32 {
+        let local = Self::allocate_synthetic_local(locals);
+        ops.push((
+            SpecOp::PushStringConstant {
+                local,
+                value: key.to_owned(),
+            },
+            span,
+        ));
+        local
     }
 
     fn allocate_synthetic_local(locals: &mut usize) -> u32 {
@@ -379,14 +405,26 @@ impl CorrectnessLowering {
 
     fn lower_terminator(
         term: &Terminator,
-        _ops: &mut Vec<(SpecOp, ts2wasm_source::Span)>,
-        _locals: &mut usize,
+        ops: &mut Vec<(SpecOp, ts2wasm_source::Span)>,
+        locals: &mut usize,
     ) {
         match term {
+            Terminator::Return(value, span) => {
+                let local = Self::value_ref_local(value, locals);
+                ops.push((SpecOp::Return { value: local }, *span));
+            }
+            Terminator::Throw(value, span) => {
+                let local = Self::value_ref_local(value, locals);
+                ops.push((
+                    SpecOp::Throw {
+                        value: local,
+                        catch: None,
+                    },
+                    *span,
+                ));
+            }
             Terminator::Branch { .. }
             | Terminator::Jump(_, _)
-            | Terminator::Return(_, _)
-            | Terminator::Throw(_, _)
             | Terminator::UnwindTo { .. }
             | Terminator::Switch { .. } => {}
         }

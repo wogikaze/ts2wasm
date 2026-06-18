@@ -274,6 +274,8 @@ version = "0.1.0"
 name = "ts2wasm-backend-correctness"
 version = "0.1.0"
 dependencies = [
+ "ts2wasm-backend-core",
+ "ts2wasm-runtime-abi",
  "ts2wasm-runtime-core",
  "ts2wasm-semantic-ir",
  "ts2wasm-source",
@@ -420,7 +422,6 @@ dependencies = [
  "ts2wasm-ir",
  "ts2wasm-runtime-core",
  "ts2wasm-source",
- "ts2wasm-syntax",
 ]
 
 [[package]]

@@ -1,0 +1,15 @@
+[
+  {
+    "suite": "test262",
+    "case": "bad.js",
+    "failure_kind": "Unclassified",
+    "owning_layer": "??",
+    "first_missing_capability": "",
+    "required_change": "",
+    "expected_trace": "",
+    "actual_trace": "",
+    "status": "unclassified",
+    "evidence": "",
+    "linked_issue": ""
+  }
+]

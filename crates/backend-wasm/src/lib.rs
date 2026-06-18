@@ -4,7 +4,7 @@ mod native_runtime_embed;
 mod runtime;
 mod runtime_fn;
 pub mod runtime_link_plan;
-pub mod spec_emit;
+// spec_emit moved to crates/backend-correctness/src/spec_emit.rs
 mod wasm_binary;
 pub mod wasm_ir;
 

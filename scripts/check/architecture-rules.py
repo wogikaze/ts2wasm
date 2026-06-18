@@ -99,6 +99,7 @@ SPECOP_BASELINE_VARIANTS = {
     "InitializeBinding", "ResolveBinding",
     "GetIterator", "IteratorNext", "IteratorClose",
     "GetModuleNamespace",
+    "Return", "Throw", "PushStringConstant",
 }
 
 # Crates that frontend/syntax must NOT depend on (reverse dependency gate).

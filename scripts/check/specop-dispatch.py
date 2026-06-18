@@ -55,9 +55,9 @@ def check_dispatch_coverage() -> list[str]:
         for v in sorted(missing):
             violations.append(f"ERROR SpecOp::{v} missing from {fn_name} metadata")
 
-    emit_path = REPO_ROOT / "crates" / "backend-wasm" / "src" / "spec_emit.rs"
+    emit_path = REPO_ROOT / "crates" / "backend-correctness" / "src" / "spec_emit.rs"
     if not emit_path.exists():
-        violations.append("ERROR crates/backend-wasm/src/spec_emit.rs not found")
+        violations.append("ERROR crates/backend-correctness/src/spec_emit.rs not found")
     else:
         emit_text = emit_path.read_text()
         symbol_match = re.search(
@@ -85,7 +85,7 @@ def check_dispatch_coverage() -> list[str]:
             for v in sorted(variants - set(symbols)):
                 violations.append(f"ERROR SpecOp::{v} missing spec_emit symbol mapping")
         if builder_match and symbols:
-            builder_symbols = set(re.findall(r"\"([^\"]+)\"\s*=>\s*Some\(", builder_match.group(1)))
+            builder_symbols = set(re.findall(r"\"([^\"]+)\"\s*=>\s*\{?\s*Some\(", builder_match.group(1)))
             for variant, symbol in sorted(symbols.items()):
                 if symbol not in builder_symbols:
                     violations.append(

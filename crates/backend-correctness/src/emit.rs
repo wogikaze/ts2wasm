@@ -59,6 +59,9 @@ impl CorrectnessEmitter {
             SpecOp::GetModuleNamespace { .. } => {
                 Some("call $spec_get_module_namespace".to_string())
             }
+            SpecOp::Return { .. } => Some("return".to_string()),
+            SpecOp::Throw { .. } => Some("throw".to_string()),
+            SpecOp::PushStringConstant { .. } => Some("push_string_constant".to_string()),
         }
     }
 }

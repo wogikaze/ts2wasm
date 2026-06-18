@@ -87,6 +87,26 @@ def run_perf_gate():
         print("gate: performance regression detected", file=sys.stderr)
         sys.exit(1)
 
+def _validate_coverage_fixtures(repo_root: Path, python_bin: str) -> None:
+    good = repo_root / "fixtures/gate/coverage-classification-valid.json"
+    bad = repo_root / "fixtures/gate/coverage-classification-bad.json"
+    if not good.exists():
+        print("gate: coverage-classification valid fixture not found, skipping", file=sys.stderr)
+        return
+    if not bad.exists():
+        print("gate: coverage-classification bad fixture not found, skipping", file=sys.stderr)
+        return
+    run([python_bin, str(repo_root / "scripts/check/coverage-classification.py"), "--strict", str(good)])
+    result = subprocess.run(
+        [python_bin, str(repo_root / "scripts/check/coverage-classification.py"), "--strict", str(bad)],
+        capture_output=True, text=True, cwd=repo_root,
+    )
+    if result.returncode == 0:
+        print("gate: ERROR coverage-classification did not reject bad fixture", file=sys.stderr)
+        sys.exit(1)
+    print("gate: coverage-classification fixture validation OK (bad fixture correctly rejected)", file=sys.stderr)
+
+
 def main():
     skip_nextest = os.environ.get("TS2WASM_FAST_GATE_SKIP_NEXTEST", "0") == "1"
     run_optional_perf_gate = os.environ.get("TS2WASM_RUN_PERF_GATE", "0") == "1"
@@ -122,14 +142,19 @@ def main():
     run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/assert-true-detect.py")])
     run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/architecture-rules.py")])
     run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/crate-dag.py")])
+    run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/check-arch-dag.py"), "--reject-increase"])
     run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/legacy-freeze.py")])
     run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/specop-dispatch.py")])
     run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/trace-contract.py")])
     run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/architecture-exceptions.py")])
     run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/docs-routing.py")])
     run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/compiler-source-truth.py")])
-    run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/check-runtimefn-deprecation.py")])
+    run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/check-runtimefn-deprecation.py"), "--reject-increase"])
     run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/coverage-classification.py"), "--self-test"])
+    # Validate coverage classification against known-good and known-bad fixtures
+    _validate_coverage_fixtures(REPO_ROOT, PYTHON_BIN)
+    # Gate negative integration tests
+    run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/gate-negative-tests.py")])
     run([PYTHON_BIN, str(REPO_ROOT / "scripts/report/native-runtime-builder-coverage.py"), "--check"])
     if run_optional_perf_gate:
         run_perf_gate()

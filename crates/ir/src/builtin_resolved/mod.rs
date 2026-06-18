@@ -18,3 +18,4 @@ pub use function_constructor::{
     StaticFunctionConstructorSource,
 };
 pub use object::{ResolvedArrayElement, ResolvedObjectProp};
+pub use ts2wasm_syntax::{BinaryOp, UnaryOp};

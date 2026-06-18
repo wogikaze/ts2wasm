@@ -18,7 +18,7 @@
 "cli -> runtime-abi" = { id = "ARCH-EXC-010", reason = "CLI options reference ABI constants", owner = "wgkz", expires = "2026-09-18", migration_issue = "P3: migrate to runtime-core" }
 "semantic-ir -> ir" = { id = "ARCH-EXC-011", reason = "ResolvedStmt type for lowering input", owner = "wgkz", expires = "2026-09-18", migration_issue = "P1: own ResolvedStmt equivalent" }
 "semantic-ir -> source" = { id = "ARCH-EXC-012", reason = "Span type", owner = "wgkz", expires = "2026-09-18", migration_issue = "P1: own Span or use source" }
-"semantic-ir -> syntax" = { id = "ARCH-EXC-013", reason = "BinaryOp/UnaryOp types in lowering", owner = "wgkz", expires = "2026-09-18", migration_issue = "P1: own operator types" }
+"semantic-ir -> syntax" = { id = "ARCH-EXC-013", reason = "RESOLVED: BinaryOp/UnaryOp imported through ir::builtin_resolved re-export", owner = "wgkz", expires = "2026-06-18", migration_issue = "P1: own operator types (resolved via re-export)" }
 "runtime-catalog -> spec-kernel" = { id = "ARCH-EXC-014", reason = "RuntimeFn -> SpecOp migration mapping", owner = "wgkz", expires = "2026-12-18", migration_issue = "P5: migration module" }
 "runtime-catalog -> shared" = { id = "ARCH-EXC-015", reason = "Legacy capability types", owner = "wgkz", expires = "2026-09-18", migration_issue = "P5: remove dependency" }
 

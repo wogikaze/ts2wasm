@@ -157,6 +157,21 @@ pub enum SpecOp {
     GetModuleNamespace {
         module: ModuleRef,
     },
+
+    // — Control flow —
+    Return {
+        value: Local,
+    },
+    Throw {
+        value: Local,
+        catch: Option<u32>,
+    },
+
+    // — String constant materialization —
+    PushStringConstant {
+        local: Local,
+        value: String,
+    },
 }
 
 pub type ModuleRef = u32;
@@ -192,7 +207,10 @@ impl SpecOp {
             | Self::GetIterator { .. }
             | Self::IteratorNext { .. }
             | Self::IteratorClose { .. }
-            | Self::GetModuleNamespace { .. } => 2,
+            | Self::GetModuleNamespace { .. }
+            | Self::Return { .. } => 0,
+            Self::PushStringConstant { .. } => 0,
+            Self::Throw { .. } => 0,
         }
     }
 
@@ -229,7 +247,10 @@ impl SpecOp {
             | Self::SetIntegrityLevel { .. }
             | Self::TestIntegrityLevel { .. }
             | Self::GetModuleNamespace { .. } => 1,
-            Self::IteratorClose { .. } => 0,
+            Self::IteratorClose { .. }
+            | Self::Return { .. }
+            | Self::Throw { .. }
+            | Self::PushStringConstant { .. } => 0,
         }
     }
 }

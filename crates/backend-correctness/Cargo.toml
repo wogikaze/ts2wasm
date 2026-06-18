@@ -5,6 +5,8 @@ edition.workspace = true
 license.workspace = true
 
 [dependencies]
+ts2wasm-backend-core = { path = "../backend-core" }
+ts2wasm-runtime-abi = { path = "../runtime-abi" }
 ts2wasm-runtime-core = { path = "../runtime-core" }
 ts2wasm-semantic-ir = { path = "../semantic-ir" }
 ts2wasm-spec-kernel = { path = "../spec-kernel" }

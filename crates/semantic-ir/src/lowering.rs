@@ -3,10 +3,12 @@ use crate::expr::{BinaryOp, SemExpr, UnaryOp};
 use crate::program::{SemFunction, SemProgram};
 use crate::stmt::SemStmt;
 use crate::value::{BlockId, LocalId, ValueRef};
-use ts2wasm_ir::builtin_resolved::{ResolvedArrayElement, ResolvedExpr, ResolvedStmt};
+use ts2wasm_ir::builtin_resolved::{
+    BinaryOp as SyntaxBinaryOp, ResolvedArrayElement, ResolvedExpr, ResolvedStmt,
+    UnaryOp as SyntaxUnaryOp,
+};
 use ts2wasm_runtime_core::value::TaggedValue;
 use ts2wasm_source::Span;
-use ts2wasm_syntax::{BinaryOp as SyntaxBinaryOp, UnaryOp as SyntaxUnaryOp};
 
 pub struct LoweringContext {
     pub next_local: LocalId,

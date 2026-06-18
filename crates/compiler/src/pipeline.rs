@@ -420,7 +420,13 @@ fn emit_spec_kernel_binary_for_resolved(
 ) -> Result<Vec<u8>, Diagnostic> {
     let program = ts2wasm_semantic_ir::lowering::lower_to_sem_ir(resolved);
     let lowered = ts2wasm_backend_correctness::lower::CorrectnessLowering::lower(&program);
-    let module = ts2wasm_backend_wasm::spec_emit::emit_spec_wasm_module(&lowered.ops);
+    let module = ts2wasm_backend_correctness::spec_emit::emit_spec_wasm_module(&lowered.ops)
+        .map_err(|e| Diagnostic {
+            code: ts2wasm_frontend::DiagCode::UnsupportedRuntimeSubset,
+            message: format!("SpecKernel emission failed: {e}"),
+            span: None,
+            phase: Some("spec-backend"),
+        })?;
     ts2wasm_backend_wasm::emit_wasm_module_binary(&module).map_err(|d| d.with_phase("spec-backend"))
 }
 

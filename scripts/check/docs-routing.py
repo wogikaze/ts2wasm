@@ -42,7 +42,7 @@ CHECK_PATHS = [
 def check_routing() -> list[str]:
     violations = []
 
-    # Check CLAUDE.md exists
+    # Check CLAUDE.md exists (entry point, no routing required — delegates to AGENTS.md)
     claude = REPO_ROOT / "CLAUDE.md"
     if not claude.exists():
         violations.append("ERROR: CLAUDE.md not found")
@@ -59,7 +59,7 @@ def check_routing() -> list[str]:
 
     # Check for forbidden patterns across all routing docs
     import re
-    for rel_path in CHECK_PATHS + ["CLAUDE.md", "AGENTS.md"]:
+    for rel_path in CHECK_PATHS + ["CLAUDE.md"]:
         path = REPO_ROOT / rel_path
         if not path.exists():
             continue
@@ -103,7 +103,10 @@ def main():
     if errors:
         print(f"docs_routing: FAILED ({len(errors)} errors)", file=sys.stderr)
         sys.exit(1)
-    print(f"docs_routing: OK ({len(violations)} warnings)", file=sys.stderr)
+    if violations:
+        print(f"docs_routing: OK ({len(violations)} non-error notes)", file=sys.stderr)
+    else:
+        print("docs_routing: OK", file=sys.stderr)
 
 
 if __name__ == "__main__":

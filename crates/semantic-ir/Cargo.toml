@@ -8,4 +8,3 @@ license.workspace = true
 ts2wasm-ir = { path = "../ir" }
 ts2wasm-runtime-core = { path = "../runtime-core" }
 ts2wasm-source = { path = "../source" }
-ts2wasm-syntax = { path = "../syntax" }

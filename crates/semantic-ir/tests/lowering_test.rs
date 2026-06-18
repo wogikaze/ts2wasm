@@ -106,7 +106,7 @@ fn lower_try_catch() {
 fn lower_binary_expr() {
     let stmts = vec![ResolvedStmt::Expr(ResolvedExpr::Binary {
         left: Box::new(ResolvedExpr::Number(1)),
-        op: ts2wasm_syntax::BinaryOp::Add,
+        op: ts2wasm_ir::builtin_resolved::BinaryOp::Add,
         right: Box::new(ResolvedExpr::Number(2)),
     })];
     let program = lower_to_sem_ir(&stmts);
