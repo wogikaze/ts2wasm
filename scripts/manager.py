@@ -42,6 +42,9 @@ COMMANDS = {
     "check-legacy-freeze": ("python", "scripts/check/legacy-freeze.py"),
     "check-specop-dispatch": ("python", "scripts/check/specop-dispatch.py"),
     "check-coverage-classification": ("python", "scripts/check/coverage-classification.py"),
+    "check-trace-contract": ("python", "scripts/check/trace-contract.py"),
+    "check-architecture-exceptions": ("python", "scripts/check/architecture-exceptions.py"),
+    "check-docs-routing": ("python", "scripts/check/docs-routing.py"),
     "check-host-import-baseline": ("python", "scripts/check/host-import-baseline.py"),
     "check-host-import-boundary": ("python", "scripts/check/host-import-boundary.py"),
     "check-crate-dag": ("python", "scripts/check/check-arch-dag.py"),
@@ -96,7 +99,7 @@ CHECK_ALL_PARTS = [
     "runtimefn", "wasm", "assert-true",
     "tracking", "issues", "native-runtime-builder",
     "host-baseline", "host-boundary",
-    "diagnostic-codes", "complexity", "runtimefn-deprecation", "arch-dag", "legacy-freeze", "specop-dispatch",
+    "diagnostic-codes", "complexity", "runtimefn-deprecation", "arch-dag", "legacy-freeze", "specop-dispatch", "trace-contract", "architecture-exceptions", "docs-routing",
     "crate-dag",
 ]
 
@@ -151,6 +154,9 @@ CHECK_PARTS = {
     "complexity": "check-complexity",
     "arch-dag": "check-arch-dag",
     "legacy-freeze": "check-legacy-freeze",
+    "trace-contract": "check-trace-contract",
+    "architecture-exceptions": "check-architecture-exceptions",
+    "docs-routing": "check-docs-routing",
     "specop-dispatch": "check-specop-dispatch",
     "runtimefn-deprecation": "check-runtimefn-deprecation",
     "crate-dag": "check-crate-dag",
