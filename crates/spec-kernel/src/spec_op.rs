@@ -104,8 +104,38 @@ impl SpecOp {
 
     pub fn result_count(&self) -> usize {
         match self {
+            Self::Get { .. }
+            | Self::Set { .. }
+            | Self::GetOwnProperty { .. }
+            | Self::DefineOwnProperty { .. }
+            | Self::OwnPropertyKeys { .. }
+            | Self::Delete { .. }
+            | Self::HasProperty { .. }
+            | Self::GetPrototypeOf { .. }
+            | Self::SetPrototypeOf { .. }
+            | Self::IsExtensible { .. }
+            | Self::PreventExtensions { .. }
+            | Self::Call { .. }
+            | Self::Construct { .. }
+            | Self::ToPrimitive { .. }
+            | Self::ToBoolean { .. }
+            | Self::ToNumber { .. }
+            | Self::ToNumeric { .. }
+            | Self::ToString { .. }
+            | Self::ToObject { .. }
+            | Self::ToPropertyKey { .. }
+            | Self::GetBindingValue { .. }
+            | Self::SetMutableBinding { .. }
+            | Self::CreateBinding { .. }
+            | Self::InitializeBinding { .. }
+            | Self::ResolveBinding { .. }
+            | Self::GetIterator { .. }
+            | Self::IteratorNext { .. }
+            | Self::CreateDataProperty { .. }
+            | Self::SetIntegrityLevel { .. }
+            | Self::TestIntegrityLevel { .. }
+            | Self::GetModuleNamespace { .. } => 1,
             Self::IteratorClose { .. } => 0,
-            _ => 1,
         }
     }
 }

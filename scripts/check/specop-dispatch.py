@@ -86,11 +86,9 @@ def check_dispatch_coverage() -> list[str]:
                 in_fn = True
                 fn_name = m.group(2)
             if in_fn and re.match(r'^\s+_\s*=>', line):
-                level = "WARN" if fn_name in ("param_count", "result_count") else "ERROR"
                 violations.append(
-                    f"check_specop_dispatch: {level} {rel}:{i+1}: "
-                    f"wildcard in fn `{fn_name}` — "
-                    f"new SpecOp variants may be silently ignored"
+                    f"ERROR {rel}:{i+1}: wildcard in fn `{fn_name}` — "
+                    f"new SpecOp variants must be listed explicitly"
                 )
                 in_fn = False
 
