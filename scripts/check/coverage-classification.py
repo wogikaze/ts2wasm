@@ -6,6 +6,7 @@ Also validates the classification JSON/CSV schema.
 
 Usage:
   python scripts/check/coverage-classification.py <classification.json>
+  python scripts/check/coverage-classification.py --strict <classification.json>
   python scripts/check/coverage-classification.py --schema
 """
 
@@ -86,6 +87,10 @@ def validate_file(path: str, strict: bool = False) -> list[str]:
                 errors.append(f"record[{i}]: missing expected_trace (STRICT)")
             if not record.get("actual_trace", ""):
                 errors.append(f"record[{i}]: missing actual_trace (STRICT)")
+            if not record.get("evidence", ""):
+                errors.append(f"record[{i}]: missing evidence (STRICT)")
+            if not record.get("linked_issue", ""):
+                errors.append(f"record[{i}]: missing linked_issue (STRICT)")
             if kind == "OptimizationGap":
                 errors.append(
                     f"record[{i}]: OptimizationGap is not a coverage blocker — "
@@ -129,6 +134,24 @@ def run_self_test():
         print("FAIL: empty trace not rejected in strict mode", file=sys.stderr)
         errors += 1
 
+    # Test: missing evidence / linked issue reject
+    bad3 = [{"suite": "test262", "case": "z.js", "failure_kind": "SpecOpGap",
+             "owning_layer": "spec-kernel", "first_missing_capability": "Get",
+             "required_change": "impl Get", "expected_trace": "SpecOpTrace:Get",
+             "actual_trace": "SpecOpTrace:missing", "evidence": "",
+             "linked_issue": "", "status": "classified"}]
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+        json.dump(bad3, f)
+        fname = f.name
+    errs3 = validate_file(fname, strict=True)
+    os.unlink(fname)
+    if not any("evidence" in e for e in errs3):
+        print("FAIL: missing evidence not rejected in strict mode", file=sys.stderr)
+        errors += 1
+    if not any("linked_issue" in e for e in errs3):
+        print("FAIL: missing linked_issue not rejected in strict mode", file=sys.stderr)
+        errors += 1
+
     if errors:
         print(f"self-test: FAILED ({errors} errors)", file=sys.stderr)
         sys.exit(1)
@@ -166,6 +189,8 @@ def print_schema():
         "expected_trace": "ToPropertyKey -> GetOwnProperty -> OrdinaryGetOwnProperty",
         "actual_trace": "ToPropertyKey -> GetOwnProperty -> stub(returns undefined)",
         "status": "classified",
+        "evidence": "reports/runs/2026-06-18/specop-trace.jsonl",
+        "linked_issue": "issues/open/123-example.md",
     }, indent=2))
 
 

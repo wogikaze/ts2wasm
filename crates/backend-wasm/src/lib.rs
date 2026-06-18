@@ -1,10 +1,10 @@
 mod capability_manifest;
 mod native_lowered;
-pub mod spec_emit;
 mod native_runtime_embed;
 mod runtime;
 mod runtime_fn;
 pub mod runtime_link_plan;
+pub mod spec_emit;
 mod wasm_binary;
 pub mod wasm_ir;
 
@@ -121,8 +121,6 @@ pub(crate) fn align_to(value: u32, alignment: u32) -> Option<u32> {
 mod wasm_encoder_backend;
 
 pub use wasm_encoder_backend::{WasmEncoderBackendExt, emit_wasm_module_binary};
-
-
 
 #[cfg(test)]
 mod tests {}

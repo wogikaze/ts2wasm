@@ -17,7 +17,10 @@ pub struct HandleScope {
 
 impl HandleScope {
     pub fn new() -> Self {
-        Self { roots: Vec::new(), parent: None }
+        Self {
+            roots: Vec::new(),
+            parent: None,
+        }
     }
 
     pub fn push_root(&mut self, value: TaggedValue, description: &str) {

@@ -42,7 +42,11 @@ pub struct Closure {
 
 impl Closure {
     pub fn new(function: FunctionId, env: EnvRef) -> Self {
-        Self { function, captures: Vec::new(), env }
+        Self {
+            function,
+            captures: Vec::new(),
+            env,
+        }
     }
 
     pub fn capture(&mut self, name: String, value: TaggedValue) {

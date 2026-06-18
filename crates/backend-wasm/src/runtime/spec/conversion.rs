@@ -1,5 +1,4 @@
-use crate::wasm_ir::{WasmBlockType, WasmFunction, WasmInstr, WasmValType};
-use ts2wasm_runtime_abi::value::ValueTag;
+use crate::wasm_ir::{WasmFunction, WasmInstr, WasmValType};
 
 pub fn build_spec_to_primitive() -> WasmFunction {
     WasmFunction {
@@ -20,6 +19,20 @@ pub fn build_spec_to_number() -> WasmFunction {
         body: vec![
             WasmInstr::LocalGet(0),
             WasmInstr::Call(String::from("$number_coerce")),
+            WasmInstr::End,
+        ],
+    }
+}
+
+pub fn build_spec_to_numeric() -> WasmFunction {
+    WasmFunction {
+        symbol: "$spec_to_numeric".into(),
+        params: vec![WasmValType::I32],
+        results: vec![WasmValType::I32],
+        locals: vec![],
+        body: vec![
+            WasmInstr::LocalGet(0),
+            WasmInstr::Call(String::from("$spec_to_number")),
             WasmInstr::End,
         ],
     }

@@ -16,13 +16,19 @@ impl<'a> Lexer<'a> {
             self.decimal_number_digits(start)?
         };
 
-        if self.strict_mode && radix == 10 && digits.starts_with('0') && digits.len() > 1
+        if self.strict_mode
+            && radix == 10
+            && digits.starts_with('0')
+            && digits.len() > 1
             && digits.chars().all(|c| c.is_ascii_digit())
         {
             return Err(Diagnostic {
                 code: DiagCode::SyntaxError,
                 message: "legacy octal literal not allowed in strict mode".to_owned(),
-                span: Some(Span { start, end: self.cursor }),
+                span: Some(Span {
+                    start,
+                    end: self.cursor,
+                }),
                 phase: Some("lexer"),
             });
         }
@@ -31,14 +37,20 @@ impl<'a> Lexer<'a> {
             if self.source[start..self.cursor].contains(['.', 'e', 'E']) {
                 let end = self.cursor + 1;
                 self.advance_char();
-                                return Err(Diagnostic::unsupported_at(Span { start, end }, "BigInt literal cannot use decimal fractions or exponents"));
+                return Err(Diagnostic::unsupported_at(
+                    Span { start, end },
+                    "BigInt literal cannot use decimal fractions or exponents",
+                ));
             }
             self.advance_char();
             if digits.len() > 1 && self.source[start..].starts_with('0') {
-                                return Err(Diagnostic::unsupported_at(Span {
-start,
-end: self.cursor,
-}, "Decimal BigInt literal cannot have a leading zero"));
+                return Err(Diagnostic::unsupported_at(
+                    Span {
+                        start,
+                        end: self.cursor,
+                    },
+                    "Decimal BigInt literal cannot have a leading zero",
+                ));
             }
             return Ok(SpannedToken {
                 kind: Token::BigIntLiteral(format!("{digits}n")),
@@ -79,10 +91,13 @@ end: self.cursor,
                         },
                     });
                 }
-                                return Err(Diagnostic::unsupported_at(Span {
-start,
-end: self.cursor,
-}, "number too large".to_owned()));
+                return Err(Diagnostic::unsupported_at(
+                    Span {
+                        start,
+                        end: self.cursor,
+                    },
+                    "number too large".to_owned(),
+                ));
             }
         };
         Ok(SpannedToken {
@@ -183,10 +198,13 @@ end: self.cursor,
                 self.advance_char();
             }
             if exponent.is_empty() {
-                                return Err(Diagnostic::unsupported_at(Span {
-start,
-end: exponent_start,
-}, "invalid decimal exponent numeric literal: expected exponent digits"));
+                return Err(Diagnostic::unsupported_at(
+                    Span {
+                        start,
+                        end: exponent_start,
+                    },
+                    "invalid decimal exponent numeric literal: expected exponent digits",
+                ));
             }
             if negative_exponent {
                 // In the integer-only subset any negative exponent produces zero
@@ -194,10 +212,15 @@ end: exponent_start,
                 // files like byteConversionValues.js.
                 return Ok(("0".to_string(), 10));
             }
-                        let zeros = exponent.parse::<usize>().map_err(|error| Diagnostic::unsupported_at(Span {
-start,
-end: self.cursor,
-}, format!("invalid decimal exponent numeric literal: {error}")))?;
+            let zeros = exponent.parse::<usize>().map_err(|error| {
+                Diagnostic::unsupported_at(
+                    Span {
+                        start,
+                        end: self.cursor,
+                    },
+                    format!("invalid decimal exponent numeric literal: {error}"),
+                )
+            })?;
             positive_exponent_shift = zeros;
         }
 
@@ -251,10 +274,13 @@ end: self.cursor,
         }
 
         if !saw_digit {
-                        return Err(Diagnostic::unsupported_at(Span {
-start,
-end: self.cursor,
-}, format!("invalid {label} number literal: expected digit after prefix")));
+            return Err(Diagnostic::unsupported_at(
+                Span {
+                    start,
+                    end: self.cursor,
+                },
+                format!("invalid {label} number literal: expected digit after prefix"),
+            ));
         }
 
         if previous_was_separator {
@@ -278,24 +304,37 @@ end: self.cursor,
             return Ok(0);
         }
         if radix == 16 {
-                        let value = u32::from_str_radix(digits, radix).map_err(|error| Diagnostic::unsupported_at(Span {
-start,
-end: self.cursor,
-}, format!("invalid number literal: {error}")))?;
+            let value = u32::from_str_radix(digits, radix).map_err(|error| {
+                Diagnostic::unsupported_at(
+                    Span {
+                        start,
+                        end: self.cursor,
+                    },
+                    format!("invalid number literal: {error}"),
+                )
+            })?;
             return Ok(value as i32);
         }
 
-                i32::from_str_radix(digits, radix).map_err(|error| Diagnostic::unsupported_at(Span {
-start,
-end: self.cursor,
-}, format!("invalid number literal: {error}")))
+        i32::from_str_radix(digits, radix).map_err(|error| {
+            Diagnostic::unsupported_at(
+                Span {
+                    start,
+                    end: self.cursor,
+                },
+                format!("invalid number literal: {error}"),
+            )
+        })
     }
 
     fn invalid_numeric_separator(&self, start: usize, message: &str) -> Diagnostic {
-                Diagnostic::unsupported_at(Span {
-start,
-end: self.cursor,
-}, format!("invalid numeric separator: {message}"))
+        Diagnostic::unsupported_at(
+            Span {
+                start,
+                end: self.cursor,
+            },
+            format!("invalid numeric separator: {message}"),
+        )
     }
 
     fn prefixed_bigint_literal(
@@ -339,13 +378,19 @@ end: self.cursor,
 
         if !saw_digit {
             if self.char_at(cursor) == Some('n') {
-                                return Err(Diagnostic::unsupported_at(Span {
-start,
-end: cursor + 1,
-}, format!("Invalid {radix_name} BigInt literal")));
+                return Err(Diagnostic::unsupported_at(
+                    Span {
+                        start,
+                        end: cursor + 1,
+                    },
+                    format!("Invalid {radix_name} BigInt literal"),
+                ));
             }
             if let Some(end) = self.invalid_prefixed_bigint_end(cursor) {
-                                return Err(Diagnostic::unsupported_at(Span { start, end }, format!("Invalid {radix_name} BigInt literal")));
+                return Err(Diagnostic::unsupported_at(
+                    Span { start, end },
+                    format!("Invalid {radix_name} BigInt literal"),
+                ));
             }
             return Ok(None);
         }
@@ -359,18 +404,17 @@ end: cursor + 1,
 
         if self.char_at(cursor) != Some('n') {
             if let Some(end) = self.invalid_prefixed_bigint_end(cursor) {
-                                return Err(Diagnostic::unsupported_at(Span { start, end }, format!("Invalid {radix_name} BigInt literal")));
+                return Err(Diagnostic::unsupported_at(
+                    Span { start, end },
+                    format!("Invalid {radix_name} BigInt literal"),
+                ));
             }
             return Ok(None);
         }
 
         self.cursor = cursor + 1;
         Ok(Some(SpannedToken {
-            kind: Token::BigIntLiteral(format!(
-                "{}{}n",
-                &self.source[start..digit_start],
-                digits
-            )),
+            kind: Token::BigIntLiteral(format!("{}{}n", &self.source[start..digit_start], digits)),
             span: Span {
                 start,
                 end: self.cursor,
@@ -443,10 +487,13 @@ end: cursor + 1,
         }
 
         if saw_fraction_or_exponent && self.char_at(cursor) == Some('n') {
-                        return Err(Diagnostic::unsupported_at(Span {
-start,
-end: cursor + 1,
-}, "BigInt literal cannot use decimal fractions or exponents"));
+            return Err(Diagnostic::unsupported_at(
+                Span {
+                    start,
+                    end: cursor + 1,
+                },
+                "BigInt literal cannot use decimal fractions or exponents",
+            ));
         }
 
         Ok(())

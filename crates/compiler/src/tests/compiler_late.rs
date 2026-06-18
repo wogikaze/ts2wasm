@@ -769,9 +769,11 @@ console.log(value);
 
     let (validated, _diags) =
         ts2wasm_ir::lowered::Validated::new(lowered_program).expect("already validated above");
-    let _bytes =
-        backend::emit_wasm_binary(&validated).expect("should build binary");
-    assert!(!_bytes.is_empty(), "module metadata should produce non-empty binary");
+    let _bytes = backend::emit_wasm_binary(&validated).expect("should build binary");
+    assert!(
+        !_bytes.is_empty(),
+        "module metadata should produce non-empty binary"
+    );
 
     let _ = std::fs::remove_dir_all(&dir);
 }
@@ -835,7 +837,10 @@ fn static_module_live_binding_update_follows_exported_assignment() {
     let (validated, _diags) =
         ts2wasm_ir::lowered::Validated::new(lowered_program).expect("should validate");
     let _bytes = backend::emit_wasm_binary(&validated).expect("module live binding should build");
-    assert!(!_bytes.is_empty(), "module live binding should produce non-empty binary");
+    assert!(
+        !_bytes.is_empty(),
+        "module live binding should produce non-empty binary"
+    );
 
     let _ = std::fs::remove_dir_all(&dir);
 }
@@ -1094,8 +1099,6 @@ fn run_iwasm(wasm_path: &Path) -> String {
 }
 
 #[test]
-
-
 #[test]
 fn native_lowered_wasm_binary_runs_focused_fixtures_without_wat_conversion() {
     for (fixture, expected_stdout) in [
@@ -1311,7 +1314,10 @@ fn heap_closure_allocation_and_dispatch_emit_abi_payload_and_roots() {
 
     let (v, _) = ts2wasm_ir::lowered::Validated::new(program).expect("should validate");
     let _bytes = backend::emit_wasm_binary(&v).expect("returned closure fixture should build");
-    assert!(!_bytes.is_empty(), "closure fixture should produce non-empty binary");
+    assert!(
+        !_bytes.is_empty(),
+        "closure fixture should produce non-empty binary"
+    );
 }
 
 #[test]
@@ -1321,7 +1327,10 @@ fn gc_mark_object_payload_marks_heap_closure_capture_slots() {
 
     let (v, _) = ts2wasm_ir::lowered::Validated::new(program).expect("should validate");
     let _bytes = backend::emit_wasm_binary(&v).expect("returned closure GC fixture should build");
-    assert!(!_bytes.is_empty(), "closure GC should produce non-empty binary");
+    assert!(
+        !_bytes.is_empty(),
+        "closure GC should produce non-empty binary"
+    );
 }
 
 #[test]
@@ -1329,9 +1338,13 @@ fn env_cells_are_tagged_array_payloads_for_gc_tracing() {
     let program =
         lower_fixture("../../fixtures/core-semantics/class-method-mutable-outer-capture.ts");
     let (v, _) = ts2wasm_ir::lowered::Validated::new(program).expect("should validate");
-    let _bytes = backend::emit_wasm_binary(&v).expect("mutable class method env cell fixture should build");
+    let _bytes =
+        backend::emit_wasm_binary(&v).expect("mutable class method env cell fixture should build");
     // Smoke test: binary compiles and produces output
-    assert!(!_bytes.is_empty(), "env cell fixture should produce non-empty binary");
+    assert!(
+        !_bytes.is_empty(),
+        "env cell fixture should produce non-empty binary"
+    );
 }
 
 #[test]
@@ -1339,5 +1352,8 @@ fn array_push_grow_emits_dedicated_helper_boundary() {
     let program = lower_fixture("../../fixtures/core-semantics/array-push-recursive-growth.ts");
     let (v, _) = ts2wasm_ir::lowered::Validated::new(program).expect("should validate");
     let _bytes = backend::emit_wasm_binary(&v).expect("array push growth fixture should build");
-    assert!(!_bytes.is_empty(), "array push should produce non-empty binary");
+    assert!(
+        !_bytes.is_empty(),
+        "array push should produce non-empty binary"
+    );
 }

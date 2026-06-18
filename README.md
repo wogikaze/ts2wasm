@@ -82,6 +82,16 @@ Workspace crates:
 | `cli` | command-line interface |
 | `shared` | compatibility re-exports and manifest types |
 
+Next architecture crates:
+
+| Crate | Responsibility |
+|---|---|
+| `runtime-core` | JS engine substrate: values, heap, shapes, realms, environments, frames, GC, and baseline VM containers |
+| `semantic-ir` | ECMAScript semantic floor: CFG blocks, references, completions, abrupt edges, iterator/env/property operations |
+| `spec-kernel` | `SpecOp` and ECMAScript internal method dispatch; new specification operations go here, not to `RuntimeFn` |
+| `backend-correctness` | slow-correct `semantic-ir -> SpecOp -> wasm/runtime call` exit path |
+| `opt-mir` | optional fast path IR with guards, deopt, slow-path calls, and `FrameState` |
+
 ## Documentation map
 
 Start from `docs/INDEX.md`. The root docs are intentionally routers; detailed design lives in task-focused files.

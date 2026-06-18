@@ -5268,10 +5268,8 @@ b /* parameter b */,
 
     #[test]
     fn rejects_duplicate_proto_in_strict_mode() {
-        let err = parse_program(
-            "\"use strict\"; var obj = { __proto__: 1, __proto__: 2 };",
-        )
-        .unwrap_err();
+        let err =
+            parse_program("\"use strict\"; var obj = { __proto__: 1, __proto__: 2 };").unwrap_err();
         assert_eq!(err.code, DiagCode::SyntaxError);
         assert!(err.message.contains("__proto__"));
         assert_eq!(err.phase, Some("parser"));
@@ -5285,10 +5283,7 @@ b /* parameter b */,
 
     #[test]
     fn accepts_single_proto_in_strict_mode() {
-        let program = parse_program(
-            "\"use strict\"; var obj = { __proto__: 1 };",
-        )
-        .unwrap();
+        let program = parse_program("\"use strict\"; var obj = { __proto__: 1 };").unwrap();
         assert!(program.len() >= 1);
     }
 
@@ -5312,10 +5307,15 @@ b /* parameter b */,
         let program = parse_program("\"use strict\"; delete obj.prop;").unwrap();
         assert!(!program.is_empty());
         if let Some(Stmt::Expr { expr, .. }) = program.last() {
-            assert!(matches!(expr, Expr::Unary { op: UnaryOp::Delete, .. }));
+            assert!(matches!(
+                expr,
+                Expr::Unary {
+                    op: UnaryOp::Delete,
+                    ..
+                }
+            ));
         } else {
             panic!("expected delete expression as last statement");
         }
     }
-
 }

@@ -45,6 +45,7 @@ COMMANDS = {
     "check-trace-contract": ("python", "scripts/check/trace-contract.py"),
     "check-architecture-exceptions": ("python", "scripts/check/architecture-exceptions.py"),
     "check-docs-routing": ("python", "scripts/check/docs-routing.py"),
+    "check-rustfmt-legacy-aware": ("python", "scripts/check/rustfmt-legacy-aware.py"),
     "check-host-import-baseline": ("python", "scripts/check/host-import-baseline.py"),
     "check-host-import-boundary": ("python", "scripts/check/host-import-boundary.py"),
     "check-crate-dag": ("python", "scripts/check/check-arch-dag.py"),
@@ -87,7 +88,7 @@ COMMANDS = {
     "next-reference-gate": ("python", "scripts/run/reference-corpus.py"),
     "next-abi-gate": ("python", "scripts/check/architecture-rules.py"),
     "next-architecture-gate": ("python", "scripts/gate/fast-gate.py"),
-    "fmt": ("cargo", "fmt --all --check"),
+    "fmt": ("python", "scripts/check/rustfmt-legacy-aware.py"),
     "clippy": ("cargo", "clippy --all-targets -- -D warnings"),
     "nextest": ("cargo", "nextest run"),
 }
@@ -99,7 +100,7 @@ CHECK_ALL_PARTS = [
     "runtimefn", "wasm", "assert-true",
     "tracking", "issues", "native-runtime-builder",
     "host-baseline", "host-boundary",
-    "diagnostic-codes", "complexity", "runtimefn-deprecation", "arch-dag", "legacy-freeze", "specop-dispatch", "trace-contract", "architecture-exceptions", "docs-routing",
+    "diagnostic-codes", "complexity", "runtimefn-deprecation", "arch-dag", "legacy-freeze", "specop-dispatch", "trace-contract", "architecture-exceptions", "docs-routing", "rustfmt-legacy-aware",
     "crate-dag",
 ]
 
@@ -157,6 +158,7 @@ CHECK_PARTS = {
     "trace-contract": "check-trace-contract",
     "architecture-exceptions": "check-architecture-exceptions",
     "docs-routing": "check-docs-routing",
+    "rustfmt-legacy-aware": "check-rustfmt-legacy-aware",
     "specop-dispatch": "check-specop-dispatch",
     "runtimefn-deprecation": "check-runtimefn-deprecation",
     "crate-dag": "check-crate-dag",
@@ -227,7 +229,7 @@ def usage():
         ("next-reference-gate", "REQ-REF-001/002 gates (lock manifest + lock identity validation)"),
         ("next-abi-gate", "REQ-ABI-001/002 gates (ABI metadata export + TargetSpec)"),
         ("next-architecture-gate", "Composite of all 5 next-architecture theme gates"),
-        ("fmt", "cargo fmt --all --check"),
+        ("fmt", "rustfmt legacy-aware check"),
         ("clippy", "cargo clippy --all-targets -- -D warnings"),
         ("nextest", "cargo nextest run"),
     ]
@@ -274,7 +276,7 @@ def run_sequence(commands):
 def run_repo_smoke():
     """Run the lightweight repository smoke check (CI entry point)."""
     run_sequence([
-        ["cargo", "fmt", "--all", "--check"],
+        [PYTHON_BIN, str(REPO_ROOT / "scripts/check/rustfmt-legacy-aware.py")],
         [PYTHON_BIN, str(REPO_ROOT / "scripts/check/shell-syntax.py")],
         [PYTHON_BIN, str(REPO_ROOT / "scripts/check/check-arch-dag.py")],
         [PYTHON_BIN, str(REPO_ROOT / "scripts/check/architecture-rules.py")],
@@ -337,7 +339,7 @@ def main():
             [PYTHON_BIN, str(REPO_ROOT / "scripts/check/toolchain.py")],
         ]
         full_cmds = [
-            ["cargo", "fmt", "--all", "--check"],
+            [PYTHON_BIN, str(REPO_ROOT / "scripts/check/rustfmt-legacy-aware.py")],
             [PYTHON_BIN, str(REPO_ROOT / "scripts/check/shell-syntax.py")],
             [PYTHON_BIN, str(REPO_ROOT / "scripts/check/complexity.py"), "--full"],
             [PYTHON_BIN, str(REPO_ROOT / "scripts/check/toolchain.py")],

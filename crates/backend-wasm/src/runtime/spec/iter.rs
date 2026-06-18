@@ -1,5 +1,4 @@
 use crate::wasm_ir::*;
-use ts2wasm_runtime_abi::value::ValueTag;
 
 pub fn build_spec_get_iterator() -> WasmFunction {
     WasmFunction {
@@ -26,5 +25,15 @@ pub fn build_spec_iterator_next() -> WasmFunction {
             WasmInstr::I32Const(0),
             WasmInstr::End,
         ],
+    }
+}
+
+pub fn build_spec_iterator_close() -> WasmFunction {
+    WasmFunction {
+        symbol: "$spec_iterator_close".into(),
+        params: vec![WasmValType::I32; 2],
+        results: vec![],
+        locals: vec![],
+        body: vec![WasmInstr::End],
     }
 }

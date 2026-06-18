@@ -157,7 +157,7 @@ description = "Send a report markdown/json file to Discord webhook"
 run = "python scripts/manager.py discord-report"
 
 [tasks.fmt]
-description = "cargo fmt --all --check"
+description = "rustfmt legacy-aware check"
 run = "python scripts/manager.py fmt"
 
 [tasks.clippy]

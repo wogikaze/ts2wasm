@@ -13,18 +13,15 @@ pub fn build_spec_call() -> WasmFunction {
             WasmInstr::I32Const(ValueTag::TAG_MASK),
             WasmInstr::I32And,
             WasmInstr::LocalSet(3),
-
             // Check if callee is callable (OBJECT tag is necessary but not sufficient)
             WasmInstr::Block(String::from("chk_obj")),
             WasmInstr::LocalGet(3),
             WasmInstr::I32Const(ValueTag::OBJECT),
             WasmInstr::I32Eq,
             WasmInstr::BrIf(String::from("chk_obj")),
-
             // Not callable → throw TypeError
             WasmInstr::Call("$throw_not_callable".into()),
             WasmInstr::Unreachable,
-
             // Is object → check internal [[Call]] slot (simplified: assume callable)
             // TODO: check if function object
             WasmInstr::LocalGet(0),

@@ -1,6 +1,6 @@
 use std::collections::BTreeSet;
 
-use ts2wasm_runtime_abi::{Layout, ValueTag};
+use ts2wasm_runtime_abi::Layout;
 use ts2wasm_spec_kernel::SpecOp;
 
 use crate::runtime::spec;
@@ -117,13 +117,21 @@ fn build_spec_op_function(name: &str) -> Option<WasmFunction> {
         "$spec_test_integrity_level" => Some(spec::set::build_spec_test_integrity_level()),
         "$spec_to_primitive" => Some(spec::conversion::build_spec_to_primitive()),
         "$spec_to_number" => Some(spec::conversion::build_spec_to_number()),
+        "$spec_to_numeric" => Some(spec::conversion::build_spec_to_numeric()),
         "$spec_to_boolean" => Some(spec::conversion::build_spec_to_boolean()),
         "$spec_to_string" => Some(spec::conversion::build_spec_to_string()),
         "$spec_to_object" => Some(spec::conversion::build_spec_to_object()),
         "$spec_to_property_key" => Some(spec::conversion::build_spec_to_property_key()),
+        "$spec_get_binding_value" => Some(spec::environment::build_spec_get_binding_value()),
+        "$spec_set_mutable_binding" => Some(spec::environment::build_spec_set_mutable_binding()),
+        "$spec_create_binding" => Some(spec::environment::build_spec_create_binding()),
+        "$spec_initialize_binding" => Some(spec::environment::build_spec_initialize_binding()),
+        "$spec_resolve_binding" => Some(spec::environment::build_spec_resolve_binding()),
         "$spec_get_iterator" => Some(spec::iter::build_spec_get_iterator()),
         "$spec_iterator_next" => Some(spec::iter::build_spec_iterator_next()),
-        _ => None,
+        "$spec_iterator_close" => Some(spec::iter::build_spec_iterator_close()),
+        "$spec_get_module_namespace" => Some(spec::module::build_spec_get_module_namespace()),
+        other => panic!("unknown SpecOp symbol: {other}"),
     }
 }
 

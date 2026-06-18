@@ -1,4 +1,4 @@
-use ts2wasm_runtime_core::env::{Binding, EnvironmentRecord, EnvRef};
+use ts2wasm_runtime_core::env::{Binding, EnvRef, EnvironmentRecord};
 use ts2wasm_runtime_core::value::TaggedValue;
 
 pub struct EnvironmentOps;
@@ -31,7 +31,11 @@ impl EnvironmentOps {
                 }
                 false
             }
-            EnvironmentRecord::Global { declarative_bindings, object_bindings, .. } => {
+            EnvironmentRecord::Global {
+                declarative_bindings,
+                object_bindings,
+                ..
+            } => {
                 let n = declarative_bindings.len();
                 if index < n {
                     if let Some(b) = declarative_bindings.get_mut(index) {
@@ -49,11 +53,7 @@ impl EnvironmentOps {
         }
     }
 
-    pub fn create_binding(
-        env: &mut EnvironmentRecord,
-        name: &str,
-        mutable: bool,
-    ) -> bool {
+    pub fn create_binding(env: &mut EnvironmentRecord, name: &str, mutable: bool) -> bool {
         match env {
             EnvironmentRecord::Declarative { bindings, .. }
             | EnvironmentRecord::Function { bindings, .. }
@@ -61,7 +61,10 @@ impl EnvironmentOps {
                 bindings.push(Binding::new(name.to_string(), mutable));
                 true
             }
-            EnvironmentRecord::Global { declarative_bindings, .. } => {
+            EnvironmentRecord::Global {
+                declarative_bindings,
+                ..
+            } => {
                 declarative_bindings.push(Binding::new(name.to_string(), mutable));
                 true
             }
@@ -69,11 +72,7 @@ impl EnvironmentOps {
         }
     }
 
-    pub fn initialize_binding(
-        env: &mut EnvironmentRecord,
-        name: &str,
-        value: TaggedValue,
-    ) -> bool {
+    pub fn initialize_binding(env: &mut EnvironmentRecord, name: &str, value: TaggedValue) -> bool {
         match env {
             EnvironmentRecord::Declarative { bindings, .. }
             | EnvironmentRecord::Function { bindings, .. }
@@ -85,7 +84,10 @@ impl EnvironmentOps {
                 }
                 false
             }
-            EnvironmentRecord::Global { declarative_bindings, .. } => {
+            EnvironmentRecord::Global {
+                declarative_bindings,
+                ..
+            } => {
                 if let Some(b) = declarative_bindings.iter_mut().find(|b| b.name == name) {
                     b.value = value;
                     b.initialized = true;

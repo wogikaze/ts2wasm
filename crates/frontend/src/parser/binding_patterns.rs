@@ -17,14 +17,23 @@ impl Parser {
                 // by looking ahead: a modifier is always followed by an identifier,
                 // `?`, or `:`, not by `,` or `)`.
                 let is_modifier = self.peek_parameter_property_modifier()
-                    && matches!(self.peek_n(1), Some(Token::Ident(_) | Token::Question | Token::Colon
-                        | Token::LeftBrace | Token::LeftBracket | Token::DotDotDot));
+                    && matches!(
+                        self.peek_n(1),
+                        Some(
+                            Token::Ident(_)
+                                | Token::Question
+                                | Token::Colon
+                                | Token::LeftBrace
+                                | Token::LeftBracket
+                                | Token::DotDotDot
+                        )
+                    );
                 if is_modifier {
                     self.advance();
                     continue;
                 }
                 let span = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
-                                return Err(Diagnostic::unsupported_at(span, "unsupported syntax"));
+                return Err(Diagnostic::unsupported_at(span, "unsupported syntax"));
             }
             // Detect invalid modifiers (issue 5355)
             if matches!(self.peek(), Some(Token::Static)) {
@@ -35,11 +44,17 @@ impl Parser {
                     // Static is the parameter name — break out of modifier loop
                     break;
                 }
-                                return Err(Diagnostic::unsupported_at(span, "'static' modifier cannot appear on a parameter.".to_owned()));
+                return Err(Diagnostic::unsupported_at(
+                    span,
+                    "'static' modifier cannot appear on a parameter.".to_owned(),
+                ));
             }
             if matches!(self.peek(), Some(Token::Export)) {
                 let span = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
-                                return Err(Diagnostic::unsupported_at(span, "'export' modifier cannot appear on a parameter.".to_owned()));
+                return Err(Diagnostic::unsupported_at(
+                    span,
+                    "'export' modifier cannot appear on a parameter.".to_owned(),
+                ));
             }
             is_parameter_property = true;
             self.advance();
@@ -51,10 +66,16 @@ impl Parser {
                 .expect("peek() returned Some(Token::This) so advance() must succeed")
                 .span;
             if !allow_this_parameter || is_rest || is_parameter_property {
-                                return Err(Diagnostic::unsupported_at(span, "TypeScript this parameters must be the leading parameter"));
+                return Err(Diagnostic::unsupported_at(
+                    span,
+                    "TypeScript this parameters must be the leading parameter",
+                ));
             }
             if !self.consume(TokenKind::Colon) {
-                                return Err(Diagnostic::unsupported_at(span, "TypeScript this parameters require a type annotation"));
+                return Err(Diagnostic::unsupported_at(
+                    span,
+                    "TypeScript this parameters require a type annotation",
+                ));
             }
             self.skip_type_annotation_until(&[
                 TokenKind::Equal,
@@ -71,9 +92,12 @@ impl Parser {
             });
         }
 
-let binding = self.parse_binding_pattern()?;
+        let binding = self.parse_binding_pattern()?;
         if is_parameter_property && !binding.is_identifier {
-                        return Err(Diagnostic::unsupported_at(binding.span, "Parameter properties require identifier bindings".to_owned()));
+            return Err(Diagnostic::unsupported_at(
+                binding.span,
+                "Parameter properties require identifier bindings".to_owned(),
+            ));
         }
         let is_optional = self.consume(TokenKind::Question);
         if self.consume(TokenKind::Colon) {
@@ -93,7 +117,10 @@ let binding = self.parse_binding_pattern()?;
         }
 
         if is_rest && is_parameter_property {
-                        return Err(Diagnostic::unsupported_at(binding.span, "Rest parameter properties are not supported".to_owned()));
+            return Err(Diagnostic::unsupported_at(
+                binding.span,
+                "Rest parameter properties are not supported".to_owned(),
+            ));
         }
 
         Ok(ParsedParam {
@@ -119,7 +146,9 @@ let binding = self.parse_binding_pattern()?;
             // These tokens are accepted as contextual binding identifiers in
             // the sloppy-script slices covered by test262 object shorthand
             // cases and existing TypeScript-erased syntax support.
-            Some(Token::Let | Token::Await | Token::Undefined | Token::Abstract | Token::Static) => {
+            Some(
+                Token::Let | Token::Await | Token::Undefined | Token::Abstract | Token::Static,
+            ) => {
                 let token = self
                     .advance()
                     .expect("peek returned contextual binding token but advance failed");
@@ -143,10 +172,7 @@ let binding = self.parse_binding_pattern()?;
                     });
                 }
                 // reject `await` as binding identifier in non-async function bodies
-                if matches!(token.kind, Token::Await)
-                    && self.fn_depth > 0
-                    && !self.in_async_fn
-                {
+                if matches!(token.kind, Token::Await) && self.fn_depth > 0 && !self.in_async_fn {
                     return Err(Diagnostic {
                         code: DiagCode::SyntaxError,
                         message: "`await` is a reserved word in non-async function bodies"
@@ -163,7 +189,10 @@ let binding = self.parse_binding_pattern()?;
             }
             Some(Token::LeftBracket) => self.parse_array_binding_pattern(),
             Some(Token::LeftBrace) => self.parse_object_binding_pattern(),
-                        other => Err(Diagnostic::unsupported_at(self.peek_span(), format!("Expected binding identifier or pattern, got {other:?}"))),
+            other => Err(Diagnostic::unsupported_at(
+                self.peek_span(),
+                format!("Expected binding identifier or pattern, got {other:?}"),
+            )),
         }
     }
 
@@ -173,7 +202,10 @@ let binding = self.parse_binding_pattern()?;
 
         while !matches!(self.peek(), Some(Token::RightBracket)) {
             if self.is_at_end() {
-                                return Err(Diagnostic::unsupported_at(start, "Unterminated array binding pattern".to_owned()));
+                return Err(Diagnostic::unsupported_at(
+                    start,
+                    "Unterminated array binding pattern".to_owned(),
+                ));
             }
 
             if self.consume(TokenKind::Comma) {
@@ -200,7 +232,11 @@ let binding = self.parse_binding_pattern()?;
                 let pattern = self.parse_binding_pattern()?;
                 if self.consume(TokenKind::Equal) {
                     let default = self.assignment()?;
-                    format!("{} = {}", pattern.text, self.binding_default_expr_text(&default))
+                    format!(
+                        "{} = {}",
+                        pattern.text,
+                        self.binding_default_expr_text(&default)
+                    )
                 } else {
                     pattern.text
                 }
@@ -238,11 +274,19 @@ let binding = self.parse_binding_pattern()?;
 
         while !matches!(self.peek(), Some(Token::RightBrace)) {
             if self.is_at_end() {
-                                return Err(Diagnostic::unsupported_at(start, "Unterminated object binding pattern".to_owned()));
+                return Err(Diagnostic::unsupported_at(
+                    start,
+                    "Unterminated object binding pattern".to_owned(),
+                ));
             }
 
             if let Some(rest_span) = self.consume_span(TokenKind::DotDotDot) {
-                                let (name, name_span) = self.expect_ident().map_err(|_| Diagnostic::unsupported_at(self.peek_span(), "Object rest binding requires an identifier".to_owned()))?;
+                let (name, name_span) = self.expect_ident().map_err(|_| {
+                    Diagnostic::unsupported_at(
+                        self.peek_span(),
+                        "Object rest binding requires an identifier".to_owned(),
+                    )
+                })?;
                 if self.strict_mode && is_strict_reserved_word(&name) {
                     return Err(Diagnostic {
                         code: DiagCode::SyntaxError,
@@ -265,7 +309,10 @@ let binding = self.parse_binding_pattern()?;
             } else if shorthand_allowed {
                 key
             } else {
-                                return Err(Diagnostic::unsupported_at(self.peek_span(), "Literal object binding keys require a target after `:`"));
+                return Err(Diagnostic::unsupported_at(
+                    self.peek_span(),
+                    "Literal object binding keys require a target after `:`",
+                ));
             };
 
             if self.consume(TokenKind::Equal) {
@@ -328,12 +375,19 @@ let binding = self.parse_binding_pattern()?;
                 kind: Token::BigIntLiteral(raw),
                 ..
             }) => Ok((bigint_literal_property_key(&raw), false)),
-                        other => Err(Diagnostic::unsupported_at(self.peek_span(), format!("Expected object binding property key, got {other:?}"))),
+            other => Err(Diagnostic::unsupported_at(
+                self.peek_span(),
+                format!("Expected object binding property key, got {other:?}"),
+            )),
         }
     }
 
     fn invalid_rest_binding_diagnostic(&self, span: Span) -> Diagnostic {
-                Diagnostic::source(span, DiagCode::SyntaxError, "Rest binding must be the final element in a binding pattern")
+        Diagnostic::source(
+            span,
+            DiagCode::SyntaxError,
+            "Rest binding must be the final element in a binding pattern",
+        )
     }
 
     #[allow(clippy::only_used_in_recursion)]
@@ -408,5 +462,4 @@ let binding = self.parse_binding_pattern()?;
                 )
         )
     }
-
 }

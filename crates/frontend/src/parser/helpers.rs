@@ -19,7 +19,12 @@ fn class_field_initializer(name: &str, value: Expr, span: Span) -> Stmt {
     Stmt::Expr { expr, span }
 }
 
-fn class_static_field_initializer(class_name: &str, field_name: &str, value: Expr, span: Span) -> Stmt {
+fn class_static_field_initializer(
+    class_name: &str,
+    field_name: &str,
+    value: Expr,
+    span: Span,
+) -> Stmt {
     let expr = Expr::PropertyAssign {
         object: Box::new(Expr::Ident {
             name: class_name.to_owned(),
@@ -67,7 +72,13 @@ fn merge_constructor_initializers(
         return Ok(merged);
     }
 
-        Err(Diagnostic::source(body.first().map(Stmt::span).unwrap_or(Span::generated("derived-constructor")), DiagCode::SyntaxError, derived_error.to_owned()))
+    Err(Diagnostic::source(
+        body.first()
+            .map(Stmt::span)
+            .unwrap_or(Span::generated("derived-constructor")),
+        DiagCode::SyntaxError,
+        derived_error.to_owned(),
+    ))
 }
 
 fn is_super_call_statement(stmt: &Stmt) -> bool {
@@ -277,13 +288,12 @@ fn parse_template_literal(
             let expr_end = find_template_expr_end(raw, expr_start, span)?;
             let source = raw[expr_start..expr_end].trim();
             if source.is_empty() {
-                                return Err(Diagnostic::unsupported_at(span, "Empty template interpolation expression".to_owned()));
+                return Err(Diagnostic::unsupported_at(
+                    span,
+                    "Empty template interpolation expression".to_owned(),
+                ));
             }
-            exprs.push(parse_template_expression(
-                source,
-                span,
-                strict_mode,
-            )?);
+            exprs.push(parse_template_expression(source, span, strict_mode)?);
             cursor = expr_end + 1;
             segment_start = cursor;
             continue;
@@ -307,7 +317,10 @@ fn parse_template_expression(
     let mut parser = Parser::new_with_strict_mode(tokens, strict_mode, source);
     let expr = parser.expression()?;
     if !parser.is_at_end() {
-                return Err(Diagnostic::unsupported_at(span, "Unsupported template interpolation expression".to_owned()));
+        return Err(Diagnostic::unsupported_at(
+            span,
+            "Unsupported template interpolation expression".to_owned(),
+        ));
     }
     Ok(expr)
 }
@@ -373,7 +386,10 @@ fn find_template_expr_end(raw: &str, start: usize, span: Span) -> Result<usize, 
         }
     }
 
-        Err(Diagnostic::unsupported_at(span, "Unterminated template interpolation".to_owned()))
+    Err(Diagnostic::unsupported_at(
+        span,
+        "Unterminated template interpolation".to_owned(),
+    ))
 }
 
 fn cook_template_segment(raw: &str, span: Span) -> Result<String, Diagnostic> {
@@ -463,16 +479,25 @@ fn read_fixed_hex_escape(
     let mut value = 0u32;
     for _ in 0..digit_count {
         let Some((_, ch)) = next_char_at(source, cursor) else {
-                        return Err(Diagnostic::unsupported_at(span, format!("unterminated {label} escape sequence")));
+            return Err(Diagnostic::unsupported_at(
+                span,
+                format!("unterminated {label} escape sequence"),
+            ));
         };
         let Some(digit) = ch.to_digit(16) else {
-                        return Err(Diagnostic::unsupported_at(span, format!("invalid {label} escape sequence")));
+            return Err(Diagnostic::unsupported_at(
+                span,
+                format!("invalid {label} escape sequence"),
+            ));
         };
         value = (value << 4) | digit;
         cursor += ch.len_utf8();
     }
 
-        let ch = char::from_u32(value).ok_or(Diagnostic::unsupported_at(span, format!("invalid {label} escape scalar value")))?;
+    let ch = char::from_u32(value).ok_or(Diagnostic::unsupported_at(
+        span,
+        format!("invalid {label} escape scalar value"),
+    ))?;
     Ok((ch, cursor))
 }
 

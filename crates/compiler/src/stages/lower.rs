@@ -275,10 +275,15 @@ pub(crate) fn lower_static_named_import_bindings_for_build(
                         let local_index = local_name_to_index
                             .get(&specifier.local)
                             .copied()
-                                                        .ok_or_else(|| Diagnostic::unsupported_at(specifier.span, format!(
+                            .ok_or_else(|| {
+                                Diagnostic::unsupported_at(
+                                    specifier.span,
+                                    format!(
 "issue-5005: entry module `export {{ {} }}` references unknown local binding `{}`",
 specifier.exported, specifier.local
-)))?;
+),
+                                )
+                            })?;
                         module_exports.push(ModuleExport {
                             name: specifier.exported.clone(),
                             lowered_statement_index: local_index,
@@ -1313,10 +1318,15 @@ fn rewrite_static_module_body_for_build(
                     let local_index = local_name_to_index
                         .get(&specifier.local)
                         .copied()
-                                                .ok_or_else(|| Diagnostic::unsupported_at(specifier.span, format!(
+                        .ok_or_else(|| {
+                            Diagnostic::unsupported_at(
+                                specifier.span,
+                                format!(
 "issue-5005: dependency module `export {{ {} }}` references unknown local binding `{}`",
 specifier.exported, specifier.local
-)))?;
+),
+                            )
+                        })?;
                     module_exports.push(ModuleExport {
                         name: specifier.exported.clone(),
                         lowered_statement_index: local_index,

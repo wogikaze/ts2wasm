@@ -198,7 +198,12 @@ fn build_file_impl(
                 None,
                 false,
             )?;
-            (legacy.debug_wat, legacy.wasm_bytes, legacy.diagnostics, false)
+            (
+                legacy.debug_wat,
+                legacy.wasm_bytes,
+                legacy.diagnostics,
+                false,
+            )
         }
     };
     let abi_for_writer = if abi_embedded { None } else { Some(&abi_meta) };

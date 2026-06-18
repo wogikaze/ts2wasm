@@ -177,10 +177,7 @@ pub enum ResolvedExport {
 /// § 16.2.1.6 — ModuleDeclarationEnvironmentSetup.
 ///
 /// Creates the module's environment record and initializes its bindings.
-pub fn module_declaration_env_setup(
-    _module: &mut Module,
-    _outer: EnvID,
-) -> Result<EnvID, String> {
+pub fn module_declaration_env_setup(_module: &mut Module, _outer: EnvID) -> Result<EnvID, String> {
     // In the Spec Kernel (P2), this will:
     // 1. Create a Module Environment Record
     // 2. For each export, create an uninitialized binding

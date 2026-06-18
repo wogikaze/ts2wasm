@@ -27,8 +27,16 @@ fn lower_let_stmt() {
     ];
     let program = lower_to_sem_ir(&stmts);
     let entry_block = &program.top_level_blocks[0];
-    assert!(entry_block.stmts.len() >= 1, "expected at least one stmt in entry block");
-    assert!(entry_block.stmts.iter().any(|s| matches!(s, SemStmt::Let { .. })));
+    assert!(
+        entry_block.stmts.len() >= 1,
+        "expected at least one stmt in entry block"
+    );
+    assert!(
+        entry_block
+            .stmts
+            .iter()
+            .any(|s| matches!(s, SemStmt::Let { .. }))
+    );
 }
 
 #[test]
@@ -40,7 +48,10 @@ fn lower_if_stmt() {
     }];
     let program = lower_to_sem_ir(&stmts);
     let block_count = program.top_level_blocks.len();
-    assert!(block_count >= 4, "expected >=4 blocks for if/else, got {block_count}");
+    assert!(
+        block_count >= 4,
+        "expected >=4 blocks for if/else, got {block_count}"
+    );
 }
 
 #[test]
@@ -67,7 +78,10 @@ fn lower_while_stmt() {
     }];
     let program = lower_to_sem_ir(&stmts);
     let block_count = program.top_level_blocks.len();
-    assert!(block_count >= 4, "expected >=4 blocks for while, got {block_count}");
+    assert!(
+        block_count >= 4,
+        "expected >=4 blocks for while, got {block_count}"
+    );
 }
 
 #[test]
@@ -75,12 +89,17 @@ fn lower_try_catch() {
     let stmts = vec![ResolvedStmt::TryCatch {
         try_block: vec![ResolvedStmt::Expr(ResolvedExpr::Number(1))],
         catch_param: Some("e".to_string()),
-        catch_block: Some(vec![ResolvedStmt::Expr(ResolvedExpr::Ident("e".to_string()))]),
+        catch_block: Some(vec![ResolvedStmt::Expr(ResolvedExpr::Ident(
+            "e".to_string(),
+        ))]),
         finally_block: None,
     }];
     let program = lower_to_sem_ir(&stmts);
     let block_count = program.top_level_blocks.len();
-    assert!(block_count >= 3, "expected >=3 blocks for try/catch, got {block_count}");
+    assert!(
+        block_count >= 3,
+        "expected >=3 blocks for try/catch, got {block_count}"
+    );
 }
 
 #[test]

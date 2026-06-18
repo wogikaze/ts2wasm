@@ -55,7 +55,7 @@ def check_routing() -> list[str]:
         text = path.read_text()
         for route in REQUIRED_ROUTING:
             if route not in text:
-                violations.append(f"WARN: {rel_path} missing routing for '{route}'")
+                violations.append(f"ERROR: {rel_path} missing routing for '{route}'")
 
     # Check for forbidden patterns across all routing docs
     import re

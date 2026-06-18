@@ -1,5 +1,5 @@
 use crate::expr::OptExpr;
-use crate::stmt::{OptStmt, DeoptReason};
+use crate::stmt::{DeoptReason, OptStmt};
 use ts2wasm_runtime_core::frame::FrameState;
 use ts2wasm_runtime_core::shape::ShapeId;
 

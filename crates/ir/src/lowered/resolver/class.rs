@@ -246,14 +246,14 @@ impl super::Resolver {
                 phase: None,
             });
         };
-        let class_name = self
-            .ctx
-            .classes
-            .current_class
-            .as_ref()
-                        .ok_or_else(|| Diagnostic::unsupported_at(span, format!(
+        let class_name = self.ctx.classes.current_class.as_ref().ok_or_else(|| {
+            Diagnostic::unsupported_at(
+                span,
+                format!(
 "issue-255: private field `#{field_name}` access requires declaring class context"
-)))?;
+),
+            )
+        })?;
         let Some(mut slot) = self
             .ctx
             .classes
@@ -451,13 +451,18 @@ impl super::Resolver {
         &self,
         class_name: &str,
     ) -> Result<ClassPrototypeRef, Diagnostic> {
-        let constructor = self.ctx.classes.class_constructor_ids
+        let constructor = self
+            .ctx
+            .classes
+            .class_constructor_ids
             .get(class_name)
             .copied()
-                        .ok_or_else(|| Diagnostic::unsupported(format!(
+            .ok_or_else(|| {
+                Diagnostic::unsupported(format!(
 "issue-207: instanceof right-hand side must be a supported class constructor `{}`",
 class_name
-)))?;
+))
+            })?;
 
         let mut parent_constructors = Vec::new();
         let mut current = self

@@ -114,7 +114,10 @@ impl Parser {
             };
             self.cursor = probe;
             if is_jsx {
-                                return Err(Diagnostic::unsupported_at(self.peek_span(), "JSX syntax is not supported".to_owned()));
+                return Err(Diagnostic::unsupported_at(
+                    self.peek_span(),
+                    "JSX syntax is not supported".to_owned(),
+                ));
             }
         }
 
@@ -283,7 +286,11 @@ impl Parser {
                 }
                 _ => {}
             }
-                        return Err(Diagnostic::source(target_span, DiagCode::SyntaxError, "Compound assignment expressions currently support only identifier, member, and computed member targets"));
+            return Err(Diagnostic::source(
+                target_span,
+                DiagCode::SyntaxError,
+                "Compound assignment expressions currently support only identifier, member, and computed member targets",
+            ));
         }
         if let Some(op) = self.logical_assignment_operator() {
             let target_span = expr.span();
@@ -411,7 +418,11 @@ impl Parser {
                 }
                 _ => {}
             }
-                        return Err(Diagnostic::source(target_span, DiagCode::SyntaxError, "unsupported syntax"));
+            return Err(Diagnostic::source(
+                target_span,
+                DiagCode::SyntaxError,
+                "unsupported syntax",
+            ));
         }
 
         Ok(expr)
@@ -532,8 +543,17 @@ impl Parser {
                 // Skip them as erased TypeScript syntax and continue probing
                 // for a valid arrow function parameter list.
                 if self.peek_parameter_property_modifier() {
-                    let is_modifier = matches!(self.peek_n(1), Some(Token::Ident(_) | Token::Question | Token::Colon
-                        | Token::LeftBrace | Token::LeftBracket | Token::DotDotDot));
+                    let is_modifier = matches!(
+                        self.peek_n(1),
+                        Some(
+                            Token::Ident(_)
+                                | Token::Question
+                                | Token::Colon
+                                | Token::LeftBrace
+                                | Token::LeftBracket
+                                | Token::DotDotDot
+                        )
+                    );
                     if is_modifier {
                         self.advance();
                         continue;
@@ -580,7 +600,12 @@ impl Parser {
                 self.advance();
                 return self.skip_arrow_param();
             }
-            _ => return Err(Diagnostic::unsupported_at(self.peek_span(), "expected identifier or pattern in arrow param")),
+            _ => {
+                return Err(Diagnostic::unsupported_at(
+                    self.peek_span(),
+                    "expected identifier or pattern in arrow param",
+                ));
+            }
         }
         // Optional default `= expr`
         if self.consume(TokenKind::Equal) {
@@ -589,7 +614,11 @@ impl Parser {
         }
         // Optional type annotation `: type`
         if self.consume(TokenKind::Colon) {
-            self.skip_type_annotation_until(&[TokenKind::Comma, TokenKind::RightParen, TokenKind::Equal])?;
+            self.skip_type_annotation_until(&[
+                TokenKind::Comma,
+                TokenKind::RightParen,
+                TokenKind::Equal,
+            ])?;
         }
         Ok(())
     }
@@ -611,7 +640,12 @@ impl Parser {
                 Some(_) => {
                     self.advance();
                 }
-                None => return Err(Diagnostic::unsupported_at(self.peek_span(), "unexpected end of input in arrow param pattern")),
+                None => {
+                    return Err(Diagnostic::unsupported_at(
+                        self.peek_span(),
+                        "unexpected end of input in arrow param pattern",
+                    ));
+                }
             }
         }
         Ok(())
@@ -622,7 +656,9 @@ impl Parser {
         loop {
             match self.peek() {
                 Some(t) if delims.iter().any(|d| d.matches(t)) => break,
-                Some(_) => { self.advance(); }
+                Some(_) => {
+                    self.advance();
+                }
                 None => break,
             }
         }
@@ -782,8 +818,16 @@ impl Parser {
         let mut expr = self.coalesce()?;
         while self.consume(TokenKind::Pipeline) {
             let right = self.coalesce()?;
-            let span = Span { start: expr.span().start, end: right.span().end };
-            expr = Expr::Binary { left: Box::new(expr), op: BinaryOp::Pipeline, right: Box::new(right), span };
+            let span = Span {
+                start: expr.span().start,
+                end: right.span().end,
+            };
+            expr = Expr::Binary {
+                left: Box::new(expr),
+                op: BinaryOp::Pipeline,
+                right: Box::new(right),
+                span,
+            };
         }
         Ok(expr)
     }
@@ -1335,7 +1379,10 @@ impl Parser {
                 return Err(Diagnostic {
                     code: DiagCode::SyntaxError,
                     message: "cannot delete an unqualified identifier in strict mode".to_owned(),
-                    span: Some(Span { start: delete_span.start, end }),
+                    span: Some(Span {
+                        start: delete_span.start,
+                        end,
+                    }),
                     phase: Some("parser"),
                 });
             }
@@ -1441,9 +1488,13 @@ impl Parser {
                 if self.fn_depth == 0 && !self.in_class_field_init {
                     return Err(Diagnostic {
                         code: DiagCode::SyntaxError,
-                        message: "'new.target' is only valid inside functions and class constructors"
-                            .to_owned(),
-                        span: Some(Span { start: new_span.start, end }),
+                        message:
+                            "'new.target' is only valid inside functions and class constructors"
+                                .to_owned(),
+                        span: Some(Span {
+                            start: new_span.start,
+                            end,
+                        }),
                         phase: Some("parser"),
                     });
                 }
@@ -1620,7 +1671,11 @@ impl Parser {
             }
             if self.consume(TokenKind::LeftBracket) {
                 if matches!(self.peek(), Some(Token::RightBracket)) {
-                                        return Err(Diagnostic::source(self.prev_span().unwrap_or(Span::generated("parser")), DiagCode::SyntaxError, "empty computed property access is not allowed"));
+                    return Err(Diagnostic::source(
+                        self.prev_span().unwrap_or(Span::generated("parser")),
+                        DiagCode::SyntaxError,
+                        "empty computed property access is not allowed",
+                    ));
                 }
                 let index = self.expression()?;
                 let right_span = self.expect(TokenKind::RightBracket)?;
@@ -1652,10 +1707,7 @@ impl Parser {
                 && let Some(SpannedToken {
                     kind: Token::TemplateLiteral(raw),
                     span: template_span,
-                }) = self
-                    .tokens
-                    .get(self.cursor)
-                    .cloned()
+                }) = self.tokens.get(self.cursor).cloned()
             {
                 self.cursor += 1;
                 expr = self.tagged_template_call_expr(expr, &raw, template_span)?;
@@ -1704,7 +1756,11 @@ impl Parser {
     }
 
     fn invalid_optional_chain_target(&self, span: Span) -> Diagnostic {
-                Diagnostic::source(span, DiagCode::SyntaxError, "optional chain target is not assignable")
+        Diagnostic::source(
+            span,
+            DiagCode::SyntaxError,
+            "optional chain target is not assignable",
+        )
     }
 
     fn consume_typescript_const_angle_assertion(&mut self) -> bool {
@@ -1911,7 +1967,10 @@ impl Parser {
         if consumed_type_token {
             Ok(())
         } else {
-                        Err(Diagnostic::unsupported_at(keyword_span, format!("expected TypeScript type after `{keyword}`")))
+            Err(Diagnostic::unsupported_at(
+                keyword_span,
+                format!("expected TypeScript type after `{keyword}`"),
+            ))
         }
     }
 
@@ -1957,7 +2016,10 @@ impl Parser {
             }
         }
 
-                Err(Diagnostic::unsupported_at(less_span, format!("unterminated TypeScript {description}")))
+        Err(Diagnostic::unsupported_at(
+            less_span,
+            format!("unterminated TypeScript {description}"),
+        ))
     }
 
     fn primary(&mut self) -> Result<Expr, Diagnostic> {
@@ -2065,8 +2127,7 @@ impl Parser {
                 if self.fn_depth == 0 && self.static_block_depth == 0 {
                     return Err(Diagnostic {
                         code: DiagCode::SyntaxError,
-                        message: "`super` is only valid inside a class or object method"
-                            .to_owned(),
+                        message: "`super` is only valid inside a class or object method".to_owned(),
                         span: Some(span),
                         phase: Some("parser"),
                     });
@@ -2266,7 +2327,11 @@ impl Parser {
             Some(SpannedToken {
                 kind: Token::Dot,
                 span: dot_span,
-            }) if matches!(self.peek(), Some(Token::Number(_) | Token::DecimalNumber(_))) => {
+            }) if matches!(
+                self.peek(),
+                Some(Token::Number(_) | Token::DecimalNumber(_))
+            ) =>
+            {
                 let Some(SpannedToken {
                     kind: number_kind,
                     span: num_span,
@@ -2331,7 +2396,10 @@ impl Parser {
                                         self.advance();
                                     }
                                     None => {
-                                                                                return Err(Diagnostic::unsupported_at(at_span, "unsupported syntax"));
+                                        return Err(Diagnostic::unsupported_at(
+                                            at_span,
+                                            "unsupported syntax",
+                                        ));
                                     }
                                 }
                             }
@@ -2346,17 +2414,20 @@ impl Parser {
                 } else {
                     Err(Diagnostic {
                         code: DiagCode::UnsupportedTypeScriptSyntax,
-                        message:
-                            "Decorator syntax is not supported outside class expressions"
-                                .to_owned(),
+                        message: "Decorator syntax is not supported outside class expressions"
+                            .to_owned(),
                         span: Some(at_span),
 
-                        phase: None,})
+                        phase: None,
+                    })
                 }
             }
             Some(SpannedToken {
                 kind: Token::With, ..
-                        }) => Err(Diagnostic::unsupported_at(self.peek_span(), "With statement is not supported".to_owned())),
+            }) => Err(Diagnostic::unsupported_at(
+                self.peek_span(),
+                "With statement is not supported".to_owned(),
+            )),
             // Dynamic import: keep a distinct callee so IR can preserve import() vs require().
             Some(SpannedToken {
                 kind: Token::Import,
@@ -2388,7 +2459,10 @@ impl Parser {
                         span: import_span,
                     }),
                     args: vec![expr],
-                    span: Span { start: import_span.start, end },
+                    span: Span {
+                        start: import_span.start,
+                        end,
+                    },
                 })
             }
             other => Err(Diagnostic {
@@ -2396,7 +2470,8 @@ impl Parser {
                 message: format!("unsupported expression: {other:?}"),
                 span: self.peek_span(),
 
-                phase: Some("parser"),}),
+                phase: Some("parser"),
+            }),
         }
     }
 
@@ -2464,8 +2539,11 @@ impl Parser {
             ParsedObjectKey::Static { key, .. } => key.clone(),
             ParsedObjectKey::ComputedKey { .. } => "[computed]".to_owned(),
         };
-        let Some(value) =
-            self.parse_object_literal_method_with_generator(method_name, async_span.start, is_generator)?
+        let Some(value) = self.parse_object_literal_method_with_generator(
+            method_name,
+            async_span.start,
+            is_generator,
+        )?
         else {
             self.cursor = checkpoint;
             return Ok(None);
@@ -2700,7 +2778,10 @@ impl Parser {
         }
         if is_generator {
             if self.strict_mode {
-                let ns = name_span.unwrap_or(Span { start: start.start, end: start.start });
+                let ns = name_span.unwrap_or(Span {
+                    start: start.start,
+                    end: start.start,
+                });
                 self.validate_strict_mode_fn_params(&name, ns, &params)?;
             }
             self.skip_balanced_brace_block(start)?;
@@ -2722,7 +2803,10 @@ impl Parser {
         if self.peek_function_body_use_strict() {
             self.strict_mode = true;
         }
-        let ns = name_span.unwrap_or(Span { start: start.start, end: start.start });
+        let ns = name_span.unwrap_or(Span {
+            start: start.start,
+            end: start.start,
+        });
         self.validate_strict_mode_fn_params(&name, ns, &params)?;
         let prev_labels = std::mem::take(&mut self.labels_in_scope);
         self.fn_depth += 1;
@@ -2831,9 +2915,12 @@ impl Parser {
 }
 
 fn bigint_fractional_number_diagnostic(value: &str, span: Span) -> Diagnostic {
-        Diagnostic::unsupported_at(span, format!(
-"BigInt/Number comparison with fractional number `{value}` requires broader number-model support"
-))
+    Diagnostic::unsupported_at(
+        span,
+        format!(
+            "BigInt/Number comparison with fractional number `{value}` requires broader number-model support"
+        ),
+    )
 }
 
 fn parser_expr_is_bigint_literal_operand(expr: &Expr) -> bool {

@@ -5,8 +5,12 @@ fn test_template_literal_from_temporal_helpers() {
 var objectName = "test";
 var x = `${objectName}[Symbol.for('${Symbol.keyFor(propertyKey)}')]`;
 "#;
-    let tokens = Lexer::new(source).tokenize().expect("template literal should lex");
+    let tokens = Lexer::new(source)
+        .tokenize()
+        .expect("template literal should lex");
     assert!(tokens.len() > 0, "should produce tokens");
-    let has_template = tokens.iter().any(|t| matches!(&t.kind, Token::TemplateLiteral(_)));
+    let has_template = tokens
+        .iter()
+        .any(|t| matches!(&t.kind, Token::TemplateLiteral(_)));
     assert!(has_template, "should contain a TemplateLiteral token");
 }

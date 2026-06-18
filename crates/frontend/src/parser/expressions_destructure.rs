@@ -16,10 +16,7 @@ impl Parser {
                 expr: Box::new(value),
             }));
         } else if matches!(self.peek(), Some(Token::LeftParen))
-            && matches!(
-                self.peek_n(1),
-                Some(Token::LeftBrace | Token::LeftBracket)
-            )
+            && matches!(self.peek_n(1), Some(Token::LeftBrace | Token::LeftBracket))
             && self.parenthesized_assignment_pattern_has_equal()
         {
             self.expect(TokenKind::LeftParen)?;
@@ -142,7 +139,10 @@ impl Parser {
 
         while !matches!(self.peek(), Some(Token::RightBracket)) {
             if self.is_at_end() {
-                                return Err(Diagnostic::unsupported_at(start, "Unterminated array assignment pattern".to_owned()));
+                return Err(Diagnostic::unsupported_at(
+                    start,
+                    "Unterminated array assignment pattern".to_owned(),
+                ));
             }
 
             if self.consume(TokenKind::Comma) {
@@ -196,7 +196,10 @@ impl Parser {
 
         while !matches!(self.peek(), Some(Token::RightBrace)) {
             if self.is_at_end() {
-                                return Err(Diagnostic::unsupported_at(start, "Unterminated object assignment pattern".to_owned()));
+                return Err(Diagnostic::unsupported_at(
+                    start,
+                    "Unterminated object assignment pattern".to_owned(),
+                ));
             }
 
             if let Some(rest_span) = self.consume_span(TokenKind::DotDotDot) {
@@ -215,7 +218,10 @@ impl Parser {
             } else if shorthand_allowed {
                 key
             } else {
-                                return Err(Diagnostic::unsupported_at(self.peek_span(), "Literal object assignment keys require a target after `:`"));
+                return Err(Diagnostic::unsupported_at(
+                    self.peek_span(),
+                    "Literal object assignment keys require a target after `:`",
+                ));
             };
 
             if self.consume(TokenKind::Equal) {
@@ -256,7 +262,10 @@ impl Parser {
             }
             Some(Token::LeftBracket) => self.parse_array_assignment_pattern(),
             Some(Token::LeftBrace) => self.parse_object_assignment_pattern(),
-                        other => Err(Diagnostic::unsupported_at(self.peek_span(), format!("Expected assignment target or pattern, got {other:?}"))),
+            other => Err(Diagnostic::unsupported_at(
+                self.peek_span(),
+                format!("Expected assignment target or pattern, got {other:?}"),
+            )),
         }
     }
 
@@ -277,12 +286,14 @@ impl Parser {
                     span,
                 ))
             }
-                        _ => Err(Diagnostic::unsupported_at(span, "Invalid destructuring assignment target".to_owned())),
+            _ => Err(Diagnostic::unsupported_at(
+                span,
+                "Invalid destructuring assignment target".to_owned(),
+            )),
         }
     }
 
     fn invalid_rest_assignment_diagnostic(&self, span: Span) -> Diagnostic {
-                Diagnostic::unsupported_at(span, "unsupported syntax")
+        Diagnostic::unsupported_at(span, "unsupported syntax")
     }
-
 }

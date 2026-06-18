@@ -14,20 +14,60 @@ pub enum ContextKind {
 #[derive(Debug, Clone)]
 pub enum SemStmt {
     // — Basic operations —
-    Let { local: LocalId, init: Option<SemExpr>, span: Span },
-    Assign { local: LocalId, value: SemExpr, span: Span },
+    Let {
+        local: LocalId,
+        init: Option<SemExpr>,
+        span: Span,
+    },
+    Assign {
+        local: LocalId,
+        value: SemExpr,
+        span: Span,
+    },
     Expr(SemExpr, Span),
 
     // — Environment operations —
-    CreateLexicalBinding { env: EnvRef, name: String, span: Span },
-    InitializeBinding { env: EnvRef, name: String, value: ValueRef, span: Span },
-    GetBindingValue { env: EnvRef, name: String, result: LocalId, span: Span },
-    SetMutableBinding { env: EnvRef, name: String, value: ValueRef, span: Span },
+    CreateLexicalBinding {
+        env: EnvRef,
+        name: String,
+        span: Span,
+    },
+    InitializeBinding {
+        env: EnvRef,
+        name: String,
+        value: ValueRef,
+        span: Span,
+    },
+    GetBindingValue {
+        env: EnvRef,
+        name: String,
+        result: LocalId,
+        span: Span,
+    },
+    SetMutableBinding {
+        env: EnvRef,
+        name: String,
+        value: ValueRef,
+        span: Span,
+    },
 
     // — Reference operations —
-    GetValue { reference: SemReference, result: LocalId, span: Span },
-    PutValue { reference: SemReference, value: ValueRef, span: Span },
-    ResolveBinding { name: String, env: EnvRef, result: LocalId, span: Span },
+    GetValue {
+        reference: SemReference,
+        result: LocalId,
+        span: Span,
+    },
+    PutValue {
+        reference: SemReference,
+        value: ValueRef,
+        span: Span,
+    },
+    ResolveBinding {
+        name: String,
+        env: EnvRef,
+        result: LocalId,
+        span: Span,
+    },
     MakeReference {
         base: ValueRef,
         name: SemReference,
@@ -37,10 +77,21 @@ pub enum SemStmt {
     },
 
     // — Context operations —
-    EnterContext { kind: ContextKind, span: Span },
+    EnterContext {
+        kind: ContextKind,
+        span: Span,
+    },
     LeaveContext(Span),
 
     // — Iterator operations —
-    IteratorNext { iterator: ValueRef, result: LocalId, span: Span },
-    IteratorClose { iterator: ValueRef, completion: ValueRef, span: Span },
+    IteratorNext {
+        iterator: ValueRef,
+        result: LocalId,
+        span: Span,
+    },
+    IteratorClose {
+        iterator: ValueRef,
+        completion: ValueRef,
+        span: Span,
+    },
 }

@@ -10,11 +10,17 @@ pub struct FrameSlot {
 
 impl FrameSlot {
     pub fn new(value: TaggedValue) -> Self {
-        Self { value, is_initialized: true }
+        Self {
+            value,
+            is_initialized: true,
+        }
     }
 
     pub fn uninitialized() -> Self {
-        Self { value: TaggedValue::UNDEFINED, is_initialized: false }
+        Self {
+            value: TaggedValue::UNDEFINED,
+            is_initialized: false,
+        }
     }
 }
 
@@ -36,12 +42,7 @@ pub struct FrameState {
 }
 
 impl FrameState {
-    pub fn new(
-        locals: Vec<FrameSlot>,
-        env: EnvRef,
-        variable_env: EnvRef,
-        realm: RealmRef,
-    ) -> Self {
+    pub fn new(locals: Vec<FrameSlot>, env: EnvRef, variable_env: EnvRef, realm: RealmRef) -> Self {
         Self {
             locals,
             env,
@@ -62,6 +63,9 @@ impl FrameState {
     }
 
     pub fn get_local(&self, index: usize) -> Option<TaggedValue> {
-        self.locals.get(index).filter(|s| s.is_initialized).map(|s| s.value)
+        self.locals
+            .get(index)
+            .filter(|s| s.is_initialized)
+            .map(|s| s.value)
     }
 }

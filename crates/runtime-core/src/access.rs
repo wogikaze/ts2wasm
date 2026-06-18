@@ -3,7 +3,10 @@ use crate::value::TaggedValue;
 
 pub enum PropertyAccessResult {
     Value(TaggedValue),
-    Accessor { getter: TaggedValue, setter: TaggedValue },
+    Accessor {
+        getter: TaggedValue,
+        setter: TaggedValue,
+    },
     NotFound,
 }
 
@@ -30,11 +33,7 @@ impl PropertyAccess {
         None
     }
 
-    pub fn define_own_property(
-        obj: TaggedValue,
-        key: &str,
-        desc: PropertyDescriptor,
-    ) -> bool {
+    pub fn define_own_property(obj: TaggedValue, key: &str, desc: PropertyDescriptor) -> bool {
         false
     }
 

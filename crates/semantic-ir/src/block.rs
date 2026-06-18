@@ -12,7 +12,12 @@ pub struct SemBlock {
 
 #[derive(Debug, Clone)]
 pub enum Terminator {
-    Branch { cond: ValueRef, then: BlockId, else_: BlockId, span: Span },
+    Branch {
+        cond: ValueRef,
+        then: BlockId,
+        else_: BlockId,
+        span: Span,
+    },
     Jump(BlockId, Span),
     Return(ValueRef, Span),
     Throw(ValueRef, Span),

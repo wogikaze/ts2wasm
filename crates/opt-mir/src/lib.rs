@@ -1,6 +1,6 @@
-pub mod stmt;
-pub mod expr;
 pub mod analysis;
+pub mod expr;
+pub mod stmt;
 
-pub use stmt::OptStmt;
 pub use expr::OptExpr;
+pub use stmt::OptStmt;

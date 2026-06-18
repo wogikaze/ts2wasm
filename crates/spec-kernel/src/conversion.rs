@@ -12,7 +12,10 @@ impl TypeConversion {
     }
 
     pub fn to_boolean(value: TaggedValue) -> bool {
-        !matches!(value, TaggedValue::UNDEFINED | TaggedValue::NULL | TaggedValue::FALSE)
+        !matches!(
+            value,
+            TaggedValue::UNDEFINED | TaggedValue::NULL | TaggedValue::FALSE
+        )
     }
 
     pub fn to_string(value: TaggedValue) -> String {

@@ -1,8 +1,9 @@
 use ts2wasm_semantic_ir::block::{SemBlock, Terminator};
 use ts2wasm_semantic_ir::expr::SemExpr;
 use ts2wasm_semantic_ir::program::SemProgram;
+use ts2wasm_semantic_ir::reference::{RefBase, RefName, SemReference};
 use ts2wasm_semantic_ir::stmt::SemStmt;
-use ts2wasm_semantic_ir::value::{BlockId, LocalId};
+use ts2wasm_semantic_ir::value::ValueRef;
 use ts2wasm_spec_kernel::SpecOp;
 
 pub struct LoweredSpec {
@@ -38,72 +39,342 @@ impl CorrectnessLowering {
     fn lower_stmt(
         stmt: &SemStmt,
         ops: &mut Vec<(SpecOp, ts2wasm_source::Span)>,
-        _locals: &mut usize,
+        locals: &mut usize,
     ) {
         match stmt {
-            SemStmt::Let { local: _, init, span } => {
+            SemStmt::Let { init, .. } => {
                 if let Some(init_expr) = init {
-                    Self::lower_expr(init_expr, ops);
+                    Self::lower_expr(init_expr, ops, locals);
                 }
             }
-            SemStmt::Assign { local: _, value, span } => {
-                Self::lower_expr(value, ops);
+            SemStmt::Assign { value, .. } | SemStmt::Expr(value, _) => {
+                Self::lower_expr(value, ops, locals);
             }
-            SemStmt::Expr(expr, _span) => {
-                Self::lower_expr(expr, ops);
+            SemStmt::GetValue {
+                reference, span, ..
+            } => {
+                Self::lower_get_value(reference, *span, ops, locals);
             }
-            SemStmt::GetValue { reference: _, result: _, span } => {
-                ops.push((SpecOp::Get { object: 0, key: 0, receiver: 0 }, *span));
+            SemStmt::CreateLexicalBinding { env, name, span } => {
+                ops.push((
+                    SpecOp::CreateBinding {
+                        env: *env,
+                        name: name.clone(),
+                        mutable: true,
+                    },
+                    *span,
+                ));
             }
-            SemStmt::CreateLexicalBinding { env: _, name: _, span } => {
-                ops.push((SpecOp::CreateBinding { env: 0, name: String::new(), mutable: true }, *span));
+            SemStmt::InitializeBinding {
+                env,
+                name,
+                value,
+                span,
+            } => {
+                ops.push((
+                    SpecOp::InitializeBinding {
+                        env: *env,
+                        name: name.clone(),
+                        value: Self::value_ref_local(value, locals),
+                    },
+                    *span,
+                ));
             }
-            SemStmt::InitializeBinding { env: _, name: _, value: _, span } => {
-                ops.push((SpecOp::InitializeBinding { env: 0, name: String::new(), value: 0 }, *span));
+            SemStmt::PutValue {
+                reference,
+                value,
+                span,
+            } => {
+                Self::lower_put_value(reference, value, *span, ops, locals);
             }
-            SemStmt::PutValue { reference: _, value: _, span } => {
-                ops.push((SpecOp::Set { object: 0, key: 0, value: 0, receiver: 0 }, *span));
+            SemStmt::EnterContext { span, .. } => {
+                ops.push((
+                    SpecOp::Call {
+                        callee: Self::allocate_synthetic_local(locals),
+                        this: Self::allocate_synthetic_local(locals),
+                        args: Self::allocate_synthetic_local(locals),
+                    },
+                    *span,
+                ));
             }
-            SemStmt::EnterContext { kind: _, span } => {
-                ops.push((SpecOp::Call { callee: 0, this: 0, args: 0 }, *span));
+            SemStmt::LeaveContext(_) => {}
+            SemStmt::GetBindingValue {
+                env, name, span, ..
+            } => {
+                ops.push((
+                    SpecOp::GetBindingValue {
+                        env: *env,
+                        name: name.clone(),
+                    },
+                    *span,
+                ));
             }
-            SemStmt::LeaveContext(_span) => {}
-            SemStmt::GetBindingValue { env: _, name: _, result: _, span } => {
-                ops.push((SpecOp::GetBindingValue { env: 0, name: String::new() }, *span));
+            SemStmt::SetMutableBinding {
+                env,
+                name,
+                value,
+                span,
+            } => {
+                ops.push((
+                    SpecOp::SetMutableBinding {
+                        env: *env,
+                        name: name.clone(),
+                        value: Self::value_ref_local(value, locals),
+                    },
+                    *span,
+                ));
             }
-            SemStmt::SetMutableBinding { env: _, name: _, value: _, span } => {
-                ops.push((SpecOp::SetMutableBinding { env: 0, name: String::new(), value: 0 }, *span));
+            SemStmt::ResolveBinding {
+                name, env, span, ..
+            } => {
+                ops.push((
+                    SpecOp::ResolveBinding {
+                        name: name.clone(),
+                        env: *env,
+                    },
+                    *span,
+                ));
             }
-            SemStmt::ResolveBinding { name: _, env: _, result: _, span } => {
-                ops.push((SpecOp::ResolveBinding { name: String::new(), env: 0 }, *span));
+            SemStmt::MakeReference { .. } => {}
+            SemStmt::IteratorNext { iterator, span, .. } => {
+                ops.push((
+                    SpecOp::IteratorNext {
+                        iterator: Self::value_ref_local(iterator, locals),
+                    },
+                    *span,
+                ));
             }
-            SemStmt::MakeReference { base: _, name: _, strict: _, result: _, span } => {}
-            SemStmt::IteratorNext { iterator: _, result: _, span } => {
-                ops.push((SpecOp::IteratorNext { iterator: 0 }, *span));
-            }
-            SemStmt::IteratorClose { iterator: _, completion: _, span } => {
-                ops.push((SpecOp::IteratorClose { iterator: 0, completion: 0 }, *span));
+            SemStmt::IteratorClose {
+                iterator,
+                completion,
+                span,
+            } => {
+                ops.push((
+                    SpecOp::IteratorClose {
+                        iterator: Self::value_ref_local(iterator, locals),
+                        completion: Self::value_ref_local(completion, locals),
+                    },
+                    *span,
+                ));
             }
         }
     }
 
-    fn lower_expr(expr: &SemExpr, ops: &mut Vec<(SpecOp, ts2wasm_source::Span)>) {
+    fn lower_expr(
+        expr: &SemExpr,
+        ops: &mut Vec<(SpecOp, ts2wasm_source::Span)>,
+        locals: &mut usize,
+    ) {
         match expr {
-            SemExpr::Constant(_, _) => {}
-            SemExpr::Local(_, _) => {}
-            SemExpr::Unary { op: _, expr: _, span: _ } => {}
-            SemExpr::Binary { left: _, op: _, right: _, span: _ } => {}
-            SemExpr::PropertyGet { object: _, key: _, span } => {
-                ops.push((SpecOp::Get { object: 0, key: 0, receiver: 0 }, *span));
+            SemExpr::Constant(_, _) | SemExpr::Local(_, _) => {}
+            SemExpr::Unary { .. } | SemExpr::Binary { .. } => {}
+            SemExpr::PropertyGet { object, key, span } => {
+                let object = Self::expr_local(object, locals);
+                ops.push((
+                    SpecOp::Get {
+                        object,
+                        key: Self::materialize_string_key_local(key, locals),
+                        receiver: object,
+                    },
+                    *span,
+                ));
             }
-            SemExpr::Call { callee: _, args: _, span } => {
-                ops.push((SpecOp::Call { callee: 0, this: 0, args: 0 }, *span));
+            SemExpr::Call { callee, span, .. } => {
+                ops.push((
+                    SpecOp::Call {
+                        callee: Self::expr_local(callee, locals),
+                        this: Self::allocate_synthetic_local(locals),
+                        args: Self::allocate_synthetic_local(locals),
+                    },
+                    *span,
+                ));
             }
-            SemExpr::Construct { constructor: _, args: _, new_target: _, span } => {
-                ops.push((SpecOp::Construct { constructor: 0, args: 0, new_target: 0 }, *span));
+            SemExpr::Construct {
+                constructor,
+                new_target,
+                span,
+                ..
+            } => {
+                let constructor_local = Self::expr_local(constructor, locals);
+                let new_target_local = new_target
+                    .as_deref()
+                    .map(|expr| Self::expr_local(expr, locals))
+                    .unwrap_or(constructor_local);
+                ops.push((
+                    SpecOp::Construct {
+                        constructor: constructor_local,
+                        args: Self::allocate_synthetic_local(locals),
+                        new_target: new_target_local,
+                    },
+                    *span,
+                ));
             }
-            _ => {}
+            SemExpr::PropertyGetDynamic { object, key, span } => {
+                let object = Self::expr_local(object, locals);
+                ops.push((
+                    SpecOp::Get {
+                        object,
+                        key: Self::expr_local(key, locals),
+                        receiver: object,
+                    },
+                    *span,
+                ));
+            }
+            SemExpr::PropertySet {
+                object,
+                key,
+                value,
+                span,
+            } => {
+                let object = Self::expr_local(object, locals);
+                ops.push((
+                    SpecOp::Set {
+                        object,
+                        key: Self::materialize_string_key_local(key, locals),
+                        value: Self::expr_local(value, locals),
+                        receiver: object,
+                    },
+                    *span,
+                ));
+            }
+            SemExpr::ArrayLiteral { .. }
+            | SemExpr::ObjectLiteral { .. }
+            | SemExpr::FunctionExpr { .. }
+            | SemExpr::This(_)
+            | SemExpr::Super { .. }
+            | SemExpr::Import { .. }
+            | SemExpr::Reference(_, _) => {}
         }
+    }
+
+    fn lower_get_value(
+        reference: &SemReference,
+        span: ts2wasm_source::Span,
+        ops: &mut Vec<(SpecOp, ts2wasm_source::Span)>,
+        locals: &mut usize,
+    ) {
+        match &reference.base {
+            RefBase::Value(base) | RefBase::Super(base) => {
+                let object = Self::value_ref_local(base, locals);
+                ops.push((
+                    SpecOp::Get {
+                        object,
+                        key: Self::reference_name_local(&reference.name, locals),
+                        receiver: reference
+                            .this_value
+                            .as_ref()
+                            .map(|value| Self::value_ref_local(value, locals))
+                            .unwrap_or(object),
+                    },
+                    span,
+                ));
+            }
+            RefBase::Env(env) => {
+                ops.push((
+                    SpecOp::GetBindingValue {
+                        env: *env,
+                        name: Self::reference_name_string(&reference.name),
+                    },
+                    span,
+                ));
+            }
+            RefBase::Unresolvable => {
+                ops.push((
+                    SpecOp::ResolveBinding {
+                        name: Self::reference_name_string(&reference.name),
+                        env: 0,
+                    },
+                    span,
+                ));
+            }
+        }
+    }
+
+    fn lower_put_value(
+        reference: &SemReference,
+        value: &ValueRef,
+        span: ts2wasm_source::Span,
+        ops: &mut Vec<(SpecOp, ts2wasm_source::Span)>,
+        locals: &mut usize,
+    ) {
+        match &reference.base {
+            RefBase::Value(base) | RefBase::Super(base) => {
+                let object = Self::value_ref_local(base, locals);
+                ops.push((
+                    SpecOp::Set {
+                        object,
+                        key: Self::reference_name_local(&reference.name, locals),
+                        value: Self::value_ref_local(value, locals),
+                        receiver: reference
+                            .this_value
+                            .as_ref()
+                            .map(|this_value| Self::value_ref_local(this_value, locals))
+                            .unwrap_or(object),
+                    },
+                    span,
+                ));
+            }
+            RefBase::Env(env) => {
+                ops.push((
+                    SpecOp::SetMutableBinding {
+                        env: *env,
+                        name: Self::reference_name_string(&reference.name),
+                        value: Self::value_ref_local(value, locals),
+                    },
+                    span,
+                ));
+            }
+            RefBase::Unresolvable => {
+                ops.push((
+                    SpecOp::SetMutableBinding {
+                        env: 0,
+                        name: Self::reference_name_string(&reference.name),
+                        value: Self::value_ref_local(value, locals),
+                    },
+                    span,
+                ));
+            }
+        }
+    }
+
+    fn reference_name_string(name: &RefName) -> String {
+        match name {
+            RefName::Id(name) | RefName::PrivateName(name) => name.clone(),
+            RefName::Key(_) => String::new(),
+        }
+    }
+
+    fn reference_name_local(name: &RefName, locals: &mut usize) -> u32 {
+        match name {
+            RefName::Id(name) | RefName::PrivateName(name) => {
+                Self::materialize_string_key_local(name, locals)
+            }
+            RefName::Key(value) => Self::value_ref_local(value, locals),
+        }
+    }
+
+    fn expr_local(expr: &SemExpr, locals: &mut usize) -> u32 {
+        match expr {
+            SemExpr::Local(local, _) => *local,
+            _ => Self::allocate_synthetic_local(locals),
+        }
+    }
+
+    fn value_ref_local(value: &ValueRef, locals: &mut usize) -> u32 {
+        match value {
+            ValueRef::Local(local) | ValueRef::Argument(local) => *local,
+            ValueRef::Constant(_) => Self::allocate_synthetic_local(locals),
+        }
+    }
+
+    fn materialize_string_key_local(_key: &str, locals: &mut usize) -> u32 {
+        Self::allocate_synthetic_local(locals)
+    }
+
+    fn allocate_synthetic_local(locals: &mut usize) -> u32 {
+        let local = *locals as u32;
+        *locals += 1;
+        local
     }
 
     fn lower_terminator(
@@ -112,12 +383,12 @@ impl CorrectnessLowering {
         _locals: &mut usize,
     ) {
         match term {
-            Terminator::Branch { cond: _, then: _, else_: _, span: _ } => {}
-            Terminator::Jump(_, _) => {}
-            Terminator::Return(_, _) => {}
-            Terminator::Throw(_, _) => {}
-            Terminator::UnwindTo { try_body: _, catch: _, finally: _, span: _ } => {}
-            Terminator::Switch { target: _, cases: _, default: _, span: _ } => {}
+            Terminator::Branch { .. }
+            | Terminator::Jump(_, _)
+            | Terminator::Return(_, _)
+            | Terminator::Throw(_, _)
+            | Terminator::UnwindTo { .. }
+            | Terminator::Switch { .. } => {}
         }
     }
 }

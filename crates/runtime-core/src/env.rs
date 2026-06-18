@@ -27,7 +27,11 @@ impl Binding {
     }
 
     pub fn initialized_value(&self) -> Option<TaggedValue> {
-        if self.initialized { Some(self.value) } else { None }
+        if self.initialized {
+            Some(self.value)
+        } else {
+            None
+        }
     }
 }
 
@@ -96,15 +100,15 @@ impl EnvironmentRecord {
         match self {
             Self::Declarative { bindings, .. }
             | Self::Function { bindings, .. }
-            | Self::Module { bindings, .. } => {
-                bindings.iter().position(|b| b.name == name)
-            }
-            Self::Global { declarative_bindings, object_bindings, .. } => {
-                declarative_bindings
-                    .iter()
-                    .position(|b| b.name == name)
-                    .or_else(|| object_bindings.iter().position(|b| b.name == name))
-            }
+            | Self::Module { bindings, .. } => bindings.iter().position(|b| b.name == name),
+            Self::Global {
+                declarative_bindings,
+                object_bindings,
+                ..
+            } => declarative_bindings
+                .iter()
+                .position(|b| b.name == name)
+                .or_else(|| object_bindings.iter().position(|b| b.name == name)),
             Self::Object { .. } | Self::Private { .. } => None,
         }
     }
@@ -120,10 +124,16 @@ impl EnvironmentRecord {
             | Self::Module { bindings, .. } => {
                 bindings.get(index).and_then(|b| b.initialized_value())
             }
-            Self::Global { declarative_bindings, object_bindings, .. } => {
+            Self::Global {
+                declarative_bindings,
+                object_bindings,
+                ..
+            } => {
                 let n = declarative_bindings.len();
                 if index < n {
-                    declarative_bindings.get(index).and_then(|b| b.initialized_value())
+                    declarative_bindings
+                        .get(index)
+                        .and_then(|b| b.initialized_value())
                 } else {
                     object_bindings.get(index - n).map(|b| b.value)
                 }

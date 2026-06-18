@@ -11,22 +11,32 @@ use ts2wasm_spec_kernel::SpecOp;
 pub fn runtime_fn_to_spec_op(rf: RuntimeFn) -> Option<SpecOp> {
     Some(match rf {
         // — Property operations —
-        RuntimeFn::PropertyGet => SpecOp::Get { object: 0, key: 0, receiver: 0 },
-        RuntimeFn::PropertySet => SpecOp::Set { object: 0, key: 0, value: 0, receiver: 0 },
+        RuntimeFn::PropertyGet => SpecOp::Get {
+            object: 0,
+            key: 0,
+            receiver: 0,
+        },
+        RuntimeFn::PropertySet => SpecOp::Set {
+            object: 0,
+            key: 0,
+            value: 0,
+            receiver: 0,
+        },
         RuntimeFn::PropertyHas => SpecOp::HasProperty { object: 0, key: 0 },
         RuntimeFn::PropertyDelete => SpecOp::Delete { object: 0, key: 0 },
 
         // — Object metadata —
-        RuntimeFn::ObjectGetOwnPropertyDescriptor => {
-            SpecOp::GetOwnProperty { object: 0, key: 0 }
-        }
-        RuntimeFn::ObjectDefineProperty => {
-            SpecOp::DefineOwnProperty { object: 0, key: 0, descriptor: 0 }
-        }
+        RuntimeFn::ObjectGetOwnPropertyDescriptor => SpecOp::GetOwnProperty { object: 0, key: 0 },
+        RuntimeFn::ObjectDefineProperty => SpecOp::DefineOwnProperty {
+            object: 0,
+            key: 0,
+            descriptor: 0,
+        },
         RuntimeFn::ObjectGetPrototypeOf => SpecOp::GetPrototypeOf { object: 0 },
-        RuntimeFn::ObjectSetPrototypeOf => {
-            SpecOp::SetPrototypeOf { object: 0, prototype: 0 }
-        }
+        RuntimeFn::ObjectSetPrototypeOf => SpecOp::SetPrototypeOf {
+            object: 0,
+            prototype: 0,
+        },
         RuntimeFn::ObjectIsExtensible => SpecOp::IsExtensible { object: 0 },
         RuntimeFn::ObjectPreventExtensions => SpecOp::PreventExtensions { object: 0 },
         RuntimeFn::ObjectKeys | RuntimeFn::ObjectGetOwnPropertyNames => {
@@ -34,36 +44,64 @@ pub fn runtime_fn_to_spec_op(rf: RuntimeFn) -> Option<SpecOp> {
         }
 
         // — Reflect (thin wrappers around internal methods) —
-        RuntimeFn::ReflectGet => SpecOp::Get { object: 0, key: 0, receiver: 0 },
-        RuntimeFn::ReflectSet => SpecOp::Set { object: 0, key: 0, value: 0, receiver: 0 },
+        RuntimeFn::ReflectGet => SpecOp::Get {
+            object: 0,
+            key: 0,
+            receiver: 0,
+        },
+        RuntimeFn::ReflectSet => SpecOp::Set {
+            object: 0,
+            key: 0,
+            value: 0,
+            receiver: 0,
+        },
         RuntimeFn::ReflectHas => SpecOp::HasProperty { object: 0, key: 0 },
         RuntimeFn::ReflectDeleteProperty => SpecOp::Delete { object: 0, key: 0 },
-        RuntimeFn::ReflectDefineProperty => {
-            SpecOp::DefineOwnProperty { object: 0, key: 0, descriptor: 0 }
-        }
-        RuntimeFn::ReflectConstruct => {
-            SpecOp::Construct { constructor: 0, args: 0, new_target: 0 }
-        }
-        RuntimeFn::ReflectApply => SpecOp::Call { callee: 0, this: 0, args: 0 },
+        RuntimeFn::ReflectDefineProperty => SpecOp::DefineOwnProperty {
+            object: 0,
+            key: 0,
+            descriptor: 0,
+        },
+        RuntimeFn::ReflectConstruct => SpecOp::Construct {
+            constructor: 0,
+            args: 0,
+            new_target: 0,
+        },
+        RuntimeFn::ReflectApply => SpecOp::Call {
+            callee: 0,
+            this: 0,
+            args: 0,
+        },
 
         // — Type conversion —
         RuntimeFn::TruthyBool => SpecOp::ToBoolean { value: 0 },
-        RuntimeFn::TypeOf => SpecOp::ToPrimitive { value: 0, preferred: None },
+        RuntimeFn::TypeOf => SpecOp::ToPrimitive {
+            value: 0,
+            preferred: None,
+        },
         RuntimeFn::NumberCoerce => SpecOp::ToNumber { value: 0 },
-        RuntimeFn::IsString => SpecOp::ToPrimitive { value: 0, preferred: None },
+        RuntimeFn::IsString => SpecOp::ToPrimitive {
+            value: 0,
+            preferred: None,
+        },
 
         // — Iterator —
-        RuntimeFn::GetIterator => SpecOp::GetIterator { object: 0, sync: true },
+        RuntimeFn::GetIterator => SpecOp::GetIterator {
+            object: 0,
+            sync: true,
+        },
         RuntimeFn::IteratorNext => SpecOp::IteratorNext { iterator: 0 },
 
         // — Data property helpers —
         RuntimeFn::ObjectDefineProperties => {
             // DefineProperties is Multiple DefineOwnProperty calls
-            SpecOp::DefineOwnProperty { object: 0, key: 0, descriptor: 0 }
+            SpecOp::DefineOwnProperty {
+                object: 0,
+                key: 0,
+                descriptor: 0,
+            }
         }
-        RuntimeFn::ObjectGetOwnPropertyDescriptors => {
-            SpecOp::GetOwnProperty { object: 0, key: 0 }
-        }
+        RuntimeFn::ObjectGetOwnPropertyDescriptors => SpecOp::GetOwnProperty { object: 0, key: 0 },
 
         _ => return None,
     })

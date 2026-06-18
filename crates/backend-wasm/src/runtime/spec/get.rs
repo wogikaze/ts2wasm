@@ -13,7 +13,6 @@ pub fn build_spec_get() -> WasmFunction {
             WasmInstr::I32Const(ValueTag::TAG_MASK),
             WasmInstr::I32And,
             WasmInstr::LocalSet(3),
-
             // Check object is an object (tag == OBJECT or ARRAY)
             WasmInstr::Block(String::from("chk_obj")),
             WasmInstr::LocalGet(3),
@@ -25,12 +24,10 @@ pub fn build_spec_get() -> WasmFunction {
             WasmInstr::I32Const(ValueTag::ARRAY),
             WasmInstr::I32Eq,
             WasmInstr::BrIf(String::from("chk_arr")),
-
             // Not an object → TypeError for now (actual: ToObject then get)
             // Stub: return undefined
             WasmInstr::I32Const(0),
             WasmInstr::Return,
-
             // Is object → dispatch to property_get runtime function
             // property_get(object, key_str, receiver) → value
             WasmInstr::LocalGet(0),

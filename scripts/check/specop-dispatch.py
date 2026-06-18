@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """SpecOp dispatch coverage checker.
 
-Every SpecOp variant must have an explicit dispatch arm in spec-kernel.
+Every SpecOp variant must have explicit lowering metadata:
+  - spec_op.rs param_count/result_count arms
+  - backend-wasm spec_emit symbol mapping
+  - backend-wasm spec_emit builder mapping
 Wildcard matches (_ =>) are not allowed as a substitute.
 
 Usage:
@@ -29,68 +32,88 @@ def extract_specop_variants() -> set[str]:
     return variants
 
 
-def get_dispatch_files() -> list[Path]:
-    src = REPO_ROOT / "crates" / "spec-kernel" / "src"
-    return list(src.rglob("*.rs"))
-
-
-def get_called_variants() -> set[str]:
-    """Extract SpecOp variants that appear in any dispatch context
-    (match arms, function calls, references)."""
-    called = set()
-    for fpath in get_dispatch_files():
-        text = fpath.read_text()
-        for m in re.finditer(r"SpecOp::(\w+)", text):
-            called.add(m.group(1))
-    return called
-
-
 def check_dispatch_coverage() -> list[str]:
     variants = extract_specop_variants()
     if not variants:
         return ["ERROR: cannot parse SpecOp enum"]
 
-    called = get_called_variants()
-
-    # Variants that have dispatch arms (appear in match patterns)
-    dispatched = set()
-    for fpath in get_dispatch_files():
-        text = fpath.read_text()
-        for m in re.finditer(r"^\s+SpecOp::(\w+)", text, re.MULTILINE):
-            dispatched.add(m.group(1))
-
-    # Also check spec_emit.rs in backend-wasm
-    emit_path = REPO_ROOT / "crates" / "backend-wasm" / "src" / "spec_emit.rs"
-    if emit_path.exists():
-        text = emit_path.read_text()
-        for m in re.finditer(r"SpecOp::(\w+)", text):
-            dispatched.add(m.group(1))
-
-    missing = variants - dispatched
     violations = []
-    for v in sorted(missing):
-        violations.append(f"ERROR SpecOp::{v} has no dispatch arm")
+
+    spec_op_path = REPO_ROOT / "crates" / "spec-kernel" / "src" / "spec_op.rs"
+    spec_text = spec_op_path.read_text()
+    for fn_name in ("param_count", "result_count"):
+        fn_match = re.search(
+            rf"pub fn {fn_name}\(&self\) -> usize \{{(.*?)^\s+\}}",
+            spec_text,
+            re.MULTILINE | re.DOTALL,
+        )
+        if not fn_match:
+            violations.append(f"ERROR SpecOp::{fn_name} cannot be parsed")
+            continue
+        arms = set(re.findall(r"Self::(\w+)\s*\{", fn_match.group(1)))
+        missing = variants - arms
+        for v in sorted(missing):
+            violations.append(f"ERROR SpecOp::{v} missing from {fn_name} metadata")
+
+    emit_path = REPO_ROOT / "crates" / "backend-wasm" / "src" / "spec_emit.rs"
+    if not emit_path.exists():
+        violations.append("ERROR crates/backend-wasm/src/spec_emit.rs not found")
+    else:
+        emit_text = emit_path.read_text()
+        symbol_match = re.search(
+            r"fn spec_op_symbol\(op: &SpecOp\) -> String \{(.*?)^\}",
+            emit_text,
+            re.MULTILINE | re.DOTALL,
+        )
+        builder_match = re.search(
+            r"fn build_spec_op_function\(name: &str\) -> Option<WasmFunction> \{(.*?)^\}",
+            emit_text,
+            re.MULTILINE | re.DOTALL,
+        )
+        if not symbol_match:
+            violations.append("ERROR spec_emit.rs missing spec_op_symbol")
+        if not builder_match:
+            violations.append("ERROR spec_emit.rs missing build_spec_op_function")
+        symbols = {}
+        if symbol_match:
+            for variant, symbol in re.findall(
+                r"SpecOp::(\w+)\s*\{[^}]*\}\s*=>\s*\"([^\"]+)\"\.into\(\)",
+                symbol_match.group(1),
+                re.DOTALL,
+            ):
+                symbols[variant] = symbol
+            for v in sorted(variants - set(symbols)):
+                violations.append(f"ERROR SpecOp::{v} missing spec_emit symbol mapping")
+        if builder_match and symbols:
+            builder_symbols = set(re.findall(r"\"([^\"]+)\"\s*=>\s*Some\(", builder_match.group(1)))
+            for variant, symbol in sorted(symbols.items()):
+                if symbol not in builder_symbols:
+                    violations.append(
+                        f"ERROR SpecOp::{variant} symbol {symbol} missing spec_emit builder mapping"
+                    )
+            if re.search(r"_\s*=>\s*None", builder_match.group(1)):
+                violations.append(
+                    "ERROR spec_emit build_spec_op_function has wildcard None arm — "
+                    "new SpecOp variants must fail explicitly"
+                )
 
     # Check for wildcard matches in SpecOp-specific dispatch functions only
     # (spec_op.rs param_count/result_count, not ObjectKind/EnvironmentRecord dispatches)
-    spec_op_path = REPO_ROOT / "crates" / "spec-kernel" / "src" / "spec_op.rs"
-    if spec_op_path.exists():
-        text = spec_op_path.read_text()
-        lines = text.splitlines()
-        rel = spec_op_path.relative_to(REPO_ROOT)
-        in_fn = False
-        fn_name = ""
-        for i, line in enumerate(lines):
-            m = re.match(r'^\s*(pub\s+)?fn\s+(\w+)', line)
-            if m:
-                in_fn = True
-                fn_name = m.group(2)
-            if in_fn and re.match(r'^\s+_\s*=>', line):
-                violations.append(
-                    f"ERROR {rel}:{i+1}: wildcard in fn `{fn_name}` — "
-                    f"new SpecOp variants must be listed explicitly"
-                )
-                in_fn = False
+    lines = spec_text.splitlines()
+    rel = spec_op_path.relative_to(REPO_ROOT)
+    in_fn = False
+    fn_name = ""
+    for i, line in enumerate(lines):
+        m = re.match(r'^\s*(pub\s+)?fn\s+(\w+)', line)
+        if m:
+            in_fn = True
+            fn_name = m.group(2)
+        if in_fn and re.match(r'^\s+_\s*=>', line):
+            violations.append(
+                f"ERROR {rel}:{i+1}: wildcard in fn `{fn_name}` — "
+                f"new SpecOp variants must be listed explicitly"
+            )
+            in_fn = False
 
     return violations
 
@@ -102,24 +125,17 @@ def run_self_test():
         print("FAIL: cannot parse SpecOp enum", file=sys.stderr)
         errors += 1
 
-    # Negative test: fake variant not found in dispatch
-    fake_called = get_called_variants()
-    if "FakeNewOp" in fake_called:
-        print("FAIL: FakeNewOp found in dispatch (should not exist)", file=sys.stderr)
-        errors += 1
-
-    # Negative test: check wildcard detection works
-    # The actual spec_kernel has a wildcard match in spec_op.rs - verify it's reported
     dispatch_violations = check_dispatch_coverage()
-    wildcard_errors = [v for v in dispatch_violations if "wildcard" in v]
-    if not wildcard_errors:
-        # This is expected to be found since spec_op.rs has wildcard
-        print("WARN: no wildcard matches found (may be clean or may indicate false pass)", file=sys.stderr)
+    if dispatch_violations:
+        print("FAIL: current SpecOp dispatch coverage is incomplete", file=sys.stderr)
+        for v in dispatch_violations:
+            print(f"  {v}", file=sys.stderr)
+        errors += 1
 
     if errors:
         print(f"self-test: FAILED ({errors} errors)", file=sys.stderr)
         sys.exit(1)
-    print(f"self-test: OK ({len(variants)} SpecOp variants, {len(wildcard_errors)} wildcard hits)", file=sys.stderr)
+    print(f"self-test: OK ({len(variants)} SpecOp variants)", file=sys.stderr)
 
 
 def main():

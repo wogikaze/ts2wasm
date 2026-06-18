@@ -40,11 +40,11 @@ def load_exceptions() -> dict:
 
 
 def validate_exception_ids(ids: set[str]) -> list[str]:
-    """Check that all provided exception IDs correspond to real files in the exceptions file."""
+    """Check that provided exception IDs correspond to legacy file exceptions."""
     violations = []
     exc = load_exceptions()
     legacy = exc.get("legacy_files", {})
-    valid_ids = set(legacy.keys())
+    valid_ids = {str(info.get("id", "")) for info in legacy.values() if isinstance(info, dict)}
     for eid in ids:
         if eid not in valid_ids:
             violations.append(
@@ -59,6 +59,11 @@ def get_file_exception(rel_path: str) -> dict | None:
         if fpath == rel_path:
             return dict(info)
     return None
+
+
+def exception_id_matches_file(exception_id: str, rel_path: str) -> bool:
+    exc = get_file_exception(rel_path)
+    return bool(exc and exc.get("id") == exception_id)
 
 
 def check_touched_files() -> list[str]:
@@ -90,7 +95,7 @@ def check_touched_files() -> list[str]:
         exc_allowed = False
         for eid in ALLOWED_EXCEPTION_IDS:
             exc = get_file_exception(fname)
-            if exc:
+            if exc and exception_id_matches_file(eid, fname):
                 allowed = exc.get("allowed_change", "")
                 parts = allowed.split("|")
                 exc_allowed = any(a.strip() in ALLOWED_CHANGES for a in parts)
@@ -113,6 +118,12 @@ def run_self_test():
     legacy = exc.get("legacy_files", {})
     if "crates/backend-wasm/src/native_lowered.rs" not in legacy:
         print("FAIL: exception file not parsed correctly", file=sys.stderr)
+        errors += 1
+    if validate_exception_ids({"crates/backend-wasm/src/native_lowered.rs"}) == []:
+        print("FAIL: path-shaped exception id was accepted", file=sys.stderr)
+        errors += 1
+    if validate_exception_ids({"ARCH-EXC-016"}) != []:
+        print("FAIL: explicit exception id was rejected", file=sys.stderr)
         errors += 1
 
     if errors:

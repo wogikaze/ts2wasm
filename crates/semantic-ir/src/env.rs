@@ -227,7 +227,9 @@ impl DeclarativeEnv {
             .ok_or_else(|| format!("Uncaught ReferenceError: {name} is not defined"))?;
         if binding.value.is_uninitialized() {
             if strict {
-                return Err(format!("ReferenceError: Cannot access '{name}' before initialization"));
+                return Err(format!(
+                    "ReferenceError: Cannot access '{name}' before initialization"
+                ));
             }
             return Err(format!("Uncaught ReferenceError: {name} is not defined"));
         }
@@ -251,7 +253,9 @@ impl DeclarativeEnv {
         match binding.mutability {
             Mutability::Immutable => {
                 if strict {
-                    return Err(format!("TypeError: Assignment to constant variable '{name}'"));
+                    return Err(format!(
+                        "TypeError: Assignment to constant variable '{name}'"
+                    ));
                 }
                 // In sloppy mode, silent failure for const reassignment.
                 Ok(())
@@ -324,7 +328,8 @@ mod tests {
             )]),
             outer: None,
         };
-        env.set_mutable_binding("x", Value::Number(2.0), false).unwrap();
+        env.set_mutable_binding("x", Value::Number(2.0), false)
+            .unwrap();
         assert!(matches!(
             env.get_binding_value("x", false),
             Ok(Value::Number(n)) if n == 2.0

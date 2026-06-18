@@ -1,6 +1,6 @@
 use super::RuntimeConst;
 use crate::{DiagCode, Diagnostic};
-use ts2wasm_ir::lowered::{LoweredProgram, LoweredStmt, LoweredExpr};
+use ts2wasm_ir::lowered::{LoweredExpr, LoweredProgram, LoweredStmt};
 
 /// Emit console statements for the given object.
 ///
@@ -13,9 +13,7 @@ use ts2wasm_ir::lowered::{LoweredProgram, LoweredStmt, LoweredExpr};
 /// - console.assert → RuntimeFn::LogError
 ///
 /// These RuntimeFns already implement single-value and vararg argument cases.
-pub(crate) fn emit_with_console_handling(
-    _program: &LoweredProgram,
-) -> Result<Vec<u8>, Diagnostic> {
+pub(crate) fn emit_with_console_handling(_program: &LoweredProgram) -> Result<Vec<u8>, Diagnostic> {
     // Console statements are already handled via RuntimeFns:
     // - RuntimeFn::Log/capability -> log runtime intrinsics
     // - RuntimeFn::LogWarn/capability -> warn runtime intrinsics

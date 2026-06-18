@@ -21,48 +21,142 @@ pub enum IntegrityLevel {
 #[derive(Debug, Clone)]
 pub enum SpecOp {
     // — Internal method dispatch —
-    Get { object: Local, key: Local, receiver: Local },
-    Set { object: Local, key: Local, value: Local, receiver: Local },
-    GetOwnProperty { object: Local, key: Local },
-    DefineOwnProperty { object: Local, key: Local, descriptor: Local },
-    Delete { object: Local, key: Local },
-    HasProperty { object: Local, key: Local },
-    GetPrototypeOf { object: Local },
-    SetPrototypeOf { object: Local, prototype: Local },
-    IsExtensible { object: Local },
-    PreventExtensions { object: Local },
-    OwnPropertyKeys { object: Local },
-    Call { callee: Local, this: Local, args: ArgsRef },
-    Construct { constructor: Local, args: ArgsRef, new_target: Local },
+    Get {
+        object: Local,
+        key: Local,
+        receiver: Local,
+    },
+    Set {
+        object: Local,
+        key: Local,
+        value: Local,
+        receiver: Local,
+    },
+    GetOwnProperty {
+        object: Local,
+        key: Local,
+    },
+    DefineOwnProperty {
+        object: Local,
+        key: Local,
+        descriptor: Local,
+    },
+    Delete {
+        object: Local,
+        key: Local,
+    },
+    HasProperty {
+        object: Local,
+        key: Local,
+    },
+    GetPrototypeOf {
+        object: Local,
+    },
+    SetPrototypeOf {
+        object: Local,
+        prototype: Local,
+    },
+    IsExtensible {
+        object: Local,
+    },
+    PreventExtensions {
+        object: Local,
+    },
+    OwnPropertyKeys {
+        object: Local,
+    },
+    Call {
+        callee: Local,
+        this: Local,
+        args: ArgsRef,
+    },
+    Construct {
+        constructor: Local,
+        args: ArgsRef,
+        new_target: Local,
+    },
 
     // — Data property helpers —
-    CreateDataProperty { object: Local, key: Local, value: Local },
-    SetIntegrityLevel { object: Local, level: IntegrityLevel },
-    TestIntegrityLevel { object: Local, level: IntegrityLevel },
+    CreateDataProperty {
+        object: Local,
+        key: Local,
+        value: Local,
+    },
+    SetIntegrityLevel {
+        object: Local,
+        level: IntegrityLevel,
+    },
+    TestIntegrityLevel {
+        object: Local,
+        level: IntegrityLevel,
+    },
 
     // — Type conversion —
-    ToPrimitive { value: Local, preferred: Option<TypeHint> },
-    ToNumber { value: Local },
-    ToNumeric { value: Local },
-    ToPropertyKey { value: Local },
-    ToObject { value: Local },
-    ToBoolean { value: Local },
-    ToString { value: Local },
+    ToPrimitive {
+        value: Local,
+        preferred: Option<TypeHint>,
+    },
+    ToNumber {
+        value: Local,
+    },
+    ToNumeric {
+        value: Local,
+    },
+    ToPropertyKey {
+        value: Local,
+    },
+    ToObject {
+        value: Local,
+    },
+    ToBoolean {
+        value: Local,
+    },
+    ToString {
+        value: Local,
+    },
 
     // — Environment —
-    GetBindingValue { env: EnvRef, name: String },
-    SetMutableBinding { env: EnvRef, name: String, value: Local },
-    CreateBinding { env: EnvRef, name: String, mutable: bool },
-    InitializeBinding { env: EnvRef, name: String, value: Local },
-    ResolveBinding { name: String, env: EnvRef },
+    GetBindingValue {
+        env: EnvRef,
+        name: String,
+    },
+    SetMutableBinding {
+        env: EnvRef,
+        name: String,
+        value: Local,
+    },
+    CreateBinding {
+        env: EnvRef,
+        name: String,
+        mutable: bool,
+    },
+    InitializeBinding {
+        env: EnvRef,
+        name: String,
+        value: Local,
+    },
+    ResolveBinding {
+        name: String,
+        env: EnvRef,
+    },
 
     // — Iterator —
-    GetIterator { object: Local, sync: bool },
-    IteratorNext { iterator: Local },
-    IteratorClose { iterator: Local, completion: CompletionRef },
+    GetIterator {
+        object: Local,
+        sync: bool,
+    },
+    IteratorNext {
+        iterator: Local,
+    },
+    IteratorClose {
+        iterator: Local,
+        completion: CompletionRef,
+    },
 
     // — Module —
-    GetModuleNamespace { module: ModuleRef },
+    GetModuleNamespace {
+        module: ModuleRef,
+    },
 }
 
 pub type ModuleRef = u32;

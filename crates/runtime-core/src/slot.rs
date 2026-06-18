@@ -44,9 +44,12 @@ impl InternalSlotAccess {
     }
 
     pub fn is_extensible(slots: &[InternalSlot]) -> bool {
-        slots.iter().find_map(|s| match s {
-            InternalSlot::Extensible(v) => Some(*v),
-            _ => None,
-        }).unwrap_or(true)
+        slots
+            .iter()
+            .find_map(|s| match s {
+                InternalSlot::Extensible(v) => Some(*v),
+                _ => None,
+            })
+            .unwrap_or(true)
     }
 }

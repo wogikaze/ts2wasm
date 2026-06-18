@@ -32,13 +32,25 @@ impl PropertyAttributes {
     }
 
     pub fn set_writable(&mut self, v: bool) {
-        if v { self.0 |= Self::WRITABLE; } else { self.0 &= !Self::WRITABLE; }
+        if v {
+            self.0 |= Self::WRITABLE;
+        } else {
+            self.0 &= !Self::WRITABLE;
+        }
     }
     pub fn set_enumerable(&mut self, v: bool) {
-        if v { self.0 |= Self::ENUMERABLE; } else { self.0 &= !Self::ENUMERABLE; }
+        if v {
+            self.0 |= Self::ENUMERABLE;
+        } else {
+            self.0 &= !Self::ENUMERABLE;
+        }
     }
     pub fn set_configurable(&mut self, v: bool) {
-        if v { self.0 |= Self::CONFIGURABLE; } else { self.0 &= !Self::CONFIGURABLE; }
+        if v {
+            self.0 |= Self::CONFIGURABLE;
+        } else {
+            self.0 &= !Self::CONFIGURABLE;
+        }
     }
 }
 
@@ -90,18 +102,39 @@ impl PropertyDescriptor {
 
     pub fn attributes(&self) -> PropertyAttributes {
         let mut attrs = PropertyAttributes::empty();
-        if self.writable() { attrs.set_writable(true); }
-        if self.enumerable() { attrs.set_enumerable(true); }
-        if self.configurable() { attrs.set_configurable(true); }
+        if self.writable() {
+            attrs.set_writable(true);
+        }
+        if self.enumerable() {
+            attrs.set_enumerable(true);
+        }
+        if self.configurable() {
+            attrs.set_configurable(true);
+        }
         attrs
     }
 
     pub fn data(value: TaggedValue, writable: bool, enumerable: bool, configurable: bool) -> Self {
-        Self::Data { value, writable, enumerable, configurable }
+        Self::Data {
+            value,
+            writable,
+            enumerable,
+            configurable,
+        }
     }
 
-    pub fn accessor(get: TaggedValue, set: TaggedValue, enumerable: bool, configurable: bool) -> Self {
-        Self::Accessor { get, set, enumerable, configurable }
+    pub fn accessor(
+        get: TaggedValue,
+        set: TaggedValue,
+        enumerable: bool,
+        configurable: bool,
+    ) -> Self {
+        Self::Accessor {
+            get,
+            set,
+            enumerable,
+            configurable,
+        }
     }
 
     pub fn from_attributes(value: TaggedValue, attrs: PropertyAttributes) -> Self {

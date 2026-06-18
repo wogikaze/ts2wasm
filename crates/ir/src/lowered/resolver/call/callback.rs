@@ -66,9 +66,14 @@ impl super::super::Resolver {
                     .function_ids
                     .get(name.as_str())
                     .copied()
-                                        .ok_or_else(|| Diagnostic::unsupported_at(span, format!(
+                    .ok_or_else(|| {
+                        Diagnostic::unsupported_at(
+                            span,
+                            format!(
 "Set.prototype.forEach: function `{name}` is not a known function reference"
-)))?;
+),
+                        )
+                    })?;
                 let param_count = self
                     .ctx
                     .symbols
@@ -262,9 +267,14 @@ impl super::super::Resolver {
                     .function_ids
                     .get(name.as_str())
                     .copied()
-                                        .ok_or_else(|| Diagnostic::unsupported_at(span, format!(
+                    .ok_or_else(|| {
+                        Diagnostic::unsupported_at(
+                            span,
+                            format!(
 "Map.prototype.forEach: function `{name}` is not a known function reference"
-)))?;
+),
+                        )
+                    })?;
                 let param_count = self
                     .ctx
                     .symbols

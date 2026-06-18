@@ -113,9 +113,7 @@ pub struct IteratorResult {
 ///
 /// Calls IteratorNext and returns the result if not done.
 /// Returns `None` if the iterator is done (the `done: true` case).
-pub fn iterator_step(
-    iterator: &mut Iterator,
-) -> Result<Option<IteratorResult>, Completion> {
+pub fn iterator_step(iterator: &mut Iterator) -> Result<Option<IteratorResult>, Completion> {
     let result = iterator_next(iterator, None)?;
     if result.done {
         iterator.done = true;

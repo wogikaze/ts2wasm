@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Standard local gate: fmt + issue queue + architecture + coverage matrix + nextest (optional).
+"""Standard local gate: fmt + architecture/P0 entry checks + nextest (optional).
 
 Usage:
   mise run gate [-- --skip-nextest]
@@ -29,9 +29,10 @@ def usage():
     print("  mise run gate-fast")
     print()
     print("Runs:")
-    print("  - cargo fmt --all --check")
+    print("  - rustfmt legacy-aware check")
     print("  - python scripts/check/tracking-consistency.py")
     print("  - python scripts/check/architecture-rules.py")
+    print("  - P0 architecture entry checks")
     print("  - optional benchmark tracker when TS2WASM_RUN_PERF_GATE=1")
     print("  - cargo nextest run (unless --skip-nextest)")
     print()
@@ -116,11 +117,18 @@ def main():
         sys.exit(1)
     
     # Run checks
-    run(["cargo", "fmt", "--all", "--check"])
+    run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/rustfmt-legacy-aware.py")])
     run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/tracking-consistency.py")])
     run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/assert-true-detect.py")])
     run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/architecture-rules.py")])
     run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/crate-dag.py")])
+    run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/legacy-freeze.py")])
+    run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/specop-dispatch.py")])
+    run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/trace-contract.py")])
+    run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/architecture-exceptions.py")])
+    run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/docs-routing.py")])
+    run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/check-runtimefn-deprecation.py")])
+    run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/coverage-classification.py"), "--self-test"])
     run([PYTHON_BIN, str(REPO_ROOT / "scripts/report/native-runtime-builder-coverage.py"), "--check"])
     if run_optional_perf_gate:
         run_perf_gate()

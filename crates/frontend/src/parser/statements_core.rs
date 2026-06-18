@@ -52,15 +52,14 @@ impl Parser {
                 // Only flatten blocks without lexical declarations (let/const)
                 // so that block-scoped bindings are properly scoped.
                 let has_lexical = match &block {
-                    Stmt::Block { statements, .. } => {
-                        statements.iter().any(|s| matches!(s, Stmt::Let { is_var: false, .. }))
-                    }
+                    Stmt::Block { statements, .. } => statements
+                        .iter()
+                        .any(|s| matches!(s, Stmt::Let { is_var: false, .. })),
                     _ => false,
                 };
                 if !has_lexical {
                     if let Stmt::Block {
-                        statements: inner,
-                        ..
+                        statements: inner, ..
                     } = block
                     {
                         statements.extend(inner);
@@ -93,7 +92,10 @@ impl Parser {
             if self.consume(TokenKind::Semicolon) {
                 continue;
             }
-            if self.consume_erasable_typescript_declaration().is_ok_and(|v| v) {
+            if self
+                .consume_erasable_typescript_declaration()
+                .is_ok_and(|v| v)
+            {
                 continue;
             }
             if matches!(self.peek(), Some(Token::LeftBrace)) {
@@ -102,15 +104,14 @@ impl Parser {
                     span: Span::generated("block"),
                 });
                 let has_lexical = match &block {
-                    Stmt::Block { statements, .. } => {
-                        statements.iter().any(|s| matches!(s, Stmt::Let { is_var: false, .. }))
-                    }
+                    Stmt::Block { statements, .. } => statements
+                        .iter()
+                        .any(|s| matches!(s, Stmt::Let { is_var: false, .. })),
                     _ => false,
                 };
                 if !has_lexical {
                     if let Stmt::Block {
-                        statements: inner,
-                        ..
+                        statements: inner, ..
                     } = block
                     {
                         statements.extend(inner);

@@ -58,7 +58,14 @@ enum ParsedObjectKey {
 pub(super) fn is_reserved_word(name: &str) -> bool {
     matches!(
         name,
-        "implements" | "interface" | "package" | "private" | "protected" | "public" | "yield" | "enum"
+        "implements"
+            | "interface"
+            | "package"
+            | "private"
+            | "protected"
+            | "public"
+            | "yield"
+            | "enum"
     )
 }
 
@@ -91,7 +98,8 @@ impl Parser {
                 message: format!("expected identifier, got {other:?}"),
                 span: self.peek_span(),
 
-                phase: Some("parser"),}),
+                phase: Some("parser"),
+            }),
         }
     }
 
@@ -113,11 +121,17 @@ impl Parser {
     /// with `"use strict"` as its first directive.
     fn peek_function_body_use_strict(&self) -> bool {
         let mut cursor = self.cursor;
-        if !matches!(self.tokens.get(cursor).map(|t| &t.kind), Some(Token::LeftBrace)) {
+        if !matches!(
+            self.tokens.get(cursor).map(|t| &t.kind),
+            Some(Token::LeftBrace)
+        ) {
             return false;
         }
         cursor += 1;
-        while matches!(self.tokens.get(cursor).map(|t| &t.kind), Some(Token::Semicolon)) {
+        while matches!(
+            self.tokens.get(cursor).map(|t| &t.kind),
+            Some(Token::Semicolon)
+        ) {
             cursor += 1;
         }
         matches!(self.tokens.get(cursor).map(|t| &t.kind), Some(Token::String(v)) if v == "use strict")
@@ -159,7 +173,8 @@ impl Parser {
                 message: format!("expected identifier or string literal, got {other:?}"),
                 span: self.peek_span(),
 
-                phase: Some("parser"),}),
+                phase: Some("parser"),
+            }),
         }
     }
 
@@ -232,7 +247,8 @@ impl Parser {
                             message: format!("expected property name, got {kind:?}"),
                             span: self.peek_span(),
 
-                            phase: Some("parser"),});
+                            phase: Some("parser"),
+                        });
                     }
                 };
                 Ok((name.to_string(), span))
@@ -242,7 +258,8 @@ impl Parser {
                 message: "expected property name, got end of input".to_owned(),
                 span: Some(Span::generated("parser")),
 
-                phase: Some("parser"),}),
+                phase: Some("parser"),
+            }),
         }
     }
 
@@ -257,7 +274,8 @@ impl Parser {
                 message: format!("Expected private identifier, got {other:?}"),
                 span: self.peek_span(),
 
-                phase: Some("parser"),}),
+                phase: Some("parser"),
+            }),
         }
     }
 
@@ -272,10 +290,10 @@ impl Parser {
                 message: format!("expected `{keyword}`, got {:?}", self.peek()),
                 span: self.peek_span(),
 
-                phase: Some("parser"),})
+                phase: Some("parser"),
+            })
         }
     }
-
 
     fn consume_contextual_keyword(&mut self, keyword: &str) -> bool {
         if self.peek_contextual_keyword(keyword) {
@@ -309,7 +327,8 @@ impl Parser {
                         message: format!("expected member property name, got {kind:?}"),
                         span: self.peek_span(),
 
-                        phase: Some("parser"),})
+                        phase: Some("parser"),
+                    })
                 }
             }
             None => Err(Diagnostic {
@@ -317,7 +336,8 @@ impl Parser {
                 message: "expected member property name, got None".to_owned(),
                 span: self.peek_span(),
 
-                phase: Some("parser"),}),
+                phase: Some("parser"),
+            }),
         }
     }
 
@@ -363,7 +383,8 @@ impl Parser {
                 ),
                 span: self.peek_span(),
 
-                phase: Some("parser"),}),
+                phase: Some("parser"),
+            }),
             Some(token) if keyword_to_property_name(token).is_some() => {
                 let key = keyword_to_property_name(token).unwrap().to_owned();
                 let span = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
@@ -377,7 +398,8 @@ impl Parser {
                 ),
                 span: self.peek_span(),
 
-                phase: Some("parser"),}),
+                phase: Some("parser"),
+            }),
         }
     }
 
@@ -388,7 +410,7 @@ impl Parser {
             let _bigint_span = self.peek_span();
             self.advance();
             let end = self.expect(TokenKind::RightBracket)?;
-                        return Err(Diagnostic::unsupported_at(Span {
+            return Err(Diagnostic::unsupported_at(Span {
 start: start.start,
 end: end.end,
 }, "A computed property name must be of type 'string', 'number', 'symbol', or 'any', got 'bigint'".to_string()));
@@ -472,7 +494,8 @@ end: end.end,
                 message: format!("expected {kind:?}, got {:?}", self.peek()),
                 span: self.peek_span(),
 
-                phase: Some("parser"),})
+                phase: Some("parser"),
+            })
         }
     }
 
@@ -551,7 +574,10 @@ end: end.end,
         {
             Ok(())
         } else {
-                        Err(Diagnostic::unsupported_at(self.prev_span(), "unterminated TypeScript type annotation".to_owned()))
+            Err(Diagnostic::unsupported_at(
+                self.prev_span(),
+                "unterminated TypeScript type annotation".to_owned(),
+            ))
         }
     }
 
@@ -627,7 +653,10 @@ end: end.end,
         {
             Ok(())
         } else {
-                        Err(Diagnostic::unsupported_at(self.prev_span(), "unterminated TypeScript type annotation".to_owned()))
+            Err(Diagnostic::unsupported_at(
+                self.prev_span(),
+                "unterminated TypeScript type annotation".to_owned(),
+            ))
         }
     }
 
@@ -647,7 +676,10 @@ end: end.end,
                 _ => {}
             }
         }
-                Err(Diagnostic::unsupported_at(self.prev_span(), "unterminated TypeScript index signature".to_owned()))
+        Err(Diagnostic::unsupported_at(
+            self.prev_span(),
+            "unterminated TypeScript index signature".to_owned(),
+        ))
     }
 
     fn consume(&mut self, kind: TokenKind) -> bool {
@@ -716,7 +748,10 @@ fn bigint_literal_property_key(raw: &str) -> String {
     let Some(digits) = raw.strip_suffix('n') else {
         return raw.to_owned();
     };
-    if let Some(hex) = digits.strip_prefix("0x").or_else(|| digits.strip_prefix("0X")) {
+    if let Some(hex) = digits
+        .strip_prefix("0x")
+        .or_else(|| digits.strip_prefix("0X"))
+    {
         return radix_digits_to_decimal_string(hex, 16);
     }
     if let Some(binary) = digits

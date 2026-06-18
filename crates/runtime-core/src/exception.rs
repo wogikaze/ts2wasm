@@ -18,23 +18,43 @@ pub struct CompletionRecord {
 
 impl CompletionRecord {
     pub fn normal(value: TaggedValue) -> Self {
-        Self { status: CompletionStatus::Normal, value, target: None }
+        Self {
+            status: CompletionStatus::Normal,
+            value,
+            target: None,
+        }
     }
 
     pub fn throw(value: TaggedValue) -> Self {
-        Self { status: CompletionStatus::Throw, value, target: None }
+        Self {
+            status: CompletionStatus::Throw,
+            value,
+            target: None,
+        }
     }
 
     pub fn r#return(value: TaggedValue) -> Self {
-        Self { status: CompletionStatus::Return, value, target: None }
+        Self {
+            status: CompletionStatus::Return,
+            value,
+            target: None,
+        }
     }
 
     pub fn break_(target: Option<String>) -> Self {
-        Self { status: CompletionStatus::Break, value: TaggedValue::UNDEFINED, target }
+        Self {
+            status: CompletionStatus::Break,
+            value: TaggedValue::UNDEFINED,
+            target,
+        }
     }
 
     pub fn continue_(target: Option<String>) -> Self {
-        Self { status: CompletionStatus::Continue, value: TaggedValue::UNDEFINED, target }
+        Self {
+            status: CompletionStatus::Continue,
+            value: TaggedValue::UNDEFINED,
+            target,
+        }
     }
 
     pub fn is_abrupt(&self) -> bool {
@@ -54,7 +74,10 @@ pub struct ExceptionCarrier {
 
 impl ExceptionCarrier {
     pub const fn new() -> Self {
-        Self { pending: false, value: TaggedValue::UNDEFINED }
+        Self {
+            pending: false,
+            value: TaggedValue::UNDEFINED,
+        }
     }
 
     pub fn is_pending(&self) -> bool {

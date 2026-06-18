@@ -49,7 +49,9 @@ impl Parser {
                 let span = self.peek_span();
                 self.advance();
                 Err(Diagnostic {
-                    code: crate::diagnostic::resolve_diag_code("static declarations are not valid in constructor/function bodies"),
+                    code: crate::diagnostic::resolve_diag_code(
+                        "static declarations are not valid in constructor/function bodies",
+                    ),
                     message: "static declarations are not valid in constructor/function bodies"
                         .to_owned(),
                     span,
@@ -295,9 +297,12 @@ impl Parser {
                         Some(Token::Default) => "default export",
                         _ => "static export",
                     };
-                                        Err(Diagnostic::unsupported_at(export_span, format!(
-"Unsupported {form}; module resolution and loading are not implemented"
-)))
+                    Err(Diagnostic::unsupported_at(
+                        export_span,
+                        format!(
+                            "Unsupported {form}; module resolution and loading are not implemented"
+                        ),
+                    ))
                 }
             }
         }
@@ -859,9 +864,10 @@ impl Parser {
     }
 
     fn unsupported_module_form(&self, span: Span, form: &str) -> Result<Stmt, Diagnostic> {
-                Err(Diagnostic::unsupported_at(span, format!(
-"Unsupported {form}; module resolution and loading are not implemented"
-)))
+        Err(Diagnostic::unsupported_at(
+            span,
+            format!("Unsupported {form}; module resolution and loading are not implemented"),
+        ))
     }
 
     fn expression_statement(&mut self) -> Result<Stmt, Diagnostic> {
@@ -936,9 +942,11 @@ impl Parser {
                     });
                 }
                 _ => {
-                                        return Err(Diagnostic::source(expr.span(), DiagCode::SyntaxError, String::from(
-"left-hand side of assignment must be a property access",
-)));
+                    return Err(Diagnostic::source(
+                        expr.span(),
+                        DiagCode::SyntaxError,
+                        String::from("left-hand side of assignment must be a property access"),
+                    ));
                 }
             }
         }
@@ -1024,9 +1032,13 @@ impl Parser {
                     });
                 }
                 _ => {
-                                        return Err(Diagnostic::source(expr.span(), DiagCode::SyntaxError, String::from(
-"left-hand side of compound assignment must be a property or index access",
-)));
+                    return Err(Diagnostic::source(
+                        expr.span(),
+                        DiagCode::SyntaxError,
+                        String::from(
+                            "left-hand side of compound assignment must be a property or index access",
+                        ),
+                    ));
                 }
             }
         }
@@ -1100,7 +1112,11 @@ impl Parser {
         {
             return Ok(fallback_end);
         }
-                Err(Diagnostic::source(self.peek_span().unwrap_or(Span::generated("parser")), DiagCode::SyntaxError, format!("expected Semicolon, got {:?}", self.peek())))
+        Err(Diagnostic::source(
+            self.peek_span().unwrap_or(Span::generated("parser")),
+            DiagCode::SyntaxError,
+            format!("expected Semicolon, got {:?}", self.peek()),
+        ))
     }
 
     fn let_statement(&mut self) -> Result<Stmt, Diagnostic> {
@@ -1122,7 +1138,10 @@ impl Parser {
                 span,
             }) => (span, true, Token::Const),
             other => {
-                                return Err(Diagnostic::unsupported_at(self.peek_span(), format!("expected let/const/var, got {other:?}")));
+                return Err(Diagnostic::unsupported_at(
+                    self.peek_span(),
+                    format!("expected let/const/var, got {other:?}"),
+                ));
             }
         };
         let binding = self.parse_binding_pattern()?;
@@ -1143,9 +1162,15 @@ impl Parser {
             }
             self.expression()?
         } else if !binding.is_identifier {
-                        return Err(Diagnostic::unsupported_at(binding.span, "Binding patterns require an initializer".to_owned()));
+            return Err(Diagnostic::unsupported_at(
+                binding.span,
+                "Binding patterns require an initializer".to_owned(),
+            ));
         } else if is_const {
-                        return Err(Diagnostic::unsupported_at(binding.span, "const declarations require an initializer".to_owned()));
+            return Err(Diagnostic::unsupported_at(
+                binding.span,
+                "const declarations require an initializer".to_owned(),
+            ));
         } else {
             Expr::Undefined { span: binding.span }
         };
@@ -1162,9 +1187,15 @@ impl Parser {
             let extra_expr = if self.consume(TokenKind::Equal) {
                 self.expression()?
             } else if !extra_binding.is_identifier {
-                                return Err(Diagnostic::unsupported_at(extra_binding.span, "Binding patterns require an initializer".to_owned()));
+                return Err(Diagnostic::unsupported_at(
+                    extra_binding.span,
+                    "Binding patterns require an initializer".to_owned(),
+                ));
             } else if is_const {
-                                return Err(Diagnostic::unsupported_at(extra_binding.span, "const declarations require an initializer".to_owned()));
+                return Err(Diagnostic::unsupported_at(
+                    extra_binding.span,
+                    "const declarations require an initializer".to_owned(),
+                ));
             } else {
                 Expr::Undefined {
                     span: extra_binding.span,
@@ -1202,14 +1233,20 @@ impl Parser {
         }
         let (name, name_span) = self.expect_binding_ident()?;
         if !self.consume(TokenKind::Equal) {
-                        return Err(Diagnostic::unsupported_at(name_span, "using declarations require an initializer".to_owned()));
+            return Err(Diagnostic::unsupported_at(
+                name_span,
+                "using declarations require an initializer".to_owned(),
+            ));
         }
         let expr = self.expression()?;
         let end = self.statement_terminator_end(expr.span().end)?;
         Ok(Stmt::Using {
             name,
             expr,
-            span: Span { start: name_span.start, end },
+            span: Span {
+                start: name_span.start,
+                end,
+            },
             is_async,
         })
     }
@@ -1238,7 +1275,10 @@ impl Parser {
             } else if self.consume(TokenKind::CaretEqual) {
                 BinaryOp::BitwiseXor
             } else {
-                                return Err(Diagnostic::unsupported_at(self.peek_span(), "expected assignment operator".to_owned()));
+                return Err(Diagnostic::unsupported_at(
+                    self.peek_span(),
+                    "expected assignment operator".to_owned(),
+                ));
             };
             let right = self.expression()?;
             let end = right.span().end;
@@ -1268,7 +1308,10 @@ impl Parser {
                 exprs.push(self.assignment()?);
                 self.consume(TokenKind::Comma)
             } {}
-            let sequence_end = exprs.last().map(|expr| expr.span().end).unwrap_or(start.end);
+            let sequence_end = exprs
+                .last()
+                .map(|expr| expr.span().end)
+                .unwrap_or(start.end);
             let end = self.statement_terminator_end(sequence_end)?;
             return Ok(Stmt::Expr {
                 expr: Expr::Sequence {
@@ -1801,7 +1844,7 @@ impl Parser {
         let for_span = self.expect(TokenKind::For)?;
         let await_span = self.expect(TokenKind::Await)?;
         if !self.in_async_fn {
-                        return Err(Diagnostic::unsupported_at(Span {
+            return Err(Diagnostic::unsupported_at(Span {
 start: for_span.start,
 end: await_span.end,
 }, "'for await' loops are only allowed within async functions and at the top levels of modules".to_owned()));
@@ -2181,7 +2224,10 @@ end: await_span.end,
                     },
                 })
             } else {
-                                Err(Diagnostic::unsupported_at(self.peek_span(), "expected 'in' or 'of' in for loop".to_owned()))
+                Err(Diagnostic::unsupported_at(
+                    self.peek_span(),
+                    "expected 'in' or 'of' in for loop".to_owned(),
+                ))
             }
         } else {
             // Parse traditional for loop
@@ -2287,7 +2333,10 @@ end: await_span.end,
                 }
                 cases.push((None, case_stmts));
             } else {
-                                return Err(Diagnostic::unsupported_at(self.peek_span(), "expected 'case' or 'default' in switch statement".to_owned()));
+                return Err(Diagnostic::unsupported_at(
+                    self.peek_span(),
+                    "expected 'case' or 'default' in switch statement".to_owned(),
+                ));
             }
         }
 
@@ -2323,18 +2372,25 @@ end: await_span.end,
             // Desugar destructuring patterns in catch clause parameter
             let param = if param_name.starts_with('{') || param_name.starts_with('[') {
                 let temp_name = format!("_catch_err_{}", start.start);
-                block.insert(0, Stmt::Let {
-                    name: param_name,
-                    expr: Expr::Ident {
-                        name: temp_name.clone(),
+                block.insert(
+                    0,
+                    Stmt::Let {
+                        name: param_name,
+                        expr: Expr::Ident {
+                            name: temp_name.clone(),
+                            span: Span::generated("catch_destructure"),
+                        },
                         span: Span::generated("catch_destructure"),
+                        is_var: false,
                     },
-                    span: Span::generated("catch_destructure"),
-                    is_var: false,
-                });
+                );
                 Some(temp_name)
             } else {
-                if param_name.is_empty() { None } else { Some(param_name) }
+                if param_name.is_empty() {
+                    None
+                } else {
+                    Some(param_name)
+                }
             };
             (param, Some(block))
         } else {
@@ -2348,10 +2404,13 @@ end: await_span.end,
         };
 
         if catch_block.is_none() && finally_block.is_none() {
-                        return Err(Diagnostic::unsupported_at(Span {
-start: start.start,
-end: start.end,
-}, "try statement must have catch or finally block".to_owned()));
+            return Err(Diagnostic::unsupported_at(
+                Span {
+                    start: start.start,
+                    end: start.end,
+                },
+                "try statement must have catch or finally block".to_owned(),
+            ));
         }
 
         let end = finally_block
@@ -2394,7 +2453,10 @@ end: start.end,
                 continue;
             }
             if self.is_at_end() {
-                                return Err(Diagnostic::unsupported_at(self.prev_span().or_else(|| self.peek_span()), "unterminated block".to_owned()));
+                return Err(Diagnostic::unsupported_at(
+                    self.prev_span().or_else(|| self.peek_span()),
+                    "unterminated block".to_owned(),
+                ));
             }
             if self.consume(TokenKind::Semicolon) {
                 continue;
@@ -2421,7 +2483,10 @@ end: start.end,
         let mut stmts = Vec::new();
         while !self.consume(TokenKind::RightBrace) {
             if self.is_at_end() {
-                                return Err(Diagnostic::unsupported_at(self.prev_span().or_else(|| self.peek_span()), "unterminated block".to_owned()));
+                return Err(Diagnostic::unsupported_at(
+                    self.prev_span().or_else(|| self.peek_span()),
+                    "unterminated block".to_owned(),
+                ));
             }
             if self.consume(TokenKind::Semicolon) {
                 continue;
@@ -2556,10 +2621,13 @@ impl Parser {
                 value,
                 span,
             }),
-                        other => Err(Diagnostic::unsupported_at(other.span(), format!(
-"expected member expression in for-in/of loop head, got {:?}",
-std::mem::discriminant(&other)
-))),
+            other => Err(Diagnostic::unsupported_at(
+                other.span(),
+                format!(
+                    "expected member expression in for-in/of loop head, got {:?}",
+                    std::mem::discriminant(&other)
+                ),
+            )),
         }
     }
 }

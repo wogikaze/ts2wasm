@@ -115,10 +115,16 @@ impl Parser {
 
         // Standalone accessibility modifier keywords before a class/function
         if let Some(Token::Ident(name)) = self.peek() {
-            let is_access_mod = matches!(name.as_str(), "public" | "private" | "protected" | "abstract");
-            if is_access_mod && matches!(self.peek_n(1), Some(
-                Token::Class | Token::Export | Token::Function
-            )) {
+            let is_access_mod = matches!(
+                name.as_str(),
+                "public" | "private" | "protected" | "abstract"
+            );
+            if is_access_mod
+                && matches!(
+                    self.peek_n(1),
+                    Some(Token::Class | Token::Export | Token::Function)
+                )
+            {
                 self.advance();
                 return Ok(false);
             }
@@ -142,7 +148,10 @@ impl Parser {
                 None
             }
             other => {
-                                return Err(Diagnostic::unsupported_at(self.peek_span(), format!("expected identifier for interface name, got {other:?}")));
+                return Err(Diagnostic::unsupported_at(
+                    self.peek_span(),
+                    format!("expected identifier for interface name, got {other:?}"),
+                ));
             }
         };
 
@@ -192,7 +201,10 @@ impl Parser {
             self.advance();
         }
         if self.is_at_end() {
-                        return Err(Diagnostic::unsupported_at(interface_span, "unterminated TypeScript interface declaration".to_owned()));
+            return Err(Diagnostic::unsupported_at(
+                interface_span,
+                "unterminated TypeScript interface declaration".to_owned(),
+            ));
         }
 
         // Parse the interface body to extract property signatures.
@@ -239,7 +251,8 @@ impl Parser {
                                 ),
                                 span: Some(interface_name_span),
 
-                                phase: None,});
+                                phase: None,
+                            });
                         }
                     }
                 }
@@ -333,7 +346,10 @@ impl Parser {
         if consumed_type_token {
             Ok(())
         } else {
-                        Err(Diagnostic::unsupported_at(type_span, "unterminated TypeScript type alias declaration".to_owned()))
+            Err(Diagnostic::unsupported_at(
+                type_span,
+                "unterminated TypeScript type alias declaration".to_owned(),
+            ))
         }
     }
 
@@ -469,14 +485,15 @@ impl Parser {
             }
             // Capture namespace name before the body is erased (issue 5370).
             if self.cursor + 1 < self.tokens.len()
-                && let crate::Token::Ident(ns_name) = &self.tokens[self.cursor + 1].kind {
-                    let name_span = self.tokens[self.cursor + 1].span;
-                    self.pending_statements.push(crate::Stmt::AmbientValueDecl {
-                        name: ns_name.clone(),
-                        span: name_span,
-                        is_var: false,
-                    });
-                }
+                && let crate::Token::Ident(ns_name) = &self.tokens[self.cursor + 1].kind
+            {
+                let name_span = self.tokens[self.cursor + 1].span;
+                self.pending_statements.push(crate::Stmt::AmbientValueDecl {
+                    name: ns_name.clone(),
+                    span: name_span,
+                    is_var: false,
+                });
+            }
             self.consume_module_or_namespace_declaration()?;
             return Ok(());
         }
@@ -625,7 +642,8 @@ impl Parser {
             }
             if self.consume(TokenKind::Equal) {
                 // Skip the initializer — ambient variable initializers are ignored
-                self.skip_type_annotation_until(&[TokenKind::Semicolon, TokenKind::Comma]).ok();
+                self.skip_type_annotation_until(&[TokenKind::Semicolon, TokenKind::Comma])
+                    .ok();
             }
             self.pending_statements.push(Stmt::AmbientValueDecl {
                 name,
@@ -718,7 +736,10 @@ impl Parser {
     fn validate_erased_namespace_implements(&self, start_span: Span) -> Result<(), Diagnostic> {
         let left_brace = self.cursor;
         let Some(right_brace) = self.matching_token_right_brace(left_brace) else {
-                        return Err(Diagnostic::unsupported_at(start_span, "unterminated TypeScript namespace declaration".to_owned()));
+            return Err(Diagnostic::unsupported_at(
+                start_span,
+                "unterminated TypeScript namespace declaration".to_owned(),
+            ));
         };
         let declared_type_names =
             self.collect_erased_namespace_type_names(left_brace + 1, right_brace);
@@ -809,7 +830,8 @@ impl Parser {
                             message: format!("unresolved name: `{name}`"),
                             span: Some(self.tokens[index].span),
 
-                            phase: None,});
+                            phase: None,
+                        });
                     }
                     expecting_root_type = false;
                 }
@@ -825,7 +847,10 @@ impl Parser {
     fn validate_erased_namespace_typed_locals(&self, start_span: Span) -> Result<(), Diagnostic> {
         let left_brace = self.cursor;
         let Some(right_brace) = self.matching_token_right_brace(left_brace) else {
-                        return Err(Diagnostic::unsupported_at(start_span, "unterminated TypeScript namespace declaration".to_owned()));
+            return Err(Diagnostic::unsupported_at(
+                start_span,
+                "unterminated TypeScript namespace declaration".to_owned(),
+            ));
         };
         let mut index = left_brace + 1;
         while index < right_brace {
@@ -864,7 +889,8 @@ impl Parser {
                     ),
                     span: Some(name.1),
 
-                    phase: None,});
+                    phase: None,
+                });
             }
             index += 1;
         }
@@ -974,7 +1000,10 @@ impl Parser {
                 break;
             }
             if let Some(generic_name) = name {
-                return TypeRef::Generic { name: generic_name, args };
+                return TypeRef::Generic {
+                    name: generic_name,
+                    args,
+                };
             }
             return base;
         }
@@ -995,9 +1024,7 @@ impl Parser {
         }
         let type_ref = self.try_parse_type_ref();
         // Consume up to comma or closing brace
-        while !self.is_at_end()
-            && !matches!(self.peek(), Some(Token::Comma | Token::RightBrace))
-        {
+        while !self.is_at_end() && !matches!(self.peek(), Some(Token::Comma | Token::RightBrace)) {
             self.advance();
         }
         if self.consume(TokenKind::Comma) {
@@ -1027,8 +1054,8 @@ impl Parser {
             message: message.to_owned(),
             span: Some(span),
 
-
-            phase: None,}
+            phase: None,
+        }
     }
 
     fn skip_balanced_brace_block(&mut self, start_span: Span) -> Result<(), Diagnostic> {
@@ -1047,7 +1074,10 @@ impl Parser {
             }
         }
 
-                Err(Diagnostic::unsupported_at(start_span, "unterminated TypeScript interface declaration".to_owned()))
+        Err(Diagnostic::unsupported_at(
+            start_span,
+            "unterminated TypeScript interface declaration".to_owned(),
+        ))
     }
 }
 

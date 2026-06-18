@@ -96,11 +96,7 @@ pub fn lower_to_sem_ir(program: &[ResolvedStmt]) -> SemProgram {
     }
 }
 
-fn lower_stmt(
-    stmt: &ResolvedStmt,
-    ctx: &mut LoweringContext,
-    functions: &mut Vec<SemFunction>,
-) {
+fn lower_stmt(stmt: &ResolvedStmt, ctx: &mut LoweringContext, functions: &mut Vec<SemFunction>) {
     match stmt {
         ResolvedStmt::Block { statements } => {
             for s in statements {
@@ -116,7 +112,9 @@ fn lower_stmt(
             });
         }
         ResolvedStmt::Assign(name, expr) => {
-            let local = ctx.resolve_local(name).unwrap_or_else(|| ctx.alloc_named_local(name));
+            let local = ctx
+                .resolve_local(name)
+                .unwrap_or_else(|| ctx.alloc_named_local(name));
             ctx.emit_stmt(SemStmt::Assign {
                 local,
                 value: lower_expr(expr, ctx),
@@ -142,7 +140,11 @@ fn lower_stmt(
             let else_block = ctx.alloc_block();
             let merge_block = ctx.alloc_block();
 
-            let else_target = if else_body.is_empty() { merge_block } else { else_block };
+            let else_target = if else_body.is_empty() {
+                merge_block
+            } else {
+                else_block
+            };
             if let Some(block) = ctx.current_blocks.last_mut() {
                 block.terminator = Terminator::Branch {
                     cond: ValueRef::local(cond_local),
@@ -429,10 +431,7 @@ fn lower_stmt(
                 lower_stmt(s, &mut body_ctx, functions);
             }
             if let Some(update_expr) = update {
-                body_ctx.emit_stmt(SemStmt::Expr(
-                    lower_expr(update_expr, ctx),
-                    Span::default(),
-                ));
+                body_ctx.emit_stmt(SemStmt::Expr(lower_expr(update_expr, ctx), Span::default()));
             }
             ctx.current_blocks.extend(body_ctx.current_blocks);
 
@@ -618,37 +617,22 @@ fn lower_stmt(
 fn lower_expr(expr: &ResolvedExpr, ctx: &LoweringContext) -> SemExpr {
     let span = Span::default();
     match expr {
-        ResolvedExpr::Number(n) => {
-            SemExpr::Constant(TaggedValue::encode_number(*n), span)
-        }
-        ResolvedExpr::DecimalNumber(_s) => SemExpr::Constant(
-            TaggedValue::encode_number(0),
-            span,
-        ),
-        ResolvedExpr::BigIntLiteral { .. } => {
-            SemExpr::Constant(TaggedValue::UNDEFINED, span)
-        }
-        ResolvedExpr::String(_s) => SemExpr::Constant(
-            TaggedValue::UNDEFINED, span,
-        ),
+        ResolvedExpr::Number(n) => SemExpr::Constant(TaggedValue::encode_number(*n), span),
+        ResolvedExpr::DecimalNumber(_s) => SemExpr::Constant(TaggedValue::encode_number(0), span),
+        ResolvedExpr::BigIntLiteral { .. } => SemExpr::Constant(TaggedValue::UNDEFINED, span),
+        ResolvedExpr::String(_s) => SemExpr::Constant(TaggedValue::UNDEFINED, span),
         ResolvedExpr::Bool(true) => SemExpr::Constant(TaggedValue::TRUE, span),
         ResolvedExpr::Bool(false) => SemExpr::Constant(TaggedValue::FALSE, span),
         ResolvedExpr::Null => SemExpr::Constant(TaggedValue::NULL, span),
         ResolvedExpr::Undefined => SemExpr::Constant(TaggedValue::UNDEFINED, span),
         ResolvedExpr::This { span: s } => SemExpr::This(*s),
-        ResolvedExpr::Ident(name) => {
-            match ctx.resolve_local(name) {
-                Some(local) => SemExpr::Local(local, span),
-                None => SemExpr::Reference(
-                    crate::reference::SemReference::property(
-                        ValueRef::local(0),
-                        name.clone(),
-                        true,
-                    ),
-                    span,
-                ),
-            }
-        }
+        ResolvedExpr::Ident(name) => match ctx.resolve_local(name) {
+            Some(local) => SemExpr::Local(local, span),
+            None => SemExpr::Reference(
+                crate::reference::SemReference::property(ValueRef::local(0), name.clone(), true),
+                span,
+            ),
+        },
         ResolvedExpr::Binary { left, op, right } => {
             let bin_op = match op {
                 SyntaxBinaryOp::Add => BinaryOp::Add,
@@ -699,7 +683,11 @@ fn lower_expr(expr: &ResolvedExpr, ctx: &LoweringContext) -> SemExpr {
             args: args.iter().map(|a| lower_expr(a, ctx)).collect(),
             span: *call_span,
         },
-        ResolvedExpr::PropertyAccess { object, key, span: prop_span } => SemExpr::PropertyGet {
+        ResolvedExpr::PropertyAccess {
+            object,
+            key,
+            span: prop_span,
+        } => SemExpr::PropertyGet {
             object: Box::new(lower_expr(object, ctx)),
             key: key.clone(),
             span: *prop_span,
@@ -718,7 +706,12 @@ fn lower_expr(expr: &ResolvedExpr, ctx: &LoweringContext) -> SemExpr {
             args: args.iter().map(|a| lower_expr(a, ctx)).collect(),
             span: *call_span,
         },
-        ResolvedExpr::PropertyAssign { object, key, value, span: assign_span } => SemExpr::PropertySet {
+        ResolvedExpr::PropertyAssign {
+            object,
+            key,
+            value,
+            span: assign_span,
+        } => SemExpr::PropertySet {
             object: Box::new(lower_expr(object, ctx)),
             key: key.clone(),
             value: Box::new(lower_expr(value, ctx)),
@@ -755,9 +748,7 @@ fn lower_expr(expr: &ResolvedExpr, ctx: &LoweringContext) -> SemExpr {
                 .iter()
                 .map(|e| match e {
                     ResolvedArrayElement::Present(ex) => lower_expr(ex, ctx),
-                    ResolvedArrayElement::Hole => {
-                        SemExpr::Constant(TaggedValue::UNDEFINED, span)
-                    }
+                    ResolvedArrayElement::Hole => SemExpr::Constant(TaggedValue::UNDEFINED, span),
                 })
                 .collect(),
             span,
@@ -765,7 +756,12 @@ fn lower_expr(expr: &ResolvedExpr, ctx: &LoweringContext) -> SemExpr {
         ResolvedExpr::Object(props) => SemExpr::ObjectLiteral {
             properties: props
                 .iter()
-                .map(|p| (p.static_key().unwrap_or("").to_owned(), lower_expr(p.value(), ctx)))
+                .map(|p| {
+                    (
+                        p.static_key().unwrap_or("").to_owned(),
+                        lower_expr(p.value(), ctx),
+                    )
+                })
                 .collect(),
             span,
         },

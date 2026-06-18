@@ -19,7 +19,10 @@ impl Parser {
         let (name, _) = self.read_class_name()?;
         if self.namespace_names_encountered.contains(&name) {
             let span = self.prev_span().unwrap_or(Span { start: 0, end: 0 });
-                        return Err(Diagnostic::unsupported_at(span, format!("namespace before class: `{name}`")));
+            return Err(Diagnostic::unsupported_at(
+                span,
+                format!("namespace before class: `{name}`"),
+            ));
         }
 
         let _ = self.consume_typescript_generic_parameter_list()?;
@@ -153,7 +156,10 @@ impl Parser {
             // Report multiple base classes (issue 5317)
             if matches!(self.peek(), Some(Token::Comma)) {
                 let comma_span = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
-                                return Err(Diagnostic::unsupported_at(comma_span, "classes can only extend a single class".to_owned()));
+                return Err(Diagnostic::unsupported_at(
+                    comma_span,
+                    "classes can only extend a single class".to_owned(),
+                ));
             }
             Ok(Some(Box::new(expr)))
         } else {
@@ -202,7 +208,10 @@ impl Parser {
         let mut static_field_initializers = Vec::<Stmt>::new();
         while !matches!(self.peek(), Some(Token::RightBrace)) {
             if self.is_at_end() {
-                                return Err(Diagnostic::unsupported_at(self.prev_span().or_else(|| self.peek_span()), "unterminated class body".to_owned()));
+                return Err(Diagnostic::unsupported_at(
+                    self.prev_span().or_else(|| self.peek_span()),
+                    "unterminated class body".to_owned(),
+                ));
             }
 
             if self.consume(TokenKind::Semicolon) {
@@ -288,8 +297,7 @@ impl Parser {
                 && matches!(
                     self.peek_n(1),
                     Some(Token::Star | Token::Ident(_) | Token::PrivateIdentifier(_))
-                )
-            {
+                ) {
                 self.advance();
                 true
             } else {
@@ -390,11 +398,24 @@ impl Parser {
                 {
                     // Leading-decimal number as property name: get .1() / set .1()
                     self.advance(); // consume the Dot
-                    if let Some(SpannedToken { kind: Token::Number(num_val), span: num_span }) = self.advance() {
+                    if let Some(SpannedToken {
+                        kind: Token::Number(num_val),
+                        span: num_span,
+                    }) = self.advance()
+                    {
                         method_name = format!("{prefix}.{}", num_val);
                         method_span = num_span;
                     }
-                } else if !matches!(self.peek(), Some(Token::LeftParen | Token::Semicolon | Token::Equal | Token::Colon | Token::RightBrace)) {
+                } else if !matches!(
+                    self.peek(),
+                    Some(
+                        Token::LeftParen
+                            | Token::Semicolon
+                            | Token::Equal
+                            | Token::Colon
+                            | Token::RightBrace
+                    )
+                ) {
                     // Any other property name token (ident, number, string, keyword)
                     let (next_name, next_span) = self.expect_property_name()?;
                     method_name = format!("{prefix}{next_name}");

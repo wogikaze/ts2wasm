@@ -19,7 +19,6 @@ members = [
     "crates/spec-kernel",
     "crates/backend-correctness",
     "crates/opt-mir",
-    "crates/runtime-catalog",
 ]
 resolver = "3"
 
