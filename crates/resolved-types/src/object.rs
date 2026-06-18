@@ -1,4 +1,4 @@
-use crate::builtin_resolved::ResolvedExpr;
+use crate::ResolvedExpr;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ResolvedArrayElement {

@@ -1,4 +1,5 @@
-pub mod builtin_resolved;
+// builtin_resolved types extracted to crates/resolved-types/
+pub use ts2wasm_resolved_types as builtin_resolved;
 
 // Re-export from semantics crate for backward compatibility
 pub use ts2wasm_semantics::builtin;

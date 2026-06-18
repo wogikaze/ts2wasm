@@ -6,6 +6,7 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
+ts2wasm-resolved-types = { path = "../resolved-types" }
 ts2wasm-shared = { path = "../shared" }
 ts2wasm-source = { path = "../source" }
 ts2wasm-diagnostic = { path = "../diagnostic" }

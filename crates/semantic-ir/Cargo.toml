@@ -5,6 +5,6 @@ edition.workspace = true
 license.workspace = true
 
 [dependencies]
-ts2wasm-ir = { path = "../ir" }
+ts2wasm-resolved-types = { path = "../resolved-types" }
 ts2wasm-runtime-core = { path = "../runtime-core" }
 ts2wasm-source = { path = "../source" }

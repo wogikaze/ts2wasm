@@ -363,6 +363,7 @@ dependencies = [
  "ts2wasm-diagnostic",
  "ts2wasm-frontend",
  "ts2wasm-resolve",
+ "ts2wasm-resolved-types",
  "ts2wasm-runtime-abi",
  "ts2wasm-runtime-catalog",
  "ts2wasm-semantics",
@@ -385,6 +386,16 @@ version = "0.1.0"
 dependencies = [
  "ts2wasm-diagnostic",
  "ts2wasm-frontend",
+ "ts2wasm-source",
+ "ts2wasm-syntax",
+]
+
+[[package]]
+name = "ts2wasm-resolved-types"
+version = "0.1.0"
+dependencies = [
+ "ts2wasm-resolve",
+ "ts2wasm-semantics",
  "ts2wasm-source",
  "ts2wasm-syntax",
 ]
@@ -419,7 +430,7 @@ dependencies = [
 name = "ts2wasm-semantic-ir"
 version = "0.1.0"
 dependencies = [
- "ts2wasm-ir",
+ "ts2wasm-resolved-types",
  "ts2wasm-runtime-core",
  "ts2wasm-source",
 ]

@@ -1,9 +1,9 @@
-use crate::binding_pattern::BindingPattern;
-use crate::builtin::{BuiltinId, BuiltinPropertyId};
-use crate::builtin_resolved::{
+use crate::{
     EvalCompletionPlan, EvalFragmentPlan, FunctionConstructorGeneratedFunction,
     FunctionConstructorPlan, ResolvedArrayElement, ResolvedObjectProp,
 };
+use ts2wasm_resolve::binding_pattern::BindingPattern;
+use ts2wasm_semantics::builtin::{BuiltinId, BuiltinPropertyId};
 use ts2wasm_source::Span;
 use ts2wasm_syntax::{BinaryOp, FunctionExprOrigin, LogicalAssignOp, UnaryOp};
 

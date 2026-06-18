@@ -1,4 +1,4 @@
-use crate::builtin_resolved::{ResolvedArrayElement, ResolvedExpr};
+use crate::{ResolvedArrayElement, ResolvedExpr};
 use ts2wasm_source::Span;
 use ts2wasm_syntax::{BinaryOp, UnaryOp};
 

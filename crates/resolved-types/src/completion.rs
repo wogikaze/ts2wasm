@@ -1,7 +1,5 @@
-use crate::binding_pattern::BindingPattern;
-use crate::builtin_resolved::{
-    ClassMethod, ResolvedConstructor, ResolvedExpr, ResolvedParam, ResolvedStmt,
-};
+use crate::{ClassMethod, ResolvedConstructor, ResolvedExpr, ResolvedParam, ResolvedStmt};
+use ts2wasm_resolve::binding_pattern::BindingPattern;
 use ts2wasm_source::Span;
 
 #[derive(Debug, Clone, PartialEq, Eq)]

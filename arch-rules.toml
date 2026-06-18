@@ -28,12 +28,14 @@ runtime-abi = { allowed_deps = [], description = "Tagged value layout, ABI const
 runtime-core = { allowed_deps = ["runtime-abi"], description = "JS engine substrate" }
 runtime-catalog = { allowed_deps = ["runtime-abi", "shared", "spec-kernel"], description = "RuntimeFn registry, migration" }
 
-semantic-ir = { allowed_deps = ["runtime-core", "source"], description = "ECMAScript semantic IR" }
+semantic-ir = { allowed_deps = ["resolved-types", "runtime-core", "source"], description = "ECMAScript semantic IR" }
 spec-kernel = { allowed_deps = ["runtime-core"], description = "SpecOp, internal method dispatch" }
 backend-correctness = { allowed_deps = ["backend-core", "runtime-abi", "runtime-core", "semantic-ir", "spec-kernel", "source"], description = "SemIR → SpecOp → wasm module (spec_emit)" }
 opt-mir = { allowed_deps = ["runtime-core", "spec-kernel"], description = "Guard/deopt IR" }
 
-ir = { allowed_deps = ["source", "syntax", "diagnostic", "frontend", "resolve", "shared", "runtime-abi", "runtime-catalog", "semantics"], description = "LEGACY — LoweredProgram, old MIR. DO NOT add new features here. migration_issue: P3 switch to semantic-ir" }
+resolved-types = { allowed_deps = ["source", "syntax", "resolve", "semantics"], description = "Resolved AST types (extracted from ir)" }
+
+ir = { allowed_deps = ["source", "syntax", "diagnostic", "frontend", "resolve", "shared", "runtime-abi", "runtime-catalog", "semantics", "resolved-types"], description = "LEGACY — LoweredProgram, old MIR. DO NOT add new features here. migration_issue: P3 switch to semantic-ir" }
 backend-wasm = { allowed_deps = ["source", "diagnostic", "shared", "runtime-abi", "backend-core", "spec-kernel"], description = "LEGACY + spec_emit (transitional). LEGACY deps via ARCH-EXC-001..005. DO NOT add JS semantics. DO NOT extend old emitter. migration_issue: P3 split spec_emit to dedicated crate" }
 backend-core = { allowed_deps = [], description = "Wasm IR types" }
 

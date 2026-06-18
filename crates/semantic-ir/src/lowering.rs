@@ -3,7 +3,7 @@ use crate::expr::{BinaryOp, SemExpr, UnaryOp};
 use crate::program::{SemFunction, SemProgram};
 use crate::stmt::SemStmt;
 use crate::value::{BlockId, LocalId, ValueRef};
-use ts2wasm_ir::builtin_resolved::{
+use ts2wasm_resolved_types::{
     BinaryOp as SyntaxBinaryOp, ResolvedArrayElement, ResolvedExpr, ResolvedStmt,
     UnaryOp as SyntaxUnaryOp,
 };
