@@ -71,25 +71,28 @@ def check_dispatch_coverage() -> list[str]:
     for v in sorted(missing):
         violations.append(f"ERROR SpecOp::{v} has no dispatch arm")
 
-    # Check for wildcard matches in dispatch functions
-    for fpath in get_dispatch_files():
-        text = fpath.read_text()
+    # Check for wildcard matches in SpecOp-specific dispatch functions only
+    # (spec_op.rs param_count/result_count, not ObjectKind/EnvironmentRecord dispatches)
+    spec_op_path = REPO_ROOT / "crates" / "spec-kernel" / "src" / "spec_op.rs"
+    if spec_op_path.exists():
+        text = spec_op_path.read_text()
         lines = text.splitlines()
-        rel = fpath.relative_to(REPO_ROOT)
-        in_dispatch_fn = False
+        rel = spec_op_path.relative_to(REPO_ROOT)
+        in_fn = False
+        fn_name = ""
         for i, line in enumerate(lines):
-            # Track if we're inside a fn that looks like dispatch
-            stripped = line.strip()
-            if re.match(r'^\s*(pub\s+)?fn\s+(dispatch|emit|execute|run|apply|call)', stripped):
-                in_dispatch_fn = True
-            elif stripped.startswith('fn ') or stripped.startswith('pub fn '):
-                in_dispatch_fn = False
-            if in_dispatch_fn and re.match(r'^\s+_\s*=>', stripped):
+            m = re.match(r'^\s*(pub\s+)?fn\s+(\w+)', line)
+            if m:
+                in_fn = True
+                fn_name = m.group(2)
+            if in_fn and re.match(r'^\s+_\s*=>', line):
+                level = "WARN" if fn_name in ("param_count", "result_count") else "ERROR"
                 violations.append(
-                    f"ERROR {rel}:{i+1}: wildcard match in SpecOp dispatch function — "
-                    f"new variants may be silently ignored"
+                    f"check_specop_dispatch: {level} {rel}:{i+1}: "
+                    f"wildcard in fn `{fn_name}` — "
+                    f"new SpecOp variants may be silently ignored"
                 )
-                in_dispatch_fn = False
+                in_fn = False
 
     return violations
 

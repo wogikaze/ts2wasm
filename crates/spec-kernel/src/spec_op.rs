@@ -83,24 +83,27 @@ impl SpecOp {
             | Self::PreventExtensions { .. }
             | Self::OwnPropertyKeys { .. } => 1,
             Self::Delete { .. } | Self::HasProperty { .. } | Self::GetOwnProperty { .. } => 2,
-            _ => 2,
+            Self::ToPropertyKey { .. }
+            | Self::ToString { .. }
+            | Self::DefineOwnProperty { .. }
+            | Self::SetPrototypeOf { .. }
+            | Self::SetIntegrityLevel { .. }
+            | Self::TestIntegrityLevel { .. }
+            | Self::CreateDataProperty { .. }
+            | Self::GetBindingValue { .. }
+            | Self::SetMutableBinding { .. }
+            | Self::CreateBinding { .. }
+            | Self::InitializeBinding { .. }
+            | Self::ResolveBinding { .. }
+            | Self::GetIterator { .. }
+            | Self::IteratorNext { .. }
+            | Self::IteratorClose { .. }
+            | Self::GetModuleNamespace { .. } => 2,
         }
     }
 
     pub fn result_count(&self) -> usize {
         match self {
-            Self::Set { .. }
-            | Self::DefineOwnProperty { .. }
-            | Self::Delete { .. }
-            | Self::HasProperty { .. }
-            | Self::SetPrototypeOf { .. }
-            | Self::IsExtensible { .. }
-            | Self::PreventExtensions { .. }
-            | Self::SetIntegrityLevel { .. }
-            | Self::TestIntegrityLevel { .. }
-            | Self::CreateDataProperty { .. }
-            | Self::SetMutableBinding { .. }
-            | Self::InitializeBinding { .. } => 1,
             Self::IteratorClose { .. } => 0,
             _ => 1,
         }

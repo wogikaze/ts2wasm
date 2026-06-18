@@ -28,6 +28,7 @@ FROZEN_FILES = [
 ]
 
 ALLOWED_CHANGES = {"delete", "move", "bugfix"}
+ALLOWED_EXCEPTION_IDS = set()  # populated by --allow-exception <id>
 
 
 def load_exceptions() -> dict:
@@ -70,15 +71,22 @@ def check_touched_files() -> list[str]:
     for fname in FROZEN_FILES:
         if fname not in changed:
             continue
-        exc = get_file_exception(fname)
-        if exc:
-            allowed = exc.get("allowed_change", "")
-            parts = allowed.split("|")
-            if any(a.strip() in ALLOWED_CHANGES for a in parts):
-                continue
+        # Exception only applies if --allow-exception <id> was explicitly passed
+        # AND the exception's allowed_change matches AND the exception's file matches
+        exc_allowed = False
+        for eid in ALLOWED_EXCEPTION_IDS:
+            exc = get_file_exception(fname)
+            if exc:
+                allowed = exc.get("allowed_change", "")
+                parts = allowed.split("|")
+                exc_allowed = any(a.strip() in ALLOWED_CHANGES for a in parts)
+                if exc_allowed:
+                    break
+        if exc_allowed:
+            continue
         violations.append(
             f"ERROR {fname} is LEGACY FROZEN — "
-            f"modification requires exception in architecture-exceptions.toml"
+            f"use --allow-exception <id> to acknowledge the change"
         )
     return violations
 
@@ -100,13 +108,21 @@ def run_self_test():
 
 
 def main():
+    global ALLOWED_EXCEPTION_IDS
     args = sys.argv[1:]
-    if "-h" in args or "--help" in args:
-        print(__doc__.strip())
-        sys.exit(0)
-    if "--self-test" in args:
-        run_self_test()
-        return
+    i = 0
+    while i < len(args):
+        if args[i] == "--allow-exception" and i + 1 < len(args):
+            ALLOWED_EXCEPTION_IDS.add(args[i + 1])
+            i += 2
+        elif args[i] in ("-h", "--help"):
+            print(__doc__.strip())
+            sys.exit(0)
+        elif args[i] == "--self-test":
+            run_self_test()
+            return
+        else:
+            i += 1
 
     violations = check_touched_files()
     for v in violations:

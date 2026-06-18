@@ -29,6 +29,7 @@ REQUIRED_FIELDS = {
     "suite", "case", "failure_kind", "owning_layer",
     "first_missing_capability", "required_change",
     "expected_trace", "actual_trace", "status",
+    "evidence", "linked_issue",
 }
 
 VALID_OWNING_LAYERS = {
