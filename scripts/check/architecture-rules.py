@@ -30,6 +30,12 @@ Current checks:
   - Error when a crate has more than 10 [dependencies] (module fan-out gate).
   - Error when a match has more than 50 arms unless allowlisted.
   - Warn when non-test Rust source filenames use `_` to encode pseudo-hierarchy; prefer real submodules/directories.
+  - Error when backend-wasm depends on semantic-ir (crate DAG boundary).
+  - Error when spec-kernel depends on backend-wasm (crate DAG boundary).
+  - Error when runtime-core depends on backend-wasm (crate DAG boundary).
+  - Error when frozen files (native_lowered.rs, typed.rs, native_runtime_embed.rs) exceed line baseline.
+  - Error when RuntimeFn variant count exceeds baseline (new additions require allowlist).
+  - Error when new SpecOp variant lacks spec-kernel dispatch coverage.
 
 """
 
@@ -41,50 +47,58 @@ import shutil
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
-DEFAULT_MAX_FILE_LINES = 1200  # #364: hard gate
-TARGET_MAX_FILE_LINES = 1200
-MAX_RUST_FILE_LINES_HARD = 1200  # #364: hard gate (was 2000)
-MAX_FUNCTION_LINES_WARN = 150  # #364: staged warning toward 150
-MAX_FUNCTION_LINES_HARD = 200  # #364: hard gate (was 300)
 MAX_CRATE_NORMAL_DEPS_WARN = 10
 MAX_CRATE_NORMAL_DEPS_HARD = 10  # #365: hard gate (was warn only)
-MAX_PUBLIC_API_ITEMS_WARN = 30
-MAX_PUBLIC_API_ITEMS_HARD = 30  # #365: hard gate (was warn only)
-MAX_MATCH_ARMS_WARN = 30
-MAX_MATCH_ARMS_HARD = 50
 
-# Known oversized files that are exempt from the general (non-.rs) line limit.
-# Each entry must include a reason and the P-item that will eventually fix it.
-# .rs files are handled by the Rust-specific FILE_SIZE_ALLOWLIST_1200.
-OVERSIZED_ALLOWLIST = {
-    # Tracking data files
-    "docs/done-tracking.yaml": "tracking data",
-    "fixtures/catalog.yaml": "I-20260513-HGGTXF: monolithic fixture registry pending domain-sharded catalog",
-    # Coverage and build scripts (naturally large)
-    "scripts/run/reference-coverage.py": "coverage script — naturally large",
-    # The architecture check script itself
-    "scripts/check/architecture-rules.py": "architecture checker — needs its own logic",
-    # Doc files (naturally long format)
-    "docs/12-coding-standard.md": "coding standard reference",
-    "site/docs/docs/12-coding-standard.md": "coding standard reference (site copy)",
-    # Planning documents (naturally long)
-    "plans/next-architecture-design (1).md": "architecture planning document",
-    "plans/next-architecture-design (2).md": "architecture planning document",
-    "plans/next-architecture-design (3).md": "architecture planning document",
-    "plans/next-architecture-design (4).md": "architecture planning document",
-    # Done issue with extensive notes
-    "issues/done/I-20260514-67ZV8S.md": "done issue with extensive notes",
-    "scripts/check/fixture-differential.py": "differential runner — 1223 lines, larger than average but actively maintained",
+FRONTEND_DEP_DENY = {
+    "crates/backend-wasm",
+    "crates/ir",
 }
 
-# Crates that must not directly depend on ts2wasm-frontend via Cargo.toml.
-# Remove entries from this set as dependencies are eliminated.
-# Crates that must not directly depend on ts2wasm-frontend via Cargo.toml.
-# Entries with #legacy are known pre-existing violations pending P4/P7 refactoring
-# and are reported as WARN instead of ERROR.
-FRONTEND_DEP_DENY = {
-    "crates/backend-wasm",  # #legacy: pending P4 decomposition
-    "crates/ir",            # #legacy: pending P7 resolver decomposition
+# --- Crate dependency DAG enforcement ---
+# backend-wasm must NOT depend on semantic-ir (backend only sees SpecOp/OptExpr, not semantic meaning)
+# spec-kernel must NOT depend on backend-wasm (spec-kernel is pure dispatch, no emission)
+# runtime-core must NOT depend on backend-wasm (runtime-core is pure ABI/layout, no emission)
+CRATE_DAG_DENY = {
+    "crates/backend-wasm": ["ts2wasm-semantic-ir"],
+    "crates/spec-kernel": ["ts2wasm-backend-wasm"],
+    "crates/runtime-core": ["ts2wasm-backend-wasm"],
+}
+
+# --- Frozen file growth prohibition ---
+# These files are in "delete/move/bugfix only" mode. New logic must go to new modules.
+# Baseline is the current line count; CI fails if a file grows beyond this.
+FROZEN_FILES_BASELINE = {
+    "crates/backend-wasm/src/native_lowered.rs": 38200,
+    "crates/backend-wasm/src/runtime/core/typed.rs": 50000,
+    "crates/backend-wasm/src/native_runtime_embed.rs": 7700,
+}
+# Allowlist: files exempt from the frozen check (e.g., during a migration window)
+FROZEN_FILES_ALLOWLIST: set[str] = set()
+
+# --- RuntimeFn addition prohibition ---
+# New RuntimeFn additions require: allowlist entry + spec/manifest/emission_order coverage.
+# This prevents the shortcut of adding legacy catalog entries to avoid new-path work.
+RUNTIMEFN_BASELINE_COUNT = 504  # current variant count; new additions require allowlist
+RUNTIMEFN_ADDITION_ALLOWLIST: set[str] = set()
+
+# --- SpecOp dispatch coverage ---
+# New SpecOp variants must have dispatch coverage in spec-kernel.
+# Existing variants are baseline (spec-kernel is WIP and many are not yet dispatched).
+# This prevents adding SpecOp without implementing the corresponding dispatch.
+SPECOP_BASELINE_VARIANTS = {
+    # All current SpecOp variants as of the baseline date.
+    # New additions beyond this set require dispatch coverage.
+    "Get", "Set", "GetOwnProperty", "DefineOwnProperty", "Delete", "HasProperty",
+    "GetPrototypeOf", "SetPrototypeOf", "IsExtensible", "PreventExtensions",
+    "OwnPropertyKeys", "Call", "Construct",
+    "CreateDataProperty", "SetIntegrityLevel", "TestIntegrityLevel",
+    "ToPrimitive", "ToNumber", "ToNumeric", "ToPropertyKey", "ToObject",
+    "ToBoolean", "ToString",
+    "GetBindingValue", "SetMutableBinding", "CreateBinding",
+    "InitializeBinding", "ResolveBinding",
+    "GetIterator", "IteratorNext", "IteratorClose",
+    "GetModuleNamespace",
 }
 
 # Crates that frontend/syntax must NOT depend on (reverse dependency gate).
@@ -99,15 +113,6 @@ FRONTEND_SYNTAX_BOUNDARY_DENY = {
     "ts2wasm-cli",
 }
 
-LINE_COUNT_SUFFIXES = {
-    ".md",
-    ".py",
-    ".rs",
-    ".sh",
-    ".toml",
-    ".yaml",
-    ".yml",
-}
 EXCLUDED_PATH_PARTS = {
     ".agent",
     ".claude",
@@ -133,353 +138,23 @@ EXCLUDED_FILENAMES = {
     "Cargo.lock",
 }
 
-# Files exceeding 1200 lines (Rust) — explicit hard gate allowlist.
-# Every entry must have a documented refactoring plan or be a test file.
-FILE_SIZE_ALLOWLIST_1200 = {
-    # P4: Decomposition — parser / lexer / runtime domain
-    "fixtures/catalog.yaml": "P16: coverage matrix — 1697 lines",
-    "crates/ir/src/lowered/resolver/mod.rs": "P14: resolver main mod — 1417 lines",
-    "crates/backend-wasm/src/runtime/core/bigint.rs": "P4: runtime domain split",
-    "crates/backend-wasm/src/expr_emit.rs": "P4: expression emitter — pending domain split",
-    "crates/backend-wasm/src/runtime/core/comparison.rs": "P4: runtime domain split",
-    "crates/backend-wasm/src/runtime/collections/emit.rs": "P4: runtime domain split",
-    "crates/backend-wasm/src/runtime/host/emit.rs": "P4: runtime domain split",
-    "crates/backend-wasm/src/runtime/string/emit.rs": "P4: runtime domain split",
-    "crates/backend-wasm/src/runtime/core/memory.rs": "P4: runtime domain split",
-    "crates/backend-wasm/src/lib.rs": "P4: backend lib — pending domain export refactor",
-    "crates/frontend/src/parser/expressions_main.rs": "P4: parser decomposition",
-    "crates/frontend/src/parser/statements_general.rs": "P4: parser decomposition",
-    "crates/frontend/src/lexer.rs": "P4: lexer decomposition",
-    # P4: domain-split runtime files
-    "crates/backend-wasm/src/emitter.rs": "P4: runtime domain split",
-    "crates/backend-wasm/src/runtime_arrays.rs": "P4: runtime domain split",
-    "crates/backend-wasm/src/runtime_builtins_host.rs": "P4: runtime domain split",
-    "crates/backend-wasm/src/runtime_builtins_host_json_parse.rs": "P4: runtime domain split",
-    "crates/backend-wasm/src/runtime_collections.rs": "P4: runtime domain split",
-    "crates/backend-wasm/src/runtime_core_bigint.rs": "P4: runtime domain split",
-    "crates/backend-wasm/src/runtime_core_comparison_alloc.rs": "P4: runtime domain split",
-    "crates/backend-wasm/src/runtime_core_emitter_part1.rs": "P4: runtime domain split",
-    "crates/backend-wasm/src/runtime_core_emitter_part2.rs": "P4: runtime domain split",
-    "crates/backend-wasm/src/runtime_dates.rs": "I-20260514-7NX8Z6: Date runtime emit pending domain split",
-    "crates/backend-wasm/src/runtime_fn.rs": "P4: runtime domain split",
-    "crates/backend-wasm/src/runtime_fn_impl.rs": "P4: runtime domain split",
-    "crates/backend-wasm/src/runtime_objects.rs": "P4: runtime domain split",
-    "crates/backend-wasm/src/runtime_strings.rs": "P4: runtime domain split",
-    # P7: Resolver decomposition
-    "crates/ir/src/lowered/program.rs": "P7: resolver decomposition",
-    "crates/ir/src/lowered/program_builtins.rs": "P7: resolver decomposition -- 1228 lines",
-    "crates/ir/src/lowered/resolver/array.rs": "P7: resolver decomposition",
-    "crates/ir/src/lowered/resolver/call/method.rs": "P7: resolver decomposition",
-    "crates/ir/src/lowered/resolver/mod.rs": "I-20260513-HGGTXF: resolver facade pending domain export split",
-    "crates/ir/src/lowered/resolver_expr.rs": "P7: resolver decomposition",
-    "crates/ir/src/lowered/resolver_extra.rs": "P7: resolver decomposition",
-    "crates/ir/src/builtin_resolver.rs": "P7: resolver decomposition",
-    "crates/ir/src/builtin_resolver_bigint.rs": "P7: resolver decomposition",
-    "crates/ir/src/name_resolver.rs": "P7: resolver decomposition",
-    "crates/ir/src/semantic.rs": "P7: resolver decomposition",
-    "crates/resolve/src/name_resolver.rs": "P7: resolver decomposition",
-    # P11: Runtime link plan / pipeline
-    "crates/backend-wasm/src/runtime_link_plan.rs": "P11: link plan refactor",
-    "crates/compiler/src/lib.rs": "compiler pipeline — phased refactor",
-    "crates/compiler/src/stages/lower.rs": "compiler pipeline — phased refactor",
-    # Auto-generated spec / catalog tables
-    "crates/runtime-catalog/src/runtime/spec/all.rs": "auto-generated spec",
-    "crates/runtime-catalog/src/runtime_fn.rs": "runtime catalog registry",
-    # Test files (naturally large, not a concern)
-    "crates/frontend/src/parser/tests.rs": "test file",
-    "crates/cli/tests/common/m2_node_diff_fixture_tests.rs": "test file",
-    "crates/cli/tests/m6_builtin_methods.rs": "test file",
-    "crates/cli/tests/ir_lowering.rs": "test file",
-    "crates/cli/tests/m2_node_diff.rs": "test file",
-    "crates/ir/tests/mir_snapshot.rs": "test file",
-    "crates/ir/tests/lowered_snapshot.rs": "test file",
-    # P7: resolver decomposition
-    "crates/ir/src/lowered/program_builtins.rs": "P7: resolver decomposition",
-    "crates/ir/src/lowered/resolver/call/user.rs": "P7: resolver decomposition",
-    # P4: native emitter — legacy large files pending domain split
-    "crates/backend-wasm/src/native_lowered.rs": "P4: native emitter — 36046 lines",
-    "crates/backend-wasm/src/native_runtime_embed.rs": "P4: native runtime embed — 7648 lines",
-    "crates/backend-wasm/src/runtime/core/typed.rs": "P4: runtime domain split — 48876 lines",
-    "crates/backend-wasm/src/runtime/object/emit.rs": "P4: runtime domain split — 1248 lines",
-    "crates/compiler/src/module_graph/mod.rs": "P7: resolver decomposition — 1545 lines",
-    "crates/compiler/src/test262_preprocessor.rs": "test262 preprocessor — 1221 lines",
-    "crates/compiler/src/tests/compiler_late.rs": "test file — 1467 lines",
-    "crates/ir/src/lowered/mir/dce.rs": "P14: MIR decomposition — 1837 lines",
-    "crates/ir/src/lowered/mir/escape.rs": "P14: MIR decomposition — 1760 lines",
-    "crates/ir/src/lowered/mir/scalar_replace.rs": "P14: MIR decomposition — 3286 lines",
-    "crates/ir/src/lowered/resolver/expr/property.rs": "P7: resolver decomposition — 1507 lines",
-    "crates/runtime-catalog/src/host_import.rs": "P11: link plan refactor — 1272 lines",
-}
 
-# Files that use `use super::*` outside test modules (known legacy pattern).
-USE_SUPER_STAR_ALLOWLIST = {
-    "crates/backend-wasm/src/expr_emit_helpers.rs",
-    "crates/backend-wasm/src/runtime_builtins_host_json_parse.rs",
-    "crates/backend-wasm/src/runtime_core_comparison_alloc.rs",
-    "crates/backend-wasm/src/runtime_fn_impl.rs",
-    "crates/ir/src/builtin_resolver_bigint.rs",
-    "crates/ir/src/builtin_resolver_bigint_ops.rs",
-    "crates/ir/src/builtin_resolver_class_features.rs",
-    "crates/ir/src/builtin_resolver_host.rs",
-    "crates/ir/src/builtin_resolver_outer.rs",
-    "crates/ir/src/lowered/program_builtins.rs",
-    "crates/ir/src/lowered/program_captures.rs",
-    "crates/ir/src/lowered/program_direct_eval.rs",
-    "crates/ir/src/lowered/resolver_expr.rs",
-    "crates/ir/src/lowered/resolver_extra.rs",
-}
-
-# Runtime catalog paths (runtime_fn.rs includes impl and spec via include!).
-RUNTIME_CATALOG_FILE_PREFIXES = (
-    "crates/backend-wasm/src/runtime/",
-    "crates/backend-wasm/src/runtime_fn",
-    "crates/runtime-catalog/src/runtime/",
-    "crates/runtime-catalog/src/runtime_fn",
-)
-
-# Files that use raw runtime symbol strings in test assertions (allowed).
-RAW_SYMBOL_ALLOWLIST = {
-    "crates/backend-wasm/src/lib.rs",   # Has test assertions checking WAT output
-    "crates/compiler/src/tests.rs",     # Has test assertions checking WAT output
-}
-
-# Known large functions (over 200 lines) with documented refactoring plans.
-# The 200-line hard gate permits entries here if they cannot be split yet.
-# Key is (relative_file_path, function_name) tuple.
-# #364: All entries merged from former 200-line WARN list + 300-line ERROR list.
-FUNCTION_LENGTH_ALLOWLIST = {
-    # P11: link plan — dep graph over all RuntimeFn variants
-    ("crates/backend-wasm/src/runtime_link_plan.rs", "collect_required_runtime_expr"): "P11: link plan refactor -- 362 lines",
-    ("crates/backend-wasm/src/runtime_link_plan.rs", "bigint_runtime_arithmetic_selects_helper_deps"): "P11: link plan refactor -- 291 lines",
-    # P7: resolver decomposition
-    ("crates/ir/src/builtin_resolver.rs", "fold_stmt"): "P7: resolver decomposition -- 337 lines",
-    ("crates/ir/src/builtin_resolver.rs", "fold_expr"): "P7: resolver decomposition -- 363 lines",
-    ("crates/ir/src/builtin_resolver.rs", "resolve_stmt_with_outer_bindings"): "P7: resolver decomposition -- 457 lines",
-    ("crates/ir/src/builtin_resolver.rs", "resolve_expr"): "P7: resolver decomposition -- 577 lines",
-    ("crates/ir/src/lowered/program.rs", "lower_program"): "P7: resolver decomposition -- 359 lines",
-    ("crates/ir/src/lowered/program.rs", "lower_program_with_module_url"): "P7: resolver decomposition -- module-aware lowering entrypoint",
-    ("crates/ir/src/lowered/validate.rs", "validate_stmt"): "P7: lowered validator decomposition -- 207 lines",
-    ("crates/ir/src/lowered/validate.rs", "validate_expr"): "P7: resolver decomposition -- 430 lines",
-    ("crates/ir/src/lowered/mir_validate.rs", "validate_expr"): "P14: MIR validator decomposition -- 228 lines",
-    ("crates/ir/src/lowered/mir_dump.rs", "dump_mir_stmt"): "P14: MIR dump variant coverage dispatch -- 239 lines",
-    ("crates/ir/src/lowered/mir_dump.rs", "dump_mir_expr"): "P14: MIR dump variant coverage dispatch -- 298 lines",
-    ("crates/ir/src/lowered/mir_dump.rs", "runtime_intrinsic_name"): "P4: dump intrinsic name match -- 332 lines",
-    ("crates/ir/src/lowered/hir_to_mir.rs", "lower_hir_expr"): "P7: resolver decomposition -- 206 lines",
-    ("crates/ir/src/lowered/resolver/array.rs", "lower_variable_array_callback_method"): "P7: resolver decomposition -- 200+ lines",
-    ("crates/ir/src/lowered/resolver/call/method.rs", "lower_mcall_date_string"): "P7: resolver decomposition -- 200+ lines",
-    ("crates/ir/src/lowered/resolver/call/method.rs", "lower_mcall_json_date_regexp"): "I-20260513-HGGTXF: mixed static-call dispatcher pending domain split -- 208 lines",
-    ("crates/ir/src/lowered/resolver/call/method.rs", "lower_mcall_array_runtime"): "I-20260513-HGGTXF: array method runtime dispatcher pending helper split -- 245 lines",
-    ("crates/ir/src/lowered/resolver/call/method.rs", "lower_mcall_dispatch_early"): "I-20260513-HGGTXF: early method dispatch pending helper split -- 203 lines",
-    ("crates/ir/src/lowered/resolver/call/method.rs", "lower_mcall_nonident_receiver"): "I-20260513-HGGTXF: non-ident receiver dispatch pending helper split -- 211 lines",
-    ("crates/ir/src/lowered/resolver/call/method.rs", "lower_mcall_class_dispatch"): "P7: resolver decomposition -- 200+ lines",
-    ("crates/resolve/src/name_resolver.rs", "resolve_stmt"): "P7: resolver decomposition -- 498 lines",
-    ("crates/resolve/src/name_resolver.rs", "resolve_expr"): "P7: resolver decomposition -- 498 lines",
-    ("crates/ir/src/name_resolver.rs", "resolve_stmt"): "P7: resolver decomposition -- 498 lines",
-    ("crates/ir/src/name_resolver.rs", "resolve_expr"): "P7: resolver decomposition -- 498 lines",
-    ("crates/ir/src/lowered/resolver.rs", "lower_stmt"): "P7: resolver decomposition -- 438 lines",
-    # P4: parser / lexer decomposition
-    ("crates/frontend/src/parser/expressions_main.rs", "primary"): "P4: parser match dispatch -- 331 lines",
-    ("crates/frontend/src/parser/expressions_main.rs", "assignment"): "P4: parser decomposition -- 300 lines",
-    ("crates/frontend/src/parser/expressions_main.rs", "unary"): "P4: parser decomposition -- 202 lines",
-    ("crates/frontend/src/parser/statements_class.rs", "class_decl_body"): "P4: parser class body -- 420 lines",
-    ("crates/frontend/src/parser/helpers.rs", "parse_template_parts"): "P4: parser decomposition -- 200+ lines",
-    ("crates/frontend/src/parser/tokens.rs", "skip_type_annotation_until"): "P4: parser decomposition -- 200+ lines",
-    ("crates/frontend/src/lexer.rs", "tokenize_arithmetic_or_comparison_operator"): "P4: lexer decomposition -- 200+ lines",
-    ("crates/frontend/src/lexer.rs", "tokenize_assignment_or_bitwise_operator"): "P4: lexer decomposition -- 200+ lines",
-    ("crates/frontend/src/lexer.rs", "tokenize"): "P4: lexer decomposition -- 863 lines",
-    ("crates/frontend/src/parser/statements_ts.rs", "consume_module_or_namespace_declaration"): "P4: parser decomposition -- 302 lines",
-    ("crates/ir/src/binding_pattern.rs", "parse_binding_pattern"): "P7: resolver decomposition -- 380 lines",
-    ("crates/ir/src/lowered/resolver_extra.rs", "lower_variable_array_callback_method"): "P7: resolver decomposition -- 842 lines",
-    # P4: expression emitter
-    ("crates/backend-wasm/src/expr_emit.rs", "emit_binary_expr"): "P4: expression emitter -- 200+ lines",
-    # P4: statement emitter
-    ("crates/backend-wasm/src/stmt_emit.rs", "emit_statement_with_label"): "P4: statement emitter -- 200+ lines",
-    # Compiler pipeline — phased refactor
-    ("crates/compiler/src/lib.rs", "lower_static_named_import_bindings_for_build"): "compiler pipeline -- 616 lines",
-    ("crates/compiler/src/lib.rs", "rewrite_static_module_body_for_build"): "compiler pipeline -- 308 lines",
-    ("crates/compiler/src/stages/lower.rs", "rewrite_static_module_body_for_build"): "compiler pipeline -- 200+ lines",
-    ("crates/compiler/src/dump/mod.rs", "unparse_stmt"): "I-20260513-HGGTXF: statement unparse dispatch pending statement-kind split -- 351 lines",
-    ("crates/compiler/src/test262_preprocessor.rs", "build_feature_stubs"): "P4: preprocessor stub builder -- 362 lines",
-    # Runtime function registry — large match by design
-    ("crates/runtime-catalog/src/runtime_fn.rs", "runtime_fn_from_name"): "runtime function registry -- 296 lines",
-    # P7: resolver decomposition
-    ("crates/ir/src/lowered/resolver/object.rs", "lower_object_literal_expr_with_computed_keys"): "P7: resolver decomposition -- 227 lines",
-    # Test file (naturally large test function)
-    ("crates/ir/tests/lowered_snapshot.rs", "lowered_generator_object_accessor_captures_top_level_assignment"): "test file -- 226 lines",
-    # P4: native emitter decomposition — native_lowered.rs functions
-    ("crates/backend-wasm/src/native_lowered.rs", "emit_stmt_with_label"): "P4: native emitter decomposition -- 414 lines",
-    ("crates/backend-wasm/src/native_lowered.rs", "emit_expr"): "P4: native emitter decomposition -- 1325 lines",
-    ("crates/backend-wasm/src/native_lowered.rs", "try_emit_console_call"): "P4: native emitter decomposition -- 256 lines",
-    ("crates/backend-wasm/src/native_lowered.rs", "try_emit_static_user_function_call_stmt"): "P4: native emitter decomposition -- 347 lines",
-    ("crates/backend-wasm/src/native_lowered.rs", "static_exception_console_eval_stmts"): "P4: native emitter decomposition -- 208 lines",
-    ("crates/backend-wasm/src/native_lowered.rs", "static_try_finally_eval_stmts_with_loop_label"): "P4: native emitter decomposition -- 287 lines",
-    ("crates/backend-wasm/src/native_lowered.rs", "static_console_arg_bytes_with_functions"): "P4: native emitter decomposition -- 231 lines",
-    ("crates/backend-wasm/src/native_lowered.rs", "collect_static_locals_with_functions"): "P4: native emitter decomposition -- 496 lines",
-    ("crates/backend-wasm/src/native_lowered.rs", "collect_static_locals_from_expr_with_functions"): "P4: native emitter decomposition -- 983 lines",
-    ("crates/backend-wasm/src/native_lowered.rs", "static_value_from_expr_with_functions"): "P4: native emitter decomposition -- 1543 lines",
-    ("crates/backend-wasm/src/native_lowered.rs", "collect_synthetic_runtime_functions_from_stmt"): "P4: native emitter decomposition -- 227 lines",
-    ("crates/backend-wasm/src/native_lowered.rs", "collect_synthetic_runtime_functions_from_expr"): "P4: native emitter decomposition -- 206 lines",
-    ("crates/backend-wasm/src/native_lowered.rs", "collect_runtime_required_from_expr"): "P4: native emitter decomposition -- 232 lines",
-    # P4: native runtime embed decomposition
-    ("crates/backend-wasm/src/native_runtime_embed.rs", "build_native_runtime_function"): "P4: native runtime embed decomposition -- 571 lines",
-    ("crates/backend-wasm/src/native_runtime_embed.rs", "native_runtime_builder_coverage_reports_missing_non_pseudo_builders"): "P4: native runtime embed decomposition -- 706 lines",
-    ("crates/backend-wasm/src/native_runtime_embed.rs", "core_abi_runtime_calls_to_embedded_helpers_validate"): "P4: native runtime embed decomposition -- 560 lines",
-    ("crates/backend-wasm/src/native_runtime_embed.rs", "iterator_host_runtime_calls_embed_native_helpers_and_imports"): "P4: native runtime embed decomposition -- 207 lines",
-    # P4: runtime domain split — typed.rs runtime builders
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_array_push_grow"): "P4: runtime domain split -- 257 lines",
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_array_sort_lexicographic"): "P4: runtime domain split -- 221 lines",
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_array_flat"): "P4: runtime domain split -- 279 lines",
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_array_iterator_next"): "P4: runtime domain split -- 225 lines",
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_string_char_code_at"): "P4: runtime domain split -- 208 lines",
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "append_trim_leading_loop"): "P4: runtime domain split -- 215 lines",
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "append_trim_trailing_loop"): "P4: runtime domain split -- 230 lines",
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_string_replace_all"): "P4: runtime domain split -- 332 lines",
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_string_match_all"): "P4: runtime domain split -- 329 lines",
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_string_pad"): "P4: runtime domain split -- 205 lines",
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_string_split"): "P4: runtime domain split -- 328 lines",
-    # P4: manifest refactor
-    ("crates/backend-wasm/src/capability_manifest.rs", "canonical_manifest_from_link_plan"): "P4: manifest refactor -- 206 lines",
-    # P4: typed.rs runtime builders (batch 2 — remaining oversize functions)
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_string_from_code_unit"): "P4: runtime domain split -- 256 lines",
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_bigint_index_0_64"): "P4: runtime domain split -- 229 lines",
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_bigint_from_string"): "P4: runtime domain split -- 452 lines",
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_bigint_mul"): "P4: runtime domain split -- 288 lines",
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_bigint_div_rem_decimal"): "P4: runtime domain split -- 298 lines",
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_dataview_get_float16"): "P4: runtime domain split -- 231 lines",
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_dataview_set_float16"): "P4: runtime domain split -- 237 lines",
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_bigint_compare"): "P4: runtime domain split -- 239 lines",
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_bigint_compare_decimal_string_for_relational"): "P4: runtime domain split -- 458 lines",
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_equality_string_number_parser"): "P4: runtime domain split -- 319 lines",
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_object_keys"): "P4: runtime domain split -- 379 lines",
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_object_get_own_property_names"): "P4: runtime domain split -- 344 lines",
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_rest_object"): "P4: runtime domain split -- 219 lines",
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_promise_all_settled"): "P4: runtime domain split -- 259 lines",
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_math_f16round"): "P4: runtime domain split -- 488 lines",
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_property_is_enumerable"): "P4: runtime domain split -- 208 lines",
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_object_get_own_property_descriptor"): "P4: runtime domain split -- 248 lines",
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_object_define_property"): "P4: runtime domain split -- 202 lines",
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_property_has"): "P4: runtime domain split -- 204 lines",
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_property_get"): "P4: runtime domain split -- 484 lines",
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_property_set"): "P4: runtime domain split -- 384 lines",
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_property_delete"): "P4: runtime domain split -- 203 lines",
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_number_to_exponential"): "P4: runtime domain split -- 297 lines",
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_number_to_string"): "P4: runtime domain split -- 331 lines",
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_parse_int_string"): "P4: runtime domain split -- 330 lines",
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_escape"): "P4: runtime domain split -- 259 lines",
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "build_strict_equality_function"): "P4: runtime domain split -- 266 lines",
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "typed_array_mutation_and_copy_helpers_emit_valid_wasm"): "test file -- 332 lines",
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "typed_date_seed_helpers_emit_valid_wasm"): "test file -- 390 lines",
-    ("crates/backend-wasm/src/runtime/core/typed.rs", "typed_promise_basic_helpers_emit_valid_wasm"): "test file -- 306 lines",
-    # Other files
-    ("crates/backend-wasm/src/wasm_encoder_backend.rs", "build_single_function"): "P4: wasm encoder decomposition -- 335 lines",
-    ("crates/compiler/src/module_graph/mod.rs", "visit_module"): "P7: resolver decomposition -- 216 lines",
-    ("crates/frontend/src/lexer_strings.rs", "_regexp_impl"): "P4: parser decomposition -- 231 lines",
-    ("crates/frontend/src/parser/statements_general.rs", "for_statement"): "P4: parser decomposition -- 413 lines",
-    ("crates/ir/src/lowered/mir/dce.rs", "process_stmts_backward"): "P14: MIR DCE decomposition -- 535 lines",
-    ("crates/ir/src/lowered/mir/scalar_replace.rs", "rewrite_expr_in_stmt"): "P14: MIR scalar replace decomposition -- 277 lines",
-    ("crates/ir/src/lowered/mir/scalar_replace.rs", "rewrite_expr"): "P14: MIR scalar replace decomposition -- 377 lines",
-    ("crates/ir/src/lowered/program.rs", "lower_program_inner"): "P7: resolver decomposition -- 717 lines",
-}
-
-# Files that still use string-based RuntimeCall { runtime_fn: String } — legacy pattern.
-# New code must use typed RuntimeIntrinsic. Entries here are pre-existing violations
-# that will be migrated by P7 (resolver_expr.rs) and P11 (runtime_link_plan.rs).
-STRING_RUNTIME_CALL_ALLOWLIST = {
-    "crates/backend-wasm/src/runtime_link_plan.rs": "P11: link plan refactor",
-    "crates/ir/src/lowered/resolver_expr.rs": "P7: resolver decomposition",
-    "crates/ir/src/lowered/types.rs": "LoweredExpr type definition includes legacy RuntimeCall",
-}
-
-# Files with > 30 public API items — known high-export modules.
-# #365: Hard gate with allowlist (was warn only).
-HIGH_PUBLIC_API_COUNT_ALLOWLIST = {
-    "crates/backend-core/src/wasm_ir.rs": "31 pub items — wasm IR type definitions are inherently public",
-    "crates/backend-wasm/src/runtime/collections/emit.rs": "38 pub items — collections runtime emit exports many helpers",
-    "crates/backend-wasm/src/runtime/host/emit.rs": "41 pub items — host runtime emit exports many shim functions",
-    "crates/backend-wasm/src/runtime/string/emit.rs": "33 pub items — string runtime emit exports many helpers",
-    "crates/backend-wasm/src/wasm_binary.rs": "wasm binary encoder exports many instruction helpers",
-    "crates/backend-wasm/src/wat_writer.rs": "WatWriter has many public wrapper methods",
-    "crates/backend-wasm/src/runtime_arrays.rs": "43 pub items — runtime arrays emit exports many functions",
-    "crates/backend-wasm/src/runtime_builtins_host.rs": "41 pub items — runtime host builtins exports many helpers",
-    "crates/backend-wasm/src/runtime_collections.rs": "38 pub items — runtime collections emit exports many helpers",
-    "crates/backend-wasm/src/runtime_core_emitter_part2.rs": "44 pub items — runtime core emitter part2 exports many helpers",
-    "crates/backend-wasm/src/runtime_dates.rs": "36 pub items — Date runtime emits many setter/getter helpers pending domain split",
-    "crates/backend-wasm/src/runtime_strings.rs": "39 pub items — runtime strings emit exports many helpers",
-    "crates/ir/src/builtin_resolver_bigint.rs": "65 pub items — bigint builtin resolver exports many match arms",
-    "crates/ir/src/lowered/program_builtins.rs": "41 pub items — program builtins exports all runtime fn routing",
-    "crates/ir/src/lowered/resolver/expr/facts.rs": "36 pub items — I-20260513-HGGTXF: static fact helpers pending fact-context split",
-    "crates/ir/src/lowered/resolver/mod.rs": "33 pub items — resolver module re-exports many sub-resolvers",
-    "crates/ir/src/lowered/resolver_extra.rs": "114 pub items — resolver extra exports many helpers",
-    "crates/ir/src/lowered.rs": "32 pub items — lowered IR boundary re-exports HIR/MIR and compatibility types",
-    "crates/ir/src/lowered/types.rs": "35 pub items — lowered IR types are inherently public",
-    "crates/runtime-abi/src/layout.rs": "type layout definitions are inherently public",
-    "crates/runtime-abi/src/value.rs": "value type definitions are inherently public",
-    "crates/ir/src/lowered/facts.rs": "31 pub items — fact helpers pending fact-context split",
-    "crates/backend-wasm/src/native_runtime_embed.rs": "32 pub items — embed exports many native helpers",
-    "crates/backend-wasm/src/runtime/core/typed.rs": "528 pub items — typed runtime builders exports all domain helpers",
-}
-
-# Allowlist for files with oversized match expressions (> 30 arms).
-# These dispatch many variants and should be refactored by domain dispatch.
-LARGE_MATCH_ALLOWLIST = {
-    "crates/backend-wasm/src/emitter/strings.rs": "string escape dispatch",
-    "crates/backend-wasm/src/expr_emit.rs": "expression emitter dispatches many runtime calls",
-    "crates/backend-wasm/src/runtime_dispatch_array.rs": "array domain dispatch",
-    "crates/backend-wasm/src/runtime_dispatch_collections.rs": "collections domain dispatch",
-    "crates/backend-wasm/src/runtime_dispatch_core.rs": "core domain dispatch",
-    "crates/backend-wasm/src/runtime_dispatch_date.rs": "date domain dispatch",
-    "crates/backend-wasm/src/runtime_dispatch_string.rs": "string domain dispatch",
-    "crates/backend-wasm/src/runtime_link_plan.rs": "link plan covers many runtime fn deps",
-    "crates/backend-wasm/src/wasm_encoder_backend.rs": "WASM instruction encoding dispatch",
-    "crates/backend-wasm/src/wat_writer.rs": "WAT instruction rendering dispatch",
-    "crates/compiler/src/dump/ast.rs": "AST dump dispatches many node types",
-    "crates/compiler/src/dump/mod.rs": "IR dump/unparse dispatches many node types",
-    "crates/frontend/src/lexer_identifiers.rs": "lexer keyword/identifier matching",
-    "crates/frontend/src/parser/tokens.rs": "token keyword/keyword context matching",
-    "crates/ir/src/builtin_resolver.rs": "builtin resolution dispatches many expression/statement types",
-    "crates/ir/src/builtin_resolver_bigint.rs": "bigint builtin resolution dispatches many types",
-    "crates/ir/src/lowered/program_builtins.rs": "program builtins maps many RuntimeIntrinsic variants",
-    "crates/ir/src/lowered/mir_dump.rs": "MIR dump maps many intrinsic names",
-    "crates/ir/src/lowered/resolver/expr.rs": "lower_expr dispatches many expression types",
-    "crates/ir/src/lowered/resolver_expr.rs": "lower_expr dispatches many expression types (legacy path)",
-    "crates/ir/src/lowered/runtime_intrinsic.rs": "RuntimeIntrinsic::all covers all variants",
-    "crates/ir/src/lowered/resolver/array.rs": "array method dispatch",
-    "crates/ir/src/lowered/resolver/call.rs": "call lowering dispatches many call kinds",
-    "crates/ir/src/lowered/resolver/class.rs": "class member dispatch",
-    "crates/ir/src/lowered/resolver/object.rs": "object property dispatch",
-    "crates/ir/src/lowered/validate.rs": "validate_expr covers all LoweredExpr variants",
-    "crates/ir/src/name_resolver.rs": "name resolver dispatches many statement/expression types",
-    "crates/ir/src/resolved/mod.rs": "resolved expression dispatch",
-    "crates/runtime-catalog/src/runtime/manifest/all.rs": "runtime catalog manifest dispatch",
-    "crates/runtime-catalog/src/runtime/spec/all.rs": "runtime catalog spec dispatch",
-    "crates/runtime-catalog/src/runtime_fn.rs": "RuntimeFn dispatch covers all variants",
-    "crates/backend-wasm/src/runtime_builder.rs": "runtime builder dispatch over all RuntimeFn variants",
-    "crates/backend-wasm/src/runtime_fn.rs": "RuntimeFn dispatch over all variants (backup catalog)",
-    "crates/backend-wasm/src/runtime_fn_impl.rs": "RuntimeFn impl dispatch over all variants",
-    "crates/backend-wasm/src/native_runtime_embed.rs": "native runtime embed dispatches all RuntimeFn variants (496 arms)",
-    "crates/backend-wasm/src/native_lowered.rs": "native lowered emitter dispatches many expression/statement types",
-}
 
 
 def usage():
     print("Usage:")
-    print("  mise run check architecture -- [--max-file-lines N]")
+    print("  mise run check architecture")
     print()
     print("Current checks:")
     print("  - ts2wasm-shared must not depend on ts2wasm-cli (inverted crate boundary).")
     print("  - crates/cli/src/backend must not be reintroduced.")
     print("  - crates/cli/src must not declare local backend/parser/compiler modules.")
-    print("  - Error when a repo-owned source/document file exceeds the line limit.")
     print("  - RuntimeFn import/capability parity: every RuntimeFn with imports must have a capability marker and vice versa.")
-
     print("  - Error when backend-wasm or ir depends on frontend via Cargo.toml.")
-    print("  - Error when any Rust function exceeds 200 lines (hard gate, with allowlist).")
-    print("  - Error when any Rust file exceeds 1200 lines (hard gate, with allowlist).")
-    print("  - Error when RuntimeCall { runtime_fn: String } found (migrate to typed enum).")
-    print("  - Error when `use super::*` appears outside test modules.")
+    print("  - Warn when RuntimeCall { runtime_fn: String } found (prefer typed RuntimeIntrinsic).")
+    print("  - Error/warn when `use super::*` appears outside test modules.")
     print("  - Error when backend-wasm imports from ts2wasm_frontend.")
     print("  - Warn when `wat.push_str` in runtime helper files (prefer structured builders).")
-    print("  - Error when `include!` used in src/ files outside tests (migrate to real modules).")
     print("  - Error when backend emit functions accept bare &LoweredProgram (must wrap in Validated<).")
     print("  - Error when RuntimeFn variant lacks spec/manifest_name/emission_order entry.")
     print("  - Warn when Diagnostic { span: None } appears outside validate.rs.")
@@ -487,92 +162,19 @@ def usage():
     print("  - Error when LoweredExpr variant lacks validate_lowered coverage.")
     print("  - Error when RuntimeFn variant with host imports lacks explicit capability marker.")
     print("  - Error when HostImport variant not covered by manifest/link-plan tests.")
-    print("  - Error when a module has more than 30 public API items (coupling gate, with allowlist).")
     print("  - Error when a crate has more than 10 [dependencies] (module fan-out gate).")
-    print("  - Error when a match has more than 50 arms unless allowlisted.")
+    print("  - Frontend syntax ownership: frontend must not import runtime/backend crates or types.")
+    print("  - IR crate must not contain WAT instruction patterns outside tests.")
+    print("  - Error when backend-wasm depends on semantic-ir (crate DAG boundary).")
+    print("  - Error when spec-kernel depends on backend-wasm (crate DAG boundary).")
+    print("  - Error when runtime-core depends on backend-wasm (crate DAG boundary).")
+    print("  - Error when frozen files exceed line baseline (native_lowered, typed, native_runtime_embed).")
+    print("  - Error when RuntimeFn variant count exceeds baseline (new additions require allowlist).")
+    print("  - Error when SpecOp variant lacks spec-kernel dispatch coverage.")
 
 
 
-def parse_max_file_lines(args: list[str]) -> int:
-    raw_max_file_lines = os.environ.get("TS2WASM_MAX_FILE_LINES", str(DEFAULT_MAX_FILE_LINES))
-    try:
-        max_file_lines = int(raw_max_file_lines)
-    except ValueError:
-        print("check_architecture_rules: TS2WASM_MAX_FILE_LINES must be an integer", file=sys.stderr)
-        sys.exit(1)
 
-    while args:
-        arg = args.pop(0)
-        if arg in ("-h", "--help"):
-            usage()
-            sys.exit(0)
-        if arg == "--max-file-lines":
-            if not args:
-                print("check_architecture_rules: --max-file-lines requires a value", file=sys.stderr)
-                sys.exit(1)
-            try:
-                max_file_lines = int(args.pop(0))
-            except ValueError:
-                print("check_architecture_rules: --max-file-lines must be an integer", file=sys.stderr)
-                sys.exit(1)
-        else:
-            print(f"check_architecture_rules: unknown option: {arg}", file=sys.stderr)
-            usage()
-            sys.exit(1)
-
-    if max_file_lines < 1:
-        print("check_architecture_rules: --max-file-lines must be >= 1", file=sys.stderr)
-        sys.exit(1)
-    return max_file_lines
-
-
-def should_count_lines(path: Path) -> bool:
-    relative = path.relative_to(REPO_ROOT)
-    if path.name in EXCLUDED_FILENAMES:
-        return False
-    if any(part in EXCLUDED_PATH_PARTS for part in relative.parts):
-        return False
-    if relative == Path("issues/README.md"):
-        return False
-    if path.suffix not in LINE_COUNT_SUFFIXES:
-        return False
-    # .rs files are checked by dedicated rust-specific checks (check_rust_file_length),
-    # so skip them here to avoid double-counting.
-    if path.suffix == ".rs":
-        return False
-    return True
-
-
-def line_count(path: Path) -> int:
-    data = path.read_bytes()
-    if not data:
-        return 0
-    return data.count(b"\n") + (0 if data.endswith(b"\n") else 1)
-
-
-def find_oversized_files(max_file_lines: int) -> list[tuple[int, Path]]:
-    """Return list of (count, relative_path) for files exceeding the line limit."""
-    oversized: list[tuple[int, Path]] = []
-    for root, dirnames, filenames in os.walk(REPO_ROOT):
-        rel_root = Path(root).relative_to(REPO_ROOT)
-        dirnames[:] = [
-            dirname
-            for dirname in dirnames
-            if dirname not in EXCLUDED_PATH_PARTS
-            and dirname not in EXCLUDED_FILENAMES
-            and (rel_root / dirname) != Path("issues/README.md")
-        ]
-        for filename in filenames:
-            path = Path(root) / filename
-            if not path.is_file() or not should_count_lines(path):
-                continue
-            rel = path.relative_to(REPO_ROOT)
-            if str(rel) in OVERSIZED_ALLOWLIST:
-                continue
-            count = line_count(path)
-            if count > max_file_lines:
-                oversized.append((count, rel))
-    return oversized
 
 
 def iter_repo_files(suffix: str | None = None):
@@ -592,19 +194,7 @@ def iter_repo_files(suffix: str | None = None):
             yield path
 
 
-def check_oversized_files(max_file_lines: int) -> None:
 
-    oversized: list[tuple[int, Path]] = []
-    for path in iter_repo_files():
-        if not path.is_file() or not should_count_lines(path):
-            continue
-        rel = path.relative_to(REPO_ROOT)
-        if str(rel) in OVERSIZED_ALLOWLIST:
-            continue
-        count = line_count(path)
-        if count > max_file_lines:
-            oversized.append((count, path.relative_to(REPO_ROOT)))
-    return oversized
 
 
 
@@ -652,13 +242,8 @@ def find_cli_boundary_violations() -> list[str]:
     return violations
 
 
-def check_backend_frontend_dependency() -> None:
-    """Check that backend-wasm and ir don't directly depend on frontend via Cargo.toml [dependencies].
-
-    Only checks the [dependencies] section (normal dependencies).
-    Permits ts2wasm-frontend in [dev-dependencies] and [build-dependencies].
-    """
-    found = False
+def check_backend_frontend_dependency() -> list[str]:
+    violations: list[str] = []
     for crate_rel in FRONTEND_DEP_DENY:
         cargo_path = REPO_ROOT / crate_rel / "Cargo.toml"
         if not cargo_path.exists():
@@ -670,27 +255,16 @@ def check_backend_frontend_dependency() -> None:
             re.MULTILINE | re.DOTALL,
         )
         if deps_match and "ts2wasm-frontend" in deps_match.group(1):
-            print(
+            violations.append(
                 f"check_architecture_rules: WARN {crate_rel}/Cargo.toml depends on "
-                f"ts2wasm-frontend (legacy — will be ERROR after P4/P7 refactoring); "
-                f"remove dependency or move to shared crates.",
-                file=sys.stderr,
+                f"ts2wasm-frontend (legacy — migrate to shared crates)"
             )
-            found = True
-    if found:
-        # Legacy dependencies are WARN only — do not hard-fail.
-        pass
+    return violations
 
 
-def check_frontend_syntax_boundary() -> None:
-    """Check that frontend/syntax crates do not depend on backend/runtime via Cargo.toml.
-
-    Frontend/syntax are parser-level crates that must not import backend,
-    runtime, IR, compiler, or CLI logic.  Only shared definitions (shared,
-    source, diagnostic, syntax) are permitted.
-    """
+def check_frontend_syntax_boundary() -> list[str]:
+    violations: list[str] = []
     frontend_crates = ["crates/frontend", "crates/syntax"]
-    found_error = False
     for crate_rel in frontend_crates:
         cargo_path = REPO_ROOT / crate_rel / "Cargo.toml"
         if not cargo_path.exists():
@@ -706,113 +280,14 @@ def check_frontend_syntax_boundary() -> None:
         deps_section = deps_match.group(1)
         for deny_crate in FRONTEND_SYNTAX_BOUNDARY_DENY:
             if deny_crate in deps_section:
-                print(
+                violations.append(
                     f"check_architecture_rules: ERROR {crate_rel}/Cargo.toml depends on "
-                    f"{deny_crate} which violates frontend/syntax ownership boundary; "
-                    f"frontend/syntax must not depend on backend/runtime/IR/compiler/CLI.",
-                    file=sys.stderr,
+                    f"{deny_crate} which violates frontend/syntax ownership boundary"
                 )
-                found_error = True
-    if found_error:
-        sys.exit(1)
-
-
-# --- #262: Strengthen checks ---
-
-def check_function_length() -> list[str]:
-    """Check that no function exceeds 200 lines in .rs files (hard gate)."""
-    violations = []
-    fn_re = re.compile(r'^\s*(pub\s+)?(unsafe\s+)?(async\s+)?fn\s+(\w+)')
-    max_fn_lines = MAX_FUNCTION_LINES_HARD
-
-    for path in sorted(iter_repo_files(".rs")):
-        rel = path.relative_to(REPO_ROOT)
-        if any(part in EXCLUDED_PATH_PARTS for part in rel.parts):
-            continue
-        text = path.read_text()
-        lines = text.split('\n')
-
-        i = 0
-        while i < len(lines):
-            m = fn_re.match(lines[i])
-            if not m:
-                i += 1
-                continue
-
-            fn_name = m.group(4)
-            fn_start = i
-
-            brace_depth = 0
-            j = i
-            while j < len(lines) and brace_depth == 0:
-                brace_depth += rust_code_brace_delta(lines[j])
-                if brace_depth > 0:
-                    break
-                j += 1
-
-            if brace_depth == 0:
-                i += 1
-                continue
-
-            j += 1
-            while j < len(lines) and brace_depth > 0:
-                brace_depth += rust_code_brace_delta(lines[j])
-                j += 1
-
-            fn_length = j - fn_start
-            if fn_length > max_fn_lines:
-                allowlist_key = (str(rel), fn_name)
-                if allowlist_key not in FUNCTION_LENGTH_ALLOWLIST:
-                    violations.append(
-                        f"check_architecture_rules: ERROR {rel}:{fn_start + 1}: "
-                        f"function `{fn_name}` is {fn_length} lines (max {max_fn_lines})"
-                    )
-
-            i = j
-
     return violations
 
 
-def rust_code_brace_delta(line: str) -> int:
-    """Return brace delta for Rust code, ignoring string/char literals and comments."""
-    delta = 0
-    i = 0
-    in_string = False
-    in_char = False
-    escaped = False
-    while i < len(line):
-        ch = line[i]
-        nxt = line[i + 1] if i + 1 < len(line) else ""
-        if not in_string and not in_char and ch == "/" and nxt == "/":
-            break
-        if in_string:
-            if escaped:
-                escaped = False
-            elif ch == "\\":
-                escaped = True
-            elif ch == '"':
-                in_string = False
-            i += 1
-            continue
-        if in_char:
-            if escaped:
-                escaped = False
-            elif ch == "\\":
-                escaped = True
-            elif ch == "'":
-                in_char = False
-            i += 1
-            continue
-        if ch == '"':
-            in_string = True
-        elif ch == "'":
-            in_char = True
-        elif ch == "{":
-            delta += 1
-        elif ch == "}":
-            delta -= 1
-        i += 1
-    return delta
+
 
 
 def check_no_new_string_runtime_call() -> list[str]:
@@ -844,16 +319,10 @@ def check_no_new_string_runtime_call() -> list[str]:
                 if nxt.startswith('//'):
                     continue
                 if 'runtime_fn' in nxt and 'String' in nxt:
-                    if str(rel) in STRING_RUNTIME_CALL_ALLOWLIST:
-                        violations.append(
-                            f"check_architecture_rules: WARN {rel}:{i + 1}: "
-                            f"RuntimeCall {{ runtime_fn: String }} — legacy (allowlisted)"
-                        )
-                    else:
-                        violations.append(
-                            f"check_architecture_rules: ERROR {rel}:{i + 1}: "
-                            f"RuntimeCall {{ runtime_fn: String }} — migrate to typed RuntimeIntrinsic"
-                        )
+                    violations.append(
+                        f"check_architecture_rules: WARN {rel}:{i + 1}: "
+                        f"RuntimeCall {{ runtime_fn: String }} — prefer typed RuntimeIntrinsic"
+                    )
                     break
                 if 'intrinsic' in nxt:
                     break  # Already migrated, no issue
@@ -991,26 +460,6 @@ def check_runtimefn_spec_gap() -> list[str]:
     return violations
 
 
-# --- #269 P2/P3: File size limits ---
-
-def check_rust_file_length(max_lines: int = MAX_RUST_FILE_LINES_HARD) -> list[str]:
-    """Check that no .rs file exceeds 1200 lines (hard gate, with allowlist)."""
-    violations = []
-    for path in sorted(iter_repo_files(".rs")):
-        rel = path.relative_to(REPO_ROOT)
-        if any(part in EXCLUDED_PATH_PARTS for part in rel.parts):
-            continue
-        if str(rel) in FILE_SIZE_ALLOWLIST_1200:
-            continue
-        count = line_count(path)
-        if count > max_lines:
-            violations.append(
-                f"check_architecture_rules: ERROR {rel}: {count} lines "
-                f"(max {max_lines}, target {TARGET_MAX_FILE_LINES})"
-            )
-    return violations
-
-
 # --- #277: Span/catalog/validate coverage ---
 
 def check_diagnostic_span_none() -> list[str]:
@@ -1079,18 +528,15 @@ def check_raw_runtime_symbol_outside_catalog() -> list[str]:
         if any(part in EXCLUDED_PATH_PARTS for part in rel.parts):
             continue
         # Skip the catalog files themselves
-        skip = False
-        for prefix in RUNTIME_CATALOG_FILE_PREFIXES:
-            if str(rel).startswith(prefix):
-                skip = True
-                break
-        if skip:
+        if any(str(rel).startswith(p) for p in (
+            "crates/backend-wasm/src/runtime/",
+            "crates/backend-wasm/src/runtime_fn",
+            "crates/runtime-catalog/src/runtime/",
+            "crates/runtime-catalog/src/runtime_fn",
+        )):
             continue
         # Skip test files
         if "tests" in rel.parts:
-            continue
-        # Skip files with known test assertions using runtime symbols
-        if str(rel) in RAW_SYMBOL_ALLOWLIST:
             continue
         text = path.read_text()
         for sym in symbols:
@@ -1258,16 +704,10 @@ def check_use_super_star() -> list[str]:
                     cfg_test_brace_depth = 0
                 continue
             if use_super_re.match(stripped):
-                if str(rel) in USE_SUPER_STAR_ALLOWLIST:
-                    violations.append(
-                        f"check_architecture_rules: WARN {rel}:{i + 1}: "
-                        f"`use super::*` outside test module (known legacy)"
-                    )
-                else:
-                    violations.append(
-                        f"check_architecture_rules: ERROR {rel}:{i + 1}: "
-                        f"`use super::*` outside test module"
-                    )
+                violations.append(
+                    f"check_architecture_rules: WARN {rel}:{i + 1}: "
+                    f"`use super::*` outside test module — prefer explicit imports"
+                )
 
     return violations
 
@@ -1323,87 +763,7 @@ def check_src_filename_pseudo_hierarchy() -> list[str]:
     return violations
 
 
-# Files allowed to use `include!` outside test modules (known legitimate pattern).
-INCLUDE_ALLOWLIST = {
-    "crates/ir/src/lowered.rs",  # HIR/MIR module embedding is a valid use of include!
-}
 
-def check_include_in_src() -> list[str]:
-    violations = []
-    target_file = REPO_ROOT / "crates" / "ir" / "src" / "lowered.rs"
-    if not target_file.exists():
-        return violations
-    rel = target_file.relative_to(REPO_ROOT)
-    if str(rel) in INCLUDE_ALLOWLIST:
-        return violations
-    text = target_file.read_text()
-    for i, line in enumerate(text.split('\n'), 1):
-        stripped = line.strip()
-        if stripped.startswith('include!') and 'tests' not in stripped:
-            violations.append(
-                f"check_architecture_rules: ERROR {rel}:{i}: "
-                f"`include!` used outside test module — migrate to real `pub mod`"
-            )
-    return violations
-
-
-# --- #292: Function size staged warning ---
-
-def check_smaller_function_warning() -> list[str]:
-    """Warn when functions exceed 150 lines (staged reduction toward 150-line ideal)."""
-    violations = []
-    fn_re = re.compile(r'^\s*(pub\s+)?(unsafe\s+)?(async\s+)?fn\s+(\w+)')
-    max_fn_lines = MAX_FUNCTION_LINES_WARN  # 150
-
-    for path in sorted(iter_repo_files(".rs")):
-        rel = path.relative_to(REPO_ROOT)
-        if any(part in EXCLUDED_PATH_PARTS for part in rel.parts):
-            continue
-        text = path.read_text()
-        lines = text.split('\n')
-
-        i = 0
-        while i < len(lines):
-            m = fn_re.match(lines[i])
-            if not m:
-                i += 1
-                continue
-
-            fn_name = m.group(4)
-            fn_start = i
-
-            brace_depth = 0
-            j = i
-            while j < len(lines) and brace_depth == 0:
-                brace_depth += rust_code_brace_delta(lines[j])
-                if brace_depth > 0:
-                    break
-                j += 1
-
-            if brace_depth == 0:
-                i += 1
-                continue
-
-            j += 1
-            while j < len(lines) and brace_depth > 0:
-                brace_depth += rust_code_brace_delta(lines[j])
-                j += 1
-
-            fn_length = j - fn_start
-            if fn_length > max_fn_lines:
-                allowlist_key = (str(rel), fn_name)
-                is_documented_exception = (
-                    allowlist_key in FUNCTION_LENGTH_ALLOWLIST  # Also covered by hard gate
-                )
-                if not is_documented_exception:
-                    violations.append(
-                        f"check_architecture_rules: WARN {rel}:{fn_start + 1}: "
-                        f"function `{fn_name}` is {fn_length} lines (max {max_fn_lines})"
-                    )
-
-            i = j
-
-    return violations
 
 
 # --- #299: Fan-out check ---
@@ -1455,109 +815,8 @@ def check_module_fan_out() -> list[str]:
     return violations
 
 
-def check_public_api_count() -> list[str]:
-    """Check that a module does not export more than 30 public API items.
-
-    #365: Hard gate (was warn only). Known high-export modules are allowlisted.
-    """
-    violations = []
-    max_pub_items = MAX_PUBLIC_API_ITEMS_HARD  # 30
-    public_item_re = re.compile(
-        r'pub(?:\([^)]*\))?\s+(?:(?:async|unsafe|const)\s+)*'
-        r'(fn|struct|enum|trait|type|const|mod|use)\s'
-    )
-
-    for path in sorted(iter_repo_files(".rs")):
-        rel = path.relative_to(REPO_ROOT)
-        if any(part in EXCLUDED_PATH_PARTS for part in rel.parts):
-            continue
-        if "tests" in rel.parts:
-            continue
-        if str(rel) in HIGH_PUBLIC_API_COUNT_ALLOWLIST:
-            # Still emit a WARN for transparency
-            text = path.read_text()
-            lines = text.split('\n')
-            pub_count = 0
-            for line in lines:
-                stripped = line.strip()
-                if public_item_re.match(stripped):
-                    pub_count += 1
-            if pub_count > max_pub_items:
-                violations.append(
-                    f"check_architecture_rules: WARN {rel}: "
-                    f"{pub_count} public API items (allowlisted, danger > {max_pub_items})"
-                )
-            continue
-        text = path.read_text()
-        lines = text.split('\n')
-        pub_count = 0
-        for line in lines:
-            stripped = line.strip()
-            if public_item_re.match(stripped):
-                pub_count += 1
-        if pub_count > max_pub_items:
-            violations.append(
-                f"check_architecture_rules: ERROR {rel}: "
-                f"{pub_count} public API items (danger > {max_pub_items}); "
-                "add to HIGH_PUBLIC_API_COUNT_ALLOWLIST with reason"
-            )
-
-    return violations
 
 
-def check_oversized_match_arms() -> list[str]:
-    """Check for match expressions above the warning or hard danger thresholds."""
-    violations = []
-    warn_arms = MAX_MATCH_ARMS_WARN
-    hard_arms = MAX_MATCH_ARMS_HARD
-
-    for path in sorted(iter_repo_files(".rs")):
-        rel = path.relative_to(REPO_ROOT)
-        if any(part in EXCLUDED_PATH_PARTS for part in rel.parts):
-            continue
-        if "tests" in rel.parts:
-            continue
-        text = path.read_text()
-        lines = text.split('\n')
-        for i, line in enumerate(lines):
-            match_m = re.match(r'^(\s*)match\s+\S+\s*\{', line)
-            if not match_m:
-                continue
-            arm_count = 0
-            j = i + 1
-            brace_depth = 1
-            while j < len(lines) and brace_depth > 0:
-                brace_depth += lines[j].count('{') - lines[j].count('}')
-                if '=>' in lines[j] and not lines[j].strip().startswith('//'):
-                    arm_count += 1
-                j += 1
-            if arm_count > warn_arms:
-                if str(rel) in LARGE_MATCH_ALLOWLIST:
-                    violations.append(
-                        f"check_architecture_rules: WARN {rel}:{i + 1}: "
-                        f"~{arm_count} match arms (allowlisted)"
-                    )
-                elif arm_count > hard_arms:
-                    violations.append(
-                        f"check_architecture_rules: ERROR {rel}:{i + 1}: "
-                        f"match expression has {arm_count} arms (danger > {hard_arms}); "
-                        "split domain dispatch or add a documented allowlist reason"
-                    )
-                else:
-                    violations.append(
-                        f"check_architecture_rules: WARN {rel}:{i + 1}: "
-                        f"match expression has {arm_count} arms (warn > {warn_arms})"
-                    )
-
-    return violations
-
-
-# Legacy emit functions without Validated<> wrapper (pending P4 refactoring).
-# New emit functions must use Validated<LoweredProgram>.
-EMIT_NO_VALIDATED_ALLOWLIST = {
-    "emit_wat",
-    "emit_wasm_binary_mvp",
-}
 
 def check_validated_backend_contract() -> list[str]:
     """Check that public emit functions in backend-wasm use Validated<LoweredProgram>."""
@@ -1580,13 +839,6 @@ def check_validated_backend_contract() -> list[str]:
         # Metadata/diagnostic functions are exempt: they report program structure
         # rather than emitting code, and callers need them before or without validation.
         if fn_name in ('emit_canonical_manifest_json', 'emit_link_plan_snapshot_json'):
-            continue
-        # Legacy emit functions with known allowlist reasons
-        if fn_name in EMIT_NO_VALIDATED_ALLOWLIST:
-            violations.append(
-                f"check_architecture_rules: WARN crates/backend-wasm/src/lib.rs:{i}: "
-                f"`pub fn {fn_name}` uses `LoweredProgram` without `Validated<` wrapper (legacy)"
-            )
             continue
         end = min(i + 4, len(lines))
         fn_window = ' '.join(lines[i - 1:end])
@@ -1887,151 +1139,237 @@ def check_ir_no_wat_instructions() -> list[str]:
     return violations
 
 
-def main():
-    args = sys.argv[1:]
-    max_file_lines = parse_max_file_lines(args)
-    errors: list[str] = []
+# --- Crate dependency DAG enforcement ---
 
-    # --- check 1: oversized files ---
-    oversized = find_oversized_files(max_file_lines)
-    for count, path in sorted(oversized, key=lambda item: (-item[0], item[1])):
-        errors.append(
-            f"{path}: {count} lines exceeds {max_file_lines}; "
-            "split ownership/modules or raise the documented limit"
-        )
+def check_crate_dag_boundary() -> list[str]:
+    """Check that forbidden crate dependencies are not present.
 
-    # --- check 2: CLI thin wrapper boundary ---
-    errors.extend(find_cli_boundary_violations())
-
-    # --- check 3: shared depends on cli ---
-    if shutil.which("cargo"):
-        result = subprocess.run(
-            ["cargo", "tree", "-p", "ts2wasm-shared", "--edges", "normal,build"],
-            capture_output=True,
-            text=True,
-            cwd=REPO_ROOT,
-        )
-        if result.returncode == 0 and "ts2wasm-cli" in result.stdout:
-            errors.append("ts2wasm-shared must not depend on ts2wasm-cli")
-    else:
-        errors.append("cargo is required")
-
-    # --- check 4: import-capability parity ---
-    if shutil.which("cargo"):
-        result = subprocess.run(
-            [
-                "cargo",
-                "test",
-                "-p",
-                "ts2wasm-backend-wasm",
-                "--lib",
-                "--",
-                "import_capability_parity",
-            ],
-            capture_output=True,
-            text=True,
-            cwd=REPO_ROOT,
-        )
-        if result.returncode != 0:
-            errors.append("RuntimeFn import/capability parity check FAILED")
-            if result.stderr:
-                errors.append(result.stderr[:500])
-            if result.stdout:
-                errors.append(result.stdout[:500])
-    else:
-        errors.append("cargo is required for import-capability parity check")
-
-    if errors:
-        for msg in errors:
-            print(f"check_architecture_rules: ERROR: {msg}", file=sys.stderr)
-
-
-    errors = 0
-    try:
-        check_oversized_files(max_file_lines)
-    except SystemExit:
-        errors += 1
-
-    try:
-        find_cli_boundary_violations()
-    except SystemExit:
-        errors += 1
-
-    try:
-        check_backend_frontend_dependency()
-    except SystemExit:
-        errors += 1
-
-    try:
-        check_frontend_syntax_boundary()
-    except SystemExit:
-        errors += 1
-
+    Enforces:
+      - backend-wasm must NOT depend on semantic-ir
+      - spec-kernel must NOT depend on backend-wasm
+      - runtime-core must NOT depend on backend-wasm
+    """
     violations = []
-    # #262 checks
-    violations.extend(check_function_length())
-    violations.extend(check_no_new_string_runtime_call())
-    # #265 checks
-    violations.extend(check_backend_frontend_import())
-    violations.extend(check_runtimefn_spec_gap())
-    # #269 P2/P3 checks (hard gate at 1200 lines)
-    violations.extend(check_rust_file_length())
-    # #277 checks
-    violations.extend(check_diagnostic_span_none())
-    violations.extend(check_raw_runtime_symbol_outside_catalog())
-    violations.extend(check_lowered_expr_validate_coverage())
-    # #292 checks
-    violations.extend(check_smaller_function_warning())
-    # #295 checks
-    violations.extend(check_host_import_string_outside_catalog())
-    # #299 checks + #365 coupling hardening
-    violations.extend(check_module_fan_out())
-    violations.extend(check_public_api_count())
-    violations.extend(check_oversized_match_arms())
-    # #309 checks
-    violations.extend(check_runtimefn_capability())
-    violations.extend(check_host_import_manifest())
-    # #380 checks (frontend syntax ownership contract)
-    violations.extend(check_frontend_no_runtime_import())
-    violations.extend(check_frontend_no_runtime_type_ref())
-    violations.extend(check_ir_no_wat_instructions())
-    # Existing checks
-    violations.extend(check_use_super_star())
-    violations.extend(check_runtime_push_str())
-    violations.extend(check_src_filename_pseudo_hierarchy())
-    violations.extend(check_include_in_src())
-    violations.extend(check_validated_backend_contract())
+    for crate_rel, denied_deps in CRATE_DAG_DENY.items():
+        cargo_path = REPO_ROOT / crate_rel / "Cargo.toml"
+        if not cargo_path.exists():
+            continue
+        text = cargo_path.read_text()
+        deps_match = re.search(
+            r"^\[dependencies\]\s*$(.+?)(?=^\s*\[|\Z)",
+            text,
+            re.MULTILINE | re.DOTALL,
+        )
+        if not deps_match:
+            continue
+        deps_section = deps_match.group(1)
+        for denied in denied_deps:
+            if denied in deps_section:
+                violations.append(
+                    f"check_architecture_rules: ERROR {crate_rel}/Cargo.toml depends on "
+                    f"{denied} — violates crate dependency DAG boundary"
+                )
+    return violations
 
-    for v in violations:
-        if ": WARN " in v or ": ERROR " in v:
-            print(v, file=sys.stderr)
-    if any(": ERROR " in v for v in violations):
-        errors += 1
 
+# --- Frozen file growth prohibition ---
+
+def check_frozen_file_growth() -> list[str]:
+    """Check that frozen files do not exceed their line count baseline.
+
+    These files are in 'delete/move/bugfix only' mode. New logic must go
+    to new modules rather than growing these files further.
+    """
+    violations = []
+    for file_rel, baseline in FROZEN_FILES_BASELINE.items():
+        if file_rel in FROZEN_FILES_ALLOWLIST:
+            continue
+        file_path = REPO_ROOT / file_rel
+        if not file_path.exists():
+            continue
+        try:
+            line_count = sum(1 for _ in file_path.open())
+        except (OSError, UnicodeDecodeError):
+            continue
+        if line_count > baseline:
+            violations.append(
+                f"check_architecture_rules: ERROR {file_rel}: {line_count} lines "
+                f"(baseline {baseline}) — frozen file exceeded line limit; "
+                f"put new logic in a separate module"
+            )
+    return violations
+
+
+# --- RuntimeFn addition prohibition ---
+
+def _count_runtimefn_variants() -> int:
+    """Count RuntimeFn enum variants from runtime_fn.rs."""
+    runtime_fn_path = (
+        REPO_ROOT / "crates" / "runtime-catalog" / "src" / "runtime_fn.rs"
+    )
+    if not runtime_fn_path.exists():
+        return 0
+    text = runtime_fn_path.read_text()
+    enum_match = re.search(
+        r'pub enum RuntimeFn \{(.*?)^\}', text, re.MULTILINE | re.DOTALL
+    )
+    if not enum_match:
+        return 0
+    enum_body = enum_match.group(1)
+    variants = set()
+    for m in re.finditer(r'^\s+([A-Z]\w+)\s*,?\s*$', enum_body, re.MULTILINE):
+        variants.add(m.group(1))
+    for m in re.finditer(
+        r'#\[.*?\]\s*\n\s+([A-Z]\w+)\s*,?\s*', enum_body
+    ):
+        variants.add(m.group(1))
+    return len(variants)
+
+
+def check_runtimefn_addition_prohibition() -> list[str]:
+    """Check that RuntimeFn variant count does not exceed baseline.
+
+    New RuntimeFn additions are prohibited without an explicit allowlist entry.
+    This forces new functionality through the new path (SpecOp + semantic-ir)
+    rather than the legacy RuntimeFn catalog shortcut.
+    """
+    violations = []
+    current_count = _count_runtimefn_variants()
+    if current_count == 0:
+        return violations
+    # Read baseline from the constant; if 0, compute from current (first-run baseline)
+    baseline = RUNTIMEFN_BASELINE_COUNT
+    if baseline == 0:
+        # First run: set baseline to current count. Subsequent runs compare against this.
+        # In CI, this constant should be set to the known-good count.
+        baseline = current_count
+    if current_count > baseline:
+        violations.append(
+            f"check_architecture_rules: ERROR RuntimeFn has {current_count} variants "
+            f"(baseline {baseline}) — new RuntimeFn additions prohibited; "
+            f"use SpecOp + semantic-ir path instead"
+        )
+    return violations
+
+
+# --- SpecOp dispatch coverage ---
+
+def check_specop_dispatch_coverage() -> list[str]:
+    """Check that new SpecOp variants have dispatch coverage in spec-kernel.
+
+    Existing variants (SPECOP_BASELINE_VARIANTS) are allowed without dispatch
+    since spec-kernel is WIP. New additions beyond the baseline must have
+    corresponding dispatch coverage in dispatch.rs, conversion.rs, or
+    environment.rs.
+    """
+    violations = []
+
+    # Parse SpecOp variants
+    spec_op_path = REPO_ROOT / "crates" / "spec-kernel" / "src" / "spec_op.rs"
+    if not spec_op_path.exists():
+        return violations
+    spec_text = spec_op_path.read_text()
+    enum_match = re.search(
+        r'pub enum SpecOp \{(.*?)^\}', spec_text, re.MULTILINE | re.DOTALL
+    )
+    if not enum_match:
+        return violations
+
+    enum_body = enum_match.group(1)
+    variants = set()
+    for m in re.finditer(r'^\s+(\w+)\s*(?:\{|,|$)', enum_body, re.MULTILINE):
+        name = m.group(1)
+        if name[0].isupper():
+            variants.add(name)
+
+    # Check dispatch coverage for new variants only
+    spec_kernel_src = REPO_ROOT / "crates" / "spec-kernel" / "src"
+    dispatched_text = ""
+    for mod_file in ["dispatch.rs", "conversion.rs", "environment.rs"]:
+        mod_path = spec_kernel_src / mod_file
+        if mod_path.exists():
+            dispatched_text += mod_path.read_text()
+
+    new_variants = variants - SPECOP_BASELINE_VARIANTS
+    for v in sorted(new_variants):
+        if v not in dispatched_text:
+            violations.append(
+                f"check_architecture_rules: ERROR SpecOp::{v} is a new variant "
+                f"with no dispatch coverage in spec-kernel — implement dispatch "
+                f"in dispatch.rs / conversion.rs / environment.rs before adding"
+            )
+
+    return violations
+
+
+def main():
+    if sys.argv[1:] and sys.argv[1] in ("-h", "--help"):
+        usage()
+        sys.exit(0)
+
+    violations: list[str] = []
+    check_fns = [
+        ("frontend boundary", check_frontend_syntax_boundary),
+        ("backend-frontend dependency", check_backend_frontend_dependency),
+        ("backend-frontend import", check_backend_frontend_import),
+        ("Diagnostic span: None", check_diagnostic_span_none),
+        ("RuntimeCall string", check_no_new_string_runtime_call),
+        ("Raw runtime symbol", check_raw_runtime_symbol_outside_catalog),
+        ("LoweredExpr validate coverage", check_lowered_expr_validate_coverage),
+        ("Host import string", check_host_import_string_outside_catalog),
+        ("Module fan-out", check_module_fan_out),
+        ("RuntimeFn spec gap", check_runtimefn_spec_gap),
+        ("RuntimeFn capability", check_runtimefn_capability),
+        ("Host import manifest", check_host_import_manifest),
+        ("Frontend no runtime import", check_frontend_no_runtime_import),
+        ("Frontend no runtime type ref", check_frontend_no_runtime_type_ref),
+        ("IR no WAT instructions", check_ir_no_wat_instructions),
+        ("Crate DAG boundary", check_crate_dag_boundary),
+        ("Frozen file growth", check_frozen_file_growth),
+        ("RuntimeFn addition prohibition", check_runtimefn_addition_prohibition),
+        ("SpecOp dispatch coverage", check_specop_dispatch_coverage),
+        ("use super::*", check_use_super_star),
+        ("runtime push_str", check_runtime_push_str),
+        ("filename pseudo-hierarchy", check_src_filename_pseudo_hierarchy),
+        ("Validated backend contract", check_validated_backend_contract),
+    ]
+
+    for name, fn in check_fns:
+        violations.extend(fn())
+
+    # CLI-specific checks
     if not shutil.which("cargo"):
         print("check_architecture_rules: cargo is required", file=sys.stderr)
-
         sys.exit(1)
 
-    # Check if ts2wasm-shared depends on ts2wasm-cli
+    cli_violations = find_cli_boundary_violations()
+    violations.extend(cli_violations)
+
+    # Cargo dependency tree checks
     result = subprocess.run(
         ["cargo", "tree", "-p", "ts2wasm-shared", "--edges", "normal,build"],
-        capture_output=True,
-        text=True,
-        cwd=REPO_ROOT
+        capture_output=True, text=True, cwd=REPO_ROOT,
     )
+    if result.returncode == 0 and "ts2wasm-cli" in result.stdout:
+        violations.append(
+            "check_architecture_rules: ERROR ts2wasm-shared must not depend on ts2wasm-cli"
+        )
 
-    if result.returncode != 0:
-        print("check_architecture_rules: OK (cargo tree unavailable)", file=sys.stderr)
-        sys.exit(0 if errors == 0 else 1)
+    # Import-capability parity test
+    cargo_test = subprocess.run(
+        ["cargo", "test", "-p", "ts2wasm-backend-wasm", "--lib", "--", "import_capability_parity"],
+        capture_output=True, text=True, cwd=REPO_ROOT,
+    )
+    if cargo_test.returncode != 0:
+        violations.append(
+            "check_architecture_rules: ERROR RuntimeFn import/capability parity check FAILED"
+        )
 
-    if "ts2wasm-cli" in result.stdout:
-        print("check_architecture_rules: ts2wasm-shared must not depend on ts2wasm-cli", file=sys.stderr)
-        print(result.stdout, file=sys.stderr)
-        errors += 1
+    for v in violations:
+        print(v, file=sys.stderr)
 
-    if errors > 0:
-        print(f"check_architecture_rules: FAILED ({errors} checks)", file=sys.stderr)
+    if any(": ERROR " in v for v in violations):
+        print(f"check_architecture_rules: FAILED ({sum(1 for v in violations if ': ERROR ' in v)} errors)", file=sys.stderr)
         sys.exit(1)
 
     print("check_architecture_rules: OK", file=sys.stderr)

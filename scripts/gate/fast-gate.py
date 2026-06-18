@@ -120,6 +120,7 @@ def main():
     run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/tracking-consistency.py")])
     run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/assert-true-detect.py")])
     run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/architecture-rules.py")])
+    run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/crate-dag.py")])
     run([PYTHON_BIN, str(REPO_ROOT / "scripts/report/native-runtime-builder-coverage.py"), "--check"])
     if run_optional_perf_gate:
         run_perf_gate()

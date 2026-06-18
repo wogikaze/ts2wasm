@@ -45,3 +45,10 @@ if printf '%s\n' "$staged_files" | grep -Eq '(^|/)(Cargo\.toml|Cargo\.lock|.*\.r
 else
   echo "pre-commit: skip architecture check; no staged Rust changes"
 fi
+
+if printf '%s\n' "$staged_files" | grep -q 'Cargo\.toml$'; then
+  echo "pre-commit: crate dependency DAG check"
+  python3 scripts/check/crate-dag.py
+else
+  echo "pre-commit: skip crate-dag check; no Cargo.toml staged"
+fi

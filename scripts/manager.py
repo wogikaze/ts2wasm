@@ -35,8 +35,12 @@ COMMANDS = {
     "check-runtimefn-invariants": ("python", "scripts/check/runtimefn-invariants.py"),
     "check-wasm-validation": ("python", "scripts/check/wasm-validation.py"),
     "check-tracking-consistency": ("python", "scripts/check/tracking-consistency.py"),
+    "check-diagnostic-codes": ("python", "scripts/check/diagnostic-codes.py"),
+    "check-complexity": ("python", "scripts/check/complexity.py"),
+    "check-runtimefn-deprecation": ("python", "scripts/check/check-runtimefn-deprecation.py"),
     "check-host-import-baseline": ("python", "scripts/check/host-import-baseline.py"),
     "check-host-import-boundary": ("python", "scripts/check/host-import-boundary.py"),
+    "check-crate-dag": ("python", "scripts/check/crate-dag.py"),
     "issue-create": ("python", "scripts/issue-create.py"),
     "issue-index": ("python", "scripts/issue-index.py"),
     "update-issue-index": ("python", "scripts/issue-index.py"),
@@ -88,6 +92,8 @@ CHECK_ALL_PARTS = [
     "runtimefn", "wasm", "assert-true",
     "tracking", "issues", "native-runtime-builder",
     "host-baseline", "host-boundary",
+    "diagnostic-codes", "complexity", "runtimefn-deprecation",
+    "crate-dag",
 ]
 
 CHECK_PARTS = {
@@ -137,6 +143,11 @@ CHECK_PARTS = {
     "reference-subsets": "next-reference-gate",
     "evidence-check": "next-reference-gate",
     "replay-set": "next-reference-gate",
+    "diagnostic-codes": "check-diagnostic-codes",
+    "complexity": "check-complexity",
+    "runtimefn-deprecation": "check-runtimefn-deprecation",
+    "crate-dag": "check-crate-dag",
+    "crate-dag-check": "check-crate-dag",
 }
 
 def usage():
@@ -177,6 +188,12 @@ def usage():
         ("reference-triage", "Rich single-case reference diagnostic report"),
         ("abc451-runtime-costs", "Default-off ABC451 depth-8 runtime cost diagnostic"),
         ("repo-metrics", "Repository line, byte, and content-kind metrics"),
+        ("verify", "Full verify: fmt + toolchain + complexity + docs + architecture"),
+        ("verify --quick", "Quick verify: fmt + syntax + complexity (quick) + toolchain"),
+        ("verify --size", "Size verify: full complexity analysis"),
+        ("verify --docs", "Docs verify: diagnostic code alignment"),
+        ("check-diagnostic-codes", "Diagnostic code ↔ docs alignment check"),
+        ("check-complexity", "Rust code complexity metrics (cyclomatic, nesting, args)"),
         ("check-ast-grep", "Run ast-grep rule tests and repository scan"),
         ("check-host-deny", "Host import deny matrix and policy checker"),
         ("check-host-import-baseline", "Host import baseline checker"),
@@ -294,6 +311,37 @@ def main():
 
     if target == "gate-all":
         run_command("python", "scripts/check/harness-installation.py", args)
+
+    if target == "verify":
+        verify_mode = args[0] if args else "full"
+        verify_args = args[1:] if args and args[0] == verify_mode else []
+        quick_cmds = [
+            [PYTHON_BIN, str(REPO_ROOT / "scripts/check/shell-syntax.py")],
+            [PYTHON_BIN, str(REPO_ROOT / "scripts/check/complexity.py"), "--quick"],
+            [PYTHON_BIN, str(REPO_ROOT / "scripts/check/toolchain.py")],
+        ]
+        full_cmds = [
+            ["cargo", "fmt", "--all", "--check"],
+            [PYTHON_BIN, str(REPO_ROOT / "scripts/check/shell-syntax.py")],
+            [PYTHON_BIN, str(REPO_ROOT / "scripts/check/complexity.py"), "--full"],
+            [PYTHON_BIN, str(REPO_ROOT / "scripts/check/toolchain.py")],
+            [PYTHON_BIN, str(REPO_ROOT / "scripts/check/diagnostic-codes.py")],
+            [PYTHON_BIN, str(REPO_ROOT / "scripts/check/tracking-consistency.py")],
+            [PYTHON_BIN, str(REPO_ROOT / "scripts/check/architecture-rules.py")],
+        ]
+
+        if verify_mode == "--quick":
+            run_sequence(quick_cmds)
+        elif verify_mode == "--size":
+            run_sequence([
+                [PYTHON_BIN, str(REPO_ROOT / "scripts/check/complexity.py"), "--full"],
+            ])
+        elif verify_mode == "--docs":
+            run_sequence([
+                [PYTHON_BIN, str(REPO_ROOT / "scripts/check/diagnostic-codes.py")],
+            ])
+        else:
+            run_sequence(full_cmds)
 
     if target == "check":
         if not args:

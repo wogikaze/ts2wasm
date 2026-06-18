@@ -42551,8 +42551,69 @@ mod tests {
     use super::*;
     use crate::wasm_encoder_backend::emit_wasm_module_binary;
     use crate::wasm_ir::{WasmGlobal, WasmMemory, WasmModule};
-    use crate::wat_writer::WatWriter;
     use std::process::Command;
+
+    /// Minimal WAT text builder (replaces deleted WatWriter).
+    struct WatWriter {
+        buf: String,
+    }
+    impl WatWriter {
+        fn new() -> Self {
+            Self { buf: String::new() }
+        }
+        fn open_module(&mut self) {
+            self.buf.push_str("(module\n");
+        }
+        fn close_module(&mut self) {
+            self.buf.push_str(")\n");
+        }
+        fn line(&mut self, indent: usize, text: &str) {
+            self.buf.push_str(&" ".repeat(indent));
+            self.buf.push_str(text);
+            self.buf.push('\n');
+        }
+        fn push_str(&mut self, s: &str) {
+            self.buf.push_str(s);
+        }
+        fn func_end(&mut self) {
+            self.buf.push_str("  )\n");
+        }
+        fn emit_function(&mut self, f: &WasmFunction) {
+            use crate::wasm_ir::WasmInstr;
+            let mut line = "  (func".to_string();
+            if !f.symbol.is_empty() {
+                line.push_str(&format!(" ${}", f.symbol));
+            }
+            for param in &f.params {
+                line.push_str(&format!(" (param {})", param.as_str()));
+            }
+            for result in &f.results {
+                line.push_str(&format!(" (result {})", result.as_str()));
+            }
+            line.push('\n');
+            self.buf.push_str(&line);
+            for instr in &f.body {
+                match instr {
+                    WasmInstr::Call(symbol) => {
+                        self.buf.push_str(&format!("    (call {})\n", symbol));
+                    }
+                    WasmInstr::I32Const(v) => {
+                        self.buf.push_str(&format!("    i32.const {}\n", v));
+                    }
+                    WasmInstr::LocalGet(idx) => {
+                        self.buf.push_str(&format!("    local.get {}\n", idx));
+                    }
+                    _ => {
+                        self.buf.push_str(&format!("    ;; {:?}\n", instr));
+                    }
+                }
+            }
+            self.buf.push_str("  )\n");
+        }
+        fn into_string(self) -> String {
+            self.buf
+        }
+    }
 
     /// Validate that the given WAT text is syntactically valid using wat2wasm.
     fn validate_wat(wat: &str) {
