@@ -33,6 +33,36 @@ def load_rules() -> dict:
         return tomllib.load(f)
 
 
+def load_exceptions() -> dict:
+    path = REPO_ROOT / "architecture-exceptions.toml"
+    if not path.exists():
+        return {"legacy_deps": {}}
+    with open(path, "rb") as f:
+        return tomllib.load(f)
+
+
+def canonical_crate_name(name: str) -> str:
+    name = name.replace("_", "-")
+    if name.startswith("ts2wasm-"):
+        name = name.removeprefix("ts2wasm-")
+    return name
+
+
+def is_excepted_dependency(from_crate: str, to_crate: str, exceptions: dict) -> bool:
+    from_crate = canonical_crate_name(from_crate)
+    to_crate = canonical_crate_name(to_crate)
+    for edge_key in exceptions.get("legacy_deps", {}):
+        parts = edge_key.split(" -> ")
+        if len(parts) != 2:
+            continue
+        if (
+            canonical_crate_name(parts[0].strip()) == from_crate
+            and canonical_crate_name(parts[1].strip()) == to_crate
+        ):
+            return True
+    return False
+
+
 def load_cargo_metadata() -> dict:
     result = subprocess.run(
         ["cargo", "metadata", "--format-version=1"],
@@ -67,6 +97,7 @@ def build_dep_map(metadata: dict) -> dict[str, set[str]]:
 def check_dag(rules: dict, deps: dict) -> list[str]:
     violations = []
     crate_rules = rules.get("crates", {})
+    exceptions = load_exceptions()
 
     def to_pkg_name(name: str) -> str:
         """Convert crate shorthand to package name."""
@@ -91,9 +122,16 @@ def check_dag(rules: dict, deps: dict) -> list[str]:
             # Skip workspace members not in the rules (e.g., build deps)
             if not any(dep.startswith(p) for p in ["ts2wasm-", "ts2wasm_"]):
                 continue
+            dep_crate = pkg_to_crate.get(dep, dep)
+            if is_excepted_dependency(crate_name, dep_crate, exceptions):
+                violations.append(
+                    f"check_arch_dag: WARN {crate_name} depends on {dep_crate} "
+                    f"only via architecture-exceptions.toml"
+                )
+                continue
             violations.append(
                 f"check_arch_dag: ERROR {crate_name} depends on {dep}, "
-                f"which is not in allowed_deps"
+                f"which is not in target DAG allowed_deps and has no architecture exception"
             )
 
     return violations

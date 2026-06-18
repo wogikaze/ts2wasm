@@ -46,6 +46,7 @@ COMMANDS = {
     "check-architecture-exceptions": ("python", "scripts/check/architecture-exceptions.py"),
     "check-docs-routing": ("python", "scripts/check/docs-routing.py"),
     "check-rustfmt-legacy-aware": ("python", "scripts/check/rustfmt-legacy-aware.py"),
+    "check-compiler-source-truth": ("python", "scripts/check/compiler-source-truth.py"),
     "check-host-import-baseline": ("python", "scripts/check/host-import-baseline.py"),
     "check-host-import-boundary": ("python", "scripts/check/host-import-boundary.py"),
     "check-crate-dag": ("python", "scripts/check/check-arch-dag.py"),
@@ -100,7 +101,7 @@ CHECK_ALL_PARTS = [
     "runtimefn", "wasm", "assert-true",
     "tracking", "issues", "native-runtime-builder",
     "host-baseline", "host-boundary",
-    "diagnostic-codes", "complexity", "runtimefn-deprecation", "arch-dag", "legacy-freeze", "specop-dispatch", "trace-contract", "architecture-exceptions", "docs-routing", "rustfmt-legacy-aware",
+    "diagnostic-codes", "complexity", "runtimefn-deprecation", "arch-dag", "legacy-freeze", "specop-dispatch", "trace-contract", "architecture-exceptions", "docs-routing", "rustfmt-legacy-aware", "compiler-source-truth",
     "crate-dag",
 ]
 
@@ -159,6 +160,7 @@ CHECK_PARTS = {
     "architecture-exceptions": "check-architecture-exceptions",
     "docs-routing": "check-docs-routing",
     "rustfmt-legacy-aware": "check-rustfmt-legacy-aware",
+    "compiler-source-truth": "check-compiler-source-truth",
     "specop-dispatch": "check-specop-dispatch",
     "runtimefn-deprecation": "check-runtimefn-deprecation",
     "crate-dag": "check-crate-dag",

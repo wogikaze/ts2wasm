@@ -28,13 +28,13 @@ runtime-abi = { allowed_deps = [], description = "Tagged value layout, ABI const
 runtime-core = { allowed_deps = ["runtime-abi"], description = "JS engine substrate" }
 runtime-catalog = { allowed_deps = ["runtime-abi", "shared", "spec-kernel"], description = "RuntimeFn registry, migration" }
 
-semantic-ir = { allowed_deps = ["runtime-core", "source", "ir", "syntax"], description = "ECMAScript semantic IR" }
+semantic-ir = { allowed_deps = ["runtime-core", "source"], description = "ECMAScript semantic IR" }
 spec-kernel = { allowed_deps = ["runtime-core"], description = "SpecOp, internal method dispatch" }
 backend-correctness = { allowed_deps = ["runtime-core", "semantic-ir", "spec-kernel", "source"], description = "SemIR → SpecOp → wasm" }
 opt-mir = { allowed_deps = ["runtime-core", "spec-kernel"], description = "Guard/deopt IR" }
 
 ir = { allowed_deps = ["source", "syntax", "diagnostic", "frontend", "resolve", "shared", "runtime-abi", "runtime-catalog", "semantics"], description = "LEGACY: LoweredProgram, old MIR" }
-backend-wasm = { allowed_deps = ["source", "diagnostic", "shared", "syntax", "resolve", "semantics", "ir", "runtime-abi", "runtime-catalog", "backend-core", "spec-kernel"], description = "LEGACY + new spec_emit" }
+backend-wasm = { allowed_deps = ["source", "diagnostic", "shared", "runtime-abi", "backend-core", "spec-kernel"], description = "LEGACY + new spec_emit" }
 backend-core = { allowed_deps = [], description = "Wasm IR types" }
 
 compiler = { allowed_deps = ["frontend", "source", "diagnostic", "syntax", "shared", "ir", "backend-wasm", "backend-core", "semantic-ir", "backend-correctness", "runtime-abi"], description = "Pipeline orchestration" }

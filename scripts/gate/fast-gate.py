@@ -127,6 +127,7 @@ def main():
     run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/trace-contract.py")])
     run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/architecture-exceptions.py")])
     run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/docs-routing.py")])
+    run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/compiler-source-truth.py")])
     run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/check-runtimefn-deprecation.py")])
     run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/coverage-classification.py"), "--self-test"])
     run([PYTHON_BIN, str(REPO_ROOT / "scripts/report/native-runtime-builder-coverage.py"), "--check"])

@@ -59,13 +59,23 @@ def load_exceptions() -> dict:
         return tomllib.load(f)
 
 
+def canonical_crate_name(name: str) -> str:
+    name = name.replace("_", "-")
+    if name.startswith("ts2wasm-"):
+        name = name.removeprefix("ts2wasm-")
+    return name
+
+
 def is_excepted(from_crate: str, to_dep: str) -> bool:
     exc = load_exceptions()
+    from_crate = canonical_crate_name(from_crate)
+    to_dep = canonical_crate_name(to_dep)
     for edge_key, info in exc.get("legacy_deps", {}).items():
         parts = edge_key.split(" -> ")
         if len(parts) != 2:
             continue
-        f, t = parts[0].strip(), parts[1].strip()
+        f = canonical_crate_name(parts[0].strip())
+        t = canonical_crate_name(parts[1].strip())
         if f == from_crate and t == to_dep:
             return True
     return False
@@ -230,6 +240,14 @@ ts2wasm-source = "0.1"
     v = check_forbidden_edges(fake_graph)
     if not any("ts2wasm-backend-wasm depends on ts2wasm-semantic-ir" in x for x in v):
         print("FAIL: forbidden edge not detected", file=sys.stderr)
+        errors += 1
+
+    # Test: architecture exceptions match both package names and shorthand names.
+    if not is_excepted("ts2wasm-backend-wasm", "ts2wasm-ir"):
+        print("FAIL: package-name legacy exception not matched", file=sys.stderr)
+        errors += 1
+    if not is_excepted("backend-wasm", "ir"):
+        print("FAIL: shorthand legacy exception not matched", file=sys.stderr)
         errors += 1
 
     # Test: cycle detection

@@ -75,7 +75,7 @@ impl Default for BuildPipelineOptions {
         Self {
             host_deny: false,
             hir_mir_mode: HirMirBuildMode::Disabled,
-            spec_kernel_mode: SpecKernelMode::Disabled,
+            spec_kernel_mode: SpecKernelMode::Strict,
             target: ExecutionTarget::Wasm32WasiP1,
         }
     }
@@ -102,9 +102,7 @@ pub fn build_file_with_host_deny(
         capability_manifest_output,
         BuildPipelineOptions {
             host_deny,
-            hir_mir_mode: HirMirBuildMode::Disabled,
-            spec_kernel_mode: SpecKernelMode::Disabled,
-            target: ExecutionTarget::Wasm32WasiP1,
+            ..BuildPipelineOptions::default()
         },
     )
 }
@@ -166,6 +164,42 @@ fn build_file_impl(
         .map_err(|d| d.with_phase("semantic-validator"))?;
 
     let abi_meta = abi_metadata_for_target(options.target);
+    if options.spec_kernel_mode != SpecKernelMode::Disabled
+        && options.hir_mir_mode != HirMirBuildMode::Disabled
+    {
+        return Err(Diagnostic {
+            code: ts2wasm_frontend::DiagCode::UnsupportedRuntimeSubset,
+            message: "SpecKernel and HIR/MIR pipeline modes are mutually exclusive".to_owned(),
+            span: None,
+            phase: Some("pipeline-options"),
+        });
+    }
+
+    if options.spec_kernel_mode != SpecKernelMode::Disabled {
+        let spec_result = emit_spec_kernel_binary_for_resolved(&resolved);
+        let (wasm_bytes, pipeline_diagnostics) = match spec_result {
+            Ok(wasm_bytes) => (wasm_bytes, Vec::new()),
+            Err(error) if options.spec_kernel_mode.allows_compat_fallback() => {
+                let legacy = emit_legacy_wat_for_resolved(
+                    &resolved,
+                    &static_module_binding,
+                    &module_graph,
+                    capability_manifest_output,
+                    options.host_deny,
+                    &type_aliases,
+                    &interface_definitions,
+                    None,
+                    false,
+                )?;
+                let mut diagnostics = legacy.diagnostics;
+                diagnostics.push(spec_kernel_fallback_diagnostic(&error));
+                (legacy.wasm_bytes, diagnostics)
+            }
+            Err(error) => return Err(error),
+        };
+        return write_build_bytes(output, options.target, &wasm_bytes, pipeline_diagnostics);
+    }
+
     let (_debug_wat, wasm_bytes, pipeline_diagnostics, abi_embedded) = match options.hir_mir_mode {
         HirMirBuildMode::Disabled => {
             let legacy = emit_legacy_wat_for_resolved(
