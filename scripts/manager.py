@@ -37,10 +37,14 @@ COMMANDS = {
     "check-tracking-consistency": ("python", "scripts/check/tracking-consistency.py"),
     "check-diagnostic-codes": ("python", "scripts/check/diagnostic-codes.py"),
     "check-complexity": ("python", "scripts/check/complexity.py"),
+    "check-arch-dag": ("python", "scripts/check/check-arch-dag.py"),
     "check-runtimefn-deprecation": ("python", "scripts/check/check-runtimefn-deprecation.py"),
+    "check-legacy-freeze": ("python", "scripts/check/legacy-freeze.py"),
+    "check-specop-dispatch": ("python", "scripts/check/specop-dispatch.py"),
+    "check-coverage-classification": ("python", "scripts/check/coverage-classification.py"),
     "check-host-import-baseline": ("python", "scripts/check/host-import-baseline.py"),
     "check-host-import-boundary": ("python", "scripts/check/host-import-boundary.py"),
-    "check-crate-dag": ("python", "scripts/check/crate-dag.py"),
+    "check-crate-dag": ("python", "scripts/check/check-arch-dag.py"),
     "issue-create": ("python", "scripts/issue-create.py"),
     "issue-index": ("python", "scripts/issue-index.py"),
     "update-issue-index": ("python", "scripts/issue-index.py"),
@@ -92,7 +96,7 @@ CHECK_ALL_PARTS = [
     "runtimefn", "wasm", "assert-true",
     "tracking", "issues", "native-runtime-builder",
     "host-baseline", "host-boundary",
-    "diagnostic-codes", "complexity", "runtimefn-deprecation",
+    "diagnostic-codes", "complexity", "runtimefn-deprecation", "arch-dag", "legacy-freeze", "specop-dispatch",
     "crate-dag",
 ]
 
@@ -145,6 +149,9 @@ CHECK_PARTS = {
     "replay-set": "next-reference-gate",
     "diagnostic-codes": "check-diagnostic-codes",
     "complexity": "check-complexity",
+    "arch-dag": "check-arch-dag",
+    "legacy-freeze": "check-legacy-freeze",
+    "specop-dispatch": "check-specop-dispatch",
     "runtimefn-deprecation": "check-runtimefn-deprecation",
     "crate-dag": "check-crate-dag",
     "crate-dag-check": "check-crate-dag",
@@ -259,10 +266,12 @@ def run_sequence(commands):
     sys.exit(0)
 
 def run_repo_smoke():
-    """Run the lightweight repository smoke check."""
+    """Run the lightweight repository smoke check (CI entry point)."""
     run_sequence([
         ["cargo", "fmt", "--all", "--check"],
         [PYTHON_BIN, str(REPO_ROOT / "scripts/check/shell-syntax.py")],
+        [PYTHON_BIN, str(REPO_ROOT / "scripts/check/check-arch-dag.py")],
+        [PYTHON_BIN, str(REPO_ROOT / "scripts/check/architecture-rules.py")],
     ])
 
 def configure_reference_coverage_defaults(target, args):
@@ -318,6 +327,7 @@ def main():
         quick_cmds = [
             [PYTHON_BIN, str(REPO_ROOT / "scripts/check/shell-syntax.py")],
             [PYTHON_BIN, str(REPO_ROOT / "scripts/check/complexity.py"), "--quick"],
+            [PYTHON_BIN, str(REPO_ROOT / "scripts/check/check-arch-dag.py")],
             [PYTHON_BIN, str(REPO_ROOT / "scripts/check/toolchain.py")],
         ]
         full_cmds = [
@@ -326,6 +336,7 @@ def main():
             [PYTHON_BIN, str(REPO_ROOT / "scripts/check/complexity.py"), "--full"],
             [PYTHON_BIN, str(REPO_ROOT / "scripts/check/toolchain.py")],
             [PYTHON_BIN, str(REPO_ROOT / "scripts/check/diagnostic-codes.py")],
+            [PYTHON_BIN, str(REPO_ROOT / "scripts/check/check-arch-dag.py")],
             [PYTHON_BIN, str(REPO_ROOT / "scripts/check/tracking-consistency.py")],
             [PYTHON_BIN, str(REPO_ROOT / "scripts/check/architecture-rules.py")],
         ]

@@ -1,0 +1,33 @@
+# Architecture Exceptions
+# Every exception MUST have: reason, owner, expires, migration_issue.
+# Exceptions without expiry are prohibited.
+
+[legacy_deps]
+# These are pre-existing dependency edges that violate the target DAG.
+# New code must NOT follow these patterns.
+
+"backend-wasm -> ir" = { reason = "LoweredProgram type used in spec_emit bridge", owner = "wgkz", expires = "2026-09-18", migration_issue = "P3: migrate to semantic-ir types" }
+"ts2wasm-backend-wasm -> ts2wasm-syntax" = { reason = "Legacy emitter uses syntax types", owner = "wgkz", expires = "2026-09-18", migration_issue = "P3: remove legacy emitter" }
+"backend-wasm -> semantics" = { reason = "RuntimeFn dispatch still references legacy types", owner = "wgkz", expires = "2026-09-18", migration_issue = "P5: RuntimeFn cleanup" }
+"backend-wasm -> resolve" = { reason = "RuntimeFn dispatch still references legacy types", owner = "wgkz", expires = "2026-09-18", migration_issue = "P5: RuntimeFn cleanup" }
+"backend-wasm -> runtime-catalog" = { reason = "RuntimeFn/SpecOp mapping in migration module", owner = "wgkz", expires = "2026-12-18", migration_issue = "P5: RuntimeFn → SpecOp migration" }
+"compiler -> ir" = { reason = "LoweredProgram pipeline still primary", owner = "wgkz", expires = "2026-12-18", migration_issue = "P3: switch to semantic-ir pipeline" }
+"compiler -> runtime-abi" = { reason = "ABI metadata emission", owner = "wgkz", expires = "2026-12-18", migration_issue = "P3: move ABI to runtime-core" }
+"cli -> ir" = { reason = "CLI dump mode uses legacy IR", owner = "wgkz", expires = "2026-09-18", migration_issue = "P3: switch to semantic-ir dump" }
+"cli -> backend-wasm" = { reason = "CLI build uses legacy backend", owner = "wgkz", expires = "2026-12-18", migration_issue = "P3: switch to spec backend" }
+"cli -> runtime-abi" = { reason = "CLI options reference ABI constants", owner = "wgkz", expires = "2026-09-18", migration_issue = "P3: migrate to runtime-core" }
+"semantic-ir -> ir" = { reason = "ResolvedStmt type for lowering input", owner = "wgkz", expires = "2026-09-18", migration_issue = "P1: own ResolvedStmt equivalent" }
+"semantic-ir -> source" = { reason = "Span type", owner = "wgkz", expires = "2026-09-18", migration_issue = "P1: own Span or use source" }
+"semantic-ir -> syntax" = { reason = "BinaryOp/UnaryOp types in lowering", owner = "wgkz", expires = "2026-09-18", migration_issue = "P1: own operator types" }
+"runtime-catalog -> spec-kernel" = { reason = "RuntimeFn→SpecOp migration mapping", owner = "wgkz", expires = "2026-12-18", migration_issue = "P5: migration module" }
+"runtime-catalog -> shared" = { reason = "Legacy capability types", owner = "wgkz", expires = "2026-09-18", migration_issue = "P5: remove dependency" }
+
+[legacy_files]
+"crates/backend-wasm/src/native_lowered.rs" = { allowed_change = "delete|bugfix", reason = "Replace with spec_emit; WAT deletion cleanup", owner = "wgkz", expires = "2026-12-18", migration_issue = "P3: spec backend" }
+"crates/backend-wasm/src/runtime/core/typed.rs" = { allowed_change = "delete|move", reason = "Move to runtime-core", owner = "wgkz", expires = "2026-12-18", migration_issue = "P2: SpecOp builders" }
+"crates/backend-wasm/src/native_runtime_embed.rs" = { allowed_change = "delete|move|bugfix", reason = "Move to runtime-core; closure consts cleanup", owner = "wgkz", expires = "2026-12-18", migration_issue = "P2: SpecOp builders" }
+"crates/runtime-catalog/src/runtime_fn.rs" = { allowed_change = "bugfix", reason = "Pre-existing catalog maintenance only", owner = "wgkz", expires = "2026-12-18", migration_issue = "P5: RuntimeFn cleanup" }
+
+[legacy_runtimefn]
+# Exceptions for RuntimeFn modifications (bugfix only)
+# new_variant = { old_variant = "...", reason = "...", owner = "wgkz", expires = "...", migration_issue = "..." }

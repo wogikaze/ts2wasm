@@ -3,6 +3,7 @@ mod capability;
 mod domain;
 mod host_import;
 pub mod link_plan;
+pub mod migration;
 mod runtime_fn;
 pub mod signature;
 

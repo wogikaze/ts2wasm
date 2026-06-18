@@ -3,12 +3,19 @@ use std::collections::BTreeMap;
 use ts2wasm_ir::lowered::{LoweredExpr, LoweredFunction, LoweredProgram, LoweredStmt};
 use ts2wasm_runtime_abi::{RuntimeString, ValueTag, layout::Layout};
 
-use crate::emitter::function_symbol;
-use crate::expr_emit::{
-    CLOSURE_CAPTURE_COUNT_OFFSET, CLOSURE_CAPTURE_SLOT_SIZE, CLOSURE_CAPTURE_SLOTS_OFFSET,
-    CLOSURE_CODE_ID_OFFSET, CLOSURE_SENTINEL, CLOSURE_SUBTYPE_OFFSET,
-};
 use crate::runtime::core::typed;
+
+// Closure layout constants (moved from legacy expr_emit.rs)
+pub(crate) const CLOSURE_SENTINEL: i32 = -2;
+pub(crate) const CLOSURE_SUBTYPE_OFFSET: u32 = 0;
+pub(crate) const CLOSURE_CODE_ID_OFFSET: u32 = 4;
+pub(crate) const CLOSURE_CAPTURE_COUNT_OFFSET: u32 = 8;
+pub(crate) const CLOSURE_CAPTURE_SLOTS_OFFSET: u32 = 16;
+pub(crate) const CLOSURE_CAPTURE_SLOT_SIZE: u32 = 4;
+
+pub(crate) fn function_symbol(id: ts2wasm_ir::lowered::FuncId) -> String {
+    format!("$func_{}", id.0)
+}
 use crate::runtime_fn::RuntimeFn;
 use crate::runtime_link_plan::build_runtime_link_plan;
 use crate::wasm_ir::{WasmBlockType, WasmFunction, WasmInstr, WasmValType};

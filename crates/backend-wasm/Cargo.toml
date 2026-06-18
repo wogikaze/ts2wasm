@@ -16,6 +16,7 @@ ts2wasm-backend-core = { path = "../backend-core" }
 ts2wasm-ir = { path = "../ir" }
 ts2wasm-runtime-abi = { path = "../runtime-abi" }
 ts2wasm-runtime-catalog = { path = "../runtime-catalog" }
+ts2wasm-spec-kernel = { path = "../spec-kernel" }
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["preserve_order"] }
 wasm-encoder = "0.248"

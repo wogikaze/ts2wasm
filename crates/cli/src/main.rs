@@ -128,6 +128,7 @@ fn run() -> Result<(), String> {
                 ts2wasm_cli::BuildPipelineOptions {
                     host_deny: host_deny.is_some(),
                     hir_mir_mode,
+                    spec_kernel_mode: ts2wasm_cli::SpecKernelMode::Disabled,
                     target,
                 },
             );

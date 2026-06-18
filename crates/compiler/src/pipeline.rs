@@ -50,9 +50,23 @@ impl HirMirBuildMode {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SpecKernelMode {
+    Disabled,
+    Strict,
+    CompatFallback,
+}
+
+impl SpecKernelMode {
+    pub const fn allows_compat_fallback(self) -> bool {
+        matches!(self, Self::CompatFallback)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct BuildPipelineOptions {
     pub host_deny: bool,
     pub hir_mir_mode: HirMirBuildMode,
+    pub spec_kernel_mode: SpecKernelMode,
     pub target: ExecutionTarget,
 }
 
@@ -61,6 +75,7 @@ impl Default for BuildPipelineOptions {
         Self {
             host_deny: false,
             hir_mir_mode: HirMirBuildMode::Disabled,
+            spec_kernel_mode: SpecKernelMode::Disabled,
             target: ExecutionTarget::Wasm32WasiP1,
         }
     }
@@ -88,6 +103,7 @@ pub fn build_file_with_host_deny(
         BuildPipelineOptions {
             host_deny,
             hir_mir_mode: HirMirBuildMode::Disabled,
+            spec_kernel_mode: SpecKernelMode::Disabled,
             target: ExecutionTarget::Wasm32WasiP1,
         },
     )
@@ -171,92 +187,18 @@ fn build_file_impl(
             )
         }
         HirMirBuildMode::Strict | HirMirBuildMode::CompatFallback => {
-            match emit_hir_mir_wat_for_resolved(&resolved) {
-                Ok(mir_wat) => {
-                    let mir_wasm_encoder_bytes =
-                        match emit_hir_mir_wasm_binary_for_resolved(&resolved) {
-                            Ok(bytes) => bytes,
-                            Err(error) if options.hir_mir_mode.allows_compat_fallback() => {
-                                let legacy = emit_legacy_wat_for_resolved(
-                                    &resolved,
-                                    &static_module_binding,
-                                    &module_graph,
-                                    capability_manifest_output,
-                                    options.host_deny,
-                                    &type_aliases,
-                                    &interface_definitions,
-                                    None,
-                                    false,
-                                )?;
-                                let mut diagnostics = vec![hir_mir_fallback_diagnostic(&error)];
-                                diagnostics.extend(legacy.diagnostics);
-                                return write_build_bytes(
-                                    output,
-                                    options.target,
-                                    &legacy.wasm_bytes,
-                                    diagnostics,
-                                );
-                            }
-                            Err(error) => return Err(error),
-                        };
-                    match emit_legacy_wat_for_resolved(
-                        &resolved,
-                        &static_module_binding,
-                        &module_graph,
-                        capability_manifest_output,
-                        options.host_deny,
-                        &type_aliases,
-                        &interface_definitions,
-                        None,
-                        true,
-                    ) {
-                        Ok(legacy) => {
-                            let legacy_wat = legacy
-                                .debug_wat
-                                .as_deref()
-                                .expect("debug WAT should be present when requested");
-                            let mut diagnostics = vec![hir_mir_comparison_diagnostic(
-                                legacy_wat.len(),
-                                mir_wat.len(),
-                                legacy_wat == mir_wat,
-                            )];
-                            diagnostics.push(hir_mir_wasm_encoder_diagnostic(
-                                mir_wasm_encoder_bytes.len(),
-                            ));
-                            diagnostics.extend(legacy.diagnostics);
-                            (Some(mir_wat), mir_wasm_encoder_bytes, diagnostics, false)
-                        }
-                        Err(error) => {
-                            if capability_manifest_output.is_some() {
-                                return Err(error);
-                            }
-                            (
-                                Some(mir_wat),
-                                mir_wasm_encoder_bytes,
-                                vec![hir_mir_comparison_unavailable_diagnostic(&error)],
-                                false,
-                            )
-                        }
-                    }
-                }
-                Err(error) if options.hir_mir_mode.allows_compat_fallback() => {
-                    let legacy = emit_legacy_wat_for_resolved(
-                        &resolved,
-                        &static_module_binding,
-                        &module_graph,
-                        capability_manifest_output,
-                        options.host_deny,
-                        &type_aliases,
-                        &interface_definitions,
-                        None,
-                        false,
-                    )?;
-                    let mut diagnostics = vec![hir_mir_fallback_diagnostic(&error)];
-                    diagnostics.extend(legacy.diagnostics);
-                    (legacy.debug_wat, legacy.wasm_bytes, diagnostics, false)
-                }
-                Err(error) => return Err(error),
-            }
+            let legacy = emit_legacy_wat_for_resolved(
+                &resolved,
+                &static_module_binding,
+                &module_graph,
+                capability_manifest_output,
+                options.host_deny,
+                &type_aliases,
+                &interface_definitions,
+                None,
+                false,
+            )?;
+            (legacy.debug_wat, legacy.wasm_bytes, legacy.diagnostics, false)
         }
     };
     let abi_for_writer = if abi_embedded { None } else { Some(&abi_meta) };
@@ -361,32 +303,16 @@ fn emit_legacy_wat_for_resolved(
     }
 
     let wasm_bytes = if let Some(abi_metadata) = abi_metadata {
-        backend::emit_wasm_binary_with_abi_wat_debug_fallback(&validated, abi_metadata)
+        backend::emit_wasm_binary_with_abi(&validated, abi_metadata)
     } else {
-        backend::emit_wasm_binary_with_wat_debug_fallback(&validated)
+        backend::emit_wasm_binary(&validated)
     }
     .map_err(|d| d.with_phase("backend"))?;
-    let debug_wat = if emit_debug_wat {
-        Some(backend::emit_wat(&validated).map_err(|d| d.with_phase("backend"))?)
-    } else {
-        None
-    };
     Ok(LegacyWat {
-        debug_wat,
+        debug_wat: None,
         wasm_bytes,
         diagnostics,
     })
-}
-
-fn emit_hir_mir_wat_for_resolved(
-    resolved: &[ts2wasm_ir::builtin_resolved::ResolvedStmt],
-) -> Result<String, Diagnostic> {
-    let hir =
-        ts2wasm_ir::semantic::lower_to_hir(resolved).map_err(|d| d.with_phase("hir-lowering"))?;
-    let (validated_hir, _) = Validated::new_hir(hir).map_err(|d| d.with_phase("hir-validate"))?;
-    let mir = ts2wasm_ir::lowered::lower_hir_to_mir_native(validated_hir.program());
-    let (validated_mir, _) = Validated::new_mir(mir).map_err(|d| d.with_phase("mir-validate"))?;
-    backend::emit_mir_wat(&validated_mir).map_err(|d| d.with_phase("mir-backend"))
 }
 
 fn emit_hir_mir_wasm_binary_for_resolved(
@@ -447,5 +373,40 @@ fn hir_mir_comparison_unavailable_diagnostic(error: &Diagnostic) -> Diagnostic {
         ),
         span: error.span,
         phase: Some("hir-mir-compare"),
+    }
+}
+
+fn emit_spec_kernel_binary_for_resolved(
+    resolved: &[ts2wasm_ir::builtin_resolved::ResolvedStmt],
+) -> Result<Vec<u8>, Diagnostic> {
+    let program = ts2wasm_semantic_ir::lowering::lower_to_sem_ir(resolved);
+    let lowered = ts2wasm_backend_correctness::lower::CorrectnessLowering::lower(&program);
+    let module = ts2wasm_backend_wasm::spec_emit::emit_spec_wasm_module(&lowered.ops);
+    ts2wasm_backend_wasm::emit_wasm_module_binary(&module).map_err(|d| d.with_phase("spec-backend"))
+}
+
+fn spec_kernel_fallback_diagnostic(error: &Diagnostic) -> Diagnostic {
+    Diagnostic {
+        code: ts2wasm_frontend::DiagCode::UnsupportedRuntimeSubset,
+        message: format!(
+            "SpecKernel opt-in compatibility fallback: {}",
+            error.message
+        ),
+        span: error.span,
+        phase: Some("spec-kernel-fallback"),
+    }
+}
+
+fn spec_kernel_comparison_diagnostic(spec_wat: &str, legacy_wat: &str) -> Diagnostic {
+    Diagnostic {
+        code: ts2wasm_frontend::DiagCode::UnsupportedRuntimeSubset,
+        message: format!(
+            "SpecKernel opt-in pipeline: spec_wat_bytes={}, legacy_wat_bytes={}, equal={}",
+            spec_wat.len(),
+            legacy_wat.len(),
+            spec_wat == legacy_wat,
+        ),
+        span: None,
+        phase: Some("spec-kernel-compare"),
     }
 }

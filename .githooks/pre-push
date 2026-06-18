@@ -11,8 +11,8 @@ scripts/manager check-fast-gate --skip-nextest
 echo "pre-push: architecture rules (file size, crate layers)"
 python3 scripts/check/architecture-rules.py
 
-echo "pre-push: crate dependency DAG"
-python3 scripts/check/crate-dag.py
+echo "pre-push: architecture DAG check"
+python3 scripts/check/check-arch-dag.py
 
 echo "pre-push: manifest vs wasm imports"
 scripts/manager check-manifest-imports

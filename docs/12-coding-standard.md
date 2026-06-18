@@ -41,11 +41,15 @@ Backend code must not add new direct reads of frontend `Stmt`/`Expr`. New semant
 
 ## RuntimeFn Change Checklist
 
-- Add the `RuntimeFn` variant and spec.
-- Declare dependencies/imports/capabilities/signature/link-plan data.
-- Add transitive dependency tests.
-- Add manifest-vs-wasm import equality coverage if the helper imports host/WASI APIs.
-- Add or update a fixture that proves the semantic surface.
+> **FROZEN**: `RuntimeFn` variant addition is prohibited (P5 constraint).
+> Use `SpecOp` (`crates/spec-kernel/`) for new operations.
+> Existing `RuntimeFn` entries are for backward compatibility only.
+
+- Adding new `RuntimeFn` variants is REJECTED by CI.
+- For new semantics, add a `SpecOp` variant in `crates/spec-kernel/src/spec_op.rs`.
+- For the runtime implementation, add a builder in `crates/backend-wasm/src/runtime/spec/`.
+- Connect via `crates/backend-wasm/src/spec_emit.rs`.
+- Existing `RuntimeFn` entries should be migrated to `SpecOp` per P5 plan.
 
 ## Host Capability Checklist
 

@@ -1,0 +1,8 @@
+[package]
+name = "ts2wasm-spec-kernel"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+ts2wasm-runtime-core = { path = "../runtime-core" }

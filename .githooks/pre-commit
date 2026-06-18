@@ -40,8 +40,10 @@ else
 fi
 
 if printf '%s\n' "$staged_files" | grep -Eq '(^|/)(Cargo\.toml|Cargo\.lock|.*\.rs)$'; then
-  echo "pre-commit: mise run check architecture"
+  echo "pre-commit: architecture rules check"
   python3 scripts/check/architecture-rules.py
+  echo "pre-commit: architecture DAG check"
+  python3 scripts/check/check-arch-dag.py
 else
   echo "pre-commit: skip architecture check; no staged Rust changes"
 fi

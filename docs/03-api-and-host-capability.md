@@ -47,8 +47,13 @@ Runtime functions declare dependencies, host imports, capabilities, runtime stri
 
 ## Adding a host capability
 
-1. Add or update the `RuntimeFn` spec with the import/capability.
-2. Update link-plan tests.
-3. Ensure manifest JSON includes the reason.
-4. Add a fixture that proves `--host-deny` rejects the host-dependent path when appropriate.
-5. Update this doc if a new capability family appears.
+> **IMPORTANT**: `RuntimeFn` variant addition is FROZEN (P5 constraint).
+> New host capabilities MUST use `SpecOp` (see `crates/spec-kernel/`).
+> Legacy `RuntimeFn` entries are for backward compatibility only.
+
+1. Define the new capability as a `SpecOp` variant in `crates/spec-kernel/`.
+2. Implement the runtime function in `crates/backend-wasm/src/runtime/spec/`.
+3. Update link-plan tests.
+4. Ensure manifest JSON includes the reason.
+5. Add a fixture that proves `--host-deny` rejects the host-dependent path when appropriate.
+6. Update this doc if a new capability family appears.

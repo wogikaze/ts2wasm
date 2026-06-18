@@ -1,0 +1,141 @@
+# ts2wasm Architecture Contract
+#
+# Target dependency DAG.  Legacy violations are in [exceptions.deps].
+# New code must follow [crates]; legacy code is grandfathered.
+#
+# Dependency direction:
+#   source ← syntax ← frontend ← resolve
+#   runtime-abi ← runtime-core ← spec-kernel ← semantic-ir ← frontend/resolve
+#   spec-kernel → backend-correctness
+#   backend-core → backend-wasm
+#   semantic-ir → backend-correctness (→ backend-wasm)
+#   compiler orchestrates everything
+#
+# Forbidden: backend-wasm importing frontend/resolve/ir directly.
+# Forbidden: compiler implementing builtin logic.
+# Forbidden: opt-mir containing Proxy semantics.
+
+[crates]
+source = { allowed_deps = [], description = "Span, SourceFile" }
+syntax = { allowed_deps = ["source"], description = "Token, AST types" }
+diagnostic = { allowed_deps = ["source"], description = "Diagnostic, DiagCode" }
+shared = { allowed_deps = ["source", "syntax", "diagnostic"], description = "Utility, AbiType" }
+frontend = { allowed_deps = ["source", "syntax", "diagnostic", "shared"], description = "Lexer, parser, TS erasure" }
+resolve = { allowed_deps = ["source", "syntax", "diagnostic", "frontend"], description = "Name/binding resolution" }
+semantics = { allowed_deps = ["source", "syntax", "diagnostic", "resolve", "runtime-abi"], description = "Semantic helpers" }
+
+runtime-abi = { allowed_deps = [], description = "Tagged value layout, ABI constants" }
+runtime-core = { allowed_deps = ["runtime-abi"], description = "JS engine substrate" }
+runtime-catalog = { allowed_deps = ["runtime-abi", "shared", "spec-kernel"], description = "RuntimeFn registry, migration" }
+
+semantic-ir = { allowed_deps = ["runtime-core", "source", "ir", "syntax"], description = "ECMAScript semantic IR" }
+spec-kernel = { allowed_deps = ["runtime-core"], description = "SpecOp, internal method dispatch" }
+backend-correctness = { allowed_deps = ["runtime-core", "semantic-ir", "spec-kernel", "source"], description = "SemIR → SpecOp → wasm" }
+opt-mir = { allowed_deps = ["runtime-core", "spec-kernel"], description = "Guard/deopt IR" }
+
+ir = { allowed_deps = ["source", "syntax", "diagnostic", "frontend", "resolve", "shared", "runtime-abi", "runtime-catalog", "semantics"], description = "LEGACY: LoweredProgram, old MIR" }
+backend-wasm = { allowed_deps = ["source", "diagnostic", "shared", "syntax", "resolve", "semantics", "ir", "runtime-abi", "runtime-catalog", "backend-core", "spec-kernel"], description = "LEGACY + new spec_emit" }
+backend-core = { allowed_deps = [], description = "Wasm IR types" }
+
+compiler = { allowed_deps = ["frontend", "source", "diagnostic", "syntax", "shared", "ir", "backend-wasm", "backend-core", "semantic-ir", "backend-correctness", "runtime-abi"], description = "Pipeline orchestration" }
+cli = { allowed_deps = ["compiler", "diagnostic", "frontend", "ir", "shared", "backend-wasm", "runtime-abi"], description = "CLI entry point" }
+
+# ── Forbidden patterns ───────────────────────────────────────────────────────
+[forbidden]
+"semantic-ir imports backend" = { in_crates = ["semantic-ir"], forbid_pattern = "ts2wasm_backend_wasm|ts2wasm_backend_correctness|ts2wasm_opt_mir|ts2wasm_backend_core" }
+"spec-kernel imports backend" = { in_crates = ["spec-kernel"], forbid_pattern = "ts2wasm_backend_wasm|ts2wasm_backend_correctness|ts2wasm_opt_mir|ts2wasm_backend_core" }
+"runtime-core imports frontend/ir" = { in_crates = ["runtime-core"], forbid_pattern = "ts2wasm_frontend|ts2wasm_ir|ts2wasm_resolve" }
+"opt-mir imports Proxy semantics" = { in_crates = ["opt-mir"], forbid_pattern = "proxy_trap|ProxyGet|ProxySet|ProxyHas" }
+
+# ── File size limits ─────────────────────────────────────────────────────────
+[size]
+warning = 800
+error = 1500
+
+[size.allowlist]
+"crates/backend-wasm/src/native_lowered.rs" = "LEGACY frozen — 38132 lines"
+"crates/backend-wasm/src/runtime/core/typed.rs" = "LEGACY frozen — 49903 lines"
+"crates/backend-wasm/src/native_runtime_embed.rs" = "LEGACY frozen — 7668 lines"
+"crates/ir/src/lowered/program.rs" = "LEGACY frozen"
+"crates/ir/src/lowered/program_builtins.rs" = "LEGACY frozen"
+"crates/ir/src/lowered/resolver/mod.rs" = "LEGACY frozen"
+"crates/ir/src/lowered/resolver_extra.rs" = "LEGACY frozen"
+"crates/frontend/src/parser/expressions_main.rs" = "LEGACY frozen"
+"crates/frontend/src/parser/statements_general.rs" = "LEGACY frozen"
+"crates/frontend/src/lexer.rs" = "LEGACY frozen"
+"crates/cli/src/main.rs" = "LEGACY frozen"
+"crates/compiler/src/lib.rs" = "LEGACY frozen"
+"crates/compiler/src/stages/lower.rs" = "LEGACY frozen"
+"crates/compiler/src/module_graph/mod.rs" = "LEGACY frozen"
+"crates/compiler/src/test262_preprocessor.rs" = "LEGACY frozen"
+"crates/runtime-catalog/src/runtime_fn.rs" = "LEGACY frozen"
+"crates/runtime-catalog/src/host_import.rs" = "LEGACY frozen"
+"crates/backend-wasm/src/runtime_link_plan.rs" = "LEGACY frozen"
+
+# ── Per-crate file limits ────────────────────────────────────────────────────
+[file_forbidden]
+"crates/runtime-core/src/" = { max_lines = 1500 }
+"crates/semantic-ir/src/" = { max_lines = 1500 }
+"crates/spec-kernel/src/" = { max_lines = 1500 }
+"crates/backend-correctness/src/" = { max_lines = 1500 }
+"crates/opt-mir/src/" = { max_lines = 1500 }
+
+# ── Coverage Driver Constraints ──────────────────────────────────────────────
+# These constraints prevent coverage pressure from breaking the architecture.
+# See COVERAGE.md for the full protocol.
+
+[coverage]
+reject_legacy_loc_increase = ["native_lowered.rs", "typed.rs", "native_runtime_embed.rs"]
+reject_runtimefn_addition = true
+require_trace_test_for = ["semantic-ir", "spec-kernel", "opt-mir"]
+require_snapshot_for = ["semantic-ir"]
+
+# Allowed SpecOp additions must maintain this minimum set
+[coverage.minimum_spec_ops]
+get = true
+set = true
+get_own_property = true
+define_own_property = true
+own_property_keys = true
+delete = true
+has_property = true
+get_prototype_of = true
+set_prototype_of = true
+is_extensible = true
+prevent_extensions = true
+call = true
+construct = true
+to_primitive = true
+to_boolean = true
+to_number = true
+to_numeric = true
+to_string = true
+to_object = true
+to_property_key = true
+get_iterator = true
+iterator_next = true
+iterator_close = true
+resolve_binding = true
+get_binding_value = true
+set_mutable_binding = true
+initialize_binding = true
+create_data_property = true
+length_of_array_like = true
+
+# ── Development workflow ─────────────────────────────────────────────────────
+# Feature slice:
+#   1. semantic-ir:  lowering + CFG + Reference/Env ops
+#   2. spec-kernel:  SpecOp + object kind dispatch
+#   3. runtime-core: substrate if missing
+#   4. backend-correctness: SpecOp → wasm call
+#   5. Tests: semantic-ir snapshot + spec trace + execution
+#   6. opt-mir (optional): guard + fast path
+#   7. NEVER touch: native_lowered.rs, typed.rs
+#
+# Coverage PR protocol:
+#   1. Classify failure into taxonomy (COVERAGE.md)
+#   2. Implement in owning layer only
+#   3. Add trace test proving correct path
+#   4. No legacy backend escape
+#   5. No RuntimeFn addition (use SpecOp)
+#   6. Unclassified failures must not increase

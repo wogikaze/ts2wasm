@@ -137,19 +137,6 @@ pub fn dump_file_with_options(input: &Path, options: DumpOptions) -> Result<Stri
         DumpPhase::All => {
             push_section(&mut out, "tokens", &format!("{:#?}", pipeline.tokens));
             push_section(&mut out, "ast", &format!("{:#?}", pipeline.ast));
-            push_section(&mut out, "resolved", &format!("{:#?}", pipeline.resolved));
-            push_optional_typed_ir_section(&mut out, &pipeline.typed_ir)?;
-            push_optional_optimized_ir_section(&mut out, &pipeline.optimized_ir)?;
-            push_section(&mut out, "lowered", &format!("{:#?}", pipeline.lowered));
-            let (validated, _) =
-                Validated::new(pipeline.lowered.clone()).map_err(|d| Diagnostic {
-                    code: DiagCode::InvariantViolation,
-                    message: d.message,
-                    span: d.span,
-                    phase: None,
-                })?;
-            let wat = backend::emit_wat(&validated)?;
-            push_section(&mut out, "wat", &wat);
         }
         DumpPhase::Resolved => {
             push_section(&mut out, "resolved", &format!("{:#?}", pipeline.resolved));
@@ -164,15 +151,7 @@ pub fn dump_file_with_options(input: &Path, options: DumpOptions) -> Result<Stri
             push_section(&mut out, "lowered", &format!("{:#?}", pipeline.lowered));
         }
         DumpPhase::Wat => {
-            let (validated, _) =
-                Validated::new(pipeline.lowered.clone()).map_err(|d| Diagnostic {
-                    code: DiagCode::InvariantViolation,
-                    message: d.message,
-                    span: d.span,
-                    phase: None,
-                })?;
-            let wat = backend::emit_wat(&validated)?;
-            push_section(&mut out, "wat", &wat);
+            push_section(&mut out, "wat", "(WAT emitter removed)");
         }
         DumpPhase::Tokens | DumpPhase::Ast => unreachable!("handled before full pipeline"),
     }

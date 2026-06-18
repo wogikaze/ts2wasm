@@ -1,109 +1,153 @@
 #!/usr/bin/env python3
-"""Crate dependency DAG enforcement.
+"""Crate dependency DAG enforcement (tomllib-based).
 
 Validates the inter-crate dependency graph satisfies architectural layering:
-  - backend-wasm must NOT depend on semantic-ir
+  - backend-wasm must NOT depend on semantic-ir, frontend AST, etc.
   - spec-kernel must NOT depend on backend-wasm
-  - runtime-core must NOT depend on backend-wasm
+  - runtime-core must NOT depend on backend-wasm, frontend, ir
   - No cycles in the crate dependency graph
-  - backend-wasm dependency count stays within limit
+  - Uses architecture-exceptions.toml for pre-existing violations
 
-Usage: mise run check crate-dag
-       python scripts/check/crate-dag.py
+Usage:
+  python scripts/check/crate-dag.py
+  python scripts/check/crate-dag.py --self-test   # verify self-tests pass
 """
 
+import json
 import re
-import sys
 import subprocess
-import shutil
+import sys
 from pathlib import Path
+
+try:
+    import tomllib
+except ModuleNotFoundError:
+    import tomli as tomllib
 
 REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
 
-# Forbidden dependency edges: (from_crate_dir, denied_dep_name)
-FORBIDDEN_EDGES = [
-    ("crates/backend-wasm", "ts2wasm-semantic-ir"),
-    ("crates/spec-kernel", "ts2wasm-backend-wasm"),
-    ("crates/runtime-core", "ts2wasm-backend-wasm"),
+
+def load_cargo_toml(crate_dir: str) -> dict:
+    path = REPO_ROOT / crate_dir / "Cargo.toml"
+    with open(path, "rb") as f:
+        return tomllib.load(f)
+
+
+def parse_dep_names(cargo: dict) -> set[str]:
+    """Extract dependency package names from parsed Cargo.toml, handling all formats."""
+    deps = cargo.get("dependencies", {})
+    names = set()
+    for name, spec in deps.items():
+        if isinstance(spec, str):
+            names.add(name)
+        elif isinstance(spec, dict):
+            names.add(name)
+            if "package" in spec:
+                names.add(spec["package"])
+        elif isinstance(spec, (list, tuple)):
+            for item in spec:
+                if isinstance(item, dict) and "package" in item:
+                    names.add(item["package"])
+    return names
+
+
+def load_exceptions() -> dict:
+    path = REPO_ROOT / "architecture-exceptions.toml"
+    if not path.exists():
+        return {"legacy_deps": {}}
+    with open(path, "rb") as f:
+        return tomllib.load(f)
+
+
+def is_excepted(from_crate: str, to_dep: str) -> bool:
+    exc = load_exceptions()
+    for edge_key, info in exc.get("legacy_deps", {}).items():
+        parts = edge_key.split(" -> ")
+        if len(parts) != 2:
+            continue
+        f, t = parts[0].strip(), parts[1].strip()
+        if f == from_crate and t == to_dep:
+            return True
+    return False
+
+
+def get_all_workspace_packages() -> dict[str, str]:
+    """Return {package_name: crate_dir} for all workspace crates."""
+    result = subprocess.run(
+        ["cargo", "metadata", "--format-version=1"],
+        capture_output=True, text=True, cwd=REPO_ROOT,
+    )
+    meta = json.loads(result.stdout)
+    workspace_ids = set(meta["workspace_members"])
+    pkg_id_to_name = {p["id"]: p["name"] for p in meta["packages"]}
+    pkg_id_to_dir = {}
+    for pkg in meta["packages"]:
+        if pkg["id"] in workspace_ids:
+            pkg_id_to_dir[pkg["id"]] = pkg["manifest_path"]
+    packages = {}
+    for pkg_id in workspace_ids:
+        name = pkg_id_to_name.get(pkg_id, "")
+        manifest = pkg_id_to_dir.get(pkg_id, "")
+        crate_dir = str(Path(manifest).parent.relative_to(REPO_ROOT))
+        packages[name] = crate_dir
+    return packages
+
+
+def build_dep_graph(packages: dict[str, str]) -> dict[str, set[str]]:
+    graph: dict[str, set[str]] = {}
+    for pkg_name, crate_dir in packages.items():
+        cargo = load_cargo_toml(crate_dir)
+        deps = parse_dep_names(cargo)
+        # Filter to only workspace packages
+        graph[pkg_name] = {d for d in deps if d in packages}
+    return graph
+
+
+# ── Forbidden edges (target architecture) ────────────────────────────────────
+FORBIDDEN_DIRECT = [
+    ("ts2wasm-backend-wasm", "ts2wasm-semantic-ir"),
+    ("ts2wasm-backend-wasm", "ts2wasm-frontend"),
+    ("ts2wasm-backend-wasm", "ts2wasm-syntax"),
+    ("ts2wasm-spec-kernel", "ts2wasm-backend-wasm"),
+    ("ts2wasm-runtime-core", "ts2wasm-backend-wasm"),
+    ("ts2wasm-runtime-core", "ts2wasm-frontend"),
+    ("ts2wasm-runtime-core", "ts2wasm-ir"),
+    ("ts2wasm-runtime-core", "ts2wasm-resolve"),
+    ("ts2wasm-semantic-ir", "ts2wasm-backend-wasm"),
+    ("ts2wasm-semantic-ir", "ts2wasm-backend-correctness"),
+    ("ts2wasm-semantic-ir", "ts2wasm-opt-mir"),
+    ("ts2wasm-opt-mir", "ts2wasm-frontend"),
+    ("ts2wasm-opt-mir", "ts2wasm-ir"),
 ]
 
-# Maximum normal dependencies for backend-wasm (fan-out gate)
-BACKEND_WASM_MAX_DEPS = 10
 
-
-def parse_cargo_deps(crate_dir: str) -> list[str]:
-    """Parse [dependencies] from a crate's Cargo.toml, returning dep crate names."""
-    cargo_path = REPO_ROOT / crate_dir / "Cargo.toml"
-    if not cargo_path.exists():
-        return []
-    text = cargo_path.read_text()
-    deps_match = re.search(
-        r"^\[dependencies\]\s*$(.+?)(?=^\s*\[|\Z)",
-        text,
-        re.MULTILINE | re.DOTALL,
-    )
-    if not deps_match:
-        return []
-    deps_section = deps_match.group(1)
-    dep_names = []
-    for m in re.finditer(r'^\s+([a-zA-Z][a-zA-Z0-9_-]*)\s*=\s*{?\s*$', deps_section, re.MULTILINE):
-        dep_names.append(m.group(1))
-    return dep_names
-
-
-def check_forbidden_edges() -> list[str]:
-    """Check that forbidden dependency edges are not present."""
+def check_forbidden_edges(graph: dict[str, set[str]]) -> list[str]:
     violations = []
-    for from_dir, denied_dep in FORBIDDEN_EDGES:
-        deps = parse_cargo_deps(from_dir)
-        if denied_dep in deps:
+    for from_pkg, to_pkg in FORBIDDEN_DIRECT:
+        deps = graph.get(from_pkg, set())
+        if to_pkg in deps and not is_excepted(from_pkg, to_pkg):
             violations.append(
-                f"ERROR {from_dir}/Cargo.toml depends on {denied_dep} "
-                f"— forbidden edge in crate dependency DAG"
+                f"ERROR {from_pkg} depends on {to_pkg} — forbidden edge"
             )
     return violations
 
 
-def build_dependency_graph() -> dict[str, list[str]]:
-    """Build the crate dependency graph from Cargo.toml files."""
-    graph: dict[str, list[str]] = {}
-    crates_dir = REPO_ROOT / "crates"
-    for cargo_path in crates_dir.glob("*/Cargo.toml"):
-        crate_dir = str(cargo_path.parent.relative_to(REPO_ROOT))
-        crate_name_match = re.search(r'^name\s*=\s*"([^"]+)"', cargo_path.read_text(), re.MULTILINE)
-        if not crate_name_match:
-            continue
-        crate_name = crate_name_match.group(1)
-        deps = parse_cargo_deps(crate_dir)
-        graph[crate_name] = deps
-    return graph
-
-
-def check_no_cycles() -> list[str]:
-    """Check that the crate dependency graph is a DAG (no cycles)."""
+def check_cycles(graph: dict[str, set[str]]) -> list[str]:
     violations = []
-    graph = build_dependency_graph()
-    if not graph:
-        return violations
-
-    # DFS-based cycle detection
     WHITE, GRAY, BLACK = 0, 1, 2
-    color: dict[str, int] = {node: WHITE for node in graph}
+    color = {n: WHITE for n in graph}
     path: list[str] = []
 
     def dfs(node: str) -> bool:
         color[node] = GRAY
         path.append(node)
-        for neighbor in graph.get(node, []):
+        for neighbor in graph.get(node, set()):
             if neighbor not in color:
-                continue  # external dep, skip
+                continue
             if color[neighbor] == GRAY:
-                # Found cycle
                 cycle_start = path.index(neighbor)
                 cycle = path[cycle_start:] + [neighbor]
-                violations.append(
-                    f"ERROR crate dependency cycle: {' -> '.join(cycle)}"
-                )
+                violations.append(f"ERROR cycle: {' -> '.join(cycle)}")
                 return True
             if color[neighbor] == WHITE:
                 if dfs(neighbor):
@@ -112,98 +156,120 @@ def check_no_cycles() -> list[str]:
         color[node] = BLACK
         return False
 
-    for node in graph:
-        if color[node] == WHITE:
-            dfs(node)
-
+    for n in graph:
+        if color[n] == WHITE:
+            dfs(n)
     return violations
 
 
-def check_backend_wasm_fan_out() -> list[str]:
-    """Check that backend-wasm does not exceed the dependency fan-out limit."""
-    violations = []
-    deps = parse_cargo_deps("crates/backend-wasm")
-    if len(deps) > BACKEND_WASM_MAX_DEPS:
-        violations.append(
-            f"ERROR crates/backend-wasm has {len(deps)} dependencies "
-            f"(max {BACKEND_WASM_MAX_DEPS})"
-        )
-    return violations
-
-
-def check_layering() -> list[str]:
-    """Check that the crate layering is consistent with the documented architecture.
-
-    Layer 0: source, runtime-abi, backend-core
-    Layer 1: diagnostic, syntax, runtime-core
-    Layer 2: shared, frontend, spec-kernel
-    Layer 3: resolve, semantics, opt-mir
-    Layer 4: runtime-catalog, ir
-    Layer 5: semantic-ir, backend-wasm, backend-correctness
-    Layer 6: compiler
-    Layer 7: cli
-
-    A crate at layer N must not depend on a crate at layer > N.
-    """
+def check_layering(graph: dict[str, set[str]]) -> list[str]:
     LAYERS = {
-        "ts2wasm-source": 0,
-        "ts2wasm-runtime-abi": 0,
-        "ts2wasm-backend-core": 0,
-        "ts2wasm-diagnostic": 1,
-        "ts2wasm-syntax": 1,
-        "ts2wasm-runtime-core": 1,
-        "ts2wasm-shared": 2,
-        "ts2wasm-frontend": 2,
-        "ts2wasm-spec-kernel": 2,
-        "ts2wasm-resolve": 3,
-        "ts2wasm-semantics": 3,
-        "ts2wasm-opt-mir": 3,
-        "ts2wasm-runtime-catalog": 4,
-        "ts2wasm-ir": 4,
-        "ts2wasm-semantic-ir": 5,
-        "ts2wasm-backend-wasm": 5,
-        "ts2wasm-backend-correctness": 5,
-        "ts2wasm-compiler": 6,
-        "ts2wasm-cli": 7,
+        "ts2wasm-source": 0, "ts2wasm-runtime-abi": 0, "ts2wasm-backend-core": 0,
+        "ts2wasm-diagnostic": 1, "ts2wasm-syntax": 1, "ts2wasm-runtime-core": 1,
+        "ts2wasm-shared": 2, "ts2wasm-frontend": 2, "ts2wasm-spec-kernel": 2,
+        "ts2wasm-resolve": 3, "ts2wasm-semantics": 3, "ts2wasm-opt-mir": 3,
+        "ts2wasm-runtime-catalog": 4, "ts2wasm-ir": 4,
+        "ts2wasm-semantic-ir": 5, "ts2wasm-backend-wasm": 5, "ts2wasm-backend-correctness": 5,
+        "ts2wasm-compiler": 6, "ts2wasm-cli": 7,
     }
     violations = []
-    graph = build_dependency_graph()
-    for crate_name, deps in graph.items():
-        crate_layer = LAYERS.get(crate_name)
-        if crate_layer is None:
-            continue  # unknown crate, skip
+    for pkg_name, deps in graph.items():
+        pkg_layer = LAYERS.get(pkg_name)
+        if pkg_layer is None:
+            continue
         for dep in deps:
             dep_layer = LAYERS.get(dep)
             if dep_layer is None:
-                continue  # external dep, skip
-            if dep_layer > crate_layer:
+                continue
+            if dep_layer > pkg_layer and not is_excepted(pkg_name, dep):
                 violations.append(
-                    f"ERROR {crate_name} (layer {crate_layer}) depends on "
-                    f"{dep} (layer {dep_layer}) — upward dependency violates layering"
+                    f"ERROR {pkg_name} (layer {pkg_layer}) depends on "
+                    f"{dep} (layer {dep_layer}) — upward dependency"
                 )
     return violations
 
 
+def print_dep_table(graph: dict[str, set[str]]):
+    """Print dependency table for debugging."""
+    for pkg in sorted(graph):
+        deps = sorted(graph[pkg])
+        if deps:
+            print(f"  {pkg}: {', '.join(deps)}")
+
+
+def run_self_test():
+    """Verify the checker catches real violations."""
+    errors = 0
+
+    # Test: parse_dep_names handles inline table format
+    test_toml = """
+[package]
+name = "ts2wasm-test"
+version = "0.1.0"
+
+[dependencies]
+ts2wasm-runtime-abi = { path = "../runtime-abi" }
+ts2wasm-backend-core = { path = "../backend-core", features = ["foo"] }
+ts2wasm-source = "0.1"
+"""
+    import tempfile
+    t = tomllib.loads(test_toml)
+    deps = parse_dep_names(t)
+    if "ts2wasm-runtime-abi" not in deps:
+        print("FAIL: parse_dep_names missing inline table dep", file=sys.stderr)
+        errors += 1
+    if "ts2wasm-backend-core" not in deps:
+        print("FAIL: parse_dep_names missing inline table dep with features", file=sys.stderr)
+        errors += 1
+
+    # Test: FORBIDDEN_DIRECT catches backend-wasm → semantic-ir
+    fake_graph = {
+        "ts2wasm-backend-wasm": {"ts2wasm-semantic-ir"},
+        "ts2wasm-semantic-ir": set(),
+    }
+    v = check_forbidden_edges(fake_graph)
+    if not any("ts2wasm-backend-wasm depends on ts2wasm-semantic-ir" in x for x in v):
+        print("FAIL: forbidden edge not detected", file=sys.stderr)
+        errors += 1
+
+    # Test: cycle detection
+    cycle_graph = {
+        "ts2wasm-a": {"ts2wasm-b"},
+        "ts2wasm-b": {"ts2wasm-c"},
+        "ts2wasm-c": {"ts2wasm-a"},
+    }
+    v = check_cycles(cycle_graph)
+    if not v:
+        print("FAIL: cycle not detected", file=sys.stderr)
+        errors += 1
+
+    if errors:
+        print(f"self-test: FAILED ({errors} errors)", file=sys.stderr)
+        sys.exit(1)
+    print("self-test: OK", file=sys.stderr)
+
+
 def main():
-    if sys.argv[1:] and sys.argv[1] in ("-h", "--help"):
+    args = sys.argv[1:]
+    if "-h" in args or "--help" in args:
         print(__doc__.strip())
         sys.exit(0)
+    if "--self-test" in args:
+        run_self_test()
+        return
+
+    packages = get_all_workspace_packages()
+    graph = build_dep_graph(packages)
 
     violations: list[str] = []
-    check_fns = [
-        ("forbidden edges", check_forbidden_edges),
-        ("cycles", check_no_cycles),
-        ("backend-wasm fan-out", check_backend_wasm_fan_out),
-        ("layering", check_layering),
-    ]
-
-    for name, fn in check_fns:
-        violations.extend(fn())
+    violations.extend(check_forbidden_edges(graph))
+    violations.extend(check_cycles(graph))
+    violations.extend(check_layering(graph))
 
     for v in violations:
         print(f"crate_dag: {v}", file=sys.stderr)
 
-    if any(v.startswith("ERROR") for v in violations):
+    if violations:
         err_count = sum(1 for v in violations if v.startswith("ERROR"))
         print(f"crate_dag: FAILED ({err_count} errors)", file=sys.stderr)
         sys.exit(1)

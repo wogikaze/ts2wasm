@@ -18,7 +18,7 @@ pub use stages::parse::parse_program;
 
 mod pipeline;
 pub use pipeline::{
-    BuildPipelineOptions, HirMirBuildMode, build_file, build_file_with_host_deny,
+    BuildPipelineOptions, HirMirBuildMode, SpecKernelMode, build_file, build_file_with_host_deny,
     build_file_with_options, build_file_with_pipeline_options,
 };
 

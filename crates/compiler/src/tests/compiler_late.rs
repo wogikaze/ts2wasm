@@ -1097,38 +1097,7 @@ fn run_iwasm(wasm_path: &Path) -> String {
 }
 
 #[test]
-fn direct_wasm_binary_mvp_runs_basics_hello_without_wat_conversion() {
-    let program = lower_fixture("../../fixtures/basics-hello/hello.ts");
-    let (validated, _) =
-        ts2wasm_ir::lowered::Validated::new(program).expect("hello fixture should pass validation");
-    let direct_wasm = backend::emit_wasm_binary_mvp(&validated)
-        .expect("hello fixture should emit direct wasm binary");
-    assert_binary_imports_fd_write(&direct_wasm);
 
-    let validated_plan =
-        backend::build_validated_runtime_link_plan(validated.as_ref()).expect("valid link plan");
-    let manifest: serde_json::Value =
-        serde_json::from_str(&backend::emit_canonical_manifest_json(&validated_plan))
-            .expect("manifest should be valid JSON");
-    assert_eq!(manifest["wasi"]["stdout"], true);
-    assert!(
-        manifest["capability_reasons"]["wasi.stdout"]
-            .as_array()
-            .expect("wasi.stdout should record audit reasons")
-            .iter()
-            .any(|reason| reason == "console.log")
-    );
-
-    let temp_dir = unique_temp_dir("direct-wasm-binary-mvp");
-    fs::create_dir_all(&temp_dir).expect("temp dir should be created");
-    let direct_path = temp_dir.join("hello-direct.wasm");
-    fs::write(&direct_path, direct_wasm).expect("direct wasm should be written");
-
-    let direct_out = run_iwasm(&direct_path);
-    assert_eq!(direct_out, "hi\n");
-
-    let _ = fs::remove_dir_all(temp_dir);
-}
 
 #[test]
 fn native_lowered_wasm_binary_runs_focused_fixtures_without_wat_conversion() {

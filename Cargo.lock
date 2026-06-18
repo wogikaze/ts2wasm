@@ -271,6 +271,16 @@ name = "ts2wasm-backend-core"
 version = "0.1.0"
 
 [[package]]
+name = "ts2wasm-backend-correctness"
+version = "0.1.0"
+dependencies = [
+ "ts2wasm-runtime-core",
+ "ts2wasm-semantic-ir",
+ "ts2wasm-source",
+ "ts2wasm-spec-kernel",
+]
+
+[[package]]
 name = "ts2wasm-backend-wasm"
 version = "0.1.0"
 dependencies = [
@@ -285,6 +295,7 @@ dependencies = [
  "ts2wasm-semantics",
  "ts2wasm-shared",
  "ts2wasm-source",
+ "ts2wasm-spec-kernel",
  "ts2wasm-syntax",
  "wasm-encoder 0.248.0",
  "wasmparser 0.248.0",
@@ -311,11 +322,13 @@ version = "0.1.0"
 dependencies = [
  "serde",
  "serde_json",
+ "ts2wasm-backend-correctness",
  "ts2wasm-backend-wasm",
  "ts2wasm-diagnostic",
  "ts2wasm-frontend",
  "ts2wasm-ir",
  "ts2wasm-runtime-abi",
+ "ts2wasm-semantic-ir",
  "ts2wasm-shared",
  "ts2wasm-source",
  "ts2wasm-syntax",
@@ -357,6 +370,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "ts2wasm-opt-mir"
+version = "0.1.0"
+dependencies = [
+ "ts2wasm-runtime-core",
+ "ts2wasm-spec-kernel",
+]
+
+[[package]]
 name = "ts2wasm-resolve"
 version = "0.1.0"
 dependencies = [
@@ -382,6 +403,24 @@ dependencies = [
  "serde_json",
  "ts2wasm-runtime-abi",
  "ts2wasm-shared",
+ "ts2wasm-spec-kernel",
+]
+
+[[package]]
+name = "ts2wasm-runtime-core"
+version = "0.1.0"
+dependencies = [
+ "ts2wasm-runtime-abi",
+]
+
+[[package]]
+name = "ts2wasm-semantic-ir"
+version = "0.1.0"
+dependencies = [
+ "ts2wasm-ir",
+ "ts2wasm-runtime-core",
+ "ts2wasm-source",
+ "ts2wasm-syntax",
 ]
 
 [[package]]
@@ -409,6 +448,13 @@ dependencies = [
 [[package]]
 name = "ts2wasm-source"
 version = "0.1.0"
+
+[[package]]
+name = "ts2wasm-spec-kernel"
+version = "0.1.0"
+dependencies = [
+ "ts2wasm-runtime-core",
+]
 
 [[package]]
 name = "ts2wasm-syntax"

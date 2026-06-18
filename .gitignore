@@ -49,6 +49,7 @@ _worktrees/
 # instant-grep index
 .ig/
 
+# environment file
 .env
 
 **/out.txt
@@ -64,3 +65,4 @@ issue-views/
 # APM dependencies
 apm_modules/
 target-main-check/
+

@@ -161,12 +161,28 @@ description = "cargo fmt --all --check"
 run = "python scripts/manager.py fmt"
 
 [tasks.clippy]
-description = "cargo clippy --all-targets -- -D warnings"
+description = "cargo clippy --all-targets -- -D warnings -D clippy::cognitive_complexity -D clippy::too_many_arguments"
 run = "python scripts/manager.py clippy"
 
 [tasks.nextest]
 description = "cargo nextest run (default project test entry)"
 run = "python scripts/manager.py nextest"
+
+[tasks.verify]
+description = "Full verify: fmt + toolchain + complexity + docs + architecture"
+run = "python scripts/manager.py verify"
+
+[tasks."verify-quick"]
+description = "Quick verify: fmt + syntax + complexity (quick) + toolchain"
+run = "python scripts/manager.py verify --quick"
+
+[tasks."verify-size"]
+description = "Size verify: full complexity analysis"
+run = "python scripts/manager.py verify --size"
+
+[tasks."verify-docs"]
+description = "Docs verify: diagnostic code alignment"
+run = "python scripts/manager.py verify --docs"
 
 [tasks.mdq]
 description = "Markdown cross-file query (index, search, list, stats)"

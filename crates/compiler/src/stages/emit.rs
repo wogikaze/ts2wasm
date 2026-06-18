@@ -4,7 +4,7 @@ use ts2wasm_ir::lowered::{MirProgram, Validated};
 
 pub use crate::io::write_output::write_wasm_from_wat;
 
-/// Emit WAT from a validated MIR program via the backend's MIR emission path.
-pub fn emit_mir(program: &Validated<MirProgram>) -> Result<String, Diagnostic> {
-    backend::emit_mir_wat(program)
+/// Emit MIR program to wasm binary via the backend's native emission path.
+pub fn emit_mir(program: &Validated<MirProgram>) -> Result<Vec<u8>, Diagnostic> {
+    backend::emit_mir_wasm_binary(program)
 }

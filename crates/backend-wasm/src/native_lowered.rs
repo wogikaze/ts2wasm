@@ -31,7 +31,8 @@ use crate::wasm_ir::{
     WasmBlockType, WasmCustomSection, WasmDataSegment, WasmExport, WasmExportKind, WasmFunction,
     WasmGlobal, WasmInstr, WasmMemory, WasmModule, WasmValType, wasm_import_from_host_spec,
 };
-use crate::{DiagCode, Diagnostic, align_to, emitter::function_symbol};
+use crate::{DiagCode, Diagnostic, align_to};
+use crate::native_runtime_embed::function_symbol;
 
 const WRITE_BUF_SYMBOL: &str = "$native_write_buf";
 const WRITE_NEWLINE_SYMBOL: &str = "$native_write_newline";
@@ -905,7 +906,7 @@ impl<'a> NativeLoweredEmitter<'a> {
         ] {
             let global_name = format!(
                 "${}",
-                crate::emitter::builtin_error_prototype_global(constructor)
+                crate::builtin_error_prototype_global(constructor)
             );
             if global_symbols.insert(global_name.clone()) {
                 module = module.global(WasmGlobal::i32_mut(global_name, 0));
@@ -1400,7 +1401,7 @@ impl<'a> NativeLoweredEmitter<'a> {
         for constructor in needed_prototypes {
             let global_name = format!(
                 "${}",
-                crate::emitter::builtin_error_prototype_global(constructor)
+                crate::builtin_error_prototype_global(constructor)
             );
             let entry_count = if constructor == BuiltinErrorConstructor::AggregateError {
                 2
@@ -1441,7 +1442,7 @@ impl<'a> NativeLoweredEmitter<'a> {
             if let Some(parent) = constructor.parent() {
                 let parent_global = format!(
                     "${}",
-                    crate::emitter::builtin_error_prototype_global(parent)
+                    crate::builtin_error_prototype_global(parent)
                 );
                 body.extend([
                     WasmInstr::GlobalGet(global_name.clone()),
@@ -1602,7 +1603,7 @@ impl<'a> NativeLoweredEmitter<'a> {
             return;
         }
         let global_name = format!("${proto_global}");
-        let ctor_global = format!("${}", crate::emitter::builtin_constructor_global(kind));
+        let ctor_global = format!("${}", kind.constructor_global());
         let constructor_key = self.insert_dynamic_string_value("constructor");
 
         body.extend([
@@ -1629,7 +1630,7 @@ impl<'a> NativeLoweredEmitter<'a> {
         kind: ts2wasm_runtime_catalog::BuiltinConstructorKind,
     ) {
         let ctor_spec = ts2wasm_runtime_catalog::spec(kind);
-        let global_name = format!("${}", crate::emitter::builtin_constructor_global(kind));
+        let global_name = format!("${}", kind.constructor_global());
         let entry_count = 3;
         let size = Layout::OBJECT_HEADER_SIZE + entry_count as u32 * Layout::OBJECT_ENTRY_SIZE;
 
@@ -5021,7 +5022,7 @@ impl<'a> NativeLoweredEmitter<'a> {
                 out.push(WasmInstr::LocalGet(ctx.switch_value_local));
                 out.push(WasmInstr::GlobalGet(format!(
                     "${}",
-                    crate::emitter::builtin_error_prototype_global(*constructor)
+                    crate::builtin_error_prototype_global(*constructor)
                 )));
                 out.push(WasmInstr::I32Store {
                     align: 2,
@@ -5106,7 +5107,7 @@ impl<'a> NativeLoweredEmitter<'a> {
             LoweredExpr::BuiltinErrorPrototype(constructor, _) => {
                 out.push(WasmInstr::GlobalGet(format!(
                     "${}",
-                    crate::emitter::builtin_error_prototype_global(*constructor)
+                    crate::builtin_error_prototype_global(*constructor)
                 )));
                 out.push(WasmInstr::I32Const(ValueTag::OBJECT));
                 out.push(WasmInstr::I32Or);
