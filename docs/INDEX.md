@@ -20,6 +20,7 @@
 | 設計判断の背景 | `docs/adr/INDEX.md` | `docs/adr/records/` |
 | Architecture audit | `docs/29-architecture-audit-procedure.md` | `arch-rules.toml`, `architecture-exceptions.toml`, `scripts/check/*` |
 | Compiler pipeline | `docs/04-compiler-architecture-and-runtime.md` | `crates/compiler/src/pipeline.rs` |
+| Spec-kernel correctness backend | `docs/04-compiler-architecture-and-runtime.md` (Spec-Kernel section) | `crates/spec-kernel/`, `crates/backend-correctness/`, `crates/builtin-kernel/` |
 | Semantics/support status | `docs/05-compatibility-and-semantics.md`, `docs/26-semantic-feature-matrix.md`, `docs/language-reference/INDEX.md` | `fixtures/catalog.yaml`, `fixtures/feature-matrix.yaml` |
 | Tests/gates | `docs/06-testing-and-coverage.md`, `docs/15-coverage-matrix.md` | `scripts/manager.py`, `crates/*/tests` |
 | Runtime ABI | `docs/14-runtime-abi.md` | `crates/runtime-abi/src/*` |
