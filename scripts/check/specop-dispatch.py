@@ -84,10 +84,30 @@ def check_dispatch_coverage() -> list[str]:
                 symbols[variant] = symbol
             for v in sorted(variants - set(symbols)):
                 violations.append(f"ERROR SpecOp::{v} missing spec_emit symbol mapping")
+        # Also check build_algo_op_function_with_program (SpecAlgoIR path)
+        algo_match = re.search(
+            r"fn build_algo_op_function_with_program.*?\{(.*?)^\}",
+            emit_text,
+            re.MULTILINE | re.DOTALL,
+        )
+        algo_builder_symbols: set[str] = set()
+        if algo_match:
+            algo_builder_symbols = set(re.findall(r'\"(\$spec_[a-z_]+)\"', algo_match.group(1)))
+            # Remove symbols that are in the return None group
+            return_none_match = re.search(
+                r"\$spec_get_binding_value.*?\|.*?\$spec_push_string_constant\s*=>\s*\{\s*return None;",
+                algo_match.group(1), re.DOTALL
+            )
+            if return_none_match:
+                return_none_symbols = set(re.findall(r'\$spec_[a-z_]+', return_none_match.group(0)))
+                algo_builder_symbols -= return_none_symbols
+
         if builder_match and symbols:
-            builder_symbols = set(re.findall(r"\"([^\"]+)\"\s*=>\s*\{?\s*Some\(", builder_match.group(1)))
+            # Merge symbols from both builder paths (SpecAlgoIR + hand-written fallback)
+            fallback_symbols = set(re.findall(r"\"([^\"]+)\"\s*=>\s*\{?\s*Some\(", builder_match.group(1)))
+            all_builder_symbols = fallback_symbols | algo_builder_symbols
             for variant, symbol in sorted(symbols.items()):
-                if symbol not in builder_symbols:
+                if symbol not in all_builder_symbols:
                     violations.append(
                         f"ERROR SpecOp::{variant} symbol {symbol} missing spec_emit builder mapping"
                     )
