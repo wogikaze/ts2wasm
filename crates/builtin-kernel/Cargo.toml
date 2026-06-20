@@ -1,0 +1,10 @@
+[package]
+name = "ts2wasm-builtin-kernel"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+ts2wasm-runtime-core = { path = "../runtime-core" }
+ts2wasm-spec-kernel = { path = "../spec-kernel" }
+ts2wasm-runtime-abi = { path = "../runtime-abi" }

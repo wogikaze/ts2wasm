@@ -1,4 +1,4 @@
-use ts2wasm_runtime_core::env::{Binding, EnvRef, EnvironmentRecord};
+use ts2wasm_runtime_core::env::{Binding, EnvironmentRecord};
 use ts2wasm_runtime_core::value::TaggedValue;
 
 pub struct EnvironmentOps;

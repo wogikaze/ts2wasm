@@ -1,5 +1,4 @@
 use ts2wasm_runtime_core::env::EnvRef;
-use ts2wasm_runtime_core::value::TaggedValue;
 
 pub type Local = u32;
 pub type ArgsRef = u32;

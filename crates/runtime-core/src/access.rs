@@ -13,35 +13,35 @@ pub enum PropertyAccessResult {
 pub struct PropertyAccess;
 
 impl PropertyAccess {
-    pub fn get_property(obj: TaggedValue, key: &str) -> PropertyAccessResult {
+    pub fn get_property(_obj: TaggedValue, _key: &str) -> PropertyAccessResult {
         PropertyAccessResult::NotFound
     }
 
-    pub fn get_value(obj: TaggedValue, key: &str) -> Option<TaggedValue> {
+    pub fn get_value(_obj: TaggedValue, _key: &str) -> Option<TaggedValue> {
         None
     }
 
-    pub fn set_value(obj: TaggedValue, key: &str, value: TaggedValue) -> bool {
+    pub fn set_value(_obj: TaggedValue, _key: &str, _value: TaggedValue) -> bool {
         false
     }
 
-    pub fn has_property(obj: TaggedValue, key: &str) -> bool {
+    pub fn has_property(_obj: TaggedValue, _key: &str) -> bool {
         false
     }
 
-    pub fn get_own_property(obj: TaggedValue, key: &str) -> Option<PropertyDescriptor> {
+    pub fn get_own_property(_obj: TaggedValue, _key: &str) -> Option<PropertyDescriptor> {
         None
     }
 
-    pub fn define_own_property(obj: TaggedValue, key: &str, desc: PropertyDescriptor) -> bool {
+    pub fn define_own_property(_obj: TaggedValue, _key: &str, _desc: PropertyDescriptor) -> bool {
         false
     }
 
-    pub fn delete_property(obj: TaggedValue, key: &str) -> bool {
+    pub fn delete_property(_obj: TaggedValue, _key: &str) -> bool {
         false
     }
 
-    pub fn own_property_keys(obj: TaggedValue) -> Vec<String> {
+    pub fn own_property_keys(_obj: TaggedValue) -> Vec<String> {
         Vec::new()
     }
 }

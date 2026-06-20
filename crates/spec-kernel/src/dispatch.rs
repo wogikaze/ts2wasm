@@ -73,50 +73,62 @@ impl ObjectKindDispatch {
         }
     }
 
+    // STUB(scaffold): TODO — implement per ECMAScript OrdinaryGet [[Get]]
     fn ordinary_get(_obj: &Object, _key: &str) -> TaggedValue {
         TaggedValue::UNDEFINED
     }
 
+    // STUB(scaffold): TODO — implement per ECMAScript [[Get]] for exotic types
     fn ordinary_get_for_kind(_obj: &ObjectKind, _key: &str) -> TaggedValue {
         TaggedValue::UNDEFINED
     }
 
+    // STUB(scaffold): TODO — implement per ECMAScript StringExoticGet
     fn string_exotic_get(_obj: &ObjectKind, _key: &str) -> TaggedValue {
         TaggedValue::UNDEFINED
     }
 
+    // STUB(scaffold): TODO — implement per ECMAScript ProxyGet
     fn proxy_get(_obj: &ObjectKind, _key: &str) -> TaggedValue {
         TaggedValue::UNDEFINED
     }
 
+    // STUB(scaffold): TODO — implement per ECMAScript OrdinarySet [[Set]]
     fn ordinary_set(_obj: &Object, _key: &str) -> bool {
         true
     }
 
+    // STUB(scaffold): TODO — implement per ECMAScript OrdinaryHasProperty [[HasProperty]]
     fn ordinary_has(_obj: &Object, _key: &str) -> bool {
         false
     }
 
+    // STUB(scaffold): TODO — implement per ECMAScript [[HasProperty]] for exotic types
     fn ordinary_has_for_kind(_obj: &ObjectKind, _key: &str) -> bool {
         false
     }
 
+    // STUB(scaffold): TODO — implement per ECMAScript StringExoticHasProperty
     fn string_exotic_has(_obj: &ObjectKind, _key: &str) -> bool {
         false
     }
 
+    // STUB(scaffold): TODO — implement per ECMAScript OrdinaryGetPrototypeOf
     fn ordinary_get_prototype_of(_obj: &Object) -> TaggedValue {
         TaggedValue::NULL
     }
 
+    // STUB(scaffold): TODO — implement per ECMAScript OrdinaryIsExtensible
     fn ordinary_is_extensible(_obj: &Object) -> bool {
         true
     }
 
+    // STUB(scaffold): TODO — implement per ECMAScript OrdinaryOwnPropertyKeys
     fn ordinary_own_keys(_obj: &Object) -> Vec<String> {
         Vec::new()
     }
 
+    // STUB(scaffold): TODO — implement per ECMAScript OrdinaryDelete
     fn ordinary_delete(_obj: &Object, _key: &str) -> bool {
         true
     }

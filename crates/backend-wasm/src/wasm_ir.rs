@@ -6,9 +6,11 @@ pub use ts2wasm_backend_core::wasm_ir::{
     WasmGlobal, WasmImport, WasmInstr, WasmMemory, WasmModule, WasmValType,
 };
 
+#[cfg(feature = "legacy-emitter")]
 use super::runtime_fn::{HostImportSpec, RuntimeFn};
 
 /// Create a WasmImport from a HostImportSpec.
+#[cfg(feature = "legacy-emitter")]
 pub fn wasm_import_from_host_spec(spec: &HostImportSpec) -> WasmImport {
     WasmImport {
         module: spec.module.to_owned(),
@@ -20,6 +22,7 @@ pub fn wasm_import_from_host_spec(spec: &HostImportSpec) -> WasmImport {
 }
 
 /// Parse a runtime-catalog-style type spec ("param i32 i32", "result i32").
+#[cfg(feature = "legacy-emitter")]
 fn parse_catalog_type_list(raw: &str) -> Vec<WasmValType> {
     raw.split_whitespace()
         .skip(1)
@@ -38,6 +41,7 @@ fn parse_catalog_type_list(raw: &str) -> Vec<WasmValType> {
 ///
 /// Panics if `expected_params` or `expected_results` differ from
 /// `runtime_fn.stack_effect()`.
+#[cfg(feature = "legacy-emitter")]
 pub fn check_runtime_signature(
     runtime_fn: RuntimeFn,
     expected_params: usize,
@@ -56,6 +60,7 @@ pub fn check_runtime_signature(
     );
 }
 
+#[cfg(feature = "legacy-emitter")]
 #[cfg(test)]
 mod tests {
     use super::*;

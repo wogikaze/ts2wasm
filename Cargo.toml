@@ -20,6 +20,9 @@ members = [
     "crates/backend-correctness",
     "crates/opt-mir",
     "crates/resolved-types",
+    "crates/runtime-store-wasm",
+    "crates/runtime-wasm",
+    "crates/builtin-kernel",
 ]
 resolver = "3"
 

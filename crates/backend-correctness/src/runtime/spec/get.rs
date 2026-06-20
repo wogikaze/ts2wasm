@@ -54,18 +54,15 @@ pub fn build_spec_has_property() -> WasmFunction {
     }
 }
 
+// STUB(scaffold): TODO — implement per ECMAScript [[GetOwnProperty]].
+// Current implementation returns undefined (no property found).
+// Must not be used as correctness evidence until proper property descriptor search is implemented.
 pub fn build_spec_get_own_property() -> WasmFunction {
     WasmFunction {
         symbol: "$spec_get_own_property".into(),
         params: vec![WasmValType::I32; 2],
         results: vec![WasmValType::I32],
         locals: vec![],
-        body: vec![
-            // Stub: delegates to existing runtime
-            // The existing runtime doesn't have a direct GetOwnProperty equivalent
-            // For now, return undefined (no own property found)
-            WasmInstr::I32Const(0),
-            WasmInstr::End,
-        ],
+        body: vec![WasmInstr::I32Const(0), WasmInstr::End],
     }
 }

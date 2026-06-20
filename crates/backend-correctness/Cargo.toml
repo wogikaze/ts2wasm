@@ -11,3 +11,6 @@ ts2wasm-runtime-core = { path = "../runtime-core" }
 ts2wasm-semantic-ir = { path = "../semantic-ir" }
 ts2wasm-spec-kernel = { path = "../spec-kernel" }
 ts2wasm-source = { path = "../source" }
+ts2wasm-runtime-store-wasm = { path = "../runtime-store-wasm" }
+ts2wasm-runtime-wasm = { path = "../runtime-wasm" }
+ts2wasm-builtin-kernel = { path = "../builtin-kernel" }

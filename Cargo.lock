@@ -275,8 +275,11 @@ name = "ts2wasm-backend-correctness"
 version = "0.1.0"
 dependencies = [
  "ts2wasm-backend-core",
+ "ts2wasm-builtin-kernel",
  "ts2wasm-runtime-abi",
  "ts2wasm-runtime-core",
+ "ts2wasm-runtime-store-wasm",
+ "ts2wasm-runtime-wasm",
  "ts2wasm-semantic-ir",
  "ts2wasm-source",
  "ts2wasm-spec-kernel",
@@ -291,17 +294,23 @@ dependencies = [
  "ts2wasm-backend-core",
  "ts2wasm-diagnostic",
  "ts2wasm-ir",
- "ts2wasm-resolve",
  "ts2wasm-runtime-abi",
  "ts2wasm-runtime-catalog",
- "ts2wasm-semantics",
  "ts2wasm-shared",
  "ts2wasm-source",
  "ts2wasm-spec-kernel",
- "ts2wasm-syntax",
  "wasm-encoder 0.248.0",
  "wasmparser 0.248.0",
  "wat",
+]
+
+[[package]]
+name = "ts2wasm-builtin-kernel"
+version = "0.1.0"
+dependencies = [
+ "ts2wasm-runtime-abi",
+ "ts2wasm-runtime-core",
+ "ts2wasm-spec-kernel",
 ]
 
 [[package]]
@@ -329,6 +338,7 @@ dependencies = [
  "ts2wasm-diagnostic",
  "ts2wasm-frontend",
  "ts2wasm-ir",
+ "ts2wasm-resolved-types",
  "ts2wasm-runtime-abi",
  "ts2wasm-semantic-ir",
  "ts2wasm-shared",
@@ -424,6 +434,24 @@ name = "ts2wasm-runtime-core"
 version = "0.1.0"
 dependencies = [
  "ts2wasm-runtime-abi",
+]
+
+[[package]]
+name = "ts2wasm-runtime-store-wasm"
+version = "0.1.0"
+dependencies = [
+ "ts2wasm-backend-core",
+ "ts2wasm-runtime-abi",
+ "ts2wasm-runtime-core",
+]
+
+[[package]]
+name = "ts2wasm-runtime-wasm"
+version = "0.1.0"
+dependencies = [
+ "ts2wasm-backend-core",
+ "ts2wasm-runtime-abi",
+ "ts2wasm-runtime-core",
 ]
 
 [[package]]

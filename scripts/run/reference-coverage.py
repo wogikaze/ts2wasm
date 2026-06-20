@@ -64,6 +64,10 @@ test262_runner = None
 # Imported early so _canonicalize_jsonl can use it unconditionally.
 from coverage_outcome import make_record, CoverageOutcome, CoveragePhase
 
+# Spec-kernel pipeline mode: set TS2WASM_SPEC_KERNEL=1 to add --spec-kernel
+# to all ts2wasm build invocations for new-path coverage measurement.
+SPEC_KERNEL_MODE = os.environ.get("TS2WASM_SPEC_KERNEL", "") == "1"
+
 def _ensure_test262_runner():
     global test262_runner
     if test262_runner is None:
@@ -3627,7 +3631,7 @@ def main():
             out_wasm = thread_tmp / "out.wasm"
 
             build_result = subprocess.run(
-                ["timeout", "8s", str(ts2wasm_binary()), "build", str(build_input), "-o", str(out_wasm)],
+                ["timeout", "8s", str(ts2wasm_binary()), "build", str(build_input), "-o", str(out_wasm)] + (["--spec-kernel"] if SPEC_KERNEL_MODE else []),
                 capture_output=True,
                 cwd=REPO_ROOT
             )
@@ -3756,7 +3760,7 @@ def main():
             out_wasm = thread_tmp / "out.wasm"
 
             build_result = subprocess.run(
-                ["timeout", "8s", str(ts2wasm_binary()), "build", str(build_input), "-o", str(out_wasm)],
+                ["timeout", "8s", str(ts2wasm_binary()), "build", str(build_input), "-o", str(out_wasm)] + (["--spec-kernel"] if SPEC_KERNEL_MODE else []),
                 capture_output=True,
                 cwd=REPO_ROOT,
             )
@@ -3918,7 +3922,7 @@ def main():
             out_wasm = thread_tmp / "out.wasm"
             
             build_result = subprocess.run(
-                ["timeout", "8s", str(ts2wasm_binary()), "build", str(build_input), "-o", str(out_wasm)],
+                ["timeout", "8s", str(ts2wasm_binary()), "build", str(build_input), "-o", str(out_wasm)] + (["--spec-kernel"] if SPEC_KERNEL_MODE else []),
                 capture_output=True,
                 cwd=REPO_ROOT
             )

@@ -10,7 +10,8 @@ name = "ts2wasm_compiler"
 path = "src/lib.rs"
 
 [features]
-default = []
+default = ["legacy-pipeline"]
+legacy-pipeline = ["ts2wasm-ir"]
 source-profiler = []
 
 [dependencies]
@@ -19,7 +20,8 @@ ts2wasm-source = { path = "../source" }
 ts2wasm-diagnostic = { path = "../diagnostic" }
 ts2wasm-syntax = { path = "../syntax" }
 ts2wasm-shared = { path = "../shared" }
-ts2wasm-ir = { path = "../ir" }
+ts2wasm-ir = { path = "../ir", optional = true }
+ts2wasm-resolved-types = { path = "../resolved-types" }
 ts2wasm-backend-wasm = { path = "../backend-wasm" }
 ts2wasm-semantic-ir = { path = "../semantic-ir" }
 ts2wasm-backend-correctness = { path = "../backend-correctness" }

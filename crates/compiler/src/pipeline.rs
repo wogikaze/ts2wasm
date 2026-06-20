@@ -3,8 +3,11 @@ use std::path::Path;
 
 use ts2wasm_backend_wasm as backend;
 use ts2wasm_frontend::{Diagnostic, Lexer, Parser, validate_type_reference_directives};
+#[cfg(feature = "legacy-pipeline")]
 use ts2wasm_ir::lowered;
+#[cfg(feature = "legacy-pipeline")]
 use ts2wasm_ir::lowered::Validated;
+use ts2wasm_resolved_types::ResolvedStmt;
 use ts2wasm_shared::abi::{
     ABI_GENERATOR, ABI_METADATA_SCHEMA_VERSION, AbiMetadata, ExecutionTarget,
 };
@@ -416,7 +419,7 @@ fn hir_mir_comparison_unavailable_diagnostic(error: &Diagnostic) -> Diagnostic {
 }
 
 fn emit_spec_kernel_binary_for_resolved(
-    resolved: &[ts2wasm_ir::builtin_resolved::ResolvedStmt],
+    resolved: &[ResolvedStmt],
 ) -> Result<Vec<u8>, Diagnostic> {
     let program = ts2wasm_semantic_ir::lowering::lower_to_sem_ir(resolved);
     let lowered = ts2wasm_backend_correctness::lower::CorrectnessLowering::lower(&program);

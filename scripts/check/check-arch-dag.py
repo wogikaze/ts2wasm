@@ -28,7 +28,7 @@ REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
 
 # Baseline count of exception edges (excepted legacy deps).
 # Increase beyond this baseline is a hard error — it means new legacy edges are being added.
-EXCEPTION_EDGE_BASELINE = 13
+EXCEPTION_EDGE_BASELINE = 3
 
 
 def load_rules() -> dict:

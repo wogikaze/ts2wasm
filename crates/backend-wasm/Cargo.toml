@@ -9,13 +9,10 @@ repository.workspace = true
 ts2wasm-shared = { path = "../shared" }
 ts2wasm-source = { path = "../source" }
 ts2wasm-diagnostic = { path = "../diagnostic" }
-ts2wasm-syntax = { path = "../syntax" }
-ts2wasm-resolve = { path = "../resolve" }
-ts2wasm-semantics = { path = "../semantics" }
 ts2wasm-backend-core = { path = "../backend-core" }
-ts2wasm-ir = { path = "../ir" }
+ts2wasm-ir = { path = "../ir", optional = true }
 ts2wasm-runtime-abi = { path = "../runtime-abi" }
-ts2wasm-runtime-catalog = { path = "../runtime-catalog" }
+ts2wasm-runtime-catalog = { path = "../runtime-catalog", optional = true }
 ts2wasm-spec-kernel = { path = "../spec-kernel" }
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["preserve_order"] }
@@ -23,6 +20,8 @@ wasm-encoder = "0.248"
 wat = "1"
 
 [features]
+default = ["legacy-emitter"]
+legacy-emitter = ["ts2wasm-ir", "ts2wasm-runtime-catalog"]
 wasm-encoder-backend = []
 
 [dev-dependencies]

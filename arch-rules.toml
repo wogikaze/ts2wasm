@@ -25,28 +25,32 @@ resolve = { allowed_deps = ["source", "syntax", "diagnostic", "frontend"], descr
 semantics = { allowed_deps = ["source", "syntax", "diagnostic", "resolve", "runtime-abi"], description = "Semantic helpers" }
 
 runtime-abi = { allowed_deps = [], description = "Tagged value layout, ABI constants" }
-runtime-core = { allowed_deps = ["runtime-abi"], description = "JS engine substrate" }
-runtime-catalog = { allowed_deps = ["runtime-abi"], description = "RuntimeFn registry, migration — shared and spec-kernel via ARCH-EXC-015, ARCH-EXC-014" }
+runtime-core = { allowed_deps = ["runtime-abi"], description = "JS engine substrate — no wasm emission types" }
+runtime-catalog = { allowed_deps = ["runtime-abi", "shared", "spec-kernel"], description = "RuntimeFn registry, migration" }
+runtime-store-wasm = { allowed_deps = ["runtime-core", "runtime-abi", "backend-core"], description = "PropertyStore wasm storage primitives — no JS semantics, no observable builtins" }
+runtime-wasm = { allowed_deps = ["runtime-core", "runtime-abi", "backend-core"], description = "Non-observable wasm-callable runtime primitives (Math.sin, BigInt, alloc, memcpy) — NO observable builtins" }
+builtin-kernel = { allowed_deps = ["runtime-core", "runtime-abi", "spec-kernel"], description = "Observable builtin algorithms (Array.indexOf, String.replace, Promise.then) — NOT RuntimePrimitives" }
 
-semantic-ir = { allowed_deps = ["resolved-types", "runtime-core"], description = "ECMAScript semantic IR — source via ARCH-EXC-012" }
+semantic-ir = { allowed_deps = ["resolved-types", "runtime-core", "source"], description = "ECMAScript semantic IR" }
 spec-kernel = { allowed_deps = ["runtime-core"], description = "SpecOp, internal method dispatch" }
-backend-correctness = { allowed_deps = ["backend-core", "runtime-abi", "runtime-core", "semantic-ir", "spec-kernel", "source"], description = "SemIR → SpecOp → wasm module (spec_emit)" }
+backend-correctness = { allowed_deps = ["backend-core", "runtime-abi", "runtime-core", "semantic-ir", "spec-kernel", "source", "runtime-store-wasm", "runtime-wasm", "builtin-kernel"], description = "SemIR → SpecOp → wasm module; SpecAlgoIR → WasmInstr mechanical compiler only" }
 opt-mir = { allowed_deps = ["runtime-core", "spec-kernel"], description = "Guard/deopt IR" }
 
 resolved-types = { allowed_deps = ["source", "syntax", "resolve", "semantics"], description = "Resolved AST types (extracted from ir)" }
 
 ir = { allowed_deps = ["source", "syntax", "diagnostic", "frontend", "resolve", "shared", "runtime-abi", "runtime-catalog", "semantics", "resolved-types"], description = "LEGACY — LoweredProgram, old MIR. DO NOT add new features here. migration_issue: P3 switch to semantic-ir" }
-backend-wasm = { allowed_deps = ["source", "diagnostic", "shared", "runtime-abi", "backend-core", "spec-kernel"], description = "LEGACY + spec_emit (transitional). LEGACY deps via ARCH-EXC-001..005. DO NOT add JS semantics. DO NOT extend old emitter. migration_issue: P3 split spec_emit to dedicated crate" }
+backend-wasm = { allowed_deps = ["source", "diagnostic", "shared", "runtime-abi", "backend-core", "spec-kernel"], description = "LEGACY + spec_emit (transitional). ir and runtime-catalog via ARCH-EXC-001, ARCH-EXC-005. DO NOT add JS semantics. DO NOT extend old emitter. migration_issue: P3 split spec_emit to dedicated crate" }
 backend-core = { allowed_deps = [], description = "Wasm IR types" }
 
-compiler = { allowed_deps = ["frontend", "source", "diagnostic", "syntax", "shared", "backend-wasm", "backend-core", "semantic-ir", "backend-correctness"], description = "Pipeline orchestration — ir and runtime-abi via ARCH-EXC-006, ARCH-EXC-007" }
-cli = { allowed_deps = ["compiler", "diagnostic", "frontend", "shared"], description = "CLI entry point — ir, backend-wasm, runtime-abi via ARCH-EXC-008, ARCH-EXC-009, ARCH-EXC-010" }
+compiler = { allowed_deps = ["frontend", "source", "diagnostic", "syntax", "shared", "backend-wasm", "backend-core", "semantic-ir", "backend-correctness", "runtime-abi", "resolved-types"], description = "Pipeline orchestration — ir via ARCH-EXC-006" }
+cli = { allowed_deps = ["compiler", "diagnostic", "frontend", "shared", "backend-wasm", "ir", "runtime-abi"], description = "CLI entry point" }
 
 # ── Forbidden patterns ───────────────────────────────────────────────────────
 [forbidden]
 "semantic-ir imports backend" = { in_crates = ["semantic-ir"], forbid_pattern = "ts2wasm_backend_wasm|ts2wasm_backend_correctness|ts2wasm_opt_mir|ts2wasm_backend_core" }
 "spec-kernel imports backend" = { in_crates = ["spec-kernel"], forbid_pattern = "ts2wasm_backend_wasm|ts2wasm_backend_correctness|ts2wasm_opt_mir|ts2wasm_backend_core" }
-"runtime-core imports frontend/ir" = { in_crates = ["runtime-core"], forbid_pattern = "ts2wasm_frontend|ts2wasm_ir|ts2wasm_resolve" }
+"runtime-core imports frontend/ir/wasm" = { in_crates = ["runtime-core"], forbid_pattern = "ts2wasm_frontend|ts2wasm_ir|ts2wasm_resolve|ts2wasm_backend_wasm|ts2wasm_backend_correctness|ts2wasm_backend_core" }
+"runtime-core imports wasm encoder" = { in_crates = ["runtime-core"], forbid_pattern = "wasm_encoder" }
 "opt-mir imports Proxy semantics" = { in_crates = ["opt-mir"], forbid_pattern = "proxy_trap|ProxyGet|ProxySet|ProxyHas" }
 
 # ── File size limits ─────────────────────────────────────────────────────────

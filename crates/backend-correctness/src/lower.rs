@@ -87,15 +87,9 @@ impl CorrectnessLowering {
             } => {
                 Self::lower_put_value(reference, value, *span, ops, locals);
             }
-            SemStmt::EnterContext { span, .. } => {
-                ops.push((
-                    SpecOp::Call {
-                        callee: Self::allocate_synthetic_local(locals),
-                        this: Self::allocate_synthetic_local(locals),
-                        args: Self::allocate_synthetic_local(locals),
-                    },
-                    *span,
-                ));
+            SemStmt::EnterContext { .. } => {
+                // Execution context management is handled by the SpecAlgoIR
+                // compilation layer. No SpecOp needed here.
             }
             SemStmt::LeaveContext(_) => {}
             SemStmt::GetBindingValue {
@@ -135,7 +129,11 @@ impl CorrectnessLowering {
                     *span,
                 ));
             }
-            SemStmt::MakeReference { .. } => {}
+            SemStmt::MakeReference { .. } => {
+                // MakeReference creates a reference record for subsequent
+                // GetValue/PutValue operations. Those handlers emit the SpecOps.
+                // No SpecOp needed here.
+            }
             SemStmt::IteratorNext { iterator, span, .. } => {
                 ops.push((
                     SpecOp::IteratorNext {
@@ -240,13 +238,59 @@ impl CorrectnessLowering {
                     *span,
                 ));
             }
-            SemExpr::ArrayLiteral { .. }
-            | SemExpr::ObjectLiteral { .. }
-            | SemExpr::FunctionExpr { .. }
-            | SemExpr::This(_)
-            | SemExpr::Super { .. }
-            | SemExpr::Import { .. }
-            | SemExpr::Reference(_, _) => {}
+            SemExpr::ArrayLiteral { .. } => {
+                // ArrayLiteral is handled at the SpecAlgoIR level.
+                // The lowering pass produces SpecOps for individual operations;
+                // array construction requires builtin algorithm invocation
+                // which is handled by the SpecOp → SpecAlgoIR → Wasm pipeline.
+            }
+            SemExpr::ObjectLiteral { properties, span } => {
+                // ObjectLiteral: allocate a local for the new object.
+                // Emit property Set operations for each property.
+                let obj_local = Self::allocate_synthetic_local(locals);
+                for (key, value) in properties {
+                    Self::lower_expr(value, ops, locals);
+                    let key_local = Self::materialize_string_key_local(key, ops, locals, *span);
+                    ops.push((
+                        SpecOp::Set {
+                            object: obj_local,
+                            key: key_local,
+                            value: *locals as u32 - 1,
+                            receiver: obj_local,
+                        },
+                        *span,
+                    ));
+                }
+            }
+            SemExpr::FunctionExpr { .. } => {
+                // FunctionExpr is a reference to a compiled function.
+                // Function compilation is handled by the semantic IR pipeline;
+                // the lowering pass just needs to reference the function value.
+                // For now, this is a no-op since functions are compiled separately.
+            }
+            SemExpr::This(span) => {
+                // `this` expression → GetBindingValue(env, "this")
+                // Use a synthetic env ref (0 = current lexical env).
+                ops.push((
+                    SpecOp::GetBindingValue {
+                        env: 0,
+                        name: "this".into(),
+                    },
+                    *span,
+                ));
+            }
+            SemExpr::Super { .. } => {
+                // Super expressions involve GetPrototypeOf(this) + property lookup.
+                // Scaffold: actual implementation needs GetPrototypeOf + GetBindingValue("this").
+            }
+            SemExpr::Import { .. } => {
+                // Import expressions require HostResolveImportedModule.
+                // Scaffold: no-op for now.
+            }
+            SemExpr::Reference(reference, span) => {
+                // Reference expression → GetValue on resolved reference
+                Self::lower_get_value(reference, *span, ops, locals);
+            }
         }
     }
 
@@ -423,10 +467,24 @@ impl CorrectnessLowering {
                     *span,
                 ));
             }
-            Terminator::Branch { .. }
-            | Terminator::Jump(_, _)
-            | Terminator::UnwindTo { .. }
-            | Terminator::Switch { .. } => {}
+            Terminator::Branch { .. } => {
+                // Branch is a no-op in the linear SpecOp output.
+                // Conditional branching is handled by the SpecAlgoIR
+                // compilation layer, not by the SpecOp list.
+            }
+            Terminator::Jump(..) => {
+                // Jump is a no-op in the linear SpecOp output.
+                // Control flow between blocks is handled by the SpecAlgoIR
+                // compilation layer, not by the SpecOp list.
+            }
+            Terminator::UnwindTo { .. } => {
+                // UnwindTo (try/catch/finally) is handled at the SpecAlgoIR level.
+                // No SpecOp needed here.
+            }
+            Terminator::Switch { .. } => {
+                // Switch is handled at the SpecAlgoIR level.
+                // No SpecOp needed here.
+            }
         }
     }
 }

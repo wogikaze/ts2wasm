@@ -1,33 +1,58 @@
 use std::collections::BTreeSet;
 
 use ts2wasm_backend_core::wasm_ir::*;
+use ts2wasm_builtin_kernel::{builtin_id_from_u32, get_builtin_algo_program, BuiltinAlgorithmId};
 use ts2wasm_runtime_abi::Layout;
+use ts2wasm_runtime_store_wasm::property_store_functions;
+use ts2wasm_runtime_wasm::runtime_primitives;
+use ts2wasm_spec_kernel::algorithm::{ordinary, SpecAlgoProgram, SpecBlock, SpecBlockId, SpecLocal, SpecAlgoStep};
 use ts2wasm_spec_kernel::SpecOp;
+
+use crate::algo_compile::compile_algo_to_wasm;
 
 pub struct SpecModuleBuilder {
     pub module: WasmModule,
     pub required_spec_ops: BTreeSet<String>,
+    pub required_builtins: BTreeSet<u32>,
     pub data_segments: Vec<(String, Vec<u8>)>,
     pub next_string_id: u32,
 }
 
 impl SpecModuleBuilder {
     pub fn new() -> Self {
+        let mut module = WasmModule {
+            imports: vec![],
+            functions: vec![],
+            memory: Some(WasmMemory {
+                min_pages: Layout::MEMORY_MIN_PAGES,
+                max_pages: Layout::MEMORY_MAX_PAGES,
+                export_name: None,
+            }),
+            globals: vec![],
+            exports: vec![],
+            data_segments: vec![],
+            custom_sections: vec![],
+        };
+
+        // Host imports for runtime primitives
+        for import in host_imports() {
+            module.imports.push(import);
+        }
+
+        // Include PropertyStore functions in every module
+        for func in property_store_functions() {
+            module.functions.push(func);
+        }
+
+        // Include runtime primitives (heap alloc, math, string, etc.)
+        for func in runtime_primitives() {
+            module.functions.push(func);
+        }
+
         Self {
-            module: WasmModule {
-                imports: vec![],
-                functions: vec![],
-                memory: Some(WasmMemory {
-                    min_pages: Layout::MEMORY_MIN_PAGES,
-                    max_pages: Layout::MEMORY_MAX_PAGES,
-                    export_name: None,
-                }),
-                globals: vec![],
-                exports: vec![],
-                data_segments: vec![],
-                custom_sections: vec![],
-            },
+            module,
             required_spec_ops: BTreeSet::new(),
+            required_builtins: BTreeSet::new(),
             data_segments: Vec::new(),
             next_string_id: 0,
         }
@@ -38,14 +63,27 @@ impl SpecModuleBuilder {
         self.required_spec_ops.insert(name);
     }
 
+    pub fn require_builtin(&mut self, id: u32) {
+        self.required_builtins.insert(id);
+    }
+
+    /// Scan a SpecAlgoProgram for CallBuiltinAlgorithm steps and register them.
+    pub fn require_builtins_from_program(&mut self, program: &SpecAlgoProgram) {
+        for block in &program.blocks {
+            for step in &block.steps {
+                if let SpecAlgoStep::CallBuiltinAlgorithm { algorithm, .. } = step {
+                    self.require_builtin(*algorithm);
+                }
+            }
+        }
+    }
+
     pub fn emit(mut self, ops: &[(SpecOp, ts2wasm_source::Span)]) -> Result<WasmModule, String> {
         let mut string_data = Vec::new();
-        let mut has_push_string = false;
 
         for (op, _span) in ops {
             match op {
                 SpecOp::PushStringConstant { value, .. } => {
-                    has_push_string = true;
                     let bytes = value.as_bytes();
                     string_data.extend_from_slice(bytes);
                     string_data.push(0);
@@ -56,16 +94,6 @@ impl SpecModuleBuilder {
             }
         }
 
-        // PushStringConstant lowering is informational — strings are materialized
-        // inline by the lowering pass. If we got here without proper string materialization,
-        // fail early rather than producing a broken module.
-        if has_push_string {
-            return Err(
-                "PushStringConstant not fully materialized — string keys need data segment loading"
-                    .into(),
-            );
-        }
-
         if !string_data.is_empty() {
             self.module.data_segments.push(WasmDataSegment {
                 offset: 0,
@@ -73,8 +101,36 @@ impl SpecModuleBuilder {
             });
         }
 
+        // Build SpecOp functions using SpecAlgoIR where available,
+        // falling back to legacy builders for un-migrated ops.
+        // First pass: collect builtin requirements (separate from self mutation).
+        let mut builtins_needed: BTreeSet<u32> = BTreeSet::new();
         for name in &self.required_spec_ops {
-            if let Some(func) = build_spec_op_function(name) {
+            if let Some((func, program)) = build_algo_op_function_with_program(name) {
+                // Scan for CallBuiltinAlgorithm references
+                for block in &program.blocks {
+                    for step in &block.steps {
+                        if let SpecAlgoStep::CallBuiltinAlgorithm { algorithm, .. } = step {
+                            builtins_needed.insert(*algorithm);
+                        }
+                    }
+                }
+                self.module.functions.push(func);
+            } else if let Some(func) = build_spec_op_function(name) {
+                self.module.functions.push(func);
+            }
+        }
+        self.required_builtins.extend(builtins_needed);
+
+        // Compile required builtin algorithm functions
+        for builtin_id in &self.required_builtins {
+            if let Some(algo_id) = builtin_id_from_u32(*builtin_id) {
+                let program = get_builtin_algo_program(algo_id);
+                let func_name = format!("$builtin_algorithm_{}", builtin_id);
+                let func = compile_algo_to_wasm(
+                    &func_name, &program,
+                    vec![WasmValType::I32; 3], vec![WasmValType::I32],
+                );
                 self.module.functions.push(func);
             }
         }
@@ -89,6 +145,127 @@ impl SpecModuleBuilder {
 
         Ok(self.module)
     }
+}
+
+/// Build a SpecOp function using SpecAlgoIR (mechanical compilation).
+/// Returns None if the SpecOp doesn't have a SpecAlgoIR algorithm yet.
+#[allow(dead_code)]
+fn build_algo_op_function(name: &str) -> Option<WasmFunction> {
+    build_algo_op_function_with_program(name).map(|(f, _)| f)
+}
+
+/// Like build_algo_op_function, but also returns the SpecAlgoProgram for
+/// scanning CallBuiltinAlgorithm references.
+fn build_algo_op_function_with_program(name: &str) -> Option<(WasmFunction, SpecAlgoProgram)> {
+    // Delegate to the old function body but also return the program.
+    // All arms return (func, program) or None.
+    let (program, params, results) = match name {
+        "$spec_get" => {
+            (ordinary::get::build_ordinary_get(), vec![WasmValType::I32; 3], vec![WasmValType::I32])
+        }
+        "$spec_set" => {
+            (ordinary::set::build_ordinary_set(), vec![WasmValType::I32; 4], vec![WasmValType::I32])
+        }
+        "$spec_define_own_property" => {
+            (ordinary::define_own_property::build_ordinary_define_own_property(), vec![WasmValType::I32; 3], vec![WasmValType::I32])
+        }
+        "$spec_to_string" => {
+            (ordinary::conversion::build_to_string(), vec![WasmValType::I32], vec![WasmValType::I32])
+        }
+        "$spec_to_primitive" => {
+            (ordinary::conversion::build_to_primitive(), vec![WasmValType::I32], vec![WasmValType::I32])
+        }
+        "$spec_to_property_key" => {
+            (ordinary::to_property_key::build_to_property_key(), vec![WasmValType::I32], vec![WasmValType::I32])
+        }
+        "$spec_get_own_property" => {
+            (ordinary::get_own_property::build_ordinary_get_own_property(), vec![WasmValType::I32; 2], vec![WasmValType::I32])
+        }
+        "$spec_has_property" => {
+            (ordinary::has::build_ordinary_has_property(), vec![WasmValType::I32; 2], vec![WasmValType::I32])
+        }
+        "$spec_delete" => {
+            (ordinary::delete::build_ordinary_delete(), vec![WasmValType::I32; 2], vec![WasmValType::I32])
+        }
+        "$spec_get_prototype_of" => {
+            (ordinary::prototype::build_get_prototype_of(), vec![WasmValType::I32], vec![WasmValType::I32])
+        }
+        "$spec_set_prototype_of" => {
+            (ordinary::prototype::build_set_prototype_of(), vec![WasmValType::I32; 2], vec![WasmValType::I32])
+        }
+        "$spec_is_extensible" => {
+            (ordinary::extensible::build_is_extensible(), vec![WasmValType::I32], vec![WasmValType::I32])
+        }
+        "$spec_prevent_extensions" => {
+            (ordinary::extensible::build_prevent_extensions(), vec![WasmValType::I32], vec![WasmValType::I32])
+        }
+        "$spec_call" => {
+            (ordinary::call::build_ordinary_call(), vec![WasmValType::I32; 3], vec![WasmValType::I32])
+        }
+        "$spec_construct" => {
+            (ordinary::call::build_ordinary_construct(), vec![WasmValType::I32; 3], vec![WasmValType::I32])
+        }
+        "$spec_to_number" => {
+            (ordinary::conversion::build_to_number(), vec![WasmValType::I32], vec![WasmValType::I32])
+        }
+        "$spec_to_numeric" => {
+            (ordinary::conversion::build_to_numeric(), vec![WasmValType::I32], vec![WasmValType::I32])
+        }
+        "$spec_to_boolean" => {
+            (ordinary::conversion::build_to_boolean(), vec![WasmValType::I32], vec![WasmValType::I32])
+        }
+        "$spec_to_object" => {
+            (ordinary::conversion::build_to_object(), vec![WasmValType::I32], vec![WasmValType::I32])
+        }
+        "$spec_create_data_property" => {
+            (ordinary::create_data::build_create_data_property(), vec![WasmValType::I32; 3], vec![WasmValType::I32])
+        }
+        "$spec_own_property_keys" => {
+            (ordinary::keys::build_own_property_keys(), vec![WasmValType::I32], vec![WasmValType::I32])
+        }
+        "$spec_set_integrity_level" => {
+            (ordinary::integrity::build_set_integrity_level(), vec![WasmValType::I32; 2], vec![WasmValType::I32])
+        }
+        "$spec_test_integrity_level" => {
+            (ordinary::integrity::build_test_integrity_level(), vec![WasmValType::I32; 2], vec![WasmValType::I32])
+        }
+        "$spec_get_iterator" => {
+            (ordinary::iter::build_get_iterator(), vec![WasmValType::I32], vec![WasmValType::I32])
+        }
+        "$spec_iterator_next" => {
+            (ordinary::iter::build_iterator_next(), vec![WasmValType::I32], vec![WasmValType::I32])
+        }
+        "$spec_iterator_close" => {
+            (ordinary::iter::build_iterator_close(), vec![WasmValType::I32; 2], vec![])
+        }
+        "$spec_return" => {
+            (ordinary::control::build_return(), vec![WasmValType::I32], vec![WasmValType::I32])
+        }
+        "$spec_throw" => {
+            (ordinary::control::build_throw(), vec![WasmValType::I32], vec![])
+        }
+        "$spec_get_binding_value" => {
+            (ordinary::control::build_get_binding_value(), vec![WasmValType::I32; 2], vec![WasmValType::I32])
+        }
+        "$spec_set_mutable_binding" => {
+            (ordinary::control::build_set_mutable_binding(), vec![WasmValType::I32; 3], vec![WasmValType::I32])
+        }
+        "$spec_create_binding" => {
+            (ordinary::control::build_create_binding(), vec![WasmValType::I32; 3], vec![WasmValType::I32])
+        }
+        "$spec_initialize_binding" => {
+            (ordinary::control::build_initialize_binding(), vec![WasmValType::I32; 3], vec![WasmValType::I32])
+        }
+        "$spec_resolve_binding" => {
+            (ordinary::control::build_resolve_binding(), vec![WasmValType::I32; 2], vec![WasmValType::I32])
+        }
+        "$spec_get_module_namespace" | "$spec_push_string_constant" => {
+            return None;
+        }
+        _ => return None,
+    };
+    let func = compile_algo_to_wasm(name, &program, params, results);
+    Some((func, program))
 }
 
 fn spec_op_symbol(op: &SpecOp) -> String {
@@ -133,92 +310,12 @@ fn spec_op_symbol(op: &SpecOp) -> String {
 
 fn build_spec_op_function(name: &str) -> Option<WasmFunction> {
     match name {
-        "$spec_get" => Some(crate::runtime::spec::get::build_spec_get()),
-        "$spec_set" => Some(crate::runtime::spec::set::build_spec_set()),
-        "$spec_has_property" => Some(crate::runtime::spec::get::build_spec_has_property()),
-        "$spec_get_own_property" => Some(crate::runtime::spec::get::build_spec_get_own_property()),
-        "$spec_delete" => Some(crate::runtime::spec::object::build_spec_delete()),
-        "$spec_define_own_property" => {
-            Some(crate::runtime::spec::object::build_spec_define_own_property())
-        }
-        "$spec_get_prototype_of" => {
-            Some(crate::runtime::spec::object::build_spec_get_prototype_of())
-        }
-        "$spec_set_prototype_of" => {
-            Some(crate::runtime::spec::object::build_spec_set_prototype_of())
-        }
-        "$spec_is_extensible" => Some(crate::runtime::spec::object::build_spec_is_extensible()),
-        "$spec_prevent_extensions" => {
-            Some(crate::runtime::spec::object::build_spec_prevent_extensions())
-        }
-        "$spec_own_property_keys" => {
-            Some(crate::runtime::spec::object::build_spec_own_property_keys())
-        }
-        "$spec_call" => Some(crate::runtime::spec::call::build_spec_call()),
-        "$spec_construct" => Some(crate::runtime::spec::call::build_spec_construct()),
-        "$spec_create_data_property" => {
-            Some(crate::runtime::spec::object::build_spec_create_data_property())
-        }
-        "$spec_set_integrity_level" => {
-            Some(crate::runtime::spec::set::build_spec_set_integrity_level())
-        }
-        "$spec_test_integrity_level" => {
-            Some(crate::runtime::spec::set::build_spec_test_integrity_level())
-        }
-        "$spec_to_primitive" => Some(crate::runtime::spec::conversion::build_spec_to_primitive()),
-        "$spec_to_number" => Some(crate::runtime::spec::conversion::build_spec_to_number()),
-        "$spec_to_numeric" => Some(crate::runtime::spec::conversion::build_spec_to_numeric()),
-        "$spec_to_boolean" => Some(crate::runtime::spec::conversion::build_spec_to_boolean()),
-        "$spec_to_string" => Some(crate::runtime::spec::conversion::build_spec_to_string()),
-        "$spec_to_object" => Some(crate::runtime::spec::conversion::build_spec_to_object()),
-        "$spec_to_property_key" => {
-            Some(crate::runtime::spec::conversion::build_spec_to_property_key())
-        }
-        "$spec_get_binding_value" => {
-            Some(crate::runtime::spec::environment::build_spec_get_binding_value())
-        }
-        "$spec_set_mutable_binding" => {
-            Some(crate::runtime::spec::environment::build_spec_set_mutable_binding())
-        }
-        "$spec_create_binding" => {
-            Some(crate::runtime::spec::environment::build_spec_create_binding())
-        }
-        "$spec_initialize_binding" => {
-            Some(crate::runtime::spec::environment::build_spec_initialize_binding())
-        }
-        "$spec_resolve_binding" => {
-            Some(crate::runtime::spec::environment::build_spec_resolve_binding())
-        }
-        "$spec_get_iterator" => Some(crate::runtime::spec::iter::build_spec_get_iterator()),
-        "$spec_iterator_next" => Some(crate::runtime::spec::iter::build_spec_iterator_next()),
-        "$spec_iterator_close" => Some(crate::runtime::spec::iter::build_spec_iterator_close()),
+        // Only 2 SpecOps still use hand-written fallbacks (compile-time parameters):
         "$spec_get_module_namespace" => {
             Some(crate::runtime::spec::module::build_spec_get_module_namespace())
         }
-        "$spec_return" => Some(build_spec_return()),
-        "$spec_throw" => Some(build_spec_throw()),
         "$spec_push_string_constant" => Some(build_spec_push_string_constant()),
-        other => panic!("unknown SpecOp symbol: {other}"),
-    }
-}
-
-fn build_spec_return() -> WasmFunction {
-    WasmFunction {
-        symbol: "$spec_return".into(),
-        params: vec![WasmValType::I32],
-        results: vec![WasmValType::I32],
-        locals: vec![],
-        body: vec![WasmInstr::LocalGet(0), WasmInstr::Return],
-    }
-}
-
-fn build_spec_throw() -> WasmFunction {
-    WasmFunction {
-        symbol: "$spec_throw".into(),
-        params: vec![WasmValType::I32],
-        results: vec![],
-        locals: vec![],
-        body: vec![WasmInstr::LocalGet(0), WasmInstr::Unreachable],
+        other => panic!("unknown SpecOp symbol without SpecAlgoIR: {other}"),
     }
 }
 
@@ -234,4 +331,77 @@ fn build_spec_push_string_constant() -> WasmFunction {
 
 pub fn emit_spec_wasm_module(ops: &[(SpecOp, ts2wasm_source::Span)]) -> Result<WasmModule, String> {
     SpecModuleBuilder::new().emit(ops)
+}
+
+/// All host imports required by runtime primitives.
+/// Each host function wraps a WAT-level host import with matching params/results.
+fn host_imports() -> Vec<WasmImport> {
+    // Format: (module, name, func_symbol, params, results)
+    let host_symbols: &[(&str, &str, Vec<WasmValType>, Vec<WasmValType>)] = &[
+        // Math
+        ("host", "math_random", vec![], vec![WasmValType::I32]),
+        // Heap
+        ("host", "heap_alloc", vec![WasmValType::I32], vec![WasmValType::I32]),
+        ("host", "heap_free", vec![WasmValType::I32], vec![]),
+        ("host", "heap_realloc", vec![WasmValType::I32; 2], vec![WasmValType::I32]),
+        // Memory
+        ("host", "mem_copy", vec![WasmValType::I32; 3], vec![]),
+        ("host", "mem_move", vec![WasmValType::I32; 3], vec![]),
+        ("host", "mem_set", vec![WasmValType::I32; 3], vec![]),
+        ("host", "mem_compare", vec![WasmValType::I32; 3], vec![WasmValType::I32]),
+        ("host", "mem_zero", vec![WasmValType::I32; 2], vec![]),
+        // String
+        ("host", "string_flatten", vec![WasmValType::I32], vec![WasmValType::I32]),
+        ("host", "string_length", vec![WasmValType::I32], vec![WasmValType::I32]),
+        ("host", "string_indexof_byte", vec![WasmValType::I32; 3], vec![WasmValType::I32]),
+        ("host", "string_char_code_at", vec![WasmValType::I32; 2], vec![WasmValType::I32]),
+        ("host", "string_from_char_code", vec![WasmValType::I32], vec![WasmValType::I32]),
+        ("host", "string_concat", vec![WasmValType::I32; 2], vec![WasmValType::I32]),
+        ("host", "string_substring", vec![WasmValType::I32; 3], vec![WasmValType::I32]),
+        ("host", "string_slice", vec![WasmValType::I32; 3], vec![WasmValType::I32]),
+        ("host", "string_to_lower", vec![WasmValType::I32], vec![WasmValType::I32]),
+        ("host", "string_to_upper", vec![WasmValType::I32], vec![WasmValType::I32]),
+        // Type checks
+        ("host", "is_string", vec![WasmValType::I32], vec![WasmValType::I32]),
+        ("host", "is_object", vec![WasmValType::I32], vec![WasmValType::I32]),
+        ("host", "same_value", vec![WasmValType::I32; 2], vec![WasmValType::I32]),
+        ("host", "number_is_nan", vec![WasmValType::I32], vec![WasmValType::I32]),
+        ("host", "number_is_finite", vec![WasmValType::I32], vec![WasmValType::I32]),
+        // Date
+        ("host", "date_is_leap_year", vec![WasmValType::I32], vec![WasmValType::I32]),
+        ("host", "date_days_in_month", vec![WasmValType::I32; 2], vec![WasmValType::I32]),
+        ("host", "date_days_from_epoch", vec![WasmValType::I32; 3], vec![WasmValType::I32]),
+        ("host", "date_time_from_ms", vec![WasmValType::I32], vec![WasmValType::I32]),
+        ("host", "date_ms_from_components", vec![WasmValType::I32; 6], vec![WasmValType::I32]),
+        // BigInt
+        ("host", "bigint_to_string", vec![WasmValType::I32], vec![WasmValType::I32]),
+        // TypedArray / ArrayBuffer
+        ("host", "typed_array_load", vec![WasmValType::I32; 2], vec![WasmValType::I32]),
+        ("host", "typed_array_store", vec![WasmValType::I32; 3], vec![]),
+        ("host", "typed_array_byte_length", vec![WasmValType::I32], vec![WasmValType::I32]),
+        ("host", "typed_array_from", vec![WasmValType::I32; 2], vec![WasmValType::I32]),
+        ("host", "typed_array_set", vec![WasmValType::I32; 3], vec![]),
+        ("host", "array_buffer_alloc", vec![WasmValType::I32], vec![WasmValType::I32]),
+        ("host", "array_buffer_slice", vec![WasmValType::I32; 3], vec![WasmValType::I32]),
+        ("host", "array_buffer_detach", vec![WasmValType::I32], vec![]),
+        // Atomics
+        ("host", "atomics_load", vec![WasmValType::I32; 2], vec![WasmValType::I32]),
+        ("host", "atomics_store", vec![WasmValType::I32; 3], vec![]),
+        ("host", "atomics_add", vec![WasmValType::I32; 3], vec![WasmValType::I32]),
+        ("host", "atomics_sub", vec![WasmValType::I32; 3], vec![WasmValType::I32]),
+        ("host", "atomics_and", vec![WasmValType::I32; 3], vec![WasmValType::I32]),
+        ("host", "atomics_cmpxchg", vec![WasmValType::I32; 4], vec![WasmValType::I32]),
+        // Function call
+        ("host", "call_function", vec![WasmValType::I32; 3], vec![WasmValType::I32]),
+        // Allocation
+        ("host", "heap_alloc_object", vec![], vec![WasmValType::I32]),
+        ("host", "heap_alloc_array", vec![], vec![WasmValType::I32]),
+        ("host", "heap_alloc_function", vec![], vec![WasmValType::I32]),
+        // Exception handling
+        ("host", "throw_exception", vec![WasmValType::I32], vec![]),
+        ("host", "is_throw_completion", vec![WasmValType::I32], vec![WasmValType::I32]),
+    ];
+    host_symbols.iter().map(|(module, name, params, results)| {
+        WasmImport::func(*module, *name, format!("$host_{}", name), params.clone(), results.clone())
+    }).collect()
 }

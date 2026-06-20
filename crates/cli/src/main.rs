@@ -29,6 +29,12 @@ enum Command {
         /// Build through HIR -> MIR when supported, otherwise fall back to the legacy pipeline.
         #[arg(long = "experimental-hir-mir-compat-fallback")]
         experimental_hir_mir_compat_fallback: bool,
+        /// Build through the spec-kernel pipeline (SpecAlgoIR-based correctness backend).
+        #[arg(long = "spec-kernel")]
+        spec_kernel: bool,
+        /// Build through spec-kernel pipeline with compat fallback to legacy.
+        #[arg(long = "spec-kernel-compat-fallback")]
+        spec_kernel_compat_fallback: bool,
         /// Target execution environment (default: wasm32-wasi)
         #[arg(long = "target", default_value = "wasm32-wasi")]
         target: String,
@@ -91,6 +97,8 @@ fn run() -> Result<(), String> {
             explain_unsupported,
             experimental_hir_mir,
             experimental_hir_mir_compat_fallback,
+            spec_kernel,
+            spec_kernel_compat_fallback,
             target,
         } => {
             if experimental_hir_mir && experimental_hir_mir_compat_fallback {
@@ -128,7 +136,13 @@ fn run() -> Result<(), String> {
                 ts2wasm_cli::BuildPipelineOptions {
                     host_deny: host_deny.is_some(),
                     hir_mir_mode,
-                    spec_kernel_mode: ts2wasm_cli::SpecKernelMode::Disabled,
+                    spec_kernel_mode: if spec_kernel {
+                        ts2wasm_cli::SpecKernelMode::Strict
+                    } else if spec_kernel_compat_fallback {
+                        ts2wasm_cli::SpecKernelMode::CompatFallback
+                    } else {
+                        ts2wasm_cli::SpecKernelMode::Disabled
+                    },
                     target,
                 },
             );
