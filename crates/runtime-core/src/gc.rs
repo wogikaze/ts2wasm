@@ -12,6 +12,7 @@ pub struct GcRoot {
 #[derive(Debug, Clone)]
 pub struct HandleScope {
     roots: Vec<GcRoot>,
+    #[allow(dead_code)]
     parent: Option<HandleScopeId>,
 }
 
